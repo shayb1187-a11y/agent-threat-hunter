@@ -1,0 +1,72 @@
+// =====================================================================================
+// ATH-010 : Sequence of discovery commands from one parent process
+// Severity: MEDIUM
+// Pandas  : src/ath/hunting/rules/discovery_rules.py :: DiscoveryCommandSequence
+//
+// PROVENANCE: proposed as a v1/v2 candidate pair by the detection-engineering harness,
+// measured, tightened, and promoted. See docs/detection-engineering.md:
+//   v1 (any discovery binary, anywhere):                 3 TP, 39 FP, precision 0.07
+//   v2 (>=2 distinct binaries, same parent, 5-min window): 1 TP,  0 FP, precision 1.00
+//
+// Every one of these binaries (whoami, systeminfo, net, nltest) is also a completely
+// ordinary IT support tool. The distinctive pattern is NOT any single binary name --
+// it is >=2 DIFFERENT discovery binaries launched from the SAME parent process in a
+// SHORT window, which describes an operator methodically mapping an environment from
+// one shell rather than a technician running one command by hand.
+//
+// KQL notes:
+//   summarize ... by            groups rows -- the equivalent of the pandas groupby
+//   make_set() / dcount()       collect distinct binaries / count them
+//   datetime_diff('second',..)  span between first and last event in the group
+//   bin() is NOT used here: unlike ATH-005's fixed-bucket brute-force detection, we
+//   want the true span of the specific matched events, which summarize's min/max
+//   gives us directly without any bucketing artefact.
+// =====================================================================================
+
+let LookBack = 7d;
+let MinDistinctBinaries = 2;
+let Window = 5m;
+let DiscoveryBinaries = dynamic([
+    "whoami.exe", "net.exe", "nltest.exe", "systeminfo.exe", "hostname.exe", "quser.exe"
+]);
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where FileName in~ (DiscoveryBinaries)
+| summarize
+    FirstSeen        = min(Timestamp),
+    LastSeen          = max(Timestamp),
+    DistinctBinaries  = dcount(FileName),
+    Binaries          = make_set(FileName),
+    ReportIds         = make_set(ReportId, 50),
+    AccountName       = any(AccountName)
+    by DeviceName, InitiatingProcessId
+| extend SpanSeconds = datetime_diff('second', LastSeen, FirstSeen)
+| where DistinctBinaries >= MinDistinctBinaries
+| where SpanSeconds <= 300   // 5 minutes, matching `Window`
+| project
+    FirstSeen, LastSeen, SpanSeconds, DeviceName, AccountName,
+    InitiatingProcessId, DistinctBinaries, Binaries, ReportIds
+| sort by FirstSeen asc
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, parent_process_id, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// Direct DeviceProcessEvents mapping. `InitiatingProcessId` here groups by the PARENT
+// process id -- the equivalent of our `parent_process_id` -- rather than the discovery
+// binaries' own process ids, which is what makes "one parent, several children" visible
+// via a single summarize.
+//
+// LIKELY FALSE POSITIVES
+//   - IT support running a single discovery command during routine troubleshooting --
+//     excluded by design, since one command cannot meet DistinctBinaries >= 2.
+//   - Automated inventory or compliance scripts running several discovery commands in
+//     sequence from one scheduled task.
+//   - A single administrator manually running a short checklist of commands during
+//     planned environment documentation.
+// -------------------------------------------------------------------------------------
+
+// pandas equivalent:
+//   for (device, parent_pid), group in candidates.groupby(["device","parent_process_id"]):
+//       if len(set(group.process_name)) >= 2 and span <= 5min: emit one Finding

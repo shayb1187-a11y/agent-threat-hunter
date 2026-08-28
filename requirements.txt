@@ -1,0 +1,17 @@
+# --- Milestones 1-3: telemetry + deterministic pipeline (no credentials needed) ---
+pandas>=2.0
+python-dotenv>=1.0
+
+# --- Development ---
+pytest>=7.4
+
+# --- Milestone 4: agent layer ---
+# The agent runs in fully deterministic mode with NEITHER of these installed --
+# NullLLM + the direct orchestrator loop cover the whole investigation. Both are
+# genuinely optional:
+#   langgraph  -- alternate runtime for the same orchestrator logic (see
+#                 src/ath/agent/graph.py). Import is deferred to build_graph(), so
+#                 the package is fully importable and testable without it.
+#   (no Anthropic SDK dependency: src/ath/agent/llm.py calls the API directly over
+#    urllib rather than adding an SDK dependency for one HTTP call.)
+langgraph>=0.2

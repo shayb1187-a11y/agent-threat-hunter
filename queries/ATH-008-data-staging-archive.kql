@@ -1,0 +1,61 @@
+// =====================================================================================
+// ATH-008 : Bulk data staged into an archive
+// Severity: MEDIUM, raised to HIGH when both bulk source AND staging destination
+// Pandas  : src/ath/hunting/rules/process_rules.py :: DataStagingArchive
+//
+// Before exfiltration, data is collected and compressed into one archive, usually
+// written somewhere unremarkable and world-writable (C:\Windows\Temp, C:\Users\Public,
+// ProgramData) rather than the operator's own profile.
+//
+// Requires TWO conditions -- an archive tool AND (bulk wildcard OR staging path).
+// Firing on every Compress-Archive would be intolerable; a user zipping one file to
+// email is normal behaviour.
+//
+// This detects COLLECTION, not exfiltration. Proving data left requires correlating an
+// outbound transfer, which is a chaining problem, not a single-event rule.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, parent_process_name,
+//            command_line, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// DeviceProcessEvents mapping. What is missing on both sides here is FILE telemetry:
+// Defender's DeviceFileEvents would show the archive being created and its size,
+// which is how you would confirm bulk collection rather than inferring it from a
+// command line. Our synthetic schema has no file-event table at all, so neither the
+// Python rule nor this query can measure how much data was actually staged.
+//
+// LIKELY FALSE POSITIVES
+//   - Legitimate backup jobs and scheduled archive tasks.
+//   - Users compressing a folder to share or email.
+//   - Log rotation, diagnostic bundles, software build/packaging steps.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where ProcessCommandLine has_any (
+    "Compress-Archive", "7z.exe", "7za.exe", "7zr.exe", "winrar.exe",
+    "rar.exe", "tar.exe", "makecab.exe", "ZipFile")
+| extend
+    BulkSource  = ProcessCommandLine matches regex @"(?i)-path\s+\S*\*|\s\S+\\\*(\s|$)",
+    StagingDest = ProcessCommandLine matches regex
+        @"(?i)(c:\\windows\\temp|c:\\temp|c:\\users\\public|\\appdata\\local\\temp|c:\\programdata|\\\$recycle\.bin)"
+| where BulkSource or StagingDest
+| extend Severity = iff(BulkSource and StagingDest, "High", "Medium")
+| project
+    Timestamp, DeviceName, AccountName, FileName,
+    BulkSource, StagingDest, Severity,
+    InitiatingProcessFileName, ProcessCommandLine, ReportId
+| sort by Timestamp asc
+
+// Chaining idea for the next milestone: join this to DeviceNetworkEvents on DeviceName
+// where an outbound external connection follows within ~30 minutes. Archive creation
+// followed by egress is a far stronger signal than either alone.
+//
+// pandas equivalent:
+//   if not _ARCHIVE_TOOLS.search(cmd): continue
+//   staged, bulk = bool(_STAGING_PATHS.search(cmd)), bool(_BULK_SOURCE.search(cmd))
+//   if not (staged or bulk): continue

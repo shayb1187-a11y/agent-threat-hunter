@@ -1,0 +1,55 @@
+// =====================================================================================
+// ATH-007 : Remote service execution (PsExec-style)
+// Severity: MEDIUM, raised to HIGH on admin-share output redirection
+// Pandas  : src/ath/hunting/rules/process_rules.py :: RemoteServiceExecution
+//
+// PsExec and Impacket's smbexec authenticate over SMB, write a temporary service whose
+// body is a command shell, and ask the Service Control Manager to start it. Results are
+// redirected to an administrative share so the operator can read them remotely.
+//
+// Anchor on the CHILD, not the parent: services.exe legitimately starts dozens of
+// processes (that is its job). What is abnormal is specifically an interactive shell
+// as a service body.
+//
+// KQL notes:
+//   =~                case-insensitive equality  ~  .str.lower() == x
+//   matches regex     admin-share detection needs substring matching, so `has` will
+//                     not do -- \\HOST\ADMIN$ is not a clean term boundary
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, parent_process_name,
+//            command_line, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// Direct DeviceProcessEvents mapping. Our schema has no service-creation telemetry
+// (Defender: DeviceEvents ActionType 'ServiceInstalled'; Windows: Event ID 7045),
+// which would be the higher-fidelity signal. We infer service execution from the
+// services.exe parent relationship instead.
+//
+// LIKELY FALSE POSITIVES
+//   - IT administrators legitimately using PsExec for remote support.
+//   - Monitoring, backup or deployment agents running scripts via a service.
+//   - Authenticated vulnerability scans.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where InitiatingProcessFileName =~ "services.exe"
+| where FileName in~ ("cmd.exe", "powershell.exe", "pwsh.exe")
+| extend AdminShareRedirect = ProcessCommandLine matches regex @"(?i)\\\\[^\\]+\\(admin\$|c\$|ipc\$)"
+| extend Severity = iff(AdminShareRedirect, "High", "Medium")
+| project
+    Timestamp, DeviceName, AccountName, FileName,
+    AdminShareRedirect, Severity, ProcessCommandLine, ReportId
+| sort by Timestamp asc
+
+// Enrichment worth adding in a real SOC: join to DeviceLogonEvents on DeviceName within
+// a few minutes before, to recover WHICH remote host initiated the session. That turns
+// "a shell ran here" into "PC01 ran a shell here", which is the fact that matters.
+//
+// pandas equivalent:
+//   mask = (parent == "services.exe") & child.isin({"cmd.exe","powershell.exe","pwsh.exe"})
+//   severity = HIGH if _ADMIN_SHARE_REDIRECT.search(cmd) else MEDIUM

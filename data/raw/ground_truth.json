@@ -1,0 +1,149 @@
+{
+  "description": "Labels for evaluation only. Detections and agent tools must never read this file.",
+  "scenarios": {
+    "intrusion": {
+      "stages": {
+        "1-initial-access": {
+          "note": "macro-enabled attachment opened from Outlook",
+          "event_ids": [
+            "evt-000320"
+          ]
+        },
+        "2-execution": {
+          "note": "Office application spawning hidden encoded PowerShell",
+          "event_ids": [
+            "evt-000322"
+          ]
+        },
+        "3-payload-download": {
+          "note": "PowerShell retrieving remote script over cleartext HTTP",
+          "event_ids": [
+            "evt-000323"
+          ]
+        },
+        "4-command-and-control": {
+          "note": "regular-interval outbound connections to a fixed remote host",
+          "event_ids": [
+            "evt-000326",
+            "evt-000341",
+            "evt-000372",
+            "evt-000398",
+            "evt-000427",
+            "evt-000457"
+          ]
+        },
+        "5-discovery": {
+          "note": "account and domain enumeration from the PowerShell session",
+          "event_ids": [
+            "evt-000332",
+            "evt-000334",
+            "evt-000337"
+          ]
+        },
+        "6-credential-access": {
+          "note": "LSASS process memory dumped via signed Microsoft DLL",
+          "event_ids": [
+            "evt-000344"
+          ]
+        },
+        "7-brute-force": {
+          "note": "repeated failed network logons for one account from one source",
+          "event_ids": [
+            "evt-000394",
+            "evt-000399",
+            "evt-000402",
+            "evt-000403",
+            "evt-000404",
+            "evt-000406",
+            "evt-000407",
+            "evt-000409",
+            "evt-000413",
+            "evt-000414",
+            "evt-000415",
+            "evt-000416",
+            "evt-000417",
+            "evt-000419",
+            "evt-000431"
+          ]
+        },
+        "8-lateral-movement": {
+          "note": "command shell spawned by the service control manager, output redirected to an admin share",
+          "event_ids": [
+            "evt-000435"
+          ]
+        },
+        "9-collection": {
+          "note": "bulk archive of a finance file share into a temp directory",
+          "event_ids": [
+            "evt-000445"
+          ]
+        },
+        "10-exfiltration": {
+          "note": "server-side process contacting the same external host as PC01",
+          "event_ids": [
+            "evt-000454"
+          ]
+        }
+      },
+      "event_ids": [
+        "evt-000320",
+        "evt-000322",
+        "evt-000323",
+        "evt-000326",
+        "evt-000332",
+        "evt-000334",
+        "evt-000337",
+        "evt-000341",
+        "evt-000344",
+        "evt-000372",
+        "evt-000394",
+        "evt-000398",
+        "evt-000399",
+        "evt-000402",
+        "evt-000403",
+        "evt-000404",
+        "evt-000406",
+        "evt-000407",
+        "evt-000409",
+        "evt-000413",
+        "evt-000414",
+        "evt-000415",
+        "evt-000416",
+        "evt-000417",
+        "evt-000419",
+        "evt-000427",
+        "evt-000431",
+        "evt-000435",
+        "evt-000445",
+        "evt-000454",
+        "evt-000457"
+      ]
+    },
+    "benign_lookalike": {
+      "stages": {
+        "it-inventory": {
+          "note": "encoded PowerShell launched by patch management -- legitimate",
+          "event_ids": [
+            "evt-000569",
+            "evt-000570"
+          ]
+        },
+        "it-admin-multi-host": {
+          "note": "admin touching multiple servers -- looks like lateral movement",
+          "event_ids": [
+            "evt-000576",
+            "evt-000581",
+            "evt-000587"
+          ]
+        }
+      },
+      "event_ids": [
+        "evt-000569",
+        "evt-000570",
+        "evt-000576",
+        "evt-000581",
+        "evt-000587"
+      ]
+    }
+  }
+}

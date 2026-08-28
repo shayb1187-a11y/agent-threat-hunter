@@ -1,0 +1,63 @@
+// =====================================================================================
+// ATH-001 : Office application spawned a script interpreter
+// Severity: HIGH
+// Pandas  : src/ath/hunting/rules/process_rules.py :: OfficeSpawnsInterpreter
+//
+// Detects the classic macro-execution chain: a document is opened, its macro shells
+// out to an interpreter, and the interpreter fetches the real payload.
+//
+// KQL notes:
+//   let ... dynamic([...])  declares a reusable array literal
+//   in~ (...)               case-insensitive set membership  ~  .str.lower().isin(...)
+//   ago(7d)                 relative time; keep it FIRST so Kusto prunes partitions
+//   extend                  adds a computed column, keeping the rest
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, parent_process_name,
+//            command_line, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// Our `process_events` maps cleanly onto DeviceProcessEvents. One real gap: Defender
+// also exposes InitiatingProcessCommandLine, which usually names the document that
+// was opened (Invoice_Q3.docm). Our synthetic schema has no parent command line, so
+// the Python detector cannot show which file triggered the macro. The KQL below does
+// project it, because against real data you would want it.
+//
+// LIKELY FALSE POSITIVES
+//   - Office add-ins and COM automation that legitimately shell out.
+//   - Line-of-business apps driving Excel/Word macros for reporting.
+//   - RPA tooling (UiPath, Power Automate Desktop).
+//   Tune by excluding known add-in paths, not by dropping the rule.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let OfficeApps = dynamic([
+    "winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe",
+    "msaccess.exe", "onenote.exe", "visio.exe", "mspub.exe"
+]);
+let Interpreters = dynamic([
+    "powershell.exe", "pwsh.exe", "cmd.exe", "wscript.exe", "cscript.exe",
+    "mshta.exe", "rundll32.exe", "regsvr32.exe", "wmic.exe", "bitsadmin.exe",
+    "certutil.exe", "msbuild.exe", "installutil.exe"
+]);
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where InitiatingProcessFileName in~ (OfficeApps)
+| where FileName in~ (Interpreters)
+| extend ParentChild = strcat(InitiatingProcessFileName, " -> ", FileName)
+| project
+    Timestamp,
+    DeviceName,
+    AccountName,
+    ParentChild,
+    ProcessCommandLine,
+    InitiatingProcessCommandLine,   // often reveals WHICH document was opened
+    ReportId
+| sort by Timestamp asc
+
+// pandas equivalent:
+//   mask = (procs["parent_process_name"].str.lower().isin(OFFICE_APPLICATIONS)
+//           & procs["process_name"].str.lower().isin(SCRIPT_INTERPRETERS))
+//   hits = procs[mask]

@@ -1,0 +1,91 @@
+// =====================================================================================
+// ATH-005 : Failed logon burst followed by successful authentication
+// Severity: HIGH, escalating to CRITICAL when a success follows
+// Pandas  : src/ath/hunting/rules/logon_rules.py :: BruteForceThenSuccess
+//
+// The signal is not "there were failures" -- it is the TRANSITION from many failures to
+// a success for the same account, from the same source, within a short window. That is
+// the difference between "someone tried" and "someone got in".
+//
+// KQL notes:
+//   bin(Timestamp, 10m)  time bucketing        ~  pd.Grouper(freq="10min")
+//   join kind=leftouter  keep unmatched left rows  ~  df.merge(how="left")
+//   datetime_diff()      difference in a named unit
+//   iff()                inline conditional
+//
+// CAVEAT: bin() is fixed-boundary bucketing, so a burst straddling 09:58-10:02 splits
+// into two sub-threshold buckets and is missed. The pandas implementation uses a true
+// sliding window instead. This boundary artefact is a real and common source of silent
+// false negatives -- for production, use `summarize ... by bin_at()` with overlapping
+// windows, or reconstruct sequences with `serialize` + `prev()`.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   logon_events: timestamp, device, user, source_ip, source_device, action,
+//            failure_reason, logon_type, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// DeviceLogonEvents equivalent. Differences worth knowing:
+//   - Our `action` is 'success'/'failure'; Defender uses ActionType values
+//     'LogonSuccess' / 'LogonFailed'.
+//   - Our `logon_type` is the numeric Windows code (2/3/10); Defender exposes it as
+//     a STRING ('Interactive', 'Network', 'RemoteInteractive'). Comparing the two
+//     without converting is a common and silent source of empty results.
+//   - Our `source_ip` is Defender's RemoteIP on this table.
+//
+// LIKELY FALSE POSITIVES
+//   - Service accounts retrying with a stale cached password -- the #1 real cause.
+//   - A phone or mapped drive holding an old password after a reset.
+//   - Vulnerability scanners performing authenticated checks.
+//   Password SPRAYING (one password, many accounts) will NOT trip this rule; that
+//   needs grouping by source with dcount(AccountName). Known gap.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let MinFailures = 10;           // set above plausible human error, not at it
+let Window = 10m;
+let SuccessWindow = 15m;
+let Failures =
+    DeviceLogonEvents
+    | where Timestamp > ago(LookBack)
+    | where ActionType == "LogonFailed"
+    | summarize
+        FailureCount = count(),
+        FirstFailure = min(Timestamp),
+        LastFailure  = max(Timestamp),
+        FailureReasons = make_set(FailureReason, 5),
+        FailureReportIds = make_set(ReportId, 100)
+        by DeviceName, AccountName, RemoteIP, bin(Timestamp, Window)
+    | where FailureCount >= MinFailures;
+let Successes =
+    DeviceLogonEvents
+    | where Timestamp > ago(LookBack)
+    | where ActionType == "LogonSuccess"
+    | project SuccessTime = Timestamp, DeviceName, AccountName, RemoteIP,
+              LogonType, SuccessReportId = ReportId;
+Failures
+| join kind=leftouter Successes on DeviceName, AccountName, RemoteIP
+| where isnull(SuccessTime)
+     or (SuccessTime >= FirstFailure and SuccessTime <= LastFailure + SuccessWindow)
+| summarize
+    SuccessTime = min(SuccessTime),
+    arg_min(SuccessTime, LogonType, SuccessReportId)
+    by DeviceName, AccountName, RemoteIP, FailureCount, FirstFailure, LastFailure,
+       tostring(FailureReasons), tostring(FailureReportIds)
+| extend
+    Succeeded    = isnotnull(SuccessTime),
+    SecondsAfter = iff(isnotnull(SuccessTime),
+                       datetime_diff('second', SuccessTime, LastFailure), int(null))
+| extend Severity = iff(Succeeded, "Critical", "High")
+| project
+    FirstFailure, LastFailure, DeviceName, AccountName, RemoteIP,
+    FailureCount, Succeeded, SuccessTime, SecondsAfter, LogonType, Severity,
+    FailureReasons, FailureReportIds, SuccessReportId
+| sort by Severity asc, FailureCount desc
+
+// pandas equivalent:
+//   for (device, user, source_ip), group in failures.groupby([...]):
+//       for start, end in _find_bursts(stamps, min_failures, window):   # sliding
+//           follow_up = successes[(same triple) & (ts between burst_start, end+15m)]
+//           severity = CRITICAL if not follow_up.empty else HIGH

@@ -1,0 +1,60 @@
+// =====================================================================================
+// ATH-009 : Macro-enabled document opened via email client
+// Severity: MEDIUM
+// Pandas  : src/ath/hunting/rules/initial_access_rules.py :: OfficeMacroAttachmentOpened
+//
+// PROVENANCE: this rule was proposed as a v1/v2 candidate pair by the
+// detection-engineering harness (src/ath/engineering/candidates.py), measured on this
+// project's own telemetry, and promoted after tightening removed a measured false
+// positive. See docs/detection-engineering.md for the full numbers:
+//   v1 (any Office app opened by Outlook, no extension check): 1 TP, 29 FP, precision 0.03
+//   v2 (macro-capable extension required):                     1 TP,  0 FP, precision 1.00
+//
+// Fires ONE STEP EARLIER in the kill chain than ATH-001: it catches the attachment
+// being opened at all, independent of whether the embedded macro subsequently
+// executes -- giving visibility even when a macro is blocked by policy or declined.
+//
+// KQL notes:
+//   has_any            fast term-indexed multi-extension check
+//   endswith           not used here on purpose: the extension can appear mid-path in
+//                      quoted command lines, so a substring/regex check is safer than
+//                      a strict suffix match against ProcessCommandLine
+// =====================================================================================
+
+let LookBack = 7d;
+let OfficeApps = dynamic(["winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe"]);
+// A plain .docx cannot contain a macro at all -- this is a fact about the Office Open
+// XML container format, not a threshold tuned to any particular dataset.
+let MacroExtensions = dynamic([".docm", ".dotm", ".xlsm", ".xlsb", ".pptm", ".ppsm"]);
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where InitiatingProcessFileName =~ "outlook.exe"
+| where FileName in~ (OfficeApps)
+| where ProcessCommandLine has_any (MacroExtensions)
+| project
+    Timestamp, DeviceName, AccountName, FileName,
+    ProcessCommandLine, InitiatingProcessFileName, ReportId
+| sort by Timestamp asc
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, parent_process_name,
+//            command_line, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// Direct DeviceProcessEvents mapping, same as ATH-001. Real deployments would ideally
+// join this against email-gateway logs (e.g. Microsoft 365 Defender's EmailAttachmentInfo)
+// to confirm the file actually arrived by email rather than, say, a USB drive or a
+// download -- our synthetic schema has no email telemetry, so this rule infers "email
+// client" purely from Outlook being the parent process, which is a reasonable proxy but
+// not direct proof of the delivery mechanism.
+//
+// LIKELY FALSE POSITIVES
+//   - Legitimate business documents distributed in a macro-capable format (e.g. .xlsm
+//     calculation templates) without containing an actively malicious macro.
+//   - Internal mail-merge or reporting workflows that routinely email .xlsm/.docm files.
+// -------------------------------------------------------------------------------------
+
+// pandas equivalent:
+//   mask = (parent == "outlook.exe") & child.isin(OFFICE_APPS)
+//   is_macro = candidates["command_line"].str.contains(MACRO_EXTENSIONS_PATTERN)

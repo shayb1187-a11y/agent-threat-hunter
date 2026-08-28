@@ -1,0 +1,64 @@
+// =====================================================================================
+// ATH-002 : Encoded PowerShell command execution
+// Severity: LOW -> HIGH, graded by what the decoded payload does
+// Pandas  : src/ath/hunting/rules/process_rules.py :: EncodedPowerShell
+//
+// PowerShell accepts any unambiguous PREFIX of a parameter name, so -e, -en, -enc and
+// -EncodedCommand are all valid. A rule matching only the full flag name misses the
+// short forms attackers actually use. `matches regex` handles all of them at once.
+//
+// KQL notes:
+//   has                     term-indexed (fast); matches whole words only
+//   matches regex           full regex; slower, use after a `has` prefilter
+//   extract(re, n, Col)     pull capture group n out of a column
+//   base64_decode_tostring  decodes base64 -- see the UTF-16LE caveat below
+//   iff(cond, a, b)         inline conditional  ~  np.where
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   process_events: timestamp, device, user, process_name, command_line,
+//            parent_process_name, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// Direct mapping to DeviceProcessEvents. Note base64_decode_tostring() assumes UTF-8
+// while PowerShell encodes UTF-16LE, so the KQL strips the interleaved null bytes;
+// the Python helper decodes UTF-16LE properly. Same result, different mechanics.
+//
+// LIKELY FALSE POSITIVES
+//   - SCCM/Intune/Ansible wrap scripts in -EncodedCommand to dodge shell quoting.
+//   - Vendor installers and CI agents on Windows runners.
+//   This rule fires on benign IT automation in our own dataset -- see `evaluate`.
+//   Severity is graded by the DECODED payload, which is what separates the two.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+DeviceProcessEvents
+| where Timestamp > ago(LookBack)
+| where FileName in~ ("powershell.exe", "pwsh.exe")
+// Cheap term-index prefilter first, then the expensive regex on the survivors.
+| where ProcessCommandLine has_any ("-e", "-en", "-enc", "-encodedcommand", "-EncodedCommand")
+| extend EncodedBlob = extract(@"(?i)\s[-/]e(?:n(?:c(?:o(?:d(?:e(?:d(?:c(?:o(?:m(?:m(?:a(?:n(?:d)?)?)?)?)?)?)?)?)?)?)?)?)?[\s:]+([A-Za-z0-9+/=]{20,})", 1, ProcessCommandLine)
+| where isnotempty(EncodedBlob)
+// PowerShell encodes UTF-16LE. base64_decode_tostring() assumes UTF-8, so the result
+// contains a null byte between every character -- strip them to get readable text.
+| extend Decoded = replace_string(base64_decode_tostring(EncodedBlob), "\u0000", "")
+| extend
+    HasDownload  = Decoded has_any ("DownloadString", "DownloadFile", "IEX",
+                                    "Invoke-Expression", "Invoke-WebRequest",
+                                    "Net.WebClient", "http://", "https://"),
+    HiddenWindow = ProcessCommandLine matches regex @"(?i)\s[-/]w(indowstyle)?\s+hidden",
+    NoProfile    = ProcessCommandLine matches regex @"(?i)\s[-/]nop(rofile)?(\s|$)"
+| extend Severity = iff(HasDownload, "High", iff(HiddenWindow or NoProfile, "Medium", "Low"))
+| project
+    Timestamp, DeviceName, AccountName,
+    InitiatingProcessFileName,      // patch-management parents are usually benign
+    Severity, Decoded, HasDownload, HiddenWindow, NoProfile,
+    ProcessCommandLine, ReportId
+| sort by Severity asc, Timestamp asc
+
+// pandas equivalent:
+//   blob    = extract_encoded_command(row["command_line"])
+//   decoded = decode_powershell_b64(blob)          # utf-16-le, then utf-8 fallback
+//   severity = HIGH if find_download_indicators(decoded) else \
+//              MEDIUM if find_evasion_flags(cmd) else LOW

@@ -1,0 +1,4 @@
+ActionType,DeviceName,InitiatingProcessAccountName,InitiatingProcessFileName,InitiatingProcessId,Protocol,RemoteIP,RemotePort,RemoteUrl,ReportId,Timestamp
+ConnectionSuccess,CORP-WKS01,rsmith,powershell.exe,2410,tcp,45.155.204.10,80,http://45.155.204.10/a.ps1,600001,2026-06-01T09:01:42.0000000Z
+ConnectionSuccess,CORP-WKS01,rsmith,powershell.exe,2410,tcp,45.155.204.10,443,,600002,2026-06-01T09:06:42.0000000Z
+ConnectionSuccess,CORP-WKS01,rsmith,powershell.exe,2410,tcp,45.155.204.10,443,,600003,2026-06-01T09:11:42.0000000Z

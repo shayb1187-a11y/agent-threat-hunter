@@ -1,0 +1,585 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:01:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.7",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAOPS_BOBXXXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/ops_bob",
+        "accountId": "123456789012",
+        "userName": "ops_bob"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000001",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:01:30Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "ListBuckets",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.7",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAOPS_BOBXXXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/ops_bob",
+        "accountId": "123456789012",
+        "userName": "ops_bob"
+      },
+      "requestParameters": {},
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000002",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:02:00Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "DescribeInstances",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.7",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAOPS_BOBXXXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/ops_bob",
+        "accountId": "123456789012",
+        "userName": "ops_bob"
+      },
+      "requestParameters": {},
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000003",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:12:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000004",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:12:20Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000005",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:12:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000006",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:13:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000007",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:13:20Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000008",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:13:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000009",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:14:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000010",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:14:20Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000011",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:14:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000012",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:15:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000013",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:15:20Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000014",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:15:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000015",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012",
+      "errorMessage": "Failed authentication"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:16:30Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64)",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "MFAUsed": "No",
+        "MobileVersion": "No"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000016",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:17:30Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "CreateAccessKey",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "requestParameters": {
+        "userName": "dev_alice"
+      },
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000017",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:18:00Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "AttachUserPolicy",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "requestParameters": {
+        "userName": "dev_alice",
+        "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+      },
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000018",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:19:00Z",
+      "eventSource": "cloudtrail.amazonaws.com",
+      "eventName": "StopLogging",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "requestParameters": {
+        "name": "arn:aws:cloudtrail:us-east-1:123456789012:trail/org-trail"
+      },
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000019",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:20:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "GetObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "aws-cli/2.15.0 Python/3.11.6",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "requestParameters": {
+        "bucketName": "acme-finance-exports",
+        "key": "q3/payroll.csv"
+      },
+      "responseElements": null,
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000020",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:21:00Z",
+      "eventSource": "sts.amazonaws.com",
+      "eventName": "AssumeRole",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDADEV_ALICEXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/dev_alice",
+        "accountId": "123456789012",
+        "userName": "dev_alice"
+      },
+      "requestParameters": {
+        "roleArn": "arn:aws:iam::123456789012:role/DeployRole",
+        "roleSessionName": "s"
+      },
+      "responseElements": {
+        "assumedRoleUser": {
+          "arn": "arn:aws:sts::123456789012:assumed-role/DeployRole/s"
+        }
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000021",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "not-a-timestamp",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.7",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAOPS_BOBXXXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/ops_bob",
+        "accountId": "123456789012",
+        "userName": "ops_bob"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000022",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "eventTime": "2026-08-17T09:21:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.7",
+      "userIdentity": {
+        "type": "Unknown"
+      },
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "eventID": "aeb9f0c1-0000-4000-8000-000000000023",
+      "recipientAccountId": "123456789012"
+    }
+  ]
+}

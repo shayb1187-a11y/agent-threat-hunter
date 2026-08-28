@@ -1,0 +1,4 @@
+AccountName,ActionType,DeviceName,FailureReason,LogonType,RemoteDeviceName,RemoteIP,ReportId,Timestamp
+rsmith,LogonSuccess,CORP-WKS01,,Interactive,,10.1.1.15,700001,2026-06-01T08:59:00.0000000Z
+svc_report,LogonSuccess,CORP-FS01,,Explicit,CORP-WKS01,10.1.1.15,700002,2026-06-01T09:20:00.0000000Z
+svc_report,LogonSuccess,CORP-FS01,,Network,CORP-WKS01,10.1.1.15,700003,not-a-timestamp

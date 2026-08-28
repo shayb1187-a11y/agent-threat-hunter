@@ -1,0 +1,75 @@
+// =====================================================================================
+// ATH-003 : Script interpreter connected to an external host
+// Severity: MEDIUM (HIGH when cleartext HTTP is involved)
+// Pandas  : src/ath/hunting/rules/network_rules.py :: InterpreterExternalConnection
+//
+// Anchors on WHICH PROCESS is talking rather than WHICH IP it talks to. Threat-intel
+// IP lists go stale in days; "powershell.exe should not be dialling the internet"
+// stays true across infrastructure rotation.
+//
+// summarize collapses a noisy beacon into one row per (host, process, destination),
+// which is the unit an analyst actually triages.
+//
+// KQL notes:
+//   ipv4_is_private()  RFC1918 test              ~  our is_public_ip()
+//   summarize ... by   aggregation               ~  df.groupby().agg()
+//   make_set(Col)      distinct values as array  ~  set(series)
+//   dcount(Col)        distinct count            ~  series.nunique()
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   network_events: timestamp, device, user, process_name, process_id, remote_ip,
+//            remote_port, direction, remote_url, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// DeviceNetworkEvents equivalent, with two real differences:
+//   1. We carry an explicit `direction` column; Defender encodes this in ActionType
+//      (ConnectionSuccess / InboundConnectionAccepted).
+//   2. Our `process_name` is the initiating process. Defender names it
+//      InitiatingProcessFileName -- the plain `FileName` column does not exist here.
+//   TRAP: DeviceNetworkEvents.RemoteIP is the DESTINATION, while
+//   DeviceLogonEvents.RemoteIP is the SOURCE. Same name, opposite direction.
+//
+// LIKELY FALSE POSITIVES
+//   - PowerShell installing modules from the PowerShell Gallery.
+//   - Scripts calling Azure/AWS/Graph APIs; Chocolatey or winget wrappers.
+//   Tune via the KnownGoodDestinations allow-list, deliberately left empty here.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let Interpreters = dynamic([
+    "powershell.exe", "pwsh.exe", "cmd.exe", "wscript.exe", "cscript.exe",
+    "mshta.exe", "rundll32.exe", "regsvr32.exe", "certutil.exe", "bitsadmin.exe"
+]);
+// Tuning lives here, not in the logic. Populate with your own egress infrastructure.
+let KnownGoodDestinations = dynamic([]);
+DeviceNetworkEvents
+| where Timestamp > ago(LookBack)
+| where ActionType == "ConnectionSuccess"
+| where InitiatingProcessFileName in~ (Interpreters)
+| where isnotempty(RemoteIP)
+| where not(ipv4_is_private(RemoteIP))          // external only
+| where RemoteIP !in (KnownGoodDestinations)
+| summarize
+    Connections   = count(),
+    FirstSeen     = min(Timestamp),
+    LastSeen      = max(Timestamp),
+    Ports         = make_set(RemotePort),
+    Urls          = make_set(RemoteUrl, 10),
+    ReportIds     = make_set(ReportId, 50)
+    by DeviceName, InitiatingProcessFileName, InitiatingProcessId,
+       InitiatingProcessAccountName, RemoteIP
+| extend CleartextHttp = Ports has 80
+| extend Severity = iff(CleartextHttp, "High", "Medium")
+| project
+    FirstSeen, LastSeen, DeviceName,
+    AccountName = InitiatingProcessAccountName,
+    Process = InitiatingProcessFileName,
+    RemoteIP, Ports, Connections, CleartextHttp, Severity, Urls, ReportIds
+| sort by Connections desc
+
+// pandas equivalent:
+//   hits = network[is_interpreter & is_outbound & is_external & not_allowed]
+//   for (device, pid, proc, ip), group in hits.groupby([...]):
+//       severity = HIGH if 80 in ports else MEDIUM

@@ -1,0 +1,82 @@
+// =====================================================================================
+// ATH-006 : Account authenticated from a host where it has no session
+// Severity: HIGH
+// Pandas  : src/ath/hunting/rules/logon_rules.py :: ForeignHostAuthentication
+//
+// Lateral movement is easiest to see by looking at where credentials come FROM, not
+// where they go. Credentials stolen on Alice's laptop get used from Alice's laptop,
+// because that is where the attacker has code execution.
+//
+// Step 1 builds host ownership from interactive logons (types 2/7/11 -- console,
+// unlock, cached). RDP (type 10) is excluded: an attacker with stolen credentials can
+// RDP in, so RDP does not prove ownership.
+// Step 2 finds network logons whose SOURCE host has an owner that is not this account.
+//
+// KQL notes:
+//   join kind=leftanti   rows on the LEFT with NO match on the right -- this is how
+//                        you express ABSENCE ("authenticated from a host where this
+//                        account has no interactive session"). No direct pandas
+//                        equivalent; pandas needs a merge with indicator=True.
+//   make_set()           collect the owning accounts for context
+//
+// NOTE: in DeviceLogonEvents, RemoteIP/RemoteDeviceName are the SOURCE of the
+// authentication -- the opposite direction to DeviceNetworkEvents.RemoteIP.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our synthetic schema)
+//   logon_events: timestamp, device, user, source_device, source_ip, logon_type,
+//            action, event_id
+//
+// SYNTHETIC SCHEMA vs MICROSOFT DEFENDER / SENTINEL
+// DeviceLogonEvents equivalent; our `source_device` is Defender's RemoteDeviceName.
+// Same logon_type numeric-vs-string caveat as ATH-005. Our dataset spans four hours,
+// so the ownership baseline is far too short -- the KQL uses a 30d baseline window
+// because that is what you would actually need.
+//
+// LIKELY FALSE POSITIVES
+//   - Jump boxes and admin workstations where many accounts authenticate outward.
+//   - Shared or kiosk machines with no single owning user.
+//   - 'runas /netonly' and other alternate-credential workflows.
+//   - A stale ownership baseline after a device is reassigned.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let BaselineWindow = 30d;      // ownership needs weeks of history, not hours
+let OwnershipLogonTypes = dynamic(["Interactive", "Unlock", "CachedInteractive"]);
+let RemoteLogonTypes    = dynamic(["Network", "RemoteInteractive"]);
+// Hosts where many accounts legitimately authenticate outward. Tune, don't skip.
+let JumpBoxes = dynamic([]);
+let HostOwners =
+    DeviceLogonEvents
+    | where Timestamp > ago(BaselineWindow)
+    | where ActionType == "LogonSuccess"
+    | where LogonType in~ (OwnershipLogonTypes)
+    | summarize Owners = make_set(AccountName) by SourceHost = DeviceName
+    | mv-expand OwnerAccount = Owners to typeof(string);
+DeviceLogonEvents
+| where Timestamp > ago(LookBack)
+| where ActionType == "LogonSuccess"
+| where LogonType in~ (RemoteLogonTypes)
+| where isnotempty(RemoteDeviceName)
+| where RemoteDeviceName !in~ (JumpBoxes)
+| project Timestamp, TargetHost = DeviceName, AccountName, LogonType,
+          SourceHost = RemoteDeviceName, SourceIP = RemoteIP, ReportId
+// leftanti: keep only rows where (SourceHost, AccountName) has NO ownership record.
+| join kind=leftanti HostOwners on
+    $left.SourceHost == $right.SourceHost,
+    $left.AccountName == $right.OwnerAccount
+| summarize
+    FirstSeen    = min(Timestamp),
+    LastSeen     = max(Timestamp),
+    LogonCount   = count(),
+    TargetHosts  = make_set(TargetHost),
+    ReportIds    = make_set(ReportId, 50)
+    by AccountName, SourceHost, SourceIP
+| sort by FirstSeen asc
+
+// pandas equivalent:
+//   owners = interactive.groupby("device")["user"].agg(set).to_dict()
+//   for (source_device, user), group in remote.groupby(["source_device", "user"]):
+//       if user in owners.get(source_device, set()):   # <- the leftanti, inverted
+//           continue
