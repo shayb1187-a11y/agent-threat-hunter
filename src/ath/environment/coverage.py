@@ -177,9 +177,13 @@ TECHNIQUE_WATCHLIST: tuple[WatchlistEntry, ...] = (
         note="vssadmin/wbadmin deletion is command-line visible and commonly precedes ransomware.",
     ),
     WatchlistEntry(
-        "T1562.001", "Disable or Modify Tools", Tactic.DEFENSE_IMPAIRMENT,
+        "T1685", "Disable or Modify Tools", Tactic.DEFENSE_IMPAIRMENT,
         (_C.PROCESS_COMMAND_LINE,),
-        note="Defender-tampering commands are visible; registry-based tampering is not.",
+        note=(
+            "Defender-tampering commands are visible; registry-based tampering is not. "
+            "Previously filed here as the retired T1562.001 -- the name was right and "
+            "the id was two versions stale."
+        ),
     ),
     WatchlistEntry(
         "T1136.001", "Create Account: Local Account", Tactic.PERSISTENCE,
@@ -220,7 +224,9 @@ TECHNIQUE_WATCHLIST: tuple[WatchlistEntry, ...] = (
         note="The most common Windows persistence mechanism, entirely invisible here.",
     ),
     WatchlistEntry(
-        "T1112", "Modify Registry", Tactic.STEALTH,
+        # Moved to Defense Impairment in v19 -- present in the TA0112 listing, absent
+        # from TA0005. Filed under Stealth here until the migration caught it.
+        "T1112", "Modify Registry", Tactic.DEFENSE_IMPAIRMENT,
         (_C.REGISTRY,),
     ),
     WatchlistEntry(

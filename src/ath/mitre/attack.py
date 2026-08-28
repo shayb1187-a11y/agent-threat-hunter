@@ -14,7 +14,8 @@ it does not ship.
 
 ATT&CK version
 --------------
-Verified against ATT&CK for Enterprise **v19** (released 28 April 2026).
+Verified against ATT&CK for Enterprise **v19.2** -- see :data:`ATTACK_VERSION`, which is
+the single source of truth for the version string; nothing else may restate it.
 
 The one thing to know about v19: the ``Defense Evasion`` tactic was retired and split.
 ``TA0005`` was *kept* but renamed to **Stealth** (hiding within legitimate activity),
@@ -22,6 +23,17 @@ and a new tactic ``TA0112`` **Defense Impairment** was created for actively atta
 security controls. Detections tagged ``TA0005`` still resolve, but now describe a
 narrower set of behaviours. Techniques like T1027 (Obfuscated Files or Information) and
 T1218 (System Binary Proxy Execution) sit under Stealth.
+
+Two consequences that are easy to get wrong, both verified against attack.mitre.org
+rather than recalled:
+
+* **T1112 Modify Registry moved to Defense Impairment.** It appears in the TA0112
+  listing and is absent from TA0005. Anything still filing it under Stealth is stale.
+* **T1562 is gone.** The current object for disabling security tooling is **T1685**,
+  under Defense Impairment, whose sub-techniques ``.001``-``.006`` are all *log*-specific.
+  Behaviour like killing an EDR process or stopping a security service belongs to the
+  **parent**, T1685 -- naming a sub-technique would claim more specificity than the
+  evidence carries. See :data:`RETIRED_TECHNIQUE_IDS`.
 
 Vocabulary, since these words get used loosely
 ----------------------------------------------
@@ -244,10 +256,48 @@ TECHNIQUES: dict[str, Technique] = {
         _t("T1069", "Permission Groups Discovery", (Tactic.DISCOVERY,), None),
         _t("T1069.002", "Domain Groups", (Tactic.DISCOVERY,), "T1069"),
         _t("T1482", "Domain Trust Discovery", (Tactic.DISCOVERY,), None),
+        # -- Impact ------------------------------------------------------------------
+        # Added for ATH-011. Verified against attack.mitre.org: T1490 sits under Impact,
+        # has no sub-techniques, and its description explicitly names vssadmin,
+        # wbadmin, bcdedit and REAgentC -- the exact procedures the rule keys on.
+        _t("T1490", "Inhibit System Recovery", (Tactic.IMPACT,), None),
+        # -- Defense Impairment (TA0112, new in v19) ----------------------------------
+        # Added for ATH-012. T1685 replaces the retired T1562 lineage; see
+        # RETIRED_TECHNIQUE_IDS below for why the old id must never reappear.
+        #
+        # Mapped at PARENT level deliberately. T1685's own description covers "stopping
+        # specific services, killing processes, modifying or deleting tool configuration
+        # files and Registry keys" -- which is exactly what ATH-012 observes. Every one
+        # of its sub-techniques (.001-.006) is log-specific (Windows Event Log, Cloud
+        # Log, Tool UI, Linux Audit, Clear Windows/Linux logs), so naming one would
+        # assert a narrower, different claim than the evidence supports.
+        _t("T1685", "Disable or Modify Tools", (Tactic.DEFENSE_IMPAIRMENT,), None),
+        # T1112 moved from Defense Evasion to Defense Impairment in v19: it is present
+        # in the TA0112 listing and absent from TA0005. Carried here so the coverage
+        # watchlist can reference a catalogue entry rather than a bare string.
+        _t("T1112", "Modify Registry", (Tactic.DEFENSE_IMPAIRMENT,), None),
     )
 }
 
-ATTACK_VERSION = "v19 (Enterprise, released 2026-04-28)"
+# The ATT&CK content release this catalogue was verified against. Single source of
+# truth: the README reads this value rather than restating it, so the two cannot drift.
+ATTACK_VERSION = "v19.2 (Enterprise, content release August 2026)"
+
+# Tactic names retired by the v19 split. Any of these surviving anywhere in the
+# catalogue or the coverage watchlist means a mapping is silently mis-attributed, so a
+# test fails the build rather than letting the analysis quietly rot.
+RETIRED_TACTIC_NAMES: frozenset[str] = frozenset({"Defense Evasion"})
+
+# Technique ids this project must never emit again, with what replaced them.
+#
+# T1562 (and its .001 sub-technique) was the pre-v19 home for "Disable or Modify Tools".
+# It appears in neither the current TA0005 Stealth listing nor the TA0112 Defense
+# Impairment listing, and its own pages no longer serve content. T1685 is the current
+# object. Recorded as data rather than prose so the drift test can enforce it.
+RETIRED_TECHNIQUE_IDS: dict[str, str] = {
+    "T1562": "T1685",
+    "T1562.001": "T1685",
+}
 
 
 class UnknownTechniqueError(KeyError):

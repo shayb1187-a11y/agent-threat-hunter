@@ -96,6 +96,89 @@ def test_defense_evasion_is_recorded_as_stealth() -> None:
     assert Tactic.DEFENSE_IMPAIRMENT.tactic_id == "TA0112"
 
 
+# ======================================================================================
+# v19.2 drift guards
+#
+# This class of staleness is invisible at runtime -- a mapping to a retired id still
+# resolves, still renders, and is silently wrong. It has to break the build rather than
+# quietly corrupt every coverage report built on top of it.
+# ======================================================================================
+
+
+def test_no_retired_tactic_name_survives_anywhere() -> None:
+    """A technique still filed under a v19-retired tactic is mis-attributed."""
+    from ath.mitre.attack import RETIRED_TACTIC_NAMES
+
+    for technique in TECHNIQUES.values():
+        for tactic in technique.tactics:
+            assert tactic.display_name not in RETIRED_TACTIC_NAMES, (
+                f"{technique.technique_id} is filed under retired tactic "
+                f"{tactic.display_name!r}"
+            )
+
+    from ath.environment.coverage import TECHNIQUE_WATCHLIST
+
+    for entry in TECHNIQUE_WATCHLIST:
+        assert entry.tactic.display_name not in RETIRED_TACTIC_NAMES, (
+            f"watchlist entry {entry.technique_id} is filed under retired tactic "
+            f"{entry.tactic.display_name!r}"
+        )
+
+
+def test_no_retired_technique_id_is_emitted_anywhere() -> None:
+    """T1562 was the pre-v19 home for 'Disable or Modify Tools'; T1685 replaced it.
+
+    Checked across the catalogue, the coverage watchlist and the mapping table, because
+    a retired id in any one of them produces a citation an analyst cannot look up.
+    """
+    from ath.environment.coverage import TECHNIQUE_WATCHLIST
+    from ath.mitre.attack import RETIRED_TECHNIQUE_IDS
+    from ath.mitre.mapper import MAPPING_RULES
+
+    emitted = (
+        set(TECHNIQUES)
+        | {e.technique_id for e in TECHNIQUE_WATCHLIST}
+        | {m.technique_id for m in MAPPING_RULES}
+    )
+    for retired, replacement in RETIRED_TECHNIQUE_IDS.items():
+        assert retired not in emitted, (
+            f"{retired} is retired and must be replaced by {replacement}"
+        )
+
+
+def test_disable_or_modify_tools_is_mapped_at_parent_level() -> None:
+    """T1685's sub-techniques are all log-specific; the parent covers tool tampering.
+
+    Verified against attack.mitre.org: `.001`-`.006` are Windows Event Log, Cloud Log,
+    Tool UI, Linux Audit, Clear Windows Logs, Clear Linux Logs. Killing an EDR process
+    or stopping a security service is parent-level behaviour, so naming a sub-technique
+    would assert a narrower claim than the evidence supports.
+    """
+    technique = TECHNIQUES["T1685"]
+    assert technique.name == "Disable or Modify Tools"
+    assert not technique.is_sub_technique
+    assert technique.primary_tactic is Tactic.DEFENSE_IMPAIRMENT
+
+
+def test_modify_registry_moved_to_defense_impairment() -> None:
+    """T1112 is present in the TA0112 listing and absent from TA0005 in v19."""
+    assert TECHNIQUES["T1112"].primary_tactic is Tactic.DEFENSE_IMPAIRMENT
+
+
+def test_attack_version_is_the_single_source_of_truth() -> None:
+    """Nothing may restate the version string; drift between copies is the failure mode."""
+    from ath.mitre.attack import ATTACK_VERSION
+
+    assert ATTACK_VERSION.startswith("v19.2")
+
+    src = Path(__file__).resolve().parents[1] / "src" / "ath"
+    restated = [
+        path.name for path in src.rglob("*.py")
+        if path.name != "attack.py" and "v19.2" in path.read_text(encoding="utf-8")
+    ]
+    assert not restated, f"modules restating the ATT&CK version: {restated}"
+
+
 def test_known_techniques_have_correct_names() -> None:
     """Spot-check verified names against attack.mitre.org."""
     expected = {
