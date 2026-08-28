@@ -19,6 +19,7 @@ from ath.triage.feedback import (
 from ath.triage.benign import (
     BENIGN_SIGNALS,
     BENIGN_THRESHOLD,
+    DISQUALIFIERS,
     VETOES,
     Disposition,
     Signal,
@@ -32,6 +33,7 @@ __all__ = [
     "AnalystVerdict",
     "BENIGN_SIGNALS",
     "BENIGN_THRESHOLD",
+    "DISQUALIFIERS",
     "VETOES",
     "Disposition",
     "Signal",

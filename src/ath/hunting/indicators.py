@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import base64
 import binascii
-import ipaddress
 import re
+
+# Re-exported so existing imports keep working; the single definition lives in
+# ath.netaddr, which ath.behavior can reach without pulling in the hunting layer.
+from ath.netaddr import is_public_ip
 
 # PowerShell accepts *any unambiguous prefix* of a parameter name. That means all of
 # -e, -en, -enc, -encod and -EncodedCommand are valid and equivalent. Attackers use
@@ -112,29 +115,6 @@ def find_download_indicators(decoded: str) -> list[str]:
     """Return remote-code-execution indicators present in a decoded payload."""
     lowered = (decoded or "").lower()
     return [ind for ind in DOWNLOAD_INDICATORS if ind in lowered]
-
-
-def is_public_ip(address: str) -> bool:
-    """Return True if ``address`` is a routable public IP.
-
-    "External" means *not* private (RFC1918), loopback, link-local, multicast or
-    reserved. Getting this right matters: treating 10.x as external would flood the
-    egress rule with ordinary internal traffic and make it useless.
-    """
-    if not address:
-        return False
-    try:
-        ip = ipaddress.ip_address(address.strip())
-    except ValueError:
-        return False
-    return not (
-        ip.is_private
-        or ip.is_loopback
-        or ip.is_link_local
-        or ip.is_multicast
-        or ip.is_reserved
-        or ip.is_unspecified
-    )
 
 
 def truncate(text: str, limit: int = 120) -> str:

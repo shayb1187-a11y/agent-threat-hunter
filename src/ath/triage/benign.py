@@ -307,6 +307,46 @@ def _sustained_interpreter_contact(finding: Finding, env: EnvironmentModel) -> s
     )
 
 
+def _suspiciously_regular_contact(finding: Finding, env: EnvironmentModel) -> str | None:
+    """The relationship's inter-arrival timing is machine-regular.
+
+    The veto this milestone exists for. ``_sustained_interpreter_contact`` catches
+    *volume*, which is why a 48-connection beacon was already blocked -- but four TLS
+    connections to a popular destination stayed under the threshold and were returned
+    as ``likely_benign``. The regularity that would have distinguished them was
+    computed in ``analyse_beacon``, inside the investigation layer, which triage cannot
+    reach.
+
+    It now reads the same :class:`~ath.behavior.features.ConnectionPattern` every other
+    layer reads, so volume is no longer the only temporal signal available here.
+
+    What this deliberately does *not* claim
+    ----------------------------------------
+    Three intervals do not establish a beacon. Nothing here asserts one. Firing this
+    veto removes ``likely_benign`` and yields ``needs_review`` -- an analyst is asked to
+    look, not told what they will find. Promoting it to ``likely_malicious`` would
+    repeat the prevalence mistake in the opposite direction: a legitimate update client
+    polls on a timer and is indistinguishable on this evidence alone.
+    """
+    remote_ip = str(_meta(finding, "remote_ip", "") or "")
+    host = finding.device
+    if not remote_ip or not host:
+        return None
+
+    pattern = env.connection_pattern(host, remote_ip)
+    if pattern is None or not pattern.is_regular:
+        return None
+
+    median_seconds = pattern.median_interval.total_seconds()
+    return (
+        f"contact with {remote_ip} recurs at a machine-regular interval "
+        f"(median {median_seconds:.0f}s, MAD/median {pattern.robust_cv:.2f} across "
+        f"{pattern.interarrival_count} intervals). That is thin support and does not "
+        "establish a beacon -- but it is enough that this cannot be set aside as "
+        "ordinary traffic on the strength of the destination being popular"
+    )
+
+
 def _identity_conflict(finding: Finding, env: EnvironmentModel) -> str | None:
     """The image name means different things in different places in this environment.
 
@@ -344,6 +384,19 @@ VETOES: tuple[tuple[str, Gate], ...] = (
     ("graded_high_by_detection", _high_severity),
 )
 
+# Observations strong enough to withdraw reassurance, but not strong enough to
+# incriminate. A disqualifier forces `needs_review`; it never yields
+# `likely_malicious`.
+#
+# The distinction matters because the alternative is to overclaim in the direction
+# opposite to the one this layer was built to prevent. Four regular intervals to a
+# popular destination genuinely might be an update client polling on a timer. Refusing
+# to call that benign is correct; calling it malicious would be a different false
+# statement made with the same unearned confidence.
+DISQUALIFIERS: tuple[tuple[str, Gate], ...] = (
+    ("suspiciously_regular_contact", _suspiciously_regular_contact),
+)
+
 
 # --------------------------------------------------------------------------------------
 # Assessment
@@ -359,6 +412,8 @@ class TriageAssessment:
     disposition: Disposition
     benign_signals: tuple[Signal, ...] = ()
     vetoes: tuple[Signal, ...] = ()
+    disqualifiers: tuple[Signal, ...] = ()
+    """Reasons this could not be cleared, which are not reasons to suspect it."""
     score: int = 0
 
     @property
@@ -366,6 +421,11 @@ class TriageAssessment:
         """One sentence an analyst can act on."""
         if self.disposition is Disposition.LIKELY_MALICIOUS:
             return "Incriminating: " + "; ".join(v.reason for v in self.vetoes)
+        if self.disqualifiers:
+            return (
+                "Cannot be set aside as ordinary activity: "
+                + "; ".join(d.reason for d in self.disqualifiers)
+            )
         if self.disposition is Disposition.LIKELY_BENIGN:
             return "Consistent with legitimate activity: " + "; ".join(
                 s.reason for s in self.benign_signals
@@ -398,6 +458,9 @@ class TriageAssessment:
                 for s in self.benign_signals
             ],
             "vetoes": [{"name": v.name, "reason": v.reason} for v in self.vetoes],
+            "disqualifiers": [
+                {"name": d.name, "reason": d.reason} for d in self.disqualifiers
+            ],
             "explanation": self.explanation,
         }
 
@@ -413,6 +476,11 @@ def assess_finding(finding: Finding, environment: EnvironmentModel) -> TriageAss
         for name, gate in VETOES
         if (reason := gate(finding, environment)) is not None
     )
+    disqualifiers = tuple(
+        Signal(name=name, reason=reason)
+        for name, gate in DISQUALIFIERS
+        if (reason := gate(finding, environment)) is not None
+    )
     signals = tuple(
         Signal(name=name, reason=reason, weight=weight, affirmative=affirmative)
         for name, weight, affirmative, gate in BENIGN_SIGNALS
@@ -423,6 +491,9 @@ def assess_finding(finding: Finding, environment: EnvironmentModel) -> TriageAss
 
     if vetoes:
         disposition = Disposition.LIKELY_MALICIOUS
+    elif disqualifiers:
+        # Enough to withdraw reassurance, deliberately not enough to incriminate.
+        disposition = Disposition.NEEDS_REVIEW
     elif score >= BENIGN_THRESHOLD and has_affirmative:
         disposition = Disposition.LIKELY_BENIGN
     else:
@@ -437,6 +508,7 @@ def assess_finding(finding: Finding, environment: EnvironmentModel) -> TriageAss
         disposition=disposition,
         benign_signals=signals,
         vetoes=vetoes,
+        disqualifiers=disqualifiers,
         score=score,
     )
 

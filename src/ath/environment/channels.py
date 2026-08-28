@@ -46,38 +46,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+# Re-exported so existing imports keep working; the single definition lives in
+# ath.channels, which ath.behavior can reach without pulling in the hunting layer.
+from ath.channels import TelemetryChannel
 from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
-
-
-class TelemetryChannel(str, Enum):
-    """A kind of observation, named independently of any particular product.
-
-    Vendor-neutral on purpose: "process execution" is the same defensive capability
-    whether it arrives from Microsoft Defender, auditd, or a Kubernetes audit log.
-    A future non-Windows telemetry source should populate these same channels rather
-    than introduce a parallel vocabulary.
-    """
-
-    PROCESS_EXECUTION = "process_execution"
-    PROCESS_COMMAND_LINE = "process_command_line"
-    PROCESS_LINEAGE = "process_lineage"
-    HANDLE_ACCESS = "handle_access"
-    NETWORK_FLOW = "network_flow"
-    NETWORK_INBOUND = "network_inbound"
-    NETWORK_URL = "network_url"
-    DNS_QUERY = "dns_query"
-    AUTHENTICATION = "authentication"
-    AUTH_SOURCE_ATTRIBUTION = "auth_source_attribution"
-    FILE_EVENTS = "file_events"
-    REGISTRY = "registry"
-    SCRIPT_BLOCK = "script_block"
-    EMAIL = "email"
-    CLOUD_CONTROL_PLANE = "cloud_control_plane"
-    CONTAINER_AUDIT = "container_audit"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class ChannelState(str, Enum):

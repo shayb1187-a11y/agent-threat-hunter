@@ -96,26 +96,118 @@ def test_attack_beacon_through_a_popular_destination(environment) -> None:
     assert assessment.disposition is Disposition.LIKELY_MALICIOUS
 
 
-def test_attack_low_and_slow_through_a_popular_destination(environment) -> None:
+def _regular_relationship(telemetry, host: str, destination: str, count: int,
+                          interval_seconds: float, jitter_seconds: float = 0.0):
+    """Telemetry with `count` interpreter connections at a fixed cadence."""
+    import random
+
+    rng = random.Random(1337)
+    base = telemetry.network["timestamp"].min()
+    rows = []
+    for n in range(count):
+        offset = n * interval_seconds
+        if jitter_seconds:
+            offset += rng.uniform(-jitter_seconds, jitter_seconds)
+        row = telemetry.network.iloc[0].copy()
+        row["event_id"] = f"evt-CADENCE-{n:03d}"
+        row["device"], row["remote_ip"] = host, destination
+        row["process_name"] = "powershell.exe"
+        row["remote_port"] = 443
+        row["timestamp"] = base + pd.Timedelta(seconds=offset)
+        rows.append(row)
+    return Telemetry(
+        processes=telemetry.processes,
+        network=pd.concat([telemetry.network, pd.DataFrame(rows)], ignore_index=True),
+        logons=telemetry.logons,
+    )
+
+
+def test_attack_low_and_slow_through_a_popular_destination(telemetry) -> None:
     """Goal: stay under the sustained-contact threshold.
 
-    **This attack currently succeeds**, and the test asserts that rather than hiding
-    it. Four contacts to a widely-used destination over TLS is indistinguishable, on
-    the evidence available here, from an application checking in -- defeating it needs
-    inter-arrival regularity, which lives in the investigation layer's `analyse_beacon`
-    tool and is not available at triage time.
+    This attack **used to succeed**. Four TLS connections to the environment's
+    most-contacted destination stayed under `SUSTAINED_CONTACT_THRESHOLD` and were
+    returned as `likely_benign` -- the worst output this system can produce.
 
-    Recorded with an explicit assertion so that closing the gap breaks this test and
-    forces the README's stated limitations to be updated with it.
+    It was not a threshold bug. Inter-arrival regularity was computed inside
+    `analyse_beacon`, in the investigation layer, which only runs after a case forms;
+    triage decided the disposition and could not see it. The statistic now lives in
+    `ath.behavior` and both layers read the same one.
+
+    Note what is asserted: **not benign**, not malicious. Three intervals do not
+    establish a beacon, and claiming they do would be the prevalence mistake inverted.
     """
+    destination = _most_trusted_destination(build_environment_model(telemetry))
+    poisoned = _regular_relationship(telemetry, "PC02", destination, count=4,
+                                     interval_seconds=600)
+    environment = build_environment_model(poisoned)
+
     assessment = assess_finding(_finding(
-        rule_id="ATH-003", remote_ip=_most_trusted_destination(environment),
-        ports=[443], connection_count=4, cleartext_http=False,
+        rule_id="ATH-003", remote_ip=destination, ports=[443],
+        connection_count=4, cleartext_http=False,
     ), environment)
-    assert assessment.disposition is Disposition.LIKELY_BENIGN, (
-        "if this now fails, the low-and-slow gap has been closed -- update the "
-        "README's stated limitations"
+
+    assert assessment.disposition is not Disposition.LIKELY_BENIGN
+    assert assessment.disposition is Disposition.NEEDS_REVIEW, (
+        "regular low-volume contact must withdraw reassurance without asserting a "
+        "beacon on three intervals"
     )
+    assert any(d.name == "suspiciously_regular_contact" for d in assessment.disqualifiers)
+
+
+def test_attack_jittered_low_and_slow_is_also_not_reassuring(telemetry) -> None:
+    """Goal: defeat interval analysis with randomised delay.
+
+    Jitter is the standard countermeasure, and it works against the regularity test --
+    `robust_cv` rises and the disqualifier stops firing. What must not happen is that
+    evading one signal *earns* reassurance: with the destination's own popularity as
+    the only remaining evidence, the honest answer is still not `likely_benign`.
+    """
+    destination = _most_trusted_destination(build_environment_model(telemetry))
+    poisoned = _regular_relationship(telemetry, "PC02", destination, count=6,
+                                     interval_seconds=600, jitter_seconds=280)
+    environment = build_environment_model(poisoned)
+
+    assessment = assess_finding(_finding(
+        rule_id="ATH-003", remote_ip=destination, ports=[443],
+        connection_count=6, cleartext_http=False,
+    ), environment)
+    assert assessment.disposition is not Disposition.LIKELY_BENIGN
+
+
+def test_genuinely_irregular_low_volume_contact_still_clears(telemetry) -> None:
+    """The counterweight. Closing a hole by removing the capability is no fix.
+
+    Human-driven traffic to a popular destination is irregular, and must still be
+    explainable as ordinary activity -- exactly how the 48-connection veto was
+    validated when it was added.
+    """
+    destination = _most_trusted_destination(build_environment_model(telemetry))
+    base = telemetry.network["timestamp"].min()
+    rows = []
+    # Four connections: below SUSTAINED_CONTACT_THRESHOLD, so the pre-existing volume
+    # veto stays out of the way and this test measures only the regularity signal.
+    for n, offset in enumerate((0, 37, 400, 1900)):
+        row = telemetry.network.iloc[0].copy()
+        row["event_id"] = f"evt-BROWSE-{n:03d}"
+        row["device"], row["remote_ip"] = "PC02", destination
+        row["process_name"], row["remote_port"] = "powershell.exe", 443
+        row["timestamp"] = base + pd.Timedelta(seconds=offset)
+        rows.append(row)
+    environment = build_environment_model(Telemetry(
+        processes=telemetry.processes,
+        network=pd.concat([telemetry.network, pd.DataFrame(rows)], ignore_index=True),
+        logons=telemetry.logons,
+    ))
+
+    pattern = environment.connection_pattern("PC02", destination)
+    assert pattern is not None and not pattern.is_regular, "fixture is not irregular"
+
+    assessment = assess_finding(_finding(
+        rule_id="ATH-003", remote_ip=destination, ports=[443],
+        connection_count=4, cleartext_http=False,
+    ), environment)
+    assert assessment.disposition is Disposition.LIKELY_BENIGN
 
 
 # ======================================================================================

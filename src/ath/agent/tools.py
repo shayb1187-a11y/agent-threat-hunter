@@ -25,13 +25,13 @@ was convenient is how these systems cause incidents rather than resolve them.
 
 from __future__ import annotations
 
-import statistics
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
 import pandas as pd
 
+from ath.behavior import compute_connection_pattern
 from ath.correlation.chain import InvestigationCase
 from ath.hunting.finding import Finding
 from ath.logging_setup import get_logger
@@ -287,74 +287,82 @@ class ToolBox:
     def analyse_beacon(
         self, device: str, remote_ip: str, agent: str = "network"
     ) -> dict[str, Any]:
-        """Test whether connections to a destination occur at regular intervals.
+        """Interpret the measured timing of one host-to-destination relationship.
 
-        Deterministic statistics, not model judgement. Humans browse irregularly;
-        automation does not. Regular inter-arrival gaps are the classic
-        command-and-control heartbeat signature.
+        This tool **computes no statistics**. It reads the
+        :class:`~ath.behavior.features.ConnectionPattern` produced once by
+        :mod:`ath.behavior`, and interprets it.
 
-        Why median/MAD rather than mean/standard deviation
-        ----------------------------------------------------
-        The naive approach -- coefficient of variation as ``stdev(gaps) / mean(gaps)``
-        -- is fooled by exactly the pattern real C2 traffic produces: the first contact
-        (fetching the payload) happens at a different tempo than the steady-state
-        heartbeat that follows. One short gap among several long, identical ones drags
-        the mean down and inflates the standard deviation, so a genuinely regular beacon
-        can score as "irregular" by mean-based CV alone.
+        That split is the whole point. The median/MAD computation used to live here, in
+        the investigation layer, which only runs after a case has been formed -- so
+        triage, the layer that decides whether to reassure an analyst, could not reach
+        it. Four regular TLS connections to a popular destination were returned as
+        ``likely_benign``. One deterministic computation existed in exactly one place,
+        and the layer that most needed it was not that place.
 
-        The median and the median absolute deviation (MAD) are far less sensitive to a
-        single outlier: with five identical 300-second gaps and one 27-second gap, the
-        median gap is exactly 300s and the MAD is 0, correctly identifying the beacon as
-        regular. This project uses ``MAD / median`` as its regularity statistic for that
-        reason -- it is the standard robust alternative to a mean-based CV precisely
-        because security telemetry is full of exactly this kind of leading outlier.
+        Interpretation, not measurement, is what remains here: what the numbers mean for
+        this case, including how thin their support is.
 
-        Note the honest limit: real implants add *jitter* (randomised delay) specifically
-        to defeat this test, so a negative result is weak evidence of absence. This
-        detects unsophisticated, fixed-interval beaconing only.
+        The honest limit is unchanged: implants add *jitter* precisely to defeat
+        interval analysis, so an irregular result is weak evidence of absence.
         """
         net = self.telemetry.network
         rows = net[(net["device"] == device) & (net["remote_ip"] == remote_ip)]
         rows = rows.sort_values("timestamp")
 
-        if len(rows) < 3:
+        if rows.empty:
             self._record(
                 "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
-                f"only {len(rows)} connection(s), too few to assess",
-                tuple(rows["event_id"]),
+                "no connections to this destination",
             )
-            return {"regular": False, "reason": "fewer than 3 connections", "samples": len(rows)}
+            return {
+                "regular": False, "reason": "no connections observed", "samples": 0,
+                "interarrival_count": 0,
+            }
 
-        stamps = rows["timestamp"].tolist()
-        gaps = [
-            (stamps[i + 1] - stamps[i]).total_seconds() for i in range(len(stamps) - 1)
-        ]
-        mean_gap = statistics.mean(gaps)
-        median_gap = statistics.median(gaps)
-        mad = statistics.median([abs(g - median_gap) for g in gaps])
-        # Robust coefficient of variation: MAD / median. Insensitive to the single
-        # leading outlier a payload-download-then-heartbeat pattern produces.
-        robust_cv = (mad / median_gap) if median_gap else float("inf")
-        regular = robust_cv < 0.15 and median_gap > 5
+        pattern = compute_connection_pattern(
+            source_process=str(rows.iloc[0].get("process_name") or ""),
+            destination=remote_ip,
+            timestamps=list(rows["timestamp"]),
+            evidence_ids=tuple(str(e) for e in rows["event_id"]),
+        )
 
+        if not pattern.has_measurable_regularity:
+            self._record(
+                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
+                pattern.support_note, tuple(pattern.evidence_ids),
+            )
+            return {
+                "regular": False,
+                "reason": pattern.support_note,
+                "samples": pattern.connection_count,
+                "interarrival_count": pattern.interarrival_count,
+                "event_ids": list(pattern.evidence_ids),
+            }
+
+        median_seconds = pattern.median_interval.total_seconds()
         self._record(
             "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
-            f"{len(gaps)} intervals, median {median_gap:.0f}s, robust cv {robust_cv:.3f}, "
-            f"{'regular' if regular else 'irregular'}",
-            tuple(rows["event_id"]),
+            f"{pattern.interarrival_count} intervals, median {median_seconds:.0f}s, "
+            f"robust cv {pattern.robust_cv:.3f}, "
+            f"{'regular' if pattern.is_regular else 'irregular'}",
+            tuple(pattern.evidence_ids),
         )
         return {
-            "regular": regular,
-            "samples": len(stamps),
-            "mean_interval_seconds": round(mean_gap, 1),
-            "median_interval_seconds": round(median_gap, 1),
-            # Named for what it actually is: MAD / median, NOT stdev / mean. The old
-            # name was `coefficient_of_variation`, which invited callers to pair it
-            # with the mean -- and one did, producing a FACT that asserted zero
-            # dispersion around a mean no interval was ever equal to. A statistic and
-            # its centre must travel together.
-            "robust_cv": round(robust_cv, 4),
-            "event_ids": list(rows["event_id"]),
+            "regular": pattern.is_regular,
+            "samples": pattern.connection_count,
+            # Exposed so a claim can state how much support the figures have. Four
+            # connections give three intervals, and a reader deserves to see that
+            # rather than infer it from a confident-looking ratio.
+            "interarrival_count": pattern.interarrival_count,
+            "median_interval_seconds": round(median_seconds, 1),
+            # Named for what it is: MAD / median, NOT stdev / mean. The old name was
+            # `coefficient_of_variation`, which invited callers to pair it with the
+            # mean -- and one did, producing a FACT asserting zero dispersion around a
+            # mean no interval ever equalled. A statistic and its centre travel together.
+            "robust_cv": round(pattern.robust_cv, 4),
+            "support_note": pattern.support_note,
+            "event_ids": list(pattern.evidence_ids),
         }
 
     def search_processes(

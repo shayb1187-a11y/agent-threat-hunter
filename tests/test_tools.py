@@ -224,25 +224,38 @@ def test_analyse_beacon_detects_regular_c2_interval(toolbox) -> None:
     assert result["median_interval_seconds"] == pytest.approx(300.0)
 
 
-def test_beacon_dispersion_statistic_is_named_for_its_own_centre(toolbox) -> None:
-    """`robust_cv` is MAD/median and must never be readable as stdev/mean.
+def test_beacon_dispersion_statistic_cannot_be_paired_with_the_wrong_centre(
+    toolbox,
+) -> None:
+    """`robust_cv` is MAD/median, and the mean is no longer exposed at all.
 
-    This dataset is the exact shape that makes the distinction load-bearing: one
-    27s outlier among five identical 300s gaps. The robust statistic is 0.0 (every
-    gap the median cares about is identical) while the mean is 254.5s -- a number no
-    interval ever took. Reporting the two together asserts zero dispersion around a
-    centre nothing sits on, so the key name must keep them from being paired.
+    This dataset is the exact shape that makes the distinction load-bearing: one 27s
+    outlier among five identical 300s gaps. The robust statistic is 0.0 (every gap the
+    median cares about is identical) while the mean is 254.5s -- a number no interval
+    ever took. Reporting the two together asserts zero dispersion around a centre
+    nothing sits on, which is precisely the incoherent FACT this project once emitted.
+
+    Originally fixed by pairing the statistic with its own centre. `ConnectionPattern`
+    goes further and drops the mean entirely: a value that cannot be read cannot be
+    mispaired, and no consumer has ever needed it.
     """
     result = toolbox.analyse_beacon("PC01", "185.220.101.47", agent="t")
     assert "coefficient_of_variation" not in result, (
         "ambiguous key name reintroduced; it invites pairing a median-based "
         "statistic with the mean"
     )
-    assert result["robust_cv"] == pytest.approx(0.0)
-    # The trap, pinned: mean and median genuinely differ here.
-    assert result["mean_interval_seconds"] != pytest.approx(
-        result["median_interval_seconds"]
+    assert "mean_interval_seconds" not in result, (
+        "the mean is back; it exists only to be accidentally paired with MAD/median"
     )
+    assert result["robust_cv"] == pytest.approx(0.0)
+    assert result["median_interval_seconds"] == pytest.approx(300.0)
+
+
+def test_beacon_states_how_thin_its_support_is(toolbox) -> None:
+    """A claim built on three intervals must be able to say so."""
+    result = toolbox.analyse_beacon("PC01", "185.220.101.47", agent="t")
+    assert result["interarrival_count"] == result["samples"] - 1
+    assert "intervals" in result["support_note"]
 
 
 def test_analyse_beacon_too_few_samples(toolbox) -> None:

@@ -49,7 +49,7 @@ from ath.environment.channels import (
     TelemetryChannel,
     assess_channels,
 )
-from ath.hunting.indicators import is_public_ip
+from ath.netaddr import is_public_ip
 from ath.schema import SIG_VALID, describe_logon_type
 from ath.telemetry.loader import Telemetry
 
@@ -368,6 +368,12 @@ class EnvironmentModel:
     identities: dict[str, Identity] = field(default_factory=dict)
     destinations: dict[str, DestinationProfile] = field(default_factory=dict)
     processes: dict[str, ProcessProfile] = field(default_factory=dict)
+    connection_patterns: dict[tuple[str, str], Any] = field(default_factory=dict)
+    """Measured relationship timing, keyed by ``(host, destination)``.
+
+    Carried on the environment model because triage reads it and triage has no other
+    route to it. Computed by :mod:`ath.behavior`, never here -- there is exactly one
+    implementation of the statistic in the codebase and a test enforces that."""
     platform: str = "unknown"
     platform_reason: str = ""
     security_controls: dict[str, str] = field(default_factory=dict)
@@ -404,6 +410,16 @@ class EnvironmentModel:
     def observable_channels(self) -> set[TelemetryChannel]:
         """Channels carrying any signal at all, including sparse ones."""
         return {c for c, a in self.channels.items() if a.state.observable}
+
+    def connection_pattern(self, host: str, remote_ip: str) -> Any | None:
+        """Measured timing for one host-to-destination relationship, if any.
+
+        Read from behaviors computed once by :mod:`ath.behavior`, never recomputed.
+        This is what lets triage see inter-arrival regularity at all: the statistic
+        used to exist only inside the investigation layer, which runs after a case has
+        formed, so the layer deciding whether to reassure an analyst was blind to it.
+        """
+        return self.connection_patterns.get((host, remote_ip))
 
     def destination_reach(self, remote_ip: str) -> float:
         """Fraction of the environment's hosts that contacted ``remote_ip``.
@@ -796,6 +812,12 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
 
     destinations = _profile_destinations(network)
     process_profiles = _profile_processes(processes)
+    # Behaviors are computed once and read here; the environment does not recompute
+    # timing. Imported at call time so the module-level dependency graph stays
+    # telemetry -> behavior -> environment rather than becoming circular.
+    from ath.behavior import connection_patterns, extract_outbound_relationship_behaviors
+
+    patterns = connection_patterns(extract_outbound_relationship_behaviors(telemetry))
 
     platform, platform_reason = _infer_platform(telemetry)
     channels = assess_channels(telemetry)
@@ -810,6 +832,7 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
         identities=identities,
         destinations=destinations,
         processes=process_profiles,
+        connection_patterns=patterns,
         platform=platform,
         platform_reason=platform_reason,
         security_controls=controls,
