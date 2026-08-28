@@ -303,6 +303,27 @@ MAPPING_RULES: tuple[MappingRule, ...] = (
         "opportunities.",
         gate=lambda f: "T1482" in (f.metadata.get("candidate_techniques") or []),
     ),
+    # -- ATH-011 : recovery mechanisms destroyed -------------------------------------
+    MappingRule(
+        "ATH-011", "T1490", Confidence.HIGH,
+        "Shadow copies, backup catalogues or boot-time recovery were destroyed. The "
+        "command lines name the specific procedures MITRE documents for this technique, "
+        "and the action is inherently destructive rather than merely consistent with "
+        "an adversary goal.",
+    ),
+    # -- ATH-012 : security tooling disabled -----------------------------------------
+    #
+    # Mapped to the PARENT technique. T1685's sub-techniques are all log-specific,
+    # while what was observed here is a product being disabled, killed or excluded --
+    # parent-level behaviour. Naming a sub-technique would claim more specificity than
+    # the evidence carries.
+    MappingRule(
+        "ATH-012", "T1685", Confidence.HIGH,
+        "A security product's protection was disabled, its process terminated, or a "
+        "scanning exclusion added. Reported at the parent technique because the "
+        "sub-techniques describe log tampering specifically, which is not what this "
+        "evidence shows.",
+    ),
 )
 
 

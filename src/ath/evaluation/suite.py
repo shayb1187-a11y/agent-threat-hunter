@@ -63,7 +63,7 @@ WINDOWS_EXPECTED_TECHNIQUES: frozenset[str] = frozenset({
 # the recall denominator with events no rule should flag as an intrusion, and it makes
 # the known false-positive case count as a true positive, so the harness reports zero
 # noise while a real false alarm sits in the output.
-MALICIOUS_SCENARIOS: frozenset[str] = frozenset({"intrusion"})
+MALICIOUS_SCENARIOS: frozenset[str] = frozenset({"intrusion", "ransomware_prep"})
 
 
 def scenario_event_ids(data_dir: Path, scenarios: frozenset[str]) -> frozenset[str]:
@@ -98,8 +98,20 @@ def _without(telemetry: Telemetry, event_ids: frozenset[str]) -> Telemetry:
 
 
 def windows_intrusion(data_dir: Path) -> Incident:
-    """INC-001: the full labelled Windows intrusion."""
-    telemetry = load_telemetry(data_dir)
+    """INC-001: the full labelled Windows intrusion.
+
+    Each attack scenario is measured against telemetry containing *only that attack*.
+    The alternative -- one dataset carrying both intrusions -- makes every per-incident
+    number ambiguous: findings from `ransomware_prep` would count as noise cases here
+    despite being true positives for a different incident, and widening the recall
+    denominator to cover both would have moved this baseline the moment a second
+    scenario was added. Isolating them keeps a benchmark movement attributable to a
+    change in the system rather than to a change in the dataset.
+    """
+    telemetry = _without(
+        load_telemetry(data_dir),
+        scenario_event_ids(data_dir, frozenset({"ransomware_prep"})),
+    )
     return Incident(
         incident_id="INC-001",
         name="Windows macro-to-collection intrusion",
@@ -109,7 +121,7 @@ def windows_intrusion(data_dir: Path) -> Incident:
             "and archive staging."
         ),
         telemetry=telemetry,
-        malicious_event_ids=malicious_event_ids(data_dir),
+        malicious_event_ids=scenario_event_ids(data_dir, frozenset({"intrusion"})),
         expected_techniques=WINDOWS_EXPECTED_TECHNIQUES,
         must_conclude=(
             # The lineage that reframes everything else.
@@ -163,6 +175,35 @@ def cloud_credential_stuffing(fixture_dir: Path) -> Incident:
     )
 
 
+def ransomware_preparation(data_dir: Path) -> Incident:
+    """INC-004: recovery inhibition and defence impairment on a third host.
+
+    A separate scenario rather than extra stages on the existing chain, so INC-001's
+    measured numbers stay comparable across the change and a benchmark movement can be
+    attributed to the system rather than to the dataset.
+    """
+    telemetry = _without(
+        load_telemetry(data_dir),
+        scenario_event_ids(data_dir, frozenset({"intrusion"})),
+    )
+    return Incident(
+        incident_id="INC-004",
+        name="Ransomware preparation (recovery inhibition + defence impairment)",
+        description=(
+            "Defender real-time protection disabled, a staging directory excluded from "
+            "scanning, the AV process killed, then shadow copies, the backup catalogue "
+            "and boot-time recovery all destroyed."
+        ),
+        telemetry=telemetry,
+        malicious_event_ids=scenario_event_ids(
+            data_dir, frozenset({"ransomware_prep"})
+        ),
+        expected_techniques=frozenset({"T1490", "T1685"}),
+        must_conclude=("PC03",),
+        never_as_fact=("encrypted", "ransom"),
+    )
+
+
 def quiet_day(data_dir: Path) -> Incident:
     """INC-003: the same environment with the intrusion removed. Silence is success.
 
@@ -187,7 +228,11 @@ def quiet_day(data_dir: Path) -> Incident:
 
 def standard_suite(data_dir: Path, cloudtrail_dir: Path | None = None) -> list[Incident]:
     """The three incidents this project reports itself against."""
-    incidents = [windows_intrusion(data_dir), quiet_day(data_dir)]
+    incidents = [
+        windows_intrusion(data_dir),
+        ransomware_preparation(data_dir),
+        quiet_day(data_dir),
+    ]
     if cloudtrail_dir is not None and cloudtrail_dir.exists():
         incidents.insert(1, cloud_credential_stuffing(cloudtrail_dir))
     return incidents

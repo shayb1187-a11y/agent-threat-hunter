@@ -63,6 +63,11 @@ from ath.telemetry.loader import load_ground_truth
 
 logger = get_logger(__name__)
 
+# Scenarios representing genuine attacker activity. `benign_lookalike` is labelled
+# precisely *because* it is not one, so it must never appear here -- counting it as an
+# attack would inflate recall and turn the project's known false positive into a true
+# positive, which is a measurement bug this project has already made once.
+ATTACK_SCENARIOS: tuple[str, ...] = ("intrusion", "ransomware_prep")
 INTRUSION = "intrusion"
 BENIGN_LOOKALIKE = "benign_lookalike"
 
@@ -84,6 +89,11 @@ RULE_COVERAGE: dict[str, frozenset[str]] = {
     # src/ath/engineering/candidates.py and docs/detection-engineering.md.
     "ATH-009": frozenset({"1-initial-access"}),
     "ATH-010": frozenset({"5-discovery"}),
+    # Milestone 12. These target the `ransomware_prep` scenario, which is a separate
+    # intrusion on a separate host -- deliberately not extra stages bolted onto the
+    # existing chain, so INC-001's measured numbers stay comparable across the change.
+    "ATH-011": frozenset({"2-recovery-inhibition"}),
+    "ATH-012": frozenset({"1-defense-impairment"}),
 }
 
 # Historical note: as of Milestone 3, NO rule targeted these two stages -- see the
@@ -279,12 +289,19 @@ def load_scoring_context(data_dir: Path) -> tuple[set[str], set[str], dict[str, 
     """
     ground_truth = load_ground_truth(data_dir)
     scenarios = ground_truth["scenarios"]
-    attack_ids = set(scenarios[INTRUSION]["event_ids"])
+    # Every attack scenario counts, not just the original chain. A rule targeting a
+    # stage of `ransomware_prep` would otherwise score 0 TP / 1 FP against its own
+    # intended target -- which is what happened the first time these were added.
+    attack_ids: set[str] = set()
+    stages: dict[str, set[str]] = {}
+    for scenario_name in ATTACK_SCENARIOS:
+        scenario = scenarios.get(scenario_name)
+        if scenario is None:
+            continue
+        attack_ids |= set(scenario["event_ids"])
+        for name, stage in scenario["stages"].items():
+            stages.setdefault(name, set()).update(stage["event_ids"])
     benign_ids = set(scenarios.get(BENIGN_LOOKALIKE, {}).get("event_ids", []))
-    stages = {
-        name: set(stage["event_ids"])
-        for name, stage in scenarios[INTRUSION]["stages"].items()
-    }
     return attack_ids, benign_ids, stages
 
 

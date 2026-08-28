@@ -217,11 +217,11 @@ def test_severity_ranking() -> None:
 # ======================================================================================
 
 
-def test_all_ten_rules_registered() -> None:
-    """ATH-009/010 were added by the Milestone 6 detection-engineering loop."""
+def test_all_registered_rules_are_discoverable() -> None:
+    """ATH-009/010 came from the Milestone 6 engineering loop; ATH-011/012 from M12."""
     assert registered_rule_ids() == [
-        "ATH-001", "ATH-002", "ATH-003", "ATH-004", "ATH-005",
-        "ATH-006", "ATH-007", "ATH-008", "ATH-009", "ATH-010",
+        "ATH-001", "ATH-002", "ATH-003", "ATH-004", "ATH-005", "ATH-006",
+        "ATH-007", "ATH-008", "ATH-009", "ATH-010", "ATH-011", "ATH-012",
     ]
 
 
@@ -240,7 +240,7 @@ def test_unknown_rule_id_raises() -> None:
 
 def test_hunt_runs_all_rules_without_error(hunt) -> None:
     assert hunt.errors == {}
-    assert len(hunt.rules_run) == 10
+    assert len(hunt.rules_run) == 12
 
 
 def test_every_finding_cites_real_event_ids(hunt, telemetry) -> None:
@@ -604,13 +604,29 @@ def test_detections_cover_the_whole_attack_chain(hunt, ground_truth) -> None:
     assert covered == set(stages)
 
 
-def test_precision_is_reasonable(hunt, attack_ids, benign_lookalike_ids) -> None:
-    """Most flagged events should belong to the intrusion, and every unlabelled
-    event we flag should be scrutinised -- here there are none."""
+def test_precision_is_reasonable(hunt, data_dir, benign_lookalike_ids) -> None:
+    """Every flagged event must be accounted for by a label.
+
+    `attack_ids` covers only the original intrusion, so this reads ground truth across
+    *all* attack scenarios. An unexplained detection is one this project cannot account
+    for at all, and that set must stay empty -- it is the difference between "we know
+    why this fired" and "something is firing and nobody has looked".
+    """
+    from ath.evaluation.evaluator import ATTACK_SCENARIOS
+    from ath.telemetry.loader import load_ground_truth
+
+    gt = load_ground_truth(data_dir)
+    labelled_attack = {
+        event_id
+        for name in ATTACK_SCENARIOS
+        if name in gt["scenarios"]
+        for event_id in gt["scenarios"][name]["event_ids"]
+    }
+
     flagged = {eid for f in hunt.findings for eid in f.event_ids}
-    true_positives = flagged & attack_ids
+    true_positives = flagged & labelled_attack
     known_benign = flagged & benign_lookalike_ids
-    unexplained = flagged - attack_ids - benign_lookalike_ids
+    unexplained = flagged - labelled_attack - benign_lookalike_ids
 
     assert len(true_positives) >= 25
     assert len(known_benign) == 2, "the IT look-alike should trip exactly ATH-002/003"

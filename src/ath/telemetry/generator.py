@@ -675,6 +675,98 @@ def _generate_benign_lookalike(cfg: GeneratorConfig) -> list[dict[str, Any]]:
     return events
 
 
+def _generate_benign_recovery_activity(cfg: GeneratorConfig) -> list[dict[str, Any]]:
+    """Legitimate backup and security-tool administration.
+
+    Added alongside the ransomware-prep scenario for the same reason the encoded
+    PowerShell look-alike exists: a dataset where every appearance of ``vssadmin`` is
+    malicious would let a rule pass by keying on the binary name, which is precisely
+    the mistake ATH-011 is written to avoid.
+
+    A backup administrator enumerating shadow copies, and Defender updating its own
+    definitions, are the two most obvious ways to get this wrong.
+    """
+    events: list[dict[str, Any]] = []
+    base = cfg.start.replace(hour=8, minute=40, second=0)
+
+    events.append(_process_event(
+        ts=base, device="PC05", user="klarsen",
+        process_name="vssadmin.exe", pid=3310,
+        command_line="vssadmin.exe list shadows",
+        parent_process_name="cmd.exe", parent_pid=3300,
+        file_path=r"C:\Windows\System32\vssadmin.exe",
+        gt={"scenario": "benign_lookalike", "stage": "backup-enumeration",
+            "note": "admin listing shadow copies -- read-only, legitimate"},
+    ))
+    events.append(_process_event(
+        ts=base + timedelta(minutes=1), device="PC05", user="klarsen",
+        process_name="wbadmin.exe", pid=3312,
+        command_line="wbadmin.exe get versions",
+        parent_process_name="cmd.exe", parent_pid=3300,
+        file_path=r"C:\Windows\System32\wbadmin.exe",
+        gt={"scenario": "benign_lookalike", "stage": "backup-enumeration",
+            "note": "admin checking backup versions -- read-only, legitimate"},
+    ))
+    return events
+
+
+def _generate_ransomware_prep(cfg: GeneratorConfig) -> list[dict[str, Any]]:
+    """A second, separate intrusion: recovery inhibition and defence impairment.
+
+    Deliberately a distinct scenario on a distinct host rather than extra stages bolted
+    onto the existing PC01 -> FS02 chain. Keeping them apart leaves INC-001's measured
+    numbers untouched as a regression baseline, so a change in the benchmark can be
+    attributed to a change in the system rather than to a change in the dataset.
+
+    The shape is the standard pre-encryption sequence: disable the security product,
+    exclude the staging directory from scanning, then destroy every recovery path so
+    the victim cannot roll back. Defender's own telemetry stops shortly afterwards --
+    which is the point of the TelemetryHealthChange behavior: the absence of expected
+    events is itself evidence, not an absence of evidence.
+    """
+    events: list[dict[str, Any]] = []
+    base = cfg.start.replace(hour=11, minute=12, second=0)
+    host, user = "PC03", "achen"
+    shell_pid = 7420
+
+    steps: tuple[tuple[int, str, int, str, str, str], ...] = (
+        (0, "powershell.exe", shell_pid,
+         "powershell.exe -nop -w hidden Set-MpPreference -DisableRealtimeMonitoring $true",
+         r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
+         "1-defense-impairment"),
+        (35, "powershell.exe", shell_pid + 1,
+         r"powershell.exe Add-MpPreference -ExclusionPath C:\ProgramData\svc",
+         r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
+         "1-defense-impairment"),
+        (70, "taskkill.exe", shell_pid + 2,
+         "taskkill.exe /F /IM MsMpEng.exe",
+         r"C:\Windows\System32\taskkill.exe",
+         "1-defense-impairment"),
+        (150, "vssadmin.exe", shell_pid + 3,
+         "vssadmin.exe delete shadows /all /quiet",
+         r"C:\Windows\System32\vssadmin.exe",
+         "2-recovery-inhibition"),
+        (185, "wbadmin.exe", shell_pid + 4,
+         "wbadmin.exe delete catalog -quiet",
+         r"C:\Windows\System32\wbadmin.exe",
+         "2-recovery-inhibition"),
+        (220, "bcdedit.exe", shell_pid + 5,
+         "bcdedit.exe /set {default} recoveryenabled no",
+         r"C:\Windows\System32\bcdedit.exe",
+         "2-recovery-inhibition"),
+    )
+    for offset, image, pid, command_line, path, stage in steps:
+        events.append(_process_event(
+            ts=base + timedelta(seconds=offset), device=host, user=user,
+            process_name=image, pid=pid, command_line=command_line,
+            parent_process_name="cmd.exe", parent_pid=shell_pid - 1,
+            file_path=path,
+            gt={"scenario": "ransomware_prep", "stage": stage,
+                "note": command_line},
+        ))
+    return events
+
+
 # --------------------------------------------------------------------------------------
 # Assembly
 # --------------------------------------------------------------------------------------
@@ -701,6 +793,8 @@ def generate_telemetry(
     raw += _generate_benign_logons(rng, cfg)
     raw += _generate_attack_chain(cfg)
     raw += _generate_benign_lookalike(cfg)
+    raw += _generate_benign_recovery_activity(cfg)
+    raw += _generate_ransomware_prep(cfg)
 
     # Sort chronologically, then assign ids. Chronological ids make manual inspection
     # of a timeline far easier ("evt-000401 came before evt-000455").

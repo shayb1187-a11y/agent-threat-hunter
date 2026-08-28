@@ -1,0 +1,64 @@
+// =====================================================================================
+// ATH-011 : Windows recovery mechanisms destroyed
+// Severity: HIGH, escalating to CRITICAL when >=2 distinct controls are destroyed
+// Pandas  : src/ath/hunting/rules/impact_rules.py :: RecoveryInhibition
+// ATT&CK  : T1490 Inhibit System Recovery (Impact)
+//
+// THE BINARY NAME IS NOT THE SIGNAL.
+//
+// The obvious query -- FileName in ("vssadmin.exe", "wbadmin.exe", "bcdedit.exe") --
+// is wrong in both directions at once:
+//
+//   * it MISSES a renamed copy, and the image name is the one part of this an attacker
+//     changes for free. `svc-helper.exe delete shadows /all` destroys exactly as much
+//     as `vssadmin.exe delete shadows /all`, because the ARGUMENTS are what the
+//     operating system acts on.
+//   * it FIRES on `vssadmin list shadows`, which is a backup administrator checking
+//     their backups. That is read-only and is deliberately excluded below.
+//
+// So every pattern here matches destructive argument semantics and never the image.
+//
+// THE ONE HONEST EXCEPTION: `reagentc /disable`. The string "/disable" alone appears in
+// far too many unrelated command lines to key on, so that clause does name its tool and
+// is therefore evadable by rename. Stated rather than hidden -- a reader deserves to
+// know which half of this query an attacker can sidestep.
+//
+// KQL notes:
+//   matches regex   applies a regular expression; `@"..."` is a verbatim string, so
+//                   backslashes need no escaping
+//   tolower()       command lines are not case-normalised by the sensor
+//   make_set()      collects the distinct procedures per host, which is what drives
+//                   the HIGH -> CRITICAL escalation in the pandas equivalent
+//
+// The pandas equivalent groups by (device, user) so a sequence of distinct controls on
+// one host is one finding rather than three alerts; `summarize ... by` does the same
+// job here. Alert volume is a real operational cost.
+// =====================================================================================
+
+DeviceProcessEvents
+| where Timestamp > ago(24h)
+| extend cmd = tolower(ProcessCommandLine)
+// Destructive argument semantics only. Read-only enumeration is not matched.
+| extend procedure = case(
+    cmd matches regex @"\bdelete\b[^|;&]{0,40}?\bshadows?\b",              "shadow_copy_deletion",
+    cmd matches regex @"\bshadowcopy\b[^|;&]{0,40}?\bdelete\b",            "shadow_copy_deletion_wmi",
+    cmd matches regex @"\bdelete\b[^|;&]{0,40}?\bcatalog\b",               "backup_catalog_deletion",
+    cmd matches regex @"\bdelete\b[^|;&]{0,40}?\bsystemstatebackup\b",     "backup_deletion",
+    cmd matches regex @"\breagentc(\.exe)?\b[^|;&]{0,40}?/disable\b",      "recovery_environment_disabled",
+    cmd matches regex @"\brecoveryenabled\b\s+no\b",                       "boot_recovery_disabled",
+    cmd matches regex @"\bbootstatuspolicy\b\s+ignoreallfailures\b",       "boot_failure_policy_ignored",
+    ""
+)
+| where procedure != ""
+| summarize
+    procedures       = make_set(procedure),
+    controls         = dcount(procedure),
+    commands         = make_set(ProcessCommandLine, 8),
+    events           = make_set(ReportId, 16),
+    first_seen       = min(Timestamp),
+    last_seen        = max(Timestamp)
+    by DeviceName, AccountName
+| extend Severity = iff(controls >= 2, "CRITICAL", "HIGH")
+| project DeviceName, AccountName, Severity, controls, procedures, commands,
+          first_seen, last_seen, events
+| order by controls desc, first_seen asc

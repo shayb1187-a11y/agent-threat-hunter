@@ -251,7 +251,7 @@ def test_quiet_day_output_is_still_well_formed(quiet) -> None:
 
 def test_standard_suite_covers_attack_and_quiet_scenarios(data_dir) -> None:
     incidents = standard_suite(data_dir, CLOUDTRAIL)
-    assert len(incidents) == 3
+    assert len(incidents) == 4
     assert any(i.is_benign for i in incidents), (
         "a suite with no quiet day rewards trigger-happy detection"
     )
@@ -268,9 +268,12 @@ def test_benchmark_reports_current_state_honestly(data_dir) -> None:
     side by side so the difference stays visible.
     """
     result = run_benchmark(standard_suite(data_dir, CLOUDTRAIL))
-    assert result.total == 3
-    assert result.passed == 3
-    assert result.total_noise_cases == 2
+    assert result.total == 4
+    assert result.passed == 4
+    # Grew by one with INC-004: the ransomware-prep telemetry still contains the
+    # administrator's encoded-PowerShell look-alike, which raises its own case there
+    # exactly as it does in INC-001.
+    assert result.total_noise_cases == 3
 
 
 def test_no_incident_clears_a_true_positive(data_dir) -> None:
@@ -287,6 +290,6 @@ def test_benchmark_serialises(data_dir) -> None:
 
     result = run_benchmark(standard_suite(data_dir, CLOUDTRAIL))
     payload = json.loads(json.dumps(result.to_dict()))
-    assert len(payload["incidents"]) == 3
-    assert payload["passed"] == 3
+    assert len(payload["incidents"]) == 4
+    assert payload["passed"] == 4
     assert "benign_discrimination" in payload["incidents"][0]

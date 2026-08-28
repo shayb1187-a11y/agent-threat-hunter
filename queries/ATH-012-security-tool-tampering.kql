@@ -1,0 +1,85 @@
+// =====================================================================================
+// ATH-012 : Security product disabled or reconfigured
+// Severity: HIGH, escalating to CRITICAL when >=3 distinct controls are modified
+// Pandas  : src/ath/hunting/rules/defense_impairment_rules.py :: SecurityToolTampering
+// ATT&CK  : T1685 Disable or Modify Tools (Defense Impairment, TA0112)
+//
+// MAPPED AT PARENT LEVEL, DELIBERATELY. T1685's sub-techniques .001-.006 are all
+// log-specific (Windows Event Log, Cloud Log, Tool UI, Linux Audit, Clear Windows
+// Logs, Clear Linux Logs). Killing an EDR process or stopping a security service is
+// parent-level behaviour, so naming a sub-technique would assert a narrower claim than
+// this evidence supports. Note also that T1562.001 -- where this technique used to
+// live -- is retired; see src/ath/mitre/attack.py :: RETIRED_TECHNIQUE_IDS.
+//
+// THE TARGET IS THE SIGNAL, NOT THE TOOL.
+//
+// `taskkill.exe` is an ordinary administrative utility. Keying on it would alert on
+// routine work and still miss the same action taken by any other means. What is
+// distinctive is WHAT WAS ACTED UPON -- a security product's process, service or
+// preference -- so that is what these patterns match, and a renamed taskkill fires.
+//
+// WHAT THIS QUERY CANNOT SEE. Registry-based tampering and ETW patching leave no
+// command line at all, so this is blind to them. That gap is reported by the
+// visibility layer rather than papered over: command-line coverage is not the same as
+// covering the technique. The complementary signal is the DISAPPEARANCE of expected
+// telemetry from the product itself -- see the DeviceEvents heartbeat query at the
+// bottom, which is the KQL shape of the `telemetry_health_change` behavior.
+//
+// KQL notes:
+//   matches regex   regular expression match; @"..." is verbatim
+//   dcount()        distinct controls touched, which drives the severity escalation
+//   make_set()      preserves which procedures fired, for the analyst
+//
+// The pandas equivalent groups by (device, user) and applies the same >=3 escalation.
+// =====================================================================================
+
+DeviceProcessEvents
+| where Timestamp > ago(24h)
+| extend cmd = tolower(ProcessCommandLine)
+| extend procedure = case(
+    cmd matches regex @"/im\s+""?(msmpeng|mssense|senseir|csfalconservice|xagt|sentinelagent|carbonblack|wazuh-agent)\w*\.exe",
+        "security_process_killed",
+    cmd matches regex @"\bstop\b\s+""?(windefend|sense|wdnissvc|mpssvc|csagent|sentinelagent|wazuh)\b",
+        "security_service_stopped",
+    cmd matches regex @"-disablerealtimemonitoring\s+\$?true",
+        "defender_realtime_disabled",
+    cmd matches regex @"-exclusion(path|extension|process)\b",
+        "defender_exclusion_added",
+    cmd matches regex @"\\(windefend|sense|sentinelagent)\b[^|;&]{0,60}?\bstart\b[^|;&]{0,20}?\b4\b",
+        "security_service_disabled_registry",
+    cmd matches regex @"\bfirewall\b[^|;&]{0,60}?\bstate\s+off\b",
+        "firewall_disabled",
+    ""
+)
+| where procedure != ""
+| summarize
+    procedures = make_set(procedure),
+    controls   = dcount(procedure),
+    commands   = make_set(ProcessCommandLine, 8),
+    events     = make_set(ReportId, 16),
+    first_seen = min(Timestamp),
+    last_seen  = max(Timestamp)
+    by DeviceName, AccountName
+| extend Severity = iff(controls >= 3, "CRITICAL", "HIGH")
+| project DeviceName, AccountName, Severity, controls, procedures, commands,
+          first_seen, last_seen, events
+| order by controls desc, first_seen asc
+
+// -------------------------------------------------------------------------------------
+// COMPANION: expected telemetry going quiet.
+//
+// The absence of events is not the absence of activity. A sensor that stops reporting
+// is itself a signal, and correlating that onset with the tampering above is what
+// distinguishes "nothing happened" from "we stopped being able to see". Run separately
+// and join on DeviceName; the pandas equivalent emits this as a behavior rather than
+// folding it into ATH-012, because it is an observation about the SENSOR, not about
+// the adversary.
+// -------------------------------------------------------------------------------------
+//
+// DeviceEvents
+// | where Timestamp > ago(24h)
+// | where InitiatingProcessFileName in~ ("MsMpEng.exe", "MsSense.exe")
+// | summarize events = count() by DeviceName, bin(Timestamp, 15m)
+// | order by DeviceName asc, Timestamp asc
+// | extend previous = prev(events), previous_device = prev(DeviceName)
+// | where DeviceName == previous_device and previous > 0 and events == 0

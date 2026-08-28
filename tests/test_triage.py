@@ -111,7 +111,9 @@ def test_triage_never_removes_a_finding(findings, assessments) -> None:
 def test_disposition_counts_are_reported(assessments) -> None:
     summary = triage_summary(assessments)
     assert summary["likely_benign"] == 2
-    assert summary["likely_malicious"] == 8
+    # ATH-011 and ATH-012 both grade CRITICAL, which the severity veto refuses to
+    # clear -- so the malicious count grew by exactly the two new rules.
+    assert summary["likely_malicious"] == 10
     assert summary["needs_review"] == 3
 
 

@@ -85,8 +85,17 @@ def test_every_registered_rule_declares_coverage() -> None:
 
 def test_declared_stages_exist_in_ground_truth(data_dir) -> None:
     """A typo in RULE_COVERAGE would silently make recall unmeasurable."""
+    from ath.evaluation.evaluator import ATTACK_SCENARIOS
+
     gt = load_ground_truth(data_dir)
-    real_stages = set(gt["scenarios"]["intrusion"]["stages"])
+    # Every attack scenario, not just the original chain -- a rule targeting a stage of
+    # `ransomware_prep` declares a stage that is real but lives elsewhere.
+    real_stages = {
+        stage
+        for name in ATTACK_SCENARIOS
+        if name in gt["scenarios"]
+        for stage in gt["scenarios"][name]["stages"]
+    }
     for rule_id, stages in RULE_COVERAGE.items():
         assert stages <= real_stages, f"{rule_id} declares unknown stages"
 
@@ -154,7 +163,7 @@ def test_report_serialises_to_json(report) -> None:
     import json
 
     payload = json.loads(json.dumps(report.to_dict()))
-    assert len(payload["rules"]) == 10
+    assert len(payload["rules"]) == 12
     assert 0 <= payload["overall_precision"] <= 1
 
 

@@ -10,7 +10,9 @@ candidates proposed and measured by ``ath.engineering`` -- see that package and
 """
 
 from ath.hunting.rules import (
+    defense_impairment_rules,
     discovery_rules,
+    impact_rules,
     initial_access_rules,
     logon_rules,
     network_rules,
@@ -20,4 +22,5 @@ from ath.hunting.rules import (
 __all__ = [
     "process_rules", "network_rules", "logon_rules",
     "initial_access_rules", "discovery_rules",
+    "impact_rules", "defense_impairment_rules",
 ]
