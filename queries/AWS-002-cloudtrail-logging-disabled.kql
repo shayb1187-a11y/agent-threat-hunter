@@ -1,0 +1,34 @@
+// =====================================================================================
+// AWS-002 : CloudTrail logging disabled or trail deleted
+// Severity: CRITICAL
+// Pandas  : src/ath/hunting/rules/aws_rules.py :: CloudTrailLoggingDisabled
+//
+// Single-event, high-signal: StopLogging/DeleteTrail is not something ordinary
+// operations does casually, and it is a step an intruder takes specifically to
+// operate without a record. No history or baseline needed.
+//
+// KQL notes: AWSCloudTrail is Sentinel's built-in CloudTrail ingestion table.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, device, actor, verb, resource_type, resource_name, event_id
+//
+// LIKELY FALSE POSITIVES
+//   - A deliberate, change-managed decommissioning of a trail being replaced by
+//     another, e.g. during an account-wide logging migration.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+AWSCloudTrail
+| where TimeGenerated > ago(LookBack)
+| where EventName in ("StopLogging", "DeleteTrail")
+| project TimeGenerated, Actor = UserIdentityUserName, EventName,
+          TrailName = tostring(coalesce(
+              parse_json(RequestParameters).name, parse_json(RequestParameters).Name)),
+          EventID, RecipientAccountId, SourceIpAddress
+| sort by TimeGenerated desc
+
+// pandas equivalent:
+//   tampering = controls[(resource_type == "cloudtrail:trail") & verb in {stop, delete}]
+//   -> one CRITICAL finding per row, no correlation needed

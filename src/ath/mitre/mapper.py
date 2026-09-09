@@ -324,6 +324,51 @@ MAPPING_RULES: tuple[MappingRule, ...] = (
         "sub-techniques describe log tampering specifically, which is not what this "
         "evidence shows.",
     ),
+
+    # -- AWS-001 : IAM policy grant then access-key creation (Milestone 13) ---------
+    # One finding, two techniques -- the chain genuinely has two distinct stages, and
+    # both are always present when this rule fires at all, so both map unconditionally.
+    MappingRule(
+        "AWS-001", "T1098.003", Confidence.HIGH,
+        "An IAM policy was attached to the beneficiary identity, which is the "
+        "documented behaviour of this sub-technique (\"updating IAM policies in "
+        "AWS\").",
+    ),
+    MappingRule(
+        "AWS-001", "T1098.001", Confidence.HIGH,
+        "The beneficiary identity created an access key for itself shortly after "
+        "receiving the policy grant -- minting a persistent cloud credential.",
+    ),
+    # -- AWS-002 : CloudTrail logging disabled (Milestone 13) ------------------------
+    # Mapped to the PARENT technique, for the same reason as ATH-012: this catalogue
+    # does not carry a verified cloud-log-specific sub-technique under T1685, and
+    # claiming one without verifying it against attack.mitre.org would repeat exactly
+    # the mistake this project's whole ATT&CK layer exists to avoid.
+    MappingRule(
+        "AWS-002", "T1685", Confidence.HIGH,
+        "CloudTrail logging was stopped or the trail deleted -- an audit trail being "
+        "turned off. Reported at the parent technique because this catalogue does not "
+        "carry a verified cloud-log-specific sub-technique.",
+    ),
+    # -- K8S-001 : RBAC binding grants a maximally-privileged role (Milestone 13) ----
+    MappingRule(
+        "K8S-001", "T1098.006", Confidence.HIGH,
+        "A RoleBinding/ClusterRoleBinding granted a maximally-privileged role to an "
+        "identity, which is the defining behaviour of this sub-technique.",
+    ),
+    # -- K8S-002 : exec shortly after a privilege grant (Milestone 13) ---------------
+    # Also two stages in one finding, like AWS-001: the grant that was received, and
+    # the exec that used it.
+    MappingRule(
+        "K8S-002", "T1098.006", Confidence.HIGH,
+        "The identity that exec'd into the pod had just received a "
+        "maximally-privileged RBAC grant.",
+    ),
+    MappingRule(
+        "K8S-002", "T1609", Confidence.HIGH,
+        "The freshly-privileged identity used `pods/exec`-equivalent access to run "
+        "commands inside a container, the documented behaviour of this technique.",
+    ),
 )
 
 

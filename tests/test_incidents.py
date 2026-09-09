@@ -21,6 +21,7 @@ from ath.evaluation.incidents import run_benchmark, run_incident
 from ath.evaluation.suite import (
     MALICIOUS_SCENARIOS,
     cloud_credential_stuffing,
+    kubernetes_privilege_escalation,
     malicious_event_ids,
     quiet_day,
     scenario_event_ids,
@@ -30,6 +31,7 @@ from ath.evaluation.suite import (
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 
 CLOUDTRAIL = Path(__file__).parent / "fixtures" / "cloudtrail"
+K8S_AUDIT = Path(__file__).parent / "fixtures" / "k8s_audit"
 
 
 @pytest.fixture(scope="module")
@@ -48,6 +50,11 @@ def windows(data_dir):
 @pytest.fixture(scope="module")
 def cloud():
     return run_incident(cloud_credential_stuffing(CLOUDTRAIL))
+
+
+@pytest.fixture(scope="module")
+def kubernetes():
+    return run_incident(kubernetes_privilege_escalation(K8S_AUDIT))
 
 
 @pytest.fixture(scope="module")
@@ -194,6 +201,41 @@ def test_cloud_incident_reaches_its_conclusions(cloud) -> None:
 
 
 # ======================================================================================
+# INC-005: Kubernetes -- detection and correlation transfer, investigation does not
+# ======================================================================================
+
+
+def test_kubernetes_incident_is_detected_and_correlated(kubernetes) -> None:
+    """K8S-001 and K8S-002 both fire and correlate into one case via shared_evidence."""
+    assert kubernetes.detected
+    assert kubernetes.event_recall == 1.0
+    assert kubernetes.findings == 2
+    assert kubernetes.cases == 1
+    assert kubernetes.primary_case_recall == 1.0
+    assert kubernetes.primary_case_purity == 1.0
+    assert not kubernetes.techniques_missing
+
+
+def test_kubernetes_incident_is_not_yet_investigated(kubernetes) -> None:
+    """The gap this milestone's Phase A leaves open, measured rather than hidden.
+
+    `run_incident` investigates with `default_specialists()` -- the fixed roster that
+    predates this milestone, and does not include `ControlPlaneAgent`. So this case is
+    detected and correctly correlated, and then investigated by four specialists none
+    of which read `ath.schema.EVENT_CONTROL`: zero facts, zero tool calls. The same
+    shape as INC-002's original zero-facts bug, for a missing *specialist* rather than
+    a missing *case*. `test_control_plane_agent.py`'s Proof A already shows the fix in
+    isolation; Phase B threads it through the orchestrator so this incident passes too
+    -- when it does, this test (not just an assertion inside it) is meant to be
+    replaced by `test_kubernetes_incident_reaches_its_conclusions` below.
+    """
+    assert kubernetes.facts == 0
+    assert kubernetes.tool_calls == 0
+    assert not kubernetes.passed
+    assert set(kubernetes.conclusions_missed) == {"ci-runner", "cluster-admin", "web-1"}
+
+
+# ======================================================================================
 # INC-003: the quiet day
 # ======================================================================================
 
@@ -256,6 +298,13 @@ def test_standard_suite_covers_attack_and_quiet_scenarios(data_dir) -> None:
         "a suite with no quiet day rewards trigger-happy detection"
     )
     assert any(not i.is_benign for i in incidents)
+
+
+def test_standard_suite_includes_kubernetes_when_a_fixture_dir_is_given(data_dir) -> None:
+    """Opt-in, like CloudTrail: omitting the directory keeps the suite unchanged."""
+    incidents = standard_suite(data_dir, CLOUDTRAIL, K8S_AUDIT)
+    assert len(incidents) == 5
+    assert any(i.incident_id == "INC-005" for i in incidents)
 
 
 def test_benchmark_reports_current_state_honestly(data_dir) -> None:

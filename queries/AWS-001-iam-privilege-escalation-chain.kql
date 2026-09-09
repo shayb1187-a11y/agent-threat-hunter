@@ -1,0 +1,63 @@
+// =====================================================================================
+// AWS-001 : IAM policy grant followed by access-key creation for the same identity
+// Severity: HIGH
+// Pandas  : src/ath/hunting/rules/aws_rules.py :: IamPrivilegeEscalationChain
+//
+// The signal is not "a policy was attached" -- it is the CHAIN: identity X is granted
+// a policy, then X itself creates a long-lived access key shortly after. That is
+// "escalate, then persist". The grantor (who attached the policy) and the beneficiary
+// (who the policy names, and who must be the one creating the key) are frequently
+// different identities -- conflating them would match the wrong account.
+//
+// KQL notes (illustrative -- see caveat below):
+//   AWSCloudTrail is Microsoft Sentinel's built-in ingestion table for CloudTrail.
+//   RequestParameters is a dynamic/JSON column; tostring()/parse_json() extract fields.
+//
+// CAVEAT: this project's canonical schema flattens RequestParameters into named columns
+// (target_actor, role_ref) at ingestion time -- see ath.telemetry.cloudtrail_source.
+// A real AWSCloudTrail deployment keeps RequestParameters as raw JSON, so a production
+// query would parse it inline rather than reading a pre-extracted column, as below.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, device, actor, verb, resource_type, resource_name,
+//                   target_actor, role_ref, event_id
+//
+// LIKELY FALSE POSITIVES
+//   - Routine onboarding: an administrator grants a new identity permissions, and that
+//     identity creates its first access key shortly after as part of normal setup.
+//   - Infrastructure-as-code pipelines that both attach policies and rotate keys as
+//     part of one automated run.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let EscalationWindow = 30m;
+let Grants =
+    AWSCloudTrail
+    | where TimeGenerated > ago(LookBack)
+    | where EventName in ("AttachUserPolicy", "PutUserPolicy")
+    | extend TargetActor = tostring(parse_json(RequestParameters).userName)
+    | extend RoleRef = tostring(coalesce(
+        parse_json(RequestParameters).policyArn, parse_json(RequestParameters).policyName))
+    | where isnotempty(TargetActor)
+    | project GrantTime = TimeGenerated, Grantor = UserIdentityUserName, TargetActor,
+              RoleRef, GrantEventId = EventID;
+let AccessKeyCreations =
+    AWSCloudTrail
+    | where TimeGenerated > ago(LookBack)
+    | where EventName == "CreateAccessKey"
+    | project CreateTime = TimeGenerated, Creator = UserIdentityUserName,
+              CreateEventId = EventID, RecipientAccountId;
+Grants
+| join kind=inner AccessKeyCreations on $left.TargetActor == $right.Creator
+| where CreateTime between (GrantTime .. GrantTime + EscalationWindow)
+| extend SecondsBetween = datetime_diff('second', CreateTime, GrantTime)
+| project GrantTime, Grantor, TargetActor, RoleRef, CreateTime, SecondsBetween,
+          GrantEventId, CreateEventId, RecipientAccountId
+| sort by GrantTime desc
+
+// pandas equivalent:
+//   grants = controls[(verb=="attach") & (resource_type in {user-policy,...}) & target_actor != ""]
+//   creates = controls[(verb=="create") & (resource_type == "iam:access-key")]
+//   for each grant: match creates where actor == grant.target_actor, within window

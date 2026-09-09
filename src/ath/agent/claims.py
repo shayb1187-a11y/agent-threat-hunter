@@ -170,6 +170,7 @@ class ClaimVerifier:
             telemetry.processes["event_id"].tolist()
             + telemetry.network["event_id"].tolist()
             + telemetry.logons["event_id"].tolist()
+            + telemetry.controls["event_id"].tolist()
         )
 
     @property

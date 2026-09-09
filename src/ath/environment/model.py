@@ -50,7 +50,7 @@ from ath.environment.channels import (
     assess_channels,
 )
 from ath.netaddr import is_public_ip
-from ath.schema import SIG_VALID, describe_logon_type
+from ath.schema import EVENT_CONTROL, SIG_VALID, describe_logon_type
 from ath.telemetry.loader import Telemetry
 
 # Logon types indicating someone is working *at* a machine, which is what makes it
@@ -354,8 +354,16 @@ class EnvironmentModel:
     Attributes:
         hosts: Every machine observed, keyed by name.
         identities: Every account observed, keyed by name.
-        platform: Inferred operating-system family, with evidence.
+        platform: Inferred operating-system family, with evidence. Kept singular for
+            backward compatibility; see ``platforms`` for an environment that is more
+            than one thing at once.
         platform_reason: What the platform conclusion rests on.
+        platforms: Every platform this telemetry gives evidence of, as a *set* rather
+            than a single guess. An environment is not assumed to be exactly one
+            platform: Windows endpoint telemetry, AWS control-plane activity and
+            Kubernetes audit activity can all be present in the same observation
+            window, and a hybrid estate is the normal case for a real organisation,
+            not an edge case. Computed by union, never by picking the "primary" one.
         security_controls: Security/management products observed running.
         channels: Measured telemetry availability (see :mod:`ath.environment.channels`).
         data_sources: Which telemetry sources contributed (``synthetic``, ``defender_export``).
@@ -376,6 +384,7 @@ class EnvironmentModel:
     implementation of the statistic in the codebase and a test enforces that."""
     platform: str = "unknown"
     platform_reason: str = ""
+    platforms: frozenset[str] = frozenset()
     security_controls: dict[str, str] = field(default_factory=dict)
     channels: dict[TelemetryChannel, ChannelAssessment] = field(default_factory=dict)
     data_sources: tuple[str, ...] = ()
@@ -503,6 +512,7 @@ class EnvironmentModel:
         return {
             "platform": self.platform,
             "platform_reason": self.platform_reason,
+            "platforms": sorted(self.platforms),
             "data_sources": list(self.data_sources),
             "observation_window": window,
             "observation_hours": round(self.observation_hours, 2),
@@ -539,6 +549,36 @@ def _infer_platform(telemetry: Telemetry) -> tuple[str, str]:
     return "unknown", (
         "no Windows system processes observed and image names are not .exe-dominated"
     )
+
+
+def _infer_platforms(telemetry: Telemetry, singular_platform: str) -> frozenset[str]:
+    """Every platform this telemetry gives evidence of, computed by union.
+
+    An environment is not assumed to be exactly one platform. ``singular_platform`` (from
+    :func:`_infer_platform`) already covers Windows; this adds AWS/Kubernetes evidence from
+    the control-plane table's provenance, and all can be true of the same observation
+    window at once -- a hybrid Windows+AWS+Kubernetes estate is the case this exists for.
+    """
+    platforms: set[str] = set()
+    if singular_platform == "windows":
+        platforms.add("windows")
+
+    controls = telemetry.controls
+    if not controls.empty and "source" in controls.columns:
+        sources = set(controls["source"].astype("string"))
+        if "cloudtrail_mgmt" in sources:
+            platforms.add("aws")
+        if "k8s_audit" in sources:
+            platforms.add("kubernetes")
+
+    # Cloud authentication (ConsoleLogin/AssumeRole/...) lands in the logon table, not
+    # the control table -- an environment can show AWS evidence via that channel alone
+    # even with no management-API activity observed.
+    if not telemetry.logons.empty and "source" in telemetry.logons.columns:
+        if "cloudtrail" in set(telemetry.logons["source"].astype("string")):
+            platforms.add("aws")
+
+    return frozenset(platforms)
 
 
 def _host_role(
@@ -820,10 +860,11 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
     patterns = connection_patterns(extract_outbound_relationship_behaviors(telemetry))
 
     platform, platform_reason = _infer_platform(telemetry)
+    platforms = _infer_platforms(telemetry, platform)
     channels = assess_channels(telemetry)
 
     sources: set[str] = set()
-    for df in (processes, network, logons):
+    for df in (processes, network, logons, telemetry.controls):
         if not df.empty and "source" in df.columns:
             sources.update(s for s in df["source"].astype("string") if s)
 
@@ -835,6 +876,7 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
         connection_patterns=patterns,
         platform=platform,
         platform_reason=platform_reason,
+        platforms=platforms,
         security_controls=controls,
         channels=channels,
         data_sources=tuple(sorted(sources)),

@@ -1,0 +1,222 @@
+"""Detections over Kubernetes control-plane activity (``ath.schema.EVENT_CONTROL``).
+
+Both rules here read only ``telemetry.controls`` -- populated by
+:mod:`ath.telemetry.k8s_audit_source` from Kubernetes audit events -- and never touch
+process, network or logon telemetry. Structural and single-window, not baseline-
+dependent: matching on *what a grant names* (a role, a beneficiary) rather than on
+whether an actor's behaviour looks unusual against a short observation window, which
+this project's own README flags as a weak signal to build detection on.
+"""
+
+from __future__ import annotations
+
+from ath.channels import TelemetryChannel
+from ath.hunting.base import Detector, register
+from ath.hunting.finding import Evidence, Finding, Severity
+from ath.telemetry.loader import Telemetry
+
+_RBAC_RESOURCE_TYPES: frozenset[str] = frozenset({"rolebindings", "clusterrolebindings"})
+_EXEC_RESOURCE_TYPE = "pods/exec"
+
+# Cluster roles whose name alone establishes maximal or near-maximal privilege. This is
+# a real, stated limitation: a *custom* role named something innocuous can carry
+# wildcard rules and would not be caught by a name check. Seeing that would need the
+# Role/ClusterRole object's own rule set, which a binding-creation audit event does not
+# carry -- the audit log records that a role was bound, not what the role grants.
+HIGH_PRIVILEGE_ROLE_NAMES: frozenset[str] = frozenset({"cluster-admin", "admin"})
+
+
+def _privilege_grants(controls):
+    """RBAC bindings that name a high-privilege role, shared by both rules below."""
+    return controls[
+        (controls["verb"] == "create")
+        & (controls["resource_type"].isin(_RBAC_RESOURCE_TYPES))
+        & (controls["role_ref"].isin(HIGH_PRIVILEGE_ROLE_NAMES))
+        & (controls["target_actor"].fillna("") != "")
+    ].sort_values("timestamp")
+
+
+@register
+class RbacPrivilegeEscalationGrant(Detector):
+    """K8S-001 -- A RoleBinding/ClusterRoleBinding grants a maximally-privileged role.
+
+    Attacker behaviour
+    ------------------
+    Binding ``cluster-admin`` (or the namespace-scoped ``admin`` ClusterRole) to an
+    identity is one of the highest-signal single events available in Kubernetes RBAC:
+    almost no legitimate workload needs cluster-admin, and a compromised low-privilege
+    credential with just enough RBAC-write access granting itself (or a controlled
+    service account) that role is a textbook escalation. Single-event, high-signal, no
+    history needed -- the same directness as ATH-004 reading a command line.
+
+    Detection shape
+    ---------------
+    Any ``create`` on ``rolebindings``/``clusterrolebindings`` whose ``role_ref``
+    matches :data:`HIGH_PRIVILEGE_ROLE_NAMES`. Reports the beneficiary (the binding's
+    ``target_actor``) as the finding's ``user``, never the identity that created the
+    binding -- those are frequently different, and conflating them would point an
+    analyst at the wrong account. See K8S-002 for the follow-on chain, and the module
+    docstring for what this rule structurally cannot see (a custom role's actual
+    permissions).
+    """
+
+    rule_id = "K8S-001"
+    title = "RBAC binding grants a maximally-privileged role"
+    severity = Severity.HIGH
+    description = "Detects a RoleBinding/ClusterRoleBinding naming cluster-admin or admin."
+    fields_used = (
+        "actor", "verb", "resource_type", "resource_name", "target_actor", "role_ref",
+        "timestamp",
+    )
+    channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
+    false_positives = (
+        "Legitimate cluster bootstrap or platform-team tooling that binds cluster-admin "
+        "to a small, known set of break-glass accounts or operator service accounts.",
+    )
+
+    def detect(self, telemetry: Telemetry) -> list[Finding]:
+        controls = telemetry.controls
+        if controls.empty:
+            return []
+
+        grants = _privilege_grants(controls)
+        findings: list[Finding] = []
+        for _, grant in grants.iterrows():
+            target = grant["target_actor"]
+            findings.append(self.make_finding(
+                device=grant["device"],
+                user=target,
+                evidence=(Evidence(
+                    event_id=grant["event_id"], timestamp=grant["timestamp"],
+                    summary=(
+                        f"{grant['actor']} bound role '{grant['role_ref']}' to {target} "
+                        f"via {grant['resource_type']} '{grant['resource_name']}'"
+                    ),
+                ),),
+                reason=(
+                    f"'{grant['actor']}' created {grant['resource_type']} "
+                    f"'{grant['resource_name']}', granting the maximally-privileged "
+                    f"role '{grant['role_ref']}' to '{target}'. Very few legitimate "
+                    "workloads need this level of access; a grant of it is worth "
+                    "review even when the grantor is a normal administrative account."
+                ),
+                metadata={
+                    "actor": grant["actor"],
+                    "target_actor": target,
+                    "role_ref": grant["role_ref"],
+                    "resource_type": grant["resource_type"],
+                    "resource_name": grant["resource_name"],
+                },
+            ))
+        return findings
+
+
+@register
+class ExecShortlyAfterPrivilegeGrant(Detector):
+    """K8S-002 -- The identity a privileged role was just granted to used ``pods/exec``.
+
+    Attacker behaviour
+    ------------------
+    A privilege grant on its own is a single moment; using it is the follow-through
+    that turns "someone could" into "someone did". ``pods/exec`` opens an interactive
+    shell inside a running container -- the step after which the RBAC grant stops being
+    theoretical, and where an attacker with a freshly-escalated service account would
+    move next to actually explore or act inside the cluster.
+
+    Detection shape
+    ---------------
+    Self-contained, like ``ATH-005``: finds a K8S-001-shaped grant (``create`` on
+    ``rolebindings``/``clusterrolebindings`` naming a high-privilege role), then looks
+    for a later ``pods/exec`` event whose **actor matches that grant's target_actor** --
+    i.e. did the identity that *received* the grant go on to use it, never the identity
+    that *created* the binding, within ``HuntConfig.privilege_escalation_window``. Does
+    not depend on K8S-001 having run first; it recomputes the same grant shape from raw
+    telemetry, the same way ATH-006 does not depend on any other rule having tagged
+    ownership first.
+    """
+
+    rule_id = "K8S-002"
+    title = "Pod exec by an identity shortly after receiving a privileged RBAC grant"
+    severity = Severity.CRITICAL
+    description = (
+        "Detects pods/exec by the beneficiary of a K8S-001-shaped privilege grant, "
+        "shortly after the grant."
+    )
+    fields_used = (
+        "actor", "verb", "resource_type", "resource_name", "resource_namespace",
+        "target_actor", "role_ref", "timestamp",
+    )
+    channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
+    false_positives = (
+        "A platform-team break-glass workflow that grants elevated access and then "
+        "immediately uses it for a documented, legitimate operational task.",
+    )
+
+    def detect(self, telemetry: Telemetry) -> list[Finding]:
+        controls = telemetry.controls
+        if controls.empty:
+            return []
+
+        grants = _privilege_grants(controls)
+        if grants.empty:
+            return []
+        execs = controls[
+            (controls["verb"] == "create") & (controls["resource_type"] == _EXEC_RESOURCE_TYPE)
+        ]
+        if execs.empty:
+            return []
+
+        window = self.config.privilege_escalation_window
+        findings: list[Finding] = []
+
+        for _, grant in grants.iterrows():
+            target = grant["target_actor"]
+            matches = execs[
+                (execs["actor"] == target)
+                & (execs["timestamp"] >= grant["timestamp"])
+                & (execs["timestamp"] <= grant["timestamp"] + window)
+            ].sort_values("timestamp")
+            if matches.empty:
+                continue
+
+            pod_exec = matches.iloc[0]
+            evidence = (
+                Evidence(
+                    event_id=grant["event_id"], timestamp=grant["timestamp"],
+                    summary=(
+                        f"{grant['actor']} bound role '{grant['role_ref']}' to {target}"
+                    ),
+                ),
+                Evidence(
+                    event_id=pod_exec["event_id"], timestamp=pod_exec["timestamp"],
+                    summary=(
+                        f"{target} exec'd into pod '{pod_exec['resource_name']}' "
+                        f"in namespace '{pod_exec['resource_namespace']}'"
+                    ),
+                ),
+            )
+            delta = int((pod_exec["timestamp"] - grant["timestamp"]).total_seconds())
+
+            findings.append(self.make_finding(
+                device=pod_exec["device"],
+                user=target,
+                evidence=evidence,
+                reason=(
+                    f"'{target}' was granted the '{grant['role_ref']}' role "
+                    f"{delta}s before exec'ing into pod "
+                    f"'{pod_exec['resource_name']}' (namespace "
+                    f"'{pod_exec['resource_namespace']}'). A freshly-escalated "
+                    "identity acting on that escalation shortly after receiving it is "
+                    "consistent with the grant being used for exploration or "
+                    "post-exploitation access rather than left dormant."
+                ),
+                metadata={
+                    "target_actor": target,
+                    "grantor": grant["actor"],
+                    "role_ref": grant["role_ref"],
+                    "pod": pod_exec["resource_name"],
+                    "namespace": pod_exec["resource_namespace"],
+                    "seconds_between_grant_and_exec": delta,
+                },
+            ))
+        return findings

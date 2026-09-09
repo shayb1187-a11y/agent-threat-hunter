@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from ath.hunting import run_hunt
-from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
+from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
 from ath.telemetry.cloudtrail_source import CloudTrailSource
 from ath.telemetry.loader import Telemetry
 
@@ -31,6 +31,7 @@ def telemetry(result):
         processes=result.tables[EVENT_PROCESS],
         network=result.tables[EVENT_NETWORK],
         logons=result.tables[EVENT_LOGON],
+        controls=result.tables[EVENT_CONTROL],
     )
 
 
@@ -90,7 +91,7 @@ def test_bruteforce_finding_maps_to_attack(telemetry) -> None:
 
 
 # ======================================================================================
-# What does not map -- reported, never forced
+# Management-API calls -- the control-plane table, not the process table
 # ======================================================================================
 
 
@@ -100,17 +101,83 @@ def test_management_api_calls_are_not_coerced_into_process_events(result) -> Non
     Mapping `CreateAccessKey` to a process event would make the visibility model
     report `process_execution` as available for an environment with no endpoint
     telemetry at all -- manufacturing exactly the false confidence that layer exists
-    to prevent.
+    to prevent. These calls have a real home now (EVENT_CONTROL), so they stop being
+    coerced into the process table AND stop being merely dropped.
     """
     assert result.tables[EVENT_PROCESS].empty
     assert result.tables[EVENT_NETWORK].empty
 
 
+def test_management_api_calls_map_to_the_control_table(result) -> None:
+    controls = result.tables[EVENT_CONTROL]
+    assert len(controls) == 3
+    assert set(controls["source"]) == {"cloudtrail_mgmt"}
+    assert set(controls["verb"]) == {"attach", "create", "stop"}
+
+
+def test_fixture_grant_is_self_service(result) -> None:
+    """In the shared fixture, dev_alice attaches the policy to their own account.
+
+    actor == target_actor here -- correctly, because that is what the record says.
+    The *distinct*-identity case is exercised separately below with a constructed
+    record, since asserting `!=` against this fixture would just be wrong.
+    """
+    controls = result.tables[EVENT_CONTROL]
+    grant = controls[controls["verb"] == "attach"].iloc[0]
+    assert grant["actor"] == grant["target_actor"] == "dev_alice"
+    assert grant["role_ref"] == "arn:aws:iam::aws:policy/AdministratorAccess"
+
+
+def test_grant_events_carry_a_target_actor_distinct_from_the_caller() -> None:
+    """AttachUserPolicy's beneficiary must not be conflated with its caller.
+
+    An administrator attaching a policy to *someone else's* account is the normal
+    case, not the exception. Reporting the admin as the identity that gained the
+    privilege would point any escalation chain at the wrong account -- this is the
+    exact mistake the user_identity/target_actor split exists to prevent. Constructed
+    directly rather than via the shared fixture (whose own grant happens to be
+    self-service) so the distinct-identity case is actually exercised.
+    """
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    record = {
+        "eventName": "AttachUserPolicy",
+        "eventTime": "2026-08-17T09:18:00Z",
+        "eventID": "constructed-0001",
+        "awsRegion": "us-east-1",
+        "recipientAccountId": "123456789012",
+        "sourceIPAddress": "203.0.113.99",
+        "userIdentity": {"type": "IAMUser", "userName": "ops_bob"},
+        "requestParameters": {
+            "userName": "dev_alice",
+            "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+        },
+    }
+    row, issue = _normalise_control_record(record, "constructed.json", 0)
+
+    assert issue is None
+    assert row["actor"] == "ops_bob"
+    assert row["target_actor"] == "dev_alice"
+    assert row["actor"] != row["target_actor"]
+    assert row["role_ref"] == "arn:aws:iam::aws:policy/AdministratorAccess"
+    # The row's canonical `user` names the identity gaining power, not the grantor.
+    assert row["user"] == "dev_alice"
+
+
 def test_unmapped_events_are_reported_with_a_reason(result) -> None:
+    """ListBuckets/DescribeInstances/GetObject are outside both mapped event sets.
+
+    This project does not attempt full CloudTrail coverage -- only the specific
+    authentication and management-API calls it names. Everything else stays visibly
+    unmapped rather than silently dropped or forced somewhere it does not belong.
+    """
     reasons = " ".join(i.reason for i in result.issues)
-    for event_name in ("CreateAccessKey", "AttachUserPolicy", "StopLogging"):
+    for event_name in ("ListBuckets", "DescribeInstances", "GetObject"):
         assert event_name in reasons
-    assert "no representation in the canonical schema" in reasons
+    assert "is not one of the authentication or management-API calls" in reasons
+    # The events this adapter now DOES map must not still be reported as unmapped.
+    for event_name in ("CreateAccessKey", "AttachUserPolicy", "StopLogging"):
+        assert event_name not in reasons
 
 
 def test_malformed_records_are_dropped_not_raised(result) -> None:
@@ -137,16 +204,19 @@ def test_ownership_rule_correctly_declines_to_fire(telemetry) -> None:
     assert "ATH-006" not in fired
 
 
-def test_all_three_tables_are_present_and_schema_valid(result) -> None:
-    """Empty is not the same as absent -- downstream expects all three tables."""
-    for event_type in (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON):
+def test_all_four_tables_are_present_and_schema_valid(result) -> None:
+    """Empty is not the same as absent -- downstream expects all four tables."""
+    for event_type in (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL):
         assert event_type in result.tables
 
 
 def test_source_reports_honest_counts(result) -> None:
     assert result.rows_read == 23
-    assert result.rows_kept == 15
-    assert result.rows_dropped == 8
+    # 15 authentication rows (ConsoleLogin/AssumeRole, minus 2 malformed) + 3
+    # management-activity rows (CreateAccessKey/AttachUserPolicy/StopLogging) now kept,
+    # where the earlier adapter dropped all 3 as unmapped.
+    assert result.rows_kept == 18
+    assert result.rows_dropped == 5
 
 
 def test_missing_directory_fails_clearly() -> None:

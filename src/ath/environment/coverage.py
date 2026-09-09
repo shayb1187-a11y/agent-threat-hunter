@@ -438,7 +438,15 @@ def channels_for_fields(fields: Iterable[str]) -> set[TelemetryChannel]:
 
 
 def _channels_for_rule(detector: Detector) -> set[TelemetryChannel]:
-    """Map a rule's declared `fields_used` onto telemetry channels."""
+    """The channels a rule depends on.
+
+    Uses the rule's explicit `channels` declaration when it has one -- required for
+    rules where `fields_used` column names alone are ambiguous (see `Detector.channels`)
+    -- and falls back to mapping `fields_used` through `channels_for_fields()`, which is
+    the entire behaviour for every rule that does not set `channels` explicitly.
+    """
+    if detector.channels:
+        return set(detector.channels)
     return channels_for_fields(detector.fields_used)
 
 

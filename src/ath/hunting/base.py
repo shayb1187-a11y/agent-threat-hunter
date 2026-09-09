@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import timedelta
 
+from ath.channels import TelemetryChannel
 from ath.hunting.finding import Finding, Severity
 from ath.telemetry.loader import Telemetry
 
@@ -59,6 +60,14 @@ class HuntConfig:
     remote_logon_types: frozenset[int] = frozenset({3, 10})
     """Logon types that represent authenticating *to* a host from elsewhere."""
 
+    # --- AWS-001 / K8S-002 privilege-escalation-then-abuse chains ---
+    privilege_escalation_window: timedelta = timedelta(minutes=30)
+    """How long after a privilege grant its use still counts as the same chain.
+
+    Shared by AWS-001 (policy attach -> access-key creation by the newly-privileged
+    identity) and K8S-002 (RBAC grant -> pod exec by the newly-privileged identity) --
+    both are the same shape: a grant, then that grant's beneficiary acting on it."""
+
 
 # Process names treated as script interpreters / LOLBins capable of executing
 # attacker-supplied code. Lower-cased for case-insensitive comparison.
@@ -93,6 +102,22 @@ class Detector(ABC):
     description: str = ""
     fields_used: tuple[str, ...] = ()
     false_positives: tuple[str, ...] = ()
+
+    channels: frozenset[TelemetryChannel] = frozenset()
+    """Telemetry channels this rule depends on, declared explicitly.
+
+    Empty (the default) means "infer from `fields_used` via
+    `ath.environment.coverage.channels_for_fields()`" -- which is exactly today's
+    behaviour, so none of the ten existing Windows rules need to set this.
+
+    Set it explicitly when column-name inference would be ambiguous or wrong. The
+    motivating case: AWS management-API rules and Kubernetes audit rules both read a
+    column literally named `verb`/`resource_type` on the same canonical `control`
+    table, and no amount of column-name matching can tell those two telemetry sources
+    apart -- `fields_used` stays real column names for evidence/report text, and this
+    attribute carries the disambiguating channel identity instead of `fields_used`
+    being overloaded with synthetic tags.
+    """
 
     def __init__(self, config: HuntConfig | None = None) -> None:
         self.config = config or HuntConfig()
@@ -130,6 +155,7 @@ class Detector(ABC):
             fields_used=self.fields_used,
             false_positives=self.false_positives,
             metadata=metadata or {},
+            channels=self.channels,
         )
 
 

@@ -226,8 +226,60 @@ def quiet_day(data_dir: Path) -> Incident:
     )
 
 
-def standard_suite(data_dir: Path, cloudtrail_dir: Path | None = None) -> list[Incident]:
-    """The three incidents this project reports itself against."""
+def kubernetes_privilege_escalation(fixture_dir: Path) -> Incident:
+    """INC-005: a service account is granted cluster-admin, then execs into a pod.
+
+    Deliberately foreign telemetry, the same way INC-002 was for CloudTrail: no
+    processes, no network flows, no Windows logon types -- only
+    ``ath.schema.EVENT_CONTROL`` rows. K8S-001 and K8S-002 correlate into one case via
+    the grant event they share as evidence (``shared_evidence``), so this incident
+    reaches the investigation stage rather than stopping at correlation the way
+    INC-002 originally did.
+
+    As of Milestone 13 Phase A, this incident is expected to **fail** its success
+    condition, and that is the point being measured rather than a bug to route around:
+    `run_incident` investigates with `default_specialists()`, the fixed roster that
+    predates this milestone and does not include `ControlPlaneAgent` -- so the case is
+    detected and correlated correctly, and then investigated by four specialists none
+    of which read `ath.schema.EVENT_CONTROL`, producing zero facts. That is exactly the
+    INC-002 zero-facts shape Milestone 11 fixed for a *missing case*, reappearing here
+    for a *missing specialist* instead. Phase B threads environment-driven crew
+    assembly through the orchestrator, and this incident is expected to pass from
+    that point on -- see tests/test_incidents.py for the assertion of both states.
+    """
+    from ath.telemetry.k8s_audit_source import K8sAuditSource
+
+    result = K8sAuditSource(fixture_dir, cluster="test-cluster").load()
+    telemetry = Telemetry(
+        processes=result.tables["process"], network=result.tables["network"],
+        logons=result.tables["logon"], controls=result.tables["control"],
+    )
+    controls = telemetry.controls
+    escalation = controls[
+        (controls["actor"] == "system:serviceaccount:ci:ci-deployer")
+        | (controls["actor"] == "system:serviceaccount:ci:ci-runner")
+    ]
+
+    return Incident(
+        incident_id="INC-005",
+        name="Kubernetes privilege escalation (RBAC grant then pod exec)",
+        description=(
+            "A CI deployer service account grants itself-adjacent cluster-admin to a "
+            "second service account via a ClusterRoleBinding, which then execs into a "
+            "production pod shortly after."
+        ),
+        telemetry=telemetry,
+        malicious_event_ids=frozenset(escalation["event_id"]),
+        expected_techniques=frozenset({"T1098.006", "T1609"}),
+        must_conclude=("ci-runner", "cluster-admin", "web-1"),
+        never_as_fact=("exfiltrat", "ransom"),
+    )
+
+
+def standard_suite(
+    data_dir: Path, cloudtrail_dir: Path | None = None, k8s_audit_dir: Path | None = None,
+) -> list[Incident]:
+    """The incidents this project reports itself against."""
     incidents = [
         windows_intrusion(data_dir),
         ransomware_preparation(data_dir),
@@ -235,4 +287,6 @@ def standard_suite(data_dir: Path, cloudtrail_dir: Path | None = None) -> list[I
     ]
     if cloudtrail_dir is not None and cloudtrail_dir.exists():
         incidents.insert(1, cloud_credential_stuffing(cloudtrail_dir))
+    if k8s_audit_dir is not None and k8s_audit_dir.exists():
+        incidents.insert(2, kubernetes_privilege_escalation(k8s_audit_dir))
     return incidents

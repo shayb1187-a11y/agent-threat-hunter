@@ -1,0 +1,48 @@
+// =====================================================================================
+// K8S-001 : RBAC binding grants a maximally-privileged role
+// Severity: HIGH
+// Pandas  : src/ath/hunting/rules/k8s_rules.py :: RbacPrivilegeEscalationGrant
+//
+// Single-event, high-signal: binding cluster-admin (or the admin ClusterRole) to an
+// identity is one of the highest-signal single events available in Kubernetes RBAC.
+// Reports the BENEFICIARY (the binding's subject) as the identity of interest, never
+// the identity that created the binding -- those are frequently different.
+//
+// KQL notes (illustrative): no single built-in Sentinel table for Kubernetes audit
+// logs is as standardised as AWSCloudTrail; this assumes a custom table (KubeAuditLogs)
+// shaped like the raw audit.k8s.io/v1 Event, which is how most AKS/EKS/GKE audit-log
+// pipelines land it. RequestObject is the raw JSON request body.
+//
+// CAVEAT: this rule can only see what role NAME was bound, never what a custom role's
+// rules actually grant -- see the HIGH_PRIVILEGE_ROLE_NAMES caveat in k8s_rules.py.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, device, actor, verb, resource_type, resource_name,
+//                   target_actor, role_ref, event_id
+//
+// LIKELY FALSE POSITIVES
+//   - Legitimate cluster bootstrap or platform-team tooling binding cluster-admin to a
+//     small, known set of break-glass accounts or operator service accounts.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let HighPrivilegeRoles = dynamic(["cluster-admin", "admin"]);
+KubeAuditLogs
+| where TimeGenerated > ago(LookBack)
+| where Verb == "create"
+| where ObjectRef.resource in ("rolebindings", "clusterrolebindings")
+| extend RoleRef = tostring(RequestObject.roleRef.name)
+| where RoleRef in (HighPrivilegeRoles)
+| mv-expand Subject = RequestObject.subjects
+| extend TargetActor = tostring(Subject.name)
+| project TimeGenerated, Actor = tostring(User.username), TargetActor, RoleRef,
+          ResourceType = tostring(ObjectRef.resource),
+          ResourceName = tostring(ObjectRef.name), AuditID
+| sort by TimeGenerated desc
+
+// pandas equivalent:
+//   grants = controls[(verb=="create") & resource_type in {rolebindings, clusterrolebindings}
+//                      & role_ref in HIGH_PRIVILEGE_ROLE_NAMES & target_actor != ""]
+//   -> one HIGH finding per grant, user = target_actor (the beneficiary)

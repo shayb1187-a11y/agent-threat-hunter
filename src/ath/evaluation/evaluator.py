@@ -94,6 +94,18 @@ RULE_COVERAGE: dict[str, frozenset[str]] = {
     # existing chain, so INC-001's measured numbers stay comparable across the change.
     "ATH-011": frozenset({"2-recovery-inhibition"}),
     "ATH-012": frozenset({"1-defense-impairment"}),
+    # Milestone 13. These read ath.schema.EVENT_CONTROL (AWS/Kubernetes control-plane
+    # activity), which the synthetic Windows generator this ground truth labels does
+    # not produce at all -- there is no stage of *this* dataset for them to declare,
+    # honestly, and giving them one would be inventing coverage this labelled scenario
+    # cannot exercise. They score vacuously (0 findings, 0 declared stages -> precision
+    # and recall both read 1.0, per RuleEvaluation's documented convention for "nothing
+    # declared") on this benchmark; they are measured for real by INC-005/INC-006 in
+    # ath.evaluation.suite, over their own cloud/Kubernetes telemetry.
+    "AWS-001": frozenset(),
+    "AWS-002": frozenset(),
+    "K8S-001": frozenset(),
+    "K8S-002": frozenset(),
 }
 
 # Historical note: as of Milestone 3, NO rule targeted these two stages -- see the

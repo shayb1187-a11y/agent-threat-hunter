@@ -1,0 +1,211 @@
+{
+  "kind": "EventList",
+  "apiVersion": "audit.k8s.io/v1",
+  "items": [
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "RequestResponse",
+      "auditID": "b1a00000-0000-4000-8000-000000000001",
+      "stage": "RequestReceived",
+      "requestURI": "/apis/rbac.authorization.k8s.io/v1/rolebindings/default/binding",
+      "verb": "create",
+      "user": {"username": "admin@example.com", "groups": ["system:authenticated"]},
+      "sourceIPs": ["10.0.0.10"],
+      "objectRef": {
+        "resource": "rolebindings",
+        "namespace": "default",
+        "name": "alice-view-binding",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "apiVersion": "v1"
+      },
+      "requestReceivedTimestamp": "2026-08-17T09:00:00.000000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "RequestResponse",
+      "auditID": "b1a00000-0000-4000-8000-000000000001",
+      "stage": "ResponseComplete",
+      "requestURI": "/apis/rbac.authorization.k8s.io/v1/rolebindings/default/binding",
+      "verb": "create",
+      "user": {"username": "admin@example.com", "groups": ["system:authenticated"]},
+      "sourceIPs": ["10.0.0.10"],
+      "objectRef": {
+        "resource": "rolebindings",
+        "namespace": "default",
+        "name": "alice-view-binding",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "apiVersion": "v1"
+      },
+      "requestObject": {
+        "subjects": [{"kind": "User", "name": "alice", "namespace": "default"}],
+        "roleRef": {"kind": "ClusterRole", "name": "view", "apiGroup": "rbac.authorization.k8s.io"}
+      },
+      "responseStatus": {"code": 201},
+      "requestReceivedTimestamp": "2026-08-17T09:00:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:00:00.050000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "RequestResponse",
+      "auditID": "b1a00000-0000-4000-8000-000000000002",
+      "stage": "ResponseComplete",
+      "requestURI": "/api/v1/namespaces/prod/pods/debug-1/exec",
+      "verb": "create",
+      "user": {"username": "admin@example.com", "groups": ["system:authenticated"]},
+      "sourceIPs": ["10.0.0.10"],
+      "objectRef": {
+        "resource": "pods",
+        "subresource": "exec",
+        "namespace": "prod",
+        "name": "debug-1",
+        "apiVersion": "v1"
+      },
+      "responseStatus": {"code": 200},
+      "requestReceivedTimestamp": "2026-08-17T09:05:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:05:00.020000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "Metadata",
+      "auditID": "b1a00000-0000-4000-8000-000000000003",
+      "stage": "ResponseComplete",
+      "requestURI": "/api/v1/namespaces/prod/pods",
+      "verb": "list",
+      "user": {"username": "system:serviceaccount:ci:ci-runner", "groups": ["system:serviceaccounts"]},
+      "sourceIPs": ["10.0.1.20"],
+      "objectRef": {"resource": "pods", "namespace": "prod", "apiVersion": "v1"},
+      "responseStatus": {"code": 200},
+      "requestReceivedTimestamp": "2026-08-17T09:19:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:19:00.010000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "Metadata",
+      "auditID": "b1a00000-0000-4000-8000-000000000004",
+      "stage": "ResponseComplete",
+      "requestURI": "/apis/apps/v1/namespaces/prod/deployments",
+      "verb": "create",
+      "user": {"username": "system:serviceaccount:ci:ci-deployer", "groups": ["system:serviceaccounts"]},
+      "sourceIPs": ["10.0.1.5"],
+      "objectRef": {"resource": "deployments", "namespace": "prod", "apiVersion": "v1"},
+      "responseStatus": {"code": 201},
+      "requestReceivedTimestamp": "2026-08-17T09:19:30.000000Z",
+      "stageTimestamp": "2026-08-17T09:19:30.030000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "RequestResponse",
+      "auditID": "b1a00000-0000-4000-8000-000000000005",
+      "stage": "ResponseComplete",
+      "requestURI": "/apis/rbac.authorization.k8s.io/v1/clusterrolebindings",
+      "verb": "create",
+      "user": {"username": "system:serviceaccount:ci:ci-deployer", "groups": ["system:serviceaccounts"]},
+      "sourceIPs": ["10.0.1.5"],
+      "objectRef": {
+        "resource": "clusterrolebindings",
+        "name": "ci-runner-escalation",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "apiVersion": "v1"
+      },
+      "requestObject": {
+        "subjects": [
+          {"kind": "ServiceAccount", "name": "system:serviceaccount:ci:ci-runner", "namespace": "ci"}
+        ],
+        "roleRef": {"kind": "ClusterRole", "name": "cluster-admin", "apiGroup": "rbac.authorization.k8s.io"}
+      },
+      "responseStatus": {"code": 201},
+      "requestReceivedTimestamp": "2026-08-17T09:20:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:20:00.040000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "RequestResponse",
+      "auditID": "b1a00000-0000-4000-8000-000000000006",
+      "stage": "ResponseComplete",
+      "requestURI": "/api/v1/namespaces/prod/pods/web-1/exec",
+      "verb": "create",
+      "user": {"username": "system:serviceaccount:ci:ci-runner", "groups": ["system:serviceaccounts"]},
+      "sourceIPs": ["10.0.1.20"],
+      "objectRef": {
+        "resource": "pods",
+        "subresource": "exec",
+        "namespace": "prod",
+        "name": "web-1",
+        "apiVersion": "v1"
+      },
+      "responseStatus": {"code": 200},
+      "requestReceivedTimestamp": "2026-08-17T09:22:30.000000Z",
+      "stageTimestamp": "2026-08-17T09:22:30.015000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "Metadata",
+      "auditID": "b1a00000-0000-4000-8000-000000000007",
+      "stage": "ResponseComplete",
+      "requestURI": "/api/v1/namespaces/prod/configmaps",
+      "verb": "list",
+      "user": {"username": "system:serviceaccount:ci:ci-runner", "groups": ["system:serviceaccounts"]},
+      "sourceIPs": ["10.0.1.20"],
+      "objectRef": {"resource": "configmaps", "namespace": "prod", "apiVersion": "v1"},
+      "responseStatus": {"code": 200},
+      "requestReceivedTimestamp": "2026-08-17T09:23:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:23:00.010000Z"
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "Metadata",
+      "auditID": "b1a00000-0000-4000-8000-000000000008",
+      "stage": "ResponseComplete",
+      "requestURI": "/apis/rbac.authorization.k8s.io/v1/namespaces/prod/rolebindings",
+      "verb": "create",
+      "objectRef": {
+        "resource": "rolebindings",
+        "namespace": "prod",
+        "name": "orphan-binding",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "apiVersion": "v1"
+      },
+      "requestObject": {
+        "subjects": [{"kind": "User", "name": "mallory", "namespace": "prod"}],
+        "roleRef": {"kind": "ClusterRole", "name": "view", "apiGroup": "rbac.authorization.k8s.io"}
+      },
+      "responseStatus": {"code": 201},
+      "requestReceivedTimestamp": "not-a-timestamp",
+      "stageTimestamp": ""
+    },
+    {
+      "kind": "Event",
+      "apiVersion": "audit.k8s.io/v1",
+      "level": "Metadata",
+      "auditID": "b1a00000-0000-4000-8000-000000000009",
+      "stage": "ResponseComplete",
+      "requestURI": "/apis/rbac.authorization.k8s.io/v1/namespaces/prod/rolebindings",
+      "verb": "create",
+      "user": {},
+      "sourceIPs": ["10.0.1.99"],
+      "objectRef": {
+        "resource": "rolebindings",
+        "namespace": "prod",
+        "name": "no-principal-binding",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "apiVersion": "v1"
+      },
+      "requestObject": {
+        "subjects": [{"kind": "User", "name": "nobody", "namespace": "prod"}],
+        "roleRef": {"kind": "ClusterRole", "name": "edit", "apiGroup": "rbac.authorization.k8s.io"}
+      },
+      "responseStatus": {"code": 201},
+      "requestReceivedTimestamp": "2026-08-17T09:24:00.000000Z",
+      "stageTimestamp": "2026-08-17T09:24:00.010000Z"
+    }
+  ]
+}

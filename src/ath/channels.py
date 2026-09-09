@@ -49,6 +49,7 @@ class TelemetryChannel(str, Enum):
     SCRIPT_BLOCK = "script_block"
     EMAIL = "email"
     CLOUD_CONTROL_PLANE = "cloud_control_plane"
+    CLOUD_MANAGEMENT_ACTIVITY = "cloud_management_activity"
     CONTAINER_AUDIT = "container_audit"
 
     def __str__(self) -> str:

@@ -163,7 +163,7 @@ def test_report_serialises_to_json(report) -> None:
     import json
 
     payload = json.loads(json.dumps(report.to_dict()))
-    assert len(payload["rules"]) == 12
+    assert len(payload["rules"]) == 16
     assert 0 <= payload["overall_precision"] <= 1
 
 

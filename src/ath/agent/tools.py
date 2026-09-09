@@ -133,7 +133,10 @@ class ToolBox:
         """
         wanted = set(event_ids)
         rows: list[dict[str, Any]] = []
-        for df in (self.telemetry.processes, self.telemetry.network, self.telemetry.logons):
+        for df in (
+            self.telemetry.processes, self.telemetry.network, self.telemetry.logons,
+            self.telemetry.controls,
+        ):
             match = df[df["event_id"].isin(wanted)]
             for row in match.to_dict("records"):
                 rows.append({k: _jsonable(v) for k, v in row.items() if _present(v)})

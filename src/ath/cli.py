@@ -58,6 +58,7 @@ from ath.mitre import ATTACK_VERSION, map_finding
 from ath.engineering import propose_and_iterate
 from ath.telemetry import DefenderExportSource, write_normalized_telemetry
 from ath.telemetry.cloudtrail_source import CloudTrailSource
+from ath.telemetry.k8s_audit_source import K8sAuditSource
 from ath.triage import (
     BENIGN_THRESHOLD,
     FEEDBACK_FILENAME,
@@ -837,7 +838,7 @@ def cmd_import_cloudtrail(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\n{_c('=== CLOUDTRAIL IMPORT ===', 'BOLD')}")
     print(result.summary())
-    for event_type in ("process", "network", "logon"):
+    for event_type in ("process", "network", "logon", "control"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
 
@@ -853,10 +854,40 @@ def cmd_import_cloudtrail(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\nWrote {len(written)} file(s) -> {out_dir}")
     print(
-        "\nNote: this schema models process, network and logon events. CloudTrail's "
-        "management API activity has no home in it, so those records are reported "
-        "above rather than coerced. Run `python main.py visibility` to see the "
-        "resulting posture."
+        "\nNote: authentication maps to logon events; policy/access-key/logging "
+        "management activity maps to control events. Only the AUTH_EVENTS / "
+        "MANAGEMENT_EVENTS this adapter names are mapped -- everything else is "
+        "reported above rather than coerced. Run `python main.py visibility` to see "
+        "the resulting posture."
+    )
+    return 0
+
+
+def cmd_import_k8s_audit(args: argparse.Namespace, settings: Settings) -> int:
+    """Normalize a Kubernetes API server audit log into canonical telemetry."""
+    result = K8sAuditSource(directory=Path(args.directory), cluster=args.cluster).load()
+
+    out_dir = Path(args.out_dir) if args.out_dir else settings.raw_data_dir
+    written = write_normalized_telemetry(result, out_dir)
+
+    print(f"\n{_c('=== KUBERNETES AUDIT IMPORT ===', 'BOLD')}")
+    print(result.summary())
+    for event_type in ("process", "network", "logon", "control"):
+        df = result.tables.get(event_type)
+        print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
+
+    if result.issues:
+        print(f"\n{_c(f'{len(result.issues)} record(s) not mapped:', 'MEDIUM')}")
+        for issue in result.issues[:20]:
+            print(f"  - {issue}")
+        if len(result.issues) > 20:
+            print(f"  ... and {len(result.issues) - 20} more")
+
+    print(f"\nWrote {len(written)} file(s) -> {out_dir}")
+    print(
+        "\nNote: only RBAC-binding creation and pod-exec map to control events -- "
+        "everything else is reported above rather than coerced. Run `python main.py "
+        "visibility` to see the resulting posture."
     )
     return 0
 
@@ -946,7 +977,10 @@ def cmd_benchmark(args: argparse.Namespace, settings: Settings) -> int:
     cloudtrail = Path(args.cloudtrail) if args.cloudtrail else (
         PROJECT_ROOT / "tests" / "fixtures" / "cloudtrail"
     )
-    incidents = standard_suite(settings.raw_data_dir, cloudtrail)
+    k8s_audit = Path(args.k8s_audit) if args.k8s_audit else (
+        PROJECT_ROOT / "tests" / "fixtures" / "k8s_audit"
+    )
+    incidents = standard_suite(settings.raw_data_dir, cloudtrail, k8s_audit)
     result = run_benchmark(incidents)
 
     if args.json:
@@ -1331,6 +1365,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--out-dir", metavar="PATH", help="Where to write canonical CSVs.")
     p_ct.set_defaults(func=cmd_import_cloudtrail)
 
+    p_k8s = sub.add_parser(
+        "import-k8s-audit",
+        help="Normalize a Kubernetes API server audit log into canonical telemetry.",
+    )
+    p_k8s.add_argument("directory", help="Directory of Kubernetes audit *.json files.")
+    p_k8s.add_argument(
+        "--cluster", default="default",
+        help="Cluster identifier used to synthesise the device column (default: 'default').",
+    )
+    p_k8s.add_argument("--out-dir", metavar="PATH", help="Where to write canonical CSVs.")
+    p_k8s.set_defaults(func=cmd_import_k8s_audit)
+
     p_env = sub.add_parser(
         "environment",
         help="Describe the environment this telemetry came from, and what it cannot show.",
@@ -1356,6 +1402,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench.add_argument("--json", metavar="PATH", help="Write results as JSON.")
     p_bench.add_argument("--cloudtrail", metavar="PATH",
                          help="Directory of CloudTrail JSON for the cloud incident.")
+    p_bench.add_argument("--k8s-audit", metavar="PATH",
+                         help="Directory of Kubernetes audit JSON for the K8s incident.")
     p_bench.add_argument("--no-fail", action="store_true",
                          help="Always exit 0, even when an incident misses its bar.")
     p_bench.set_defaults(func=cmd_benchmark)

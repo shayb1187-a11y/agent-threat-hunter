@@ -36,8 +36,11 @@ import pandas as pd
 EVENT_PROCESS: Final[str] = "process"
 EVENT_NETWORK: Final[str] = "network"
 EVENT_LOGON: Final[str] = "logon"
+EVENT_CONTROL: Final[str] = "control"
 
-EVENT_TYPES: Final[tuple[str, ...]] = (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON)
+EVENT_TYPES: Final[tuple[str, ...]] = (
+    EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL,
+)
 
 # --------------------------------------------------------------------------------------
 # Core columns: present on EVERY event, regardless of table.
@@ -107,13 +110,39 @@ LOGON_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     "failure_reason",  # e.g. "bad_password", empty on success
 )
 
-# Columns kept when we `union` all three tables into a single chronological view.
+# Cloud/Kubernetes control-plane audit events: an actor performs a verb on a resource,
+# allowed or denied. AWS management-API calls (CreateAccessKey, AttachUserPolicy,
+# StopLogging, ...) and Kubernetes audit log entries (create/delete/get on pods, secrets,
+# RBAC objects, pods/exec, ...) are the same shape at this level of abstraction, which is
+# what lets one table -- and one specialist -- serve both. See
+# ath.telemetry.cloudtrail_source and ath.telemetry.k8s_audit_source for what maps here.
+CONTROL_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
+    "actor",               # principal that made the call, e.g. an IAM user or k8s user/SA
+    "verb",                # e.g. "create", "delete", "get", "attach", "exec"
+    "resource_type",       # e.g. "iam:policy", "rolebindings", "pods/exec"
+    "resource_name",       # the specific resource acted upon
+    "resource_namespace",  # Kubernetes namespace; empty for cloud (not a cloud concept)
+    # -- who a grant targets, as distinct from who performed it ----------------------
+    # A grant-shaped action (a Kubernetes RoleBinding, an AWS AttachUserPolicy call)
+    # names a *beneficiary* that is frequently a different identity from the caller who
+    # created it. Conflating `actor` (the caller) with the beneficiary is the mistake
+    # that would make a privilege-escalation chain match the wrong identity's later
+    # activity. Left empty for actions with no target identity (StopLogging, pods/exec).
+    "target_actor",
+    "role_ref",             # the specific role/policy granted, e.g. "cluster-admin" or a
+                            # policy ARN. Empty when the action does not grant a role.
+    "decision",             # "allowed" / "denied"
+    "source_ip",            # caller's address
+)
+
+# Columns kept when we `union` all four tables into a single chronological view.
 UNIFIED_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + ("summary",)
 
 TABLE_COLUMNS: Final[dict[str, tuple[str, ...]]] = {
     EVENT_PROCESS: PROCESS_COLUMNS,
     EVENT_NETWORK: NETWORK_COLUMNS,
     EVENT_LOGON: LOGON_COLUMNS,
+    EVENT_CONTROL: CONTROL_COLUMNS,
 }
 
 # Filenames on disk, keyed by event type.
@@ -121,6 +150,7 @@ TABLE_FILES: Final[dict[str, str]] = {
     EVENT_PROCESS: "process_events.csv",
     EVENT_NETWORK: "network_events.csv",
     EVENT_LOGON: "logon_events.csv",
+    EVENT_CONTROL: "control_events.csv",
 }
 
 # Human-readable meaning of Windows logon types. Used by detections and by the

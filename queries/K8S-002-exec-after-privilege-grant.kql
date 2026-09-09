@@ -1,0 +1,60 @@
+// =====================================================================================
+// K8S-002 : Pod exec by an identity shortly after receiving a privileged RBAC grant
+// Severity: CRITICAL
+// Pandas  : src/ath/hunting/rules/k8s_rules.py :: ExecShortlyAfterPrivilegeGrant
+//
+// The signal is the CHAIN: identity X is granted a maximally-privileged role, then X
+// itself execs into a pod shortly after. That is escalation followed by use. Matches
+// exec against the grant's BENEFICIARY (target_actor), never the identity that created
+// the binding -- an unrelated exec by the grantor is not this pattern.
+//
+// KQL notes (illustrative): see K8S-001's caveat re: KubeAuditLogs. This query
+// self-contains the grant lookup (does not depend on K8S-001 having run), the same way
+// the pandas rule recomputes the grant shape from raw telemetry rather than reading
+// K8S-001's findings.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, device, actor, verb, resource_type, resource_name,
+//                   resource_namespace, target_actor, role_ref, event_id
+//
+// LIKELY FALSE POSITIVES
+//   - A platform-team break-glass workflow that grants elevated access and then
+//     immediately uses it for a documented, legitimate operational task.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let EscalationWindow = 30m;
+let HighPrivilegeRoles = dynamic(["cluster-admin", "admin"]);
+let Grants =
+    KubeAuditLogs
+    | where TimeGenerated > ago(LookBack)
+    | where Verb == "create"
+    | where ObjectRef.resource in ("rolebindings", "clusterrolebindings")
+    | extend RoleRef = tostring(RequestObject.roleRef.name)
+    | where RoleRef in (HighPrivilegeRoles)
+    | mv-expand Subject = RequestObject.subjects
+    | extend TargetActor = tostring(Subject.name)
+    | where isnotempty(TargetActor)
+    | project GrantTime = TimeGenerated, Grantor = tostring(User.username), TargetActor,
+              RoleRef, GrantAuditID = AuditID;
+let PodExecs =
+    KubeAuditLogs
+    | where TimeGenerated > ago(LookBack)
+    | where Verb in ("create", "connect")
+    | where ObjectRef.resource == "pods" and ObjectRef.subresource == "exec"
+    | project ExecTime = TimeGenerated, ExecActor = tostring(User.username),
+              Pod = tostring(ObjectRef.name), Namespace = tostring(ObjectRef.namespace),
+              ExecAuditID = AuditID;
+Grants
+| join kind=inner PodExecs on $left.TargetActor == $right.ExecActor
+| where ExecTime between (GrantTime .. GrantTime + EscalationWindow)
+| extend SecondsBetween = datetime_diff('second', ExecTime, GrantTime)
+| project GrantTime, Grantor, TargetActor, RoleRef, ExecTime, Pod, Namespace,
+          SecondsBetween, GrantAuditID, ExecAuditID
+| sort by GrantTime desc
+
+// pandas equivalent:
+//   grants = same shape as K8S-001; execs = controls[verb=="create" & resource_type=="pods/exec"]
+//   for each grant: match execs where actor == grant.target_actor, within window

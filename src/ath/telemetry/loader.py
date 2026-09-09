@@ -9,7 +9,7 @@ correlation depends on.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,7 @@ import pandas as pd
 
 from ath.logging_setup import get_logger
 from ath.schema import (
+    EVENT_CONTROL,
     EVENT_LOGON,
     EVENT_NETWORK,
     EVENT_PROCESS,
@@ -34,6 +35,15 @@ from ath.telemetry.normalize import coerce_types
 logger = get_logger(__name__)
 
 
+def _empty_table(event_type: str) -> pd.DataFrame:
+    """An empty, schema-valid table for a channel this telemetry set carries none of.
+
+    Used as ``Telemetry.controls``' default, so every existing caller that only ever
+    supplied process/network/logon tables keeps working unchanged.
+    """
+    return coerce_and_validate(pd.DataFrame(columns=list(TABLE_COLUMNS[event_type])), event_type)
+
+
 @dataclass
 class Telemetry:
     """An in-memory telemetry set.
@@ -42,11 +52,15 @@ class Telemetry:
         processes: Process execution events.
         network: Network connection events.
         logons: Authentication events.
+        controls: Cloud/Kubernetes control-plane audit events. Empty (schema-valid) for
+            telemetry with no such source -- every existing Windows-only caller keeps
+            working unchanged, since this defaults to an empty, correctly-typed frame.
     """
 
     processes: pd.DataFrame
     network: pd.DataFrame
     logons: pd.DataFrame
+    controls: pd.DataFrame = field(default_factory=lambda: _empty_table(EVENT_CONTROL))
 
     def table(self, event_type: str) -> pd.DataFrame:
         """Return the table for ``event_type``."""
@@ -54,6 +68,7 @@ class Telemetry:
             EVENT_PROCESS: self.processes,
             EVENT_NETWORK: self.network,
             EVENT_LOGON: self.logons,
+            EVENT_CONTROL: self.controls,
         }
         if event_type not in mapping:
             raise SchemaError(f"Unknown event_type {event_type!r}")
@@ -62,25 +77,26 @@ class Telemetry:
     @property
     def event_count(self) -> int:
         """Total number of events across all tables."""
-        return len(self.processes) + len(self.network) + len(self.logons)
+        return len(self.processes) + len(self.network) + len(self.logons) + len(self.controls)
 
     @property
     def time_range(self) -> tuple[pd.Timestamp, pd.Timestamp]:
         """The (earliest, latest) timestamp across all tables."""
-        stamps = pd.concat(
-            [self.processes["timestamp"], self.network["timestamp"], self.logons["timestamp"]]
-        )
+        stamps = pd.concat([
+            self.processes["timestamp"], self.network["timestamp"],
+            self.logons["timestamp"], self.controls["timestamp"],
+        ])
         return stamps.min(), stamps.max()
 
     def unified(self) -> pd.DataFrame:
-        """Return a single chronological view across all three tables.
+        """Return a single chronological view across all four tables.
 
         This is the KQL ``union`` equivalent. Each row carries a one-line ``summary``
         so a human (or an LLM reading a tool result) can scan a timeline without
         needing every column of every table.
         """
         frames = []
-        for event_type in (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON):
+        for event_type in (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL):
             df = self.table(event_type).copy()
             df["summary"] = _summarise(df, event_type)
             frames.append(df[list(UNIFIED_COLUMNS)])
@@ -113,6 +129,18 @@ def _summarise(df: pd.DataFrame, event_type: str) -> pd.Series:
             + " ("
             + df["direction"].fillna("?")
             + ")"
+        )
+
+    if event_type == EVENT_CONTROL:
+        return (
+            df["actor"].fillna("?")
+            + " "
+            + df["verb"].fillna("?")
+            + " "
+            + df["resource_type"].fillna("?")
+            + df["resource_name"].fillna("").map(lambda r: f" ({r})" if r else "")
+            + df["target_actor"].fillna("").map(lambda t: f" -> {t}" if t else "")
+            + " [" + df["decision"].fillna("?") + "]"
         )
 
     # logon
@@ -159,6 +187,13 @@ def load_telemetry(data_dir: Path) -> Telemetry:
     for event_type, filename in TABLE_FILES.items():
         path = data_dir / filename
         if not path.exists():
+            if event_type == EVENT_CONTROL:
+                # Optional: most existing telemetry directories (synthetic, Defender
+                # export) predate this channel and have no cloud/K8s control-plane
+                # activity at all -- that is a genuine, reportable absence, not an
+                # error. An empty, schema-valid table lets the visibility model say so.
+                tables[event_type] = _empty_table(event_type)
+                continue
             raise FileNotFoundError(
                 f"Missing telemetry file {path}. Run `python main.py generate` "
                 "(synthetic) or `python main.py import-defender` (real export) first."
@@ -175,6 +210,7 @@ def load_telemetry(data_dir: Path) -> Telemetry:
         processes=tables[EVENT_PROCESS],
         network=tables[EVENT_NETWORK],
         logons=tables[EVENT_LOGON],
+        controls=tables[EVENT_CONTROL],
     )
     logger.info(
         "Loaded %s events from %s (%s to %s)",

@@ -313,19 +313,27 @@ def test_rules_with_full_telemetry_are_supported(coverage) -> None:
 def test_every_rule_field_maps_to_a_channel_or_is_a_core_column() -> None:
     """A new rule's telemetry dependency must not be silently ignored.
 
-    Runnability is computed by mapping `fields_used` through FIELD_TO_CHANNEL. A
-    field in neither that map nor the core columns would contribute no requirement,
-    so the rule would be reported as fully supported no matter what it depends on.
+    Runnability is computed by mapping `fields_used` through FIELD_TO_CHANNEL -- unless
+    a rule declares `channels` explicitly, which exists precisely because column-name
+    inference cannot disambiguate two telemetry sources that share a column vocabulary
+    (AWS management events and Kubernetes audit events both have a `verb`/
+    `resource_type` on ath.schema.EVENT_CONTROL). Those rules are correctly exempt from
+    this check -- coverage.py._channels_for_rule reads their explicit declaration
+    instead, never FIELD_TO_CHANNEL, so an unmapped field there carries no risk of the
+    silent "reported as fully supported" failure this test guards against.
     """
     core = set(CORE_COLUMNS) | {"timestamp", "event_id"}
     unmapped: set[str] = set()
     for detector in all_detectors():
+        if detector.channels:
+            continue
         for field in detector.fields_used:
             if field not in FIELD_TO_CHANNEL and field not in core:
                 unmapped.add(f"{detector.rule_id}:{field}")
     assert not unmapped, (
         f"fields with no channel mapping: {sorted(unmapped)}. Add them to "
-        "FIELD_TO_CHANNEL, or to the core columns if they carry no requirement."
+        "FIELD_TO_CHANNEL, to the core columns if they carry no requirement, or "
+        "declare Detector.channels explicitly if column-name inference is ambiguous."
     )
 
 

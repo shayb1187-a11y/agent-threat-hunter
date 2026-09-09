@@ -49,7 +49,7 @@ from typing import Any
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
 from ath.channels import TelemetryChannel
-from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
+from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 
@@ -214,9 +214,9 @@ CHANNEL_SPECS: tuple[ChannelSpec, ...] = (
             "Cloud control-plane authentication: console logins, role assumption, "
             "session tokens. NOTE this channel covers the authentication subset only. "
             "Management API activity (CreateAccessKey, AttachUserPolicy, StopLogging) "
-            "has no representation in the canonical schema at all -- see "
-            "ath.telemetry.cloudtrail_source for why forcing it into the process table "
-            "would manufacture endpoint visibility that does not exist."
+            "is a separate channel -- see CLOUD_MANAGEMENT_ACTIVITY below -- because "
+            "forcing it into the process table would manufacture endpoint visibility "
+            "that does not exist; see ath.telemetry.cloudtrail_source."
         ),
         # Evidenced by provenance rather than by a column: cloud authentication lands
         # in the ordinary logon table, so only the `source` value distinguishes it from
@@ -228,9 +228,24 @@ CHANNEL_SPECS: tuple[ChannelSpec, ...] = (
         partial_threshold=0.01,
     ),
     ChannelSpec(
+        channel=TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY,
+        description=(
+            "Cloud management-plane API activity: IAM policy changes, access key "
+            "creation, logging configuration changes, and similar account/resource "
+            "mutations -- as distinct from authentication (CLOUD_CONTROL_PLANE above). "
+            "This is what closes the gap ath.telemetry.cloudtrail_source used to "
+            "document as unmappable."
+        ),
+        evidence_columns=((EVENT_CONTROL, "source:cloudtrail_mgmt"),),
+        closes_gap_by="onboard AWS CloudTrail (management events), Azure Activity, or GCP Audit Logs",
+        partial_threshold=0.01,
+    ),
+    ChannelSpec(
         channel=TelemetryChannel.CONTAINER_AUDIT,
         description="Kubernetes API server audit events and container runtime activity.",
+        evidence_columns=((EVENT_CONTROL, "source:k8s_audit"),),
         closes_gap_by="onboard Kubernetes audit logs and a container runtime sensor",
+        partial_threshold=0.01,
     ),
 )
 

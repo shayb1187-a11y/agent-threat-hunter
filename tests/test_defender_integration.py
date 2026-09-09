@@ -103,7 +103,7 @@ def test_existing_rules_fire_on_imported_telemetry(hunt_result) -> None:
 
 def test_all_registered_rules_run_without_error(hunt_result) -> None:
     assert hunt_result.errors == {}
-    assert len(hunt_result.rules_run) == 12
+    assert len(hunt_result.rules_run) == 16
 
 
 def test_office_macro_attachment_detected(hunt_result) -> None:

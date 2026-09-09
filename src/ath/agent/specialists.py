@@ -44,6 +44,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
+import pandas as pd
+
 from ath.agent.claims import Claim, ClaimType
 from ath.agent.state import AgentResult, InvestigationState
 from ath.agent.tools import ToolBox
@@ -72,7 +74,15 @@ def channel_sources(state: InvestigationState) -> dict[TelemetryChannel, set[str
     """
     sources: dict[TelemetryChannel, set[str]] = defaultdict(set)
     for finding in state.case.findings:
-        for channel in channels_for_fields(finding.fields_used):
+        # A finding carries its own explicit channels when its rule declared them
+        # (needed where fields_used column names alone are ambiguous -- see
+        # Detector.channels); otherwise they are inferred from fields_used exactly as
+        # before. Reading finding.channels rather than looking the rule up by id keeps
+        # this working for a finding built by hand (as this project's own tests do) and
+        # for a rule id no registry has ever heard of, which is the whole point of this
+        # mechanism.
+        channels = finding.channels or channels_for_fields(finding.fields_used)
+        for channel in channels:
             sources[channel].add(finding.rule_id)
     return dict(sources)
 
@@ -123,7 +133,17 @@ class Specialist(ABC):
     domain: str = ""
 
     reads_channels: frozenset[TelemetryChannel] = frozenset()
-    """Telemetry required to do this specialist's job at all."""
+    """Telemetry required to do this specialist's job at all -- ALL of these must be
+    observable, or the specialist declines. Use ``reads_channels_any`` instead when any
+    one of several channels is sufficient (e.g. a specialist that works from either
+    cloud or Kubernetes control-plane evidence, needing neither specifically)."""
+
+    reads_channels_any: frozenset[TelemetryChannel] = frozenset()
+    """Alternative telemetry requirement: at least ONE of these must be observable.
+
+    Empty means no such requirement. Kept separate from ``reads_channels`` rather than
+    overloading it, because AND and OR read very differently in the declined-reason
+    text and conflating them would misreport which channels would actually help."""
 
     triggered_by_channels: frozenset[TelemetryChannel] = frozenset()
     """Case evidence resting on any of these means this specialist has work."""
@@ -164,20 +184,31 @@ class Specialist(ABC):
         to run on that basis would be the very inference this project forbids.
         """
         environment = state.environment
-        if environment is None or not self.reads_channels:
+        if environment is None or not (self.reads_channels or self.reads_channels_any):
             return None
+        observable = environment.observable_channels
 
-        unavailable = sorted(
-            (c for c in self.reads_channels if c not in environment.observable_channels),
-            key=lambda c: c.value,
-        )
-        if not unavailable:
-            return None
-        return (
-            "required telemetry is unavailable in this environment: "
-            + ", ".join(c.value for c in unavailable)
-            + " -- this specialist would find nothing regardless of what occurred"
-        )
+        if self.reads_channels:
+            unavailable = sorted(
+                (c for c in self.reads_channels if c not in observable),
+                key=lambda c: c.value,
+            )
+            if unavailable:
+                return (
+                    "required telemetry is unavailable in this environment: "
+                    + ", ".join(c.value for c in unavailable)
+                    + " -- this specialist would find nothing regardless of what occurred"
+                )
+
+        if self.reads_channels_any and not (self.reads_channels_any & observable):
+            return (
+                "none of this specialist's alternative telemetry sources are "
+                "available in this environment: "
+                + ", ".join(sorted(c.value for c in self.reads_channels_any))
+                + " -- this specialist would find nothing regardless of what occurred"
+            )
+
+        return None
 
     def has_work(self, state: InvestigationState) -> tuple[bool, str]:
         """Whether the case carries evidence this specialist is the right one for."""
@@ -609,6 +640,125 @@ class NetworkAgent(Specialist):
                     )
 
         return self._result(state, reason, claims, ("attack",), tuple(notes))
+
+
+# ======================================================================================
+# Control plane (cloud / Kubernetes)
+# ======================================================================================
+
+
+class ControlPlaneAgent(Specialist):
+    """Reconstructs a control-plane privilege-escalation chain: who was granted power,
+    and what they did with it.
+
+    One specialist for both AWS and Kubernetes, deliberately -- an IAM policy grant and
+    an RBAC role binding are the same shape at the level ``ath.schema.EVENT_CONTROL``
+    models (an actor grants a role/permission to a target identity, who may then act on
+    it), and the vendor-neutral evidence this agent reads (``actor``, ``target_actor``,
+    ``role_ref``, ``verb``, ``resource_type``) does not care which cloud produced it.
+
+    Not part of the fixed roster
+    -----------------------------
+    Unlike Endpoint/Identity/Network/ATT&CK, this specialist is never included in
+    :func:`default_specialists`. It exists to be assembled *conditionally*, by
+    ``ath.capabilities.crew.assemble_crew``, for environments whose telemetry actually
+    carries cloud or Kubernetes control-plane evidence -- see that module for why a
+    fixed roster is exactly the thing this specialist should not join.
+    """
+
+    name = "control_plane"
+    domain = "cloud/container control-plane resource actions"
+
+    # Either channel is sufficient -- an AWS-only or Kubernetes-only environment
+    # should still stand this specialist up, not just a hybrid one.
+    reads_channels_any = frozenset({
+        TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY, TelemetryChannel.CONTAINER_AUDIT,
+    })
+    triggered_by_channels = frozenset({
+        TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY, TelemetryChannel.CONTAINER_AUDIT,
+    })
+
+    def investigate(self, state: InvestigationState) -> AgentResult:
+        _, reason = self.should_run(state)
+        claims: list[Claim] = []
+        notes: list[str] = []
+        reconstructed = False
+
+        for finding in state.case.findings:
+            if not (set(finding.channels) & self.triggered_by_channels):
+                continue  # a finding from another domain; nothing to add here
+
+            events = self.tools.get_events(list(finding.event_ids), agent=self.name)
+            rows = sorted(events["events"], key=lambda e: e["timestamp"])
+            if not rows:
+                continue
+
+            # A row with a target_actor is a grant; a row without one, whose actor
+            # matches the finding's beneficiary, is that beneficiary using it. This
+            # mirrors the rules' own actor/target_actor split rather than re-deriving
+            # it differently here.
+            beneficiary = finding.metadata.get("target_actor") or finding.user
+            grants = [r for r in rows if r.get("target_actor")]
+            uses = [r for r in rows if not r.get("target_actor") and r.get("actor") == beneficiary]
+
+            for grant in grants:
+                reconstructed = True
+                role = grant.get("role_ref") or grant.get("resource_type", "")
+                claims.append(Claim(
+                    claim_type=ClaimType.FACT,
+                    statement=(
+                        f"'{grant.get('actor', '?')}' granted '{role}' to "
+                        f"'{grant.get('target_actor', '?')}' via {grant.get('resource_type', '?')} "
+                        f"'{grant.get('resource_name', '?')}' on {grant.get('device', '?')}."
+                    ),
+                    evidence_ids=(grant["event_id"],),
+                    source="tool", agent=self.name,
+                ))
+
+            for use in uses:
+                reconstructed = True
+                where = (
+                    f" in namespace '{use['resource_namespace']}'"
+                    if use.get("resource_namespace") else ""
+                )
+                claims.append(Claim(
+                    claim_type=ClaimType.FACT,
+                    statement=(
+                        f"'{use.get('actor', '?')}' performed {use.get('verb', '?')} on "
+                        f"{use.get('resource_type', '?')} '{use.get('resource_name', '?')}'"
+                        f"{where}."
+                    ),
+                    evidence_ids=(use["event_id"],),
+                    source="tool", agent=self.name,
+                ))
+
+            if grants and uses:
+                delta = int((
+                    pd.Timestamp(uses[0]["timestamp"]) - pd.Timestamp(grants[0]["timestamp"])
+                ).total_seconds())
+                claims.append(Claim(
+                    claim_type=ClaimType.INFERENCE,
+                    statement=(
+                        f"'{beneficiary}' acted on the granted privilege {delta}s after "
+                        "receiving it, which is consistent with the grant being used "
+                        "for exploration or post-exploitation access rather than left "
+                        "dormant."
+                    ),
+                    evidence_ids=tuple(r["event_id"] for r in grants + uses),
+                    source="analysis", agent=self.name, confidence=0.75,
+                ))
+            elif grants and not uses:
+                notes.append(
+                    f"'{beneficiary}' was granted a privilege but no subsequent use of "
+                    "it was observed in this case's evidence window."
+                )
+
+        if not reconstructed:
+            notes.append(
+                "No control-plane privilege chain could be reconstructed for this case."
+            )
+
+        return self._result(state, reason, claims, notes=tuple(notes))
 
 
 # ======================================================================================

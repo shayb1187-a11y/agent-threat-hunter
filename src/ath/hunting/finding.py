@@ -27,6 +27,8 @@ from typing import Any
 
 import pandas as pd
 
+from ath.channels import TelemetryChannel
+
 
 class Severity(str, Enum):
     """Analyst-facing severity.
@@ -98,6 +100,11 @@ class Finding:
             behaviour, and saying so out loud is part of doing this honestly.
         false_positives: Known benign causes of this pattern.
         metadata: Rule-specific extras (decoded commands, counts, source IPs).
+        channels: The rule's explicitly declared telemetry channels, carried on the
+            finding itself rather than looked up later by rule id. Empty for the common
+            case, where a channel can be inferred from ``fields_used`` column names;
+            set when a rule declared ``Detector.channels`` explicitly because that
+            inference would be ambiguous. See ``ath.hunting.base.Detector.channels``.
     """
 
     rule_id: str
@@ -110,6 +117,7 @@ class Finding:
     fields_used: tuple[str, ...] = ()
     false_positives: tuple[str, ...] = ()
     metadata: dict[str, Any] = field(default_factory=dict)
+    channels: frozenset[TelemetryChannel] = frozenset()
 
     def __post_init__(self) -> None:
         if not self.evidence:
@@ -181,6 +189,7 @@ class Finding:
             "fields_used": list(self.fields_used),
             "false_positives": list(self.false_positives),
             "metadata": _jsonable(self.metadata),
+            "channels": sorted(c.value for c in self.channels),
         }
 
     def __str__(self) -> str:

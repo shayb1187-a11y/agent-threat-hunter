@@ -276,6 +276,29 @@ TECHNIQUES: dict[str, Technique] = {
         # in the TA0112 listing and absent from TA0005. Carried here so the coverage
         # watchlist can reference a catalogue entry rather than a bare string.
         _t("T1112", "Modify Registry", (Tactic.DEFENSE_IMPAIRMENT,), None),
+        # -- Account Manipulation: cloud/container persistence & privilege escalation -
+        # Added for Milestone 13 (AWS-001, K8S-001, K8S-002). Verified against
+        # attack.mitre.org, not recalled: T1098's own tactics are Persistence and
+        # Privilege Escalation, and every sub-technique below shares that same pair.
+        _t("T1098", "Account Manipulation",
+           (Tactic.PERSISTENCE, Tactic.PRIVILEGE_ESCALATION), None),
+        # AWS-001's policy-attach half: "updating IAM policies in AWS" is the
+        # documented example behaviour for this exact sub-technique.
+        _t("T1098.003", "Additional Cloud Roles",
+           (Tactic.PERSISTENCE, Tactic.PRIVILEGE_ESCALATION), "T1098"),
+        # AWS-001's access-key-creation half.
+        _t("T1098.001", "Additional Cloud Credentials",
+           (Tactic.PERSISTENCE, Tactic.PRIVILEGE_ESCALATION), "T1098"),
+        # K8S-001, and the grant half of K8S-002: binding a Kubernetes cluster role to
+        # an identity, verified as this sub-technique's defining behaviour rather than
+        # inferred from the generic "Account Manipulation" parent.
+        _t("T1098.006", "Additional Container Cluster Roles",
+           (Tactic.PERSISTENCE, Tactic.PRIVILEGE_ESCALATION), "T1098"),
+        # -- Container execution --------------------------------------------------------
+        # K8S-002's exec half. Verified: Execution tactic; description explicitly names
+        # `kubectl exec` when sufficient permissions exist, which is this rule's exact
+        # evidence shape.
+        _t("T1609", "Container Administration Command", (Tactic.EXECUTION,), None),
     )
 }
 
