@@ -56,9 +56,11 @@ from ath.evaluation.suite import standard_suite
 from ath.logging_setup import get_logger, setup_logging
 from ath.mitre import ATTACK_VERSION, map_finding
 from ath.engineering import propose_and_iterate
+from ath.capabilities import CAPABILITY_REGISTRY, assemble_crew
 from ath.telemetry import DefenderExportSource, write_normalized_telemetry
 from ath.telemetry.cloudtrail_source import CloudTrailSource
 from ath.telemetry.k8s_audit_source import K8sAuditSource
+from ath.telemetry.loader import Telemetry, merge_telemetry
 from ath.triage import (
     BENIGN_THRESHOLD,
     FEEDBACK_FILENAME,
@@ -1077,6 +1079,8 @@ def cmd_environment(args: argparse.Namespace, settings: Settings) -> int:
 
     print(_c("=== ENVIRONMENT MODEL ===", "BOLD"))
     print(f"platform    : {env.platform}  ({env.platform_reason})")
+    if env.platforms:
+        print(f"platforms   : {', '.join(sorted(env.platforms))}")
     print(f"sources     : {', '.join(env.data_sources) or 'unknown'}")
     print(
         f"observed    : {env.event_count} events over "
@@ -1107,6 +1111,73 @@ def cmd_environment(args: argparse.Namespace, settings: Settings) -> int:
     print(_c("-- NOT determinable from this telemetry --", "HIGH"))
     for unknown in env.undetermined:
         print(f"  - {unknown}")
+    return 0
+
+
+def cmd_crew(args: argparse.Namespace, settings: Settings) -> int:
+    """Assemble the specialist crew for an environment, and show what got excluded.
+
+    The visible artifact for Milestone 13's central claim: run this against a
+    Windows-only environment, a cloud/Kubernetes-only one, and a hybrid of all three
+    (by passing more than one telemetry flag at once), and see three different,
+    capability-derived crews -- not the same roster relabeled.
+    """
+    sets: list[Telemetry] = []
+    sources_described: list[str] = []
+
+    if not args.no_windows:
+        try:
+            sets.append(load_telemetry(settings.raw_data_dir))
+            sources_described.append(f"windows synthetic/imported ({settings.raw_data_dir})")
+        except FileNotFoundError:
+            if not (args.cloudtrail or args.k8s_audit):
+                raise
+
+    if args.cloudtrail:
+        result = CloudTrailSource(Path(args.cloudtrail)).load()
+        sets.append(Telemetry(
+            processes=result.tables["process"], network=result.tables["network"],
+            logons=result.tables["logon"], controls=result.tables["control"],
+        ))
+        sources_described.append(f"cloudtrail ({args.cloudtrail})")
+
+    if args.k8s_audit:
+        result = K8sAuditSource(Path(args.k8s_audit), cluster=args.cluster).load()
+        sets.append(Telemetry(
+            processes=result.tables["process"], network=result.tables["network"],
+            logons=result.tables["logon"], controls=result.tables["control"],
+        ))
+        sources_described.append(f"k8s-audit ({args.k8s_audit}, cluster={args.cluster})")
+
+    if not sets:
+        print(_c(
+            "No telemetry sources selected. Pass --cloudtrail/--k8s-audit, or drop "
+            "--no-windows to use the local dataset.", "HIGH",
+        ))
+        return 1
+
+    telemetry = sets[0] if len(sets) == 1 else merge_telemetry(sets)
+    environment = build_environment_model(telemetry)
+    tools = ToolBox(telemetry, findings=[], cases=[])
+    crew = assemble_crew(environment, tools)
+
+    if args.json:
+        out = Path(args.json)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(crew.to_dict(), indent=2), encoding="utf-8")
+        print(f"Wrote crew -> {out}")
+        return 0
+
+    print(_c("=== ASSEMBLED CREW ===", "BOLD"))
+    print(f"sources    : {', '.join(sources_described)}")
+    print(f"platforms  : {', '.join(sorted(environment.platforms)) or 'unknown'}")
+    by_id = {spec.id: spec for spec in CAPABILITY_REGISTRY}
+    print(f"\nstanding up ({len(crew.specialists)}):")
+    for specialist in crew.specialists:
+        print(f"  {_c('+', 'LOW')} {specialist.name:<14} {by_id[specialist.name].description}")
+    print(f"\nexcluded ({len(crew.excluded)}):")
+    for spec, reason in crew.excluded:
+        print(f"  {_c('-', 'HIGH')} {spec.id:<14} {reason}")
     return 0
 
 
@@ -1383,6 +1454,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_env.add_argument("--json", metavar="PATH", help="Write the model as JSON.")
     p_env.set_defaults(func=cmd_environment)
+
+    p_crew = sub.add_parser(
+        "crew",
+        help="Assemble the specialist crew for an environment, and show what got excluded.",
+    )
+    p_crew.add_argument(
+        "--no-windows", action="store_true",
+        help="Exclude the local Windows synthetic/imported dataset.",
+    )
+    p_crew.add_argument("--cloudtrail", metavar="PATH", help="Include a CloudTrail export.")
+    p_crew.add_argument("--k8s-audit", metavar="PATH", help="Include a Kubernetes audit log.")
+    p_crew.add_argument(
+        "--cluster", default="default",
+        help="Cluster identifier for --k8s-audit (default: 'default').",
+    )
+    p_crew.add_argument("--json", metavar="PATH", help="Write the assembled crew as JSON.")
+    p_crew.set_defaults(func=cmd_crew)
 
     p_vis = sub.add_parser(
         "visibility",

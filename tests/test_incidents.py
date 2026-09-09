@@ -216,23 +216,26 @@ def test_kubernetes_incident_is_detected_and_correlated(kubernetes) -> None:
     assert not kubernetes.techniques_missing
 
 
-def test_kubernetes_incident_is_not_yet_investigated(kubernetes) -> None:
-    """The gap this milestone's Phase A leaves open, measured rather than hidden.
+def test_kubernetes_incident_reaches_its_conclusions(kubernetes) -> None:
+    """Phase B closes the gap Phase A measured and left open on purpose.
 
-    `run_incident` investigates with `default_specialists()` -- the fixed roster that
-    predates this milestone, and does not include `ControlPlaneAgent`. So this case is
-    detected and correctly correlated, and then investigated by four specialists none
-    of which read `ath.schema.EVENT_CONTROL`: zero facts, zero tool calls. The same
-    shape as INC-002's original zero-facts bug, for a missing *specialist* rather than
-    a missing *case*. `test_control_plane_agent.py`'s Proof A already shows the fix in
-    isolation; Phase B threads it through the orchestrator so this incident passes too
-    -- when it does, this test (not just an assertion inside it) is meant to be
-    replaced by `test_kubernetes_incident_reaches_its_conclusions` below.
+    `run_incident` builds an `EnvironmentModel` and passes it to the orchestrator,
+    which -- since M13 Phase B -- assembles its specialist roster from that
+    environment via `ath.capabilities.crew.assemble_crew` rather than always using
+    the fixed `default_specialists()`. `CONTAINER_AUDIT` is observable for this
+    telemetry, so `ControlPlaneAgent` now stands up automatically and this incident
+    is actually investigated: this is the same measured incident that used to be
+    pinned at 0 facts (see the M13 Phase A commit) before this orchestrator wiring
+    existed.
     """
-    assert kubernetes.facts == 0
-    assert kubernetes.tool_calls == 0
-    assert not kubernetes.passed
-    assert set(kubernetes.conclusions_missed) == {"ci-runner", "cluster-admin", "web-1"}
+    assert kubernetes.facts > 0
+    assert kubernetes.tool_calls > 0
+    assert kubernetes.passed
+    assert not kubernetes.conclusions_missed
+
+
+def test_kubernetes_incident_never_asserts_exfiltration_or_ransom(kubernetes) -> None:
+    assert not kubernetes.overclaimed_as_fact
 
 
 # ======================================================================================

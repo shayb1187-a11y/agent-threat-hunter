@@ -54,20 +54,22 @@ agentic-threat-hunter/
 │   ├── config.py        # paths + env vars (never secrets in code)
 │   ├── logging_setup.py
 │   ├── cli.py           # single entry point for every command
-│   ├── telemetry/       # ✅ pluggable TelemetrySource: synthetic + Defender import
+│   ├── telemetry/       # ✅ pluggable TelemetrySource: synthetic + Defender + cloud/K8s
 │   │   ├── source.py    #    TelemetrySource ABC, SourceLoadResult, NormalizationIssue
 │   │   ├── synthetic_source.py  # wraps the generator behind the same interface
 │   │   ├── defender_source.py   # real Microsoft Defender CSV/JSON import
 │   │   ├── identity.py  #    sha256 / signer / signature_status: a file vs its filename
-│   │   ├── cloudtrail_source.py # AWS CloudTrail: what maps, and what deliberately does not
+│   │   ├── cloudtrail_source.py # AWS CloudTrail: authentication + management-API activity
+│   │   ├── k8s_audit_source.py  # Kubernetes audit log: RBAC grants + pod exec
 │   │   ├── normalize.py #    shared coerce_and_validate() -- one funnel, every source
-│   │   └── loader.py    #    reads canonical CSVs, regardless of what produced them
-│   ├── hunting/         # ✅ 10 detection rules, Finding model, hunt engine
+│   │   └── loader.py    #    reads canonical CSVs; merge_telemetry() combines sources
+│   ├── hunting/         # ✅ 16 detection rules, Finding model, hunt engine
 │   │   ├── finding.py   #    Finding / Evidence / Severity
 │   │   ├── base.py      #    Detector ABC, HuntConfig thresholds, registry
 │   │   ├── indicators.py#    shared helpers (b64 decode, IP classification)
 │   │   ├── engine.py    #    run_hunt() with per-rule error isolation
-│   │   └── rules/       #    grouped by telemetry source, Sigma-style
+│   │   └── rules/       #    grouped by telemetry source, Sigma-style -- including
+│   │                    #    aws_rules.py / k8s_rules.py over EVENT_CONTROL
 │   ├── mitre/           # ✅ verified ATT&CK catalogue + evidence-gated mapper
 │   │   ├── attack.py    #    Technique catalogue, Tactic, AttackMapping
 │   │   └── mapper.py    #    gated rule -> technique interpretations
@@ -78,10 +80,13 @@ agentic-threat-hunter/
 │   ├── agent/           # ✅ autonomous investigation layer (works with NO API key)
 │   │   ├── claims.py    #    Claim (FACT/INFERENCE/HYPOTHESIS) + ClaimVerifier
 │   │   ├── tools.py     #    read-only ToolBox -- the agent's ONLY route to data
-│   │   ├── specialists.py#   Endpoint/Identity/Network/ATT&CK agents, gated
-│   │   ├── orchestrator.py#  plan -> act -> verify loop, deterministic stopping
+│   │   ├── specialists.py#   Endpoint/Identity/Network/ControlPlane/ATT&CK agents, gated
+│   │   ├── orchestrator.py#  plan -> act -> verify loop; roster from ath.capabilities
 │   │   ├── llm.py       #    NullLLM / ScriptedLLM / AnthropicLLM behind one interface
 │   │   └── graph.py     #    optional LangGraph adapter (same logic, different runtime)
+│   ├── capabilities/    # ✅ environment-driven crew assembly (Milestone 13)
+│   │   ├── registry.py  #    CapabilitySpec: what each capability needs, requires_all/any
+│   │   └── crew.py      #    assemble_crew(): observable_channels -> the crew that fits
 │   ├── reporting/       # ✅ calibrated Markdown/JSON report generation
 │   │   ├── models.py    #    Report, EvidenceAppendixEntry, RecommendedAction
 │   │   ├── builder.py   #    deterministic assembly from InvestigationState
@@ -93,7 +98,7 @@ agentic-threat-hunter/
 │   ├── evaluation/      # ✅ per-rule scoring + end-to-end incident benchmark
 │   │   ├── evaluator.py #    precision/recall per rule (only reader of labels)
 │   │   ├── incidents.py #    whole-pipeline metrics: load, noise, chain quality, cost
-│   │   └── suite.py     #    the three incidents this project reports itself against
+│   │   └── suite.py     #    the incidents this project reports itself against
 │   ├── triage/          # ✅ arguing the innocent explanation, with cited evidence
 │   │   ├── benign.py    #    gated benign signals + vetoes; annotates, never suppresses
 │   │   └── feedback.py  #    append-only analyst verdicts + triage agreement metrics
@@ -101,11 +106,11 @@ agentic-threat-hunter/
 │       ├── channels.py  #    TelemetryChannel: available / partial / absent, measured
 │       ├── model.py     #    EnvironmentModel: hosts, identities, controls, unknowns
 │       └── coverage.py  #    detectable / undetected / unverifiable / unobservable
-├── queries/             # ✅ 10 KQL files + a KQL primer (README.md)
+├── queries/             # ✅ 16 KQL files + a KQL primer (README.md)
 ├── docs/
 │   ├── data-dictionary.md
 │   └── detection-engineering.md   # the v1->v2 walkthrough with real numbers
-├── tests/               # 545 tests
+├── tests/               # 652 tests
 └── main.py
 ```
 
@@ -189,7 +194,7 @@ python main.py benchmark --json bench.json   # ...as structured output
 python main.py feedback --finding-id <id> --verdict false_positive --analyst sam
 python main.py feedback                      # triage agreement + measured FP cost by rule
 
-pytest -q                          # 545 tests
+pytest -q                          # 652 tests
 ```
 
 No API key is required for anything built so far — the entire deterministic pipeline
@@ -1269,27 +1274,27 @@ mapping gate correctly. None of them answer the question that matters: **given a
 incident, does an analyst end up better off?**
 
 `python main.py benchmark` runs the whole pipeline over labelled incidents and measures
-what an analyst would actually receive. It currently reports **3 of 3 incidents meeting their
+what an analyst would actually receive. It currently reports **5 of 5 incidents meeting their
 success condition** -- which is exactly when a benchmark is most at risk of becoming
 decorative, so the numbers underneath stay reported individually. "All incidents pass"
 is not the same claim as "the system is quiet": the Windows scenario still raises a
 false-positive case, and case precision is still 50%.
 
-| | INC-001 Windows intrusion | INC-002 Cloud credential stuffing | INC-003 Quiet day |
-| --- | --- | --- | --- |
-| **Verdict** | PASS | PASS | PASS |
-| Detected | yes | yes | n/a (success = silence) |
-| Event recall | 100% (31/31) | 93% (13/14) | — |
-| Findings → cases | 13 → 2 | 1 → **0** | 2 → **1** |
-| Triage reduction | 85% | — | — |
-| Noise cases | **1** | 0 | **1** |
-| Findings after triage | 11 | 1 | **0** |
-| Facts produced | 19 | **2** | 1 |
-| Case precision | **50%** | — | 0% |
-| Chain recall / purity | 100% / 100% | — | — |
-| Claims | 19 fact, 28 inference, 2 hypothesis | **none** | 1 fact, 5 inference |
-| Fabricated citations | 0 | 0 | 0 |
-| Cost | 43 tool calls, 0.11s | 0 tool calls | 7 tool calls |
+| | INC-001 Windows intrusion | INC-002 Cloud credential stuffing | INC-004 Ransomware prep | INC-005 Kubernetes escalation | INC-003 Quiet day |
+| --- | --- | --- | --- | --- | --- |
+| **Verdict** | PASS | PASS | PASS | PASS | PASS |
+| Detected | yes | yes | yes | yes | n/a (success = silence) |
+| Event recall | 100% (31/31) | 93% (13/14) | 100% (6/6) | 100% (2/2) | — |
+| Findings → cases | 13 → 2 | 1 → **0** | 4 → 3 | 2 → 1 | 2 → **1** |
+| Triage reduction | 85% | — | 25% | 50% | — |
+| Noise cases | **1** | 0 | **1** | 0 | **1** |
+| Findings after triage | 11 | 1 | 2 | 2 | **0** |
+| Facts produced | 19 | **2** | 1 | 3 | 1 |
+| Case precision | **50%** | — | 67% | 100% | 0% |
+| Chain recall / purity | 100% / 100% | — | 50% / 100% | 100% / 100% | — |
+| Claims | 19 fact, 28 inference, 2 hypothesis | **none** | 1 fact, 2 inference | 3 fact, 5 inference | 1 fact, 5 inference |
+| Fabricated citations | 0 | 0 | 0 | 0 | 0 |
+| Cost | 43 tool calls, 0.41s | 3 tool calls, 0.02s | 3 tool calls, 0.30s | 5 tool calls, 0.03s | 7 tool calls |
 
 ### What the failures mean
 
@@ -1318,6 +1323,18 @@ are still reported so the case that is raised stays visible.
 **INC-001: half the cases are false alarms.** Case precision is 50% — the intrusion is
 found perfectly (100% recall, 100% purity, in a single case) but the IT administrator's
 encoded-PowerShell look-alike produces a second case alongside it.
+
+**INC-005 repeated INC-002's story, for a missing specialist instead of a missing case
+(Milestone 13).** `K8S-001`/`K8S-002` fired on Kubernetes audit telemetry and correlated
+correctly via `shared_evidence` — but investigation used `default_specialists()`, the
+fixed roster that predates environment-driven crew assembly and includes nothing that
+reads `ath.schema.EVENT_CONTROL`. Same shape as INC-002 before its fix: **0 facts, 0 tool
+calls**, detected and correlated with nothing to say about it. The fix this time is not
+another exception to correlation's rules, it is [environment-driven crew
+assembly](#adaptive-crew-assembly): once the orchestrator assembles its roster from what
+the environment can actually see, `ControlPlaneAgent` stands up automatically and the
+incident is investigated for real — 3 facts, 5 inferences, 5 tool calls, all conclusions
+reached.
 
 ### Two measurement bugs this harness had first
 
@@ -1514,6 +1531,78 @@ the environment at all.
 
 ---
 
+## Adaptive crew assembly
+
+Every layer above this one still ran the same four specialists on every case, selecting
+among them per-case (`Specialist.should_run`) but never asking whether a capability
+belongs in the roster *at all* for a given environment. Milestone 13 adds the step this
+project's stated goal — "different environments require different security teams" —
+actually depends on: `ath.capabilities.assemble_crew` turns `EnvironmentModel.
+observable_channels` into the subset of a small, declarative registry
+(`CapabilitySpec`) that can do real work here, before any case exists.
+
+```python
+CapabilitySpec(
+    id="control_plane", factory=ControlPlaneAgent,
+    requires_any=frozenset({CLOUD_MANAGEMENT_ACTIVITY, CONTAINER_AUDIT}),
+    description="Cloud/Kubernetes control-plane privilege-escalation chains.",
+)
+```
+
+`requires_any` matters here specifically: an AWS-only environment and a Kubernetes-only
+one should each stand this capability up, without needing both kinds of telemetry at
+once. Deterministic and declarative throughout — set membership over a static tuple, no
+model in the loop, no ranking. `python main.py crew` is the visible artifact:
+
+```
+$ python main.py crew                                    # Windows synthetic dataset
+platforms  : windows
+standing up (4): endpoint, identity, network, attack
+excluded (1): control_plane -- none of its alternative channels are observable:
+              cloud_management_activity, container_audit
+
+$ python main.py crew --no-windows --cloudtrail tests/fixtures/cloudtrail \
+                       --k8s-audit tests/fixtures/k8s_audit
+platforms  : aws, kubernetes
+standing up (3): identity, attack, control_plane
+excluded (2): endpoint -- missing required channel(s): process_execution
+              network  -- missing required channel(s): network_flow
+
+$ python main.py crew --cloudtrail tests/fixtures/cloudtrail \
+                       --k8s-audit tests/fixtures/k8s_audit    # + local Windows dataset
+platforms  : aws, kubernetes, windows
+standing up (5): endpoint, identity, network, attack, control_plane
+excluded (0)
+```
+
+Three genuinely different crews from three genuinely different environments — not the
+same four specialists relabeled, and the hybrid case isn't a rounding of the other two:
+`EnvironmentModel.platforms` is a *set*, computed by union rather than by picking one, so
+an estate that really does have Windows endpoints, AWS accounts and a Kubernetes cluster
+at once gets all five capabilities standing up simultaneously.
+
+**This changes measured investigation quality, not just which classes get instantiated.**
+[INC-005](#how-useful-is-this-actually) is detected and correctly correlated either way;
+whether it gets *investigated* depends entirely on whether `ControlPlaneAgent` was in the
+roster. Two separate proofs pin this: `tests/test_control_plane_agent.py` shows the
+specialist adds real value in isolation (old roster: 0 facts; roster + the one new
+specialist: real facts and the correct inference) with no registry involved, and
+`tests/test_crew_assembly.py` shows assembly selects and excludes the right capabilities
+for each environment — including the hybrid one — independently of whether an
+investigation is ever run. Neither test could stand in for the other: a specialist that
+works but never gets assembled helps no one, and a registry that assembles a specialist
+which does nothing useful proves nothing either.
+
+**What this still is not.** `CapabilitySpec` is a fixed, hand-written registry of five
+capabilities — the system selects among capabilities that already exist, it does not
+design or propose a new one for a telemetry shape nobody anticipated. A capability
+registry with versioning, evaluation gates for newly proposed capabilities, and
+per-capability token/tool budgets — the parts of the original vision this milestone does
+not reach — is the gap between this and the adaptive platform described in the opening
+sections of this README.
+
+---
+
 ## Roadmap
 
 | # | Milestone | Status |
@@ -1529,6 +1618,8 @@ the environment at all.
 | 9 | Capability-based specialist eligibility; CloudTrail source; incident benchmark | ✅ done |
 | 10 | Benign-evidence triage: prevalence baselines, gated signals, malicious veto | ✅ done |
 | 11 | Singleton cases, process identity (hash/signer/path), multi-window prevalence, analyst feedback | ✅ done |
+| 12 | ATT&CK catalogue migrated to v19.2; shared `ath.behavior` layer closes a beacon-triage false negative; `ATH-011`/`ATH-012` (recovery inhibition, security-tool tampering) | ✅ done |
+| 13 | Adaptive crew assembly: `ath.schema.EVENT_CONTROL`, CloudTrail management-API + Kubernetes audit ingestion, `AWS-001/002`/`K8S-001/002`, `ControlPlaneAgent`, environment-driven `assemble_crew` | ✅ done |
 
 ---
 

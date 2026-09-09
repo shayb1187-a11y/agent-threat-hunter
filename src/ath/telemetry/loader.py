@@ -9,6 +9,7 @@ correlation depends on.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -261,6 +262,44 @@ def _assert_event_ids_globally_unique(tables: dict[str, pd.DataFrame]) -> None:
             "two Defender exports into one directory, import them into separate "
             "directories instead."
         )
+
+
+def merge_telemetry(telemetries: Sequence[Telemetry]) -> Telemetry:
+    """Combine several telemetry sets into one -- e.g. a hybrid Windows+AWS+Kubernetes
+    environment assembled from separately-loaded sources.
+
+    Every source this project ships namespaces its own ``event_id``s distinctly
+    (``evt-``, ``defender-*-``, ``cloudtrail-*-``, ``k8s-control-``), so concatenation
+    is safe by construction -- this still asserts global uniqueness rather than
+    trusting that, the same way :func:`load_telemetry` does for a single directory, so
+    a future source that does not follow the convention fails loudly instead of
+    silently corrupting evidence citation.
+
+    Args:
+        telemetries: One or more :class:`Telemetry` sets to combine. Order is
+            preserved within each table but does not otherwise matter.
+
+    Raises:
+        ValueError: if no telemetry sets are given.
+        SchemaError: if any event id appears in more than one input set.
+    """
+    if not telemetries:
+        raise ValueError("merge_telemetry requires at least one Telemetry set")
+
+    merged = Telemetry(
+        processes=pd.concat([t.processes for t in telemetries], ignore_index=True),
+        network=pd.concat([t.network for t in telemetries], ignore_index=True),
+        logons=pd.concat([t.logons for t in telemetries], ignore_index=True),
+        controls=pd.concat([t.controls for t in telemetries], ignore_index=True),
+    )
+    _assert_event_ids_globally_unique({
+        EVENT_PROCESS: merged.processes, EVENT_NETWORK: merged.network,
+        EVENT_LOGON: merged.logons, EVENT_CONTROL: merged.controls,
+    })
+    logger.info(
+        "Merged %d telemetry set(s) into %d events", len(telemetries), merged.event_count,
+    )
+    return merged
 
 
 def load_ground_truth(data_dir: Path) -> dict[str, Any]:

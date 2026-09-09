@@ -44,9 +44,10 @@ from dataclasses import dataclass
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
 from ath.agent.llm import LLMClient, NullLLM
-from ath.agent.specialists import Specialist, default_specialists
+from ath.agent.specialists import Specialist
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
 from ath.agent.tools import ToolBox
+from ath.capabilities.crew import resolve_specialists
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
 from ath.logging_setup import get_logger
@@ -117,9 +118,12 @@ class InvestigationOrchestrator:
         self.tools = tools
         self.verifier = verifier
         self.llm = llm or NullLLM()
-        self.specialists = specialists or default_specialists(tools)
         self.config = config or InvestigationConfig()
         self.environment = environment
+        # Precedence: explicit specialists > environment-assembled crew > fixed
+        # default roster. See ath.capabilities.crew.resolve_specialists -- shared
+        # with the LangGraph runtime so the two cannot silently plan differently.
+        self.specialists = resolve_specialists(specialists, environment, tools)
         self._by_name = {s.name: s for s in self.specialists}
 
     # -- node: plan -----------------------------------------------------------------

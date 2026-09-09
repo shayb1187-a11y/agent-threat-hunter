@@ -32,9 +32,10 @@ from typing import Any, TypedDict
 from ath.agent.claims import ClaimVerifier
 from ath.agent.llm import LLMClient, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
-from ath.agent.specialists import Specialist, default_specialists
+from ath.agent.specialists import Specialist
 from ath.agent.state import InvestigationState
 from ath.agent.tools import ToolBox
+from ath.capabilities.crew import resolve_specialists
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
 from ath.logging_setup import get_logger
@@ -137,9 +138,12 @@ def run_investigation_via_langgraph(
     not installed. This means switching runtimes never changes investigation behaviour,
     only how the loop is executed and observed.
     """
+    # Resolved once, the same way the orchestrator itself resolves it, so an explicit
+    # specialists list, an environment-assembled crew, and the fixed default roster
+    # all mean the same thing here as they do calling the orchestrator directly.
+    resolved = resolve_specialists(specialists, environment, tools)
     orchestrator = InvestigationOrchestrator(
-        tools, verifier, llm or NullLLM(), specialists or default_specialists(tools),
-        config, environment,
+        tools, verifier, llm or NullLLM(), resolved, config, environment,
     )
 
     try:
