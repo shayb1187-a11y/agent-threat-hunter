@@ -98,6 +98,19 @@ class SourceLoadResult:
     issues: list[NormalizationIssue] = field(default_factory=list)
     ground_truth: dict[str, Any] | None = None
     rows_read: int = 0
+    unmapped: dict[str, int] = field(default_factory=dict)
+    """Rows the source recognised but has no canonical home for, counted per class.
+
+    A per-row :class:`NormalizationIssue` is the right record for a row that *should*
+    have mapped and did not -- an unparseable timestamp, a missing principal. It is the
+    wrong record for the 645,000 Sysmon image-load and file-create events in one hour of
+    a real Windows estate: those are not failures, they are channels the schema does not
+    model, and one object per row would cost more memory than the telemetry itself while
+    saying the same thing 645,000 times. So a source may count them here instead, keyed by
+    a stable class name (``"Microsoft-Windows-Sysmon/Operational:7"``), and
+    :attr:`rows_dropped` still adds them up: the "how much of the export did we use"
+    number stays honest either way.
+    """
 
     @property
     def rows_kept(self) -> int:
@@ -105,7 +118,7 @@ class SourceLoadResult:
 
     @property
     def rows_dropped(self) -> int:
-        return len(self.issues)
+        return len(self.issues) + sum(self.unmapped.values())
 
     def issues_for(self, event_type: str) -> list[NormalizationIssue]:
         return [i for i in self.issues if i.event_type == event_type]

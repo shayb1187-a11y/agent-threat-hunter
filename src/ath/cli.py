@@ -983,7 +983,13 @@ def cmd_benchmark(args: argparse.Namespace, settings: Settings) -> int:
         PROJECT_ROOT / "tests" / "fixtures" / "k8s_audit"
     )
     incidents = standard_suite(settings.raw_data_dir, cloudtrail, k8s_audit)
-    result = run_benchmark(incidents)
+    llm = build_llm() if getattr(args, "llm", False) else NullLLM()
+    if getattr(args, "llm", False) and not llm.available:
+        print(_c(
+            "--llm requested but no LLM is configured (set ATH_LLM_API_KEY); "
+            "running the deterministic arm and labelling it as such.", "HIGH",
+        ))
+    result = run_benchmark(incidents, llm=llm)
 
     if args.json:
         out = Path(args.json)
@@ -996,7 +1002,8 @@ def cmd_benchmark(args: argparse.Namespace, settings: Settings) -> int:
     for outcome in result.outcomes:
         incident = outcome.incident
         verdict = _c("PASS", "LOW") if outcome.passed else _c("FAIL", "HIGH")
-        print(f"{_c(incident.incident_id, 'BOLD')}  {incident.name}   [{verdict}]")
+        arm = outcome.configuration + (" (DEGRADED)" if outcome.llm_degraded else "")
+        print(f"{_c(incident.incident_id, 'BOLD')}  {incident.name}   [{verdict}]  arm={arm}")
         print(f"  {_c(incident.description, 'DIM')}")
 
         if incident.is_benign:
@@ -1494,6 +1501,10 @@ def build_parser() -> argparse.ArgumentParser:
                          help="Directory of Kubernetes audit JSON for the K8s incident.")
     p_bench.add_argument("--no-fail", action="store_true",
                          help="Always exit 0, even when an incident misses its bar.")
+    p_bench.add_argument("--llm", action="store_true",
+                         help="Run the LLM arm: the identical pipeline with the configured "
+                              "model planning and synthesising. Results are recorded, not "
+                              "reproducible; see docs/m14-data-acquisition-plan.md 5.1.")
     p_bench.set_defaults(func=cmd_benchmark)
 
     p_fb = sub.add_parser(

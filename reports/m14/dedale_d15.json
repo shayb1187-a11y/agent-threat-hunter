@@ -1,0 +1,124 @@
+{
+  "dataset": "dedale_d15",
+  "source_kind": "winlogbeat",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 60728,
+    "rows_kept": 49276,
+    "rows_dropped": 11452,
+    "kept_fraction": 0.8114,
+    "kept_by_table": {
+      "process": 44876,
+      "network": 0,
+      "logon": 4400,
+      "control": 0
+    },
+    "drop_classes": [],
+    "unmapped_classes": {
+      "Microsoft-Windows-PowerShell/Operational:4103": 6393,
+      "Security:4672": 4252,
+      "Security:4634": 474,
+      "Security:4648": 210,
+      "Microsoft-Windows-PowerShell/Operational:4104": 123
+    },
+    "load_seconds": 57.3
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 49276,
+      "events_by_table": {
+        "process": 44876,
+        "network": 0,
+        "logon": 4400,
+        "control": 0
+      },
+      "window_hours": 10.53,
+      "window_days": 0.44,
+      "hosts": 30,
+      "identities": 66,
+      "platforms": [
+        "windows"
+      ]
+    },
+    "detection": {
+      "findings": 30,
+      "by_rule": {
+        "ATH-004": 30
+      },
+      "by_severity": {
+        "CRITICAL": 30
+      },
+      "findings_per_day": 68.394,
+      "findings_per_host_day": 2.2798
+    },
+    "triage": {
+      "dispositions": {
+        "likely_malicious": 30
+      },
+      "findings_after_triage": 30,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 30,
+      "singleton_cases": 30,
+      "links": 0,
+      "cases_per_day": 68.394
+    },
+    "cost_seconds": {
+      "hunt": 17.181,
+      "environment": 1.407,
+      "triage": 0.001,
+      "correlate": 0.798
+    }
+  },
+  "e8_scaling": [
+    {
+      "fraction": 0.1,
+      "events": 11347,
+      "findings": 30,
+      "cases": 30,
+      "seconds": {
+        "hunt": 2.877,
+        "environment": 0.536,
+        "triage": 0.001,
+        "correlate": 0.162
+      }
+    },
+    {
+      "fraction": 0.25,
+      "events": 19366,
+      "findings": 30,
+      "cases": 30,
+      "seconds": {
+        "hunt": 5.575,
+        "environment": 0.693,
+        "triage": 0.001,
+        "correlate": 0.299
+      }
+    },
+    {
+      "fraction": 0.5,
+      "events": 30094,
+      "findings": 30,
+      "cases": 30,
+      "seconds": {
+        "hunt": 9.743,
+        "environment": 0.96,
+        "triage": 0.001,
+        "correlate": 0.505
+      }
+    },
+    {
+      "fraction": 1.0,
+      "events": 49276,
+      "findings": 30,
+      "cases": 30,
+      "seconds": {
+        "hunt": 16.176,
+        "environment": 1.368,
+        "triage": 0.001,
+        "correlate": 0.777
+      }
+    }
+  ]
+}

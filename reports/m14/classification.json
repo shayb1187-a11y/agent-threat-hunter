@@ -1,0 +1,82 @@
+{
+  "_classes": {
+    "detection": "ATH can represent the event and a rule misses it (false negative) or fires on it wrongly (precision)",
+    "representation": "the relevant event has no canonical table or channel",
+    "triage": "detection works and produces too many benign cases",
+    "reasoning": "detection and correlation work, the investigation concludes wrongly",
+    "none": "the row measured no failure",
+    "unavailable": "the experiment did not run; never zero, never pass/fail"
+  },
+  "flaws_cloud": {
+    "provenance": "real",
+    "failure_class": "representation (dominant), triage (secondary)",
+    "evidence": "95.9% of 1,939,207 records are 1,233 eventNames with no canonical home (RunInstances 1,323,105; DescribeSnapshots 102,510; GetBucketAcl 42,651). Of what is represented, 39 findings all HIGH+ so the benign layer vetoed itself on 39/39 (0% triage reduction); 35/36 ATH-005 findings had no success. AWS-001 never fired although 32 AttachUserPolicy + 53 CreateAccessKey exist (71/96 denied). reports/m14/flaws_cloud.json"
+  },
+  "k8s_ci": {
+    "provenance": "real",
+    "benign_only": true,
+    "failure_class": "triage (dominant), representation (secondary)",
+    "evidence": "Benign-only source: 55 K8S-001 findings on 1,989 legitimate cluster-admin bindings to per-test-namespace default service accounts in 38 min = 2,070/day, 55 singleton cases, 0/55 triaged (graded_high_by_detection veto). K8S-002 correctly 0 on 5,962 execs. 97% of events unmapped incl. serviceaccounts/token 2,421 and secrets 3,329. Environment reports 0 identities for 213 principals (control-plane actors not counted). Before-fix rows: reports/m14/k8s_ci.before-exec-fix.json (0/5,962 execs ingested)."
+  },
+  "k8ntext": {
+    "provenance": "emulated-testbed",
+    "benign_only": true,
+    "failure_class": "none (representation caveat)",
+    "evidence": "0 findings on 13 legitimate binding creates (none maximally privileged) and 18 human execs with no grant: both rules correctly silent. 99.8% of events unmapped (leases, nodes, pods reads). reports/m14/k8ntext.json"
+  },
+  "dedale_probe_hours": {
+    "provenance": "emulated-testbed",
+    "failure_class": "representation (see .deterministic row)",
+    "evidence": "Profile of two non-adjacent hours (window_days is the 12-day span between them, not observation time). 0.48% of 1,383,837 events representable; Sysmon 3 absent so network table empty. reports/m14/dedale_probe_hours.json"
+  },
+  "dedale_probe_hours.deterministic": {
+    "provenance": "emulated-testbed",
+    "failure_class": "detection (on the 3 representable events), representation (on the 9,564 others)",
+    "evidence": "3 labelled process creates resolved (powershell.exe -> scvhost.exe from AppData\\Roaming; svcmon.exe from AppData\\Local\\Temp with C2 URL on the command line): representable in the process table, no rule describes an unsigned masquerading binary from a user-writable path or an unencoded PowerShell download-and-run. 9,564/9,567 labelled events are Sysmon 11/7/26/10/2/22 and PowerShell 800/4103, channels with no canonical table. reports/m14/dedale_probe_hours.deterministic.json"
+  },
+  "dedale_probe_hours.llm": {
+    "provenance": "emulated-testbed",
+    "status": "unavailable",
+    "arm": "llm",
+    "reason": "no ATH_LLM_API_KEY on this machine",
+    "failure_class": "unavailable",
+    "evidence": "Recorded as unavailable by scripts/m14_incident.py; not a deterministic row relabelled."
+  },
+  "dedale_d03": {
+    "provenance": "emulated-testbed",
+    "benign_only": true,
+    "failure_class": "detection precision (dominant), triage (secondary)",
+    "evidence": "Benign day (2024-12-25, 11 active hours, 9,337,790 raw events, 79,574 in the kept channels, 58,279 canonical rows on 30 hosts). 30 ATH-004 findings = 67.5/day: every one is lsass.exe itself, started by wininit.exe at boot, matched by the rule's 'explicit lsass reference' pattern on its own image path. Representable, wrongly detected. All 30 HIGH so triage vetoed itself: 0% reduction, 30 singleton cases. Everything else silent on 43,994 process creates and 14,285 logons (13,667 type 5 service logons). Hunt 16.8 s, dominated by regex rules ATH-011/004/008/012 (2.5-4.9 s each), correlate 0.7 s at 30 findings. reports/m14/dedale_d03.json"
+  },
+  "dedale_d15": {
+    "provenance": "emulated-testbed",
+    "failure_class": "detection precision (same 30 lsass.exe boot findings as day 3)",
+    "evidence": "Attack day 1 (2025-01-06, 9,125,775 raw events, 60,728 kept, 49,276 canonical rows). Identical 30 ATH-004 boot findings, 0 other findings. reports/m14/dedale_d15.json"
+  },
+  "dedale_d15.deterministic": {
+    "provenance": "emulated-testbed",
+    "failure_class": "representation (initial access), detection coverage (implant), detection precision + triage (30 noise cases), rubric weakness (hostname hit)",
+    "evidence": "5 labelled process creates resolved on the day: powershell.exe -> scvhost.exe (AppData\\Roaming, 10:03:44), svcmon.exe x2 (AppData\\Local\\Temp, C2 URL https://172.19.0.2:443 on the command line), cmd.exe -> reg.exe adding an HKCU Run key (11:00:05). 0 surfaced: no rule for an executable from a user-writable path with a system-like name (T1036) or a Run-key persistence write (T1547.001) -- both representable in the process table, so detection coverage. The PowerShell that downloaded the implant has NO Sysmon 1 record on CLIENT2 (60 powershell.exe creates exist estate-wide, so Sysmon does log it; the attack's instance is only in PowerShell 600/800/4103/4104, channels ATH has no table for: the visibility model already names script_block as absent_by_schema) -- representation. The document was opened by LibreOffice (soffice.exe), not an OFFICE_APPLICATIONS member. 9,562/9,567 labelled events are unrepresentable channels. The 30 lsass.exe findings formed 30 noise cases: case precision 0%; the investigated case was one of them and its 3 facts / 2 inferences hit the must_conclude 'CLIENT2' by naming the host of a false positive -- a hostname is too weak a rubric item and is discounted here. LLM arm unavailable. reports/m14/dedale_d15.deterministic.json"
+  },
+  "dedale_d15.llm": {
+    "provenance": "emulated-testbed",
+    "status": "unavailable",
+    "arm": "llm",
+    "reason": "no ATH_LLM_API_KEY on this machine",
+    "failure_class": "unavailable"
+  },
+  "k8s_ci_injected_attacks": {
+    "provenance": "real+injected",
+    "status": "unavailable",
+    "arm": "deterministic / llm",
+    "reason": "no docker, kind, kubectl or stratus on this machine (plan 5.3)",
+    "failure_class": "unavailable"
+  },
+  "bots_v3": {
+    "provenance": "emulated-testbed + real cloud",
+    "status": "unavailable",
+    "arm": "deterministic / llm",
+    "reason": "needs a Splunk instance for exporttool; none installed (plan step 4 gate)",
+    "failure_class": "unavailable"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "dataset": "dedale",
+  "provenance": "emulated-testbed",
+  "ingestion": {
+    "rows_read": 60728,
+    "rows_kept": 49276,
+    "rows_dropped": 11452,
+    "kept_by_table": {
+      "process": 44876,
+      "network": 0,
+      "logon": 4400,
+      "control": 0
+    }
+  },
+  "labels": {
+    "dataset": "dedale",
+    "provenance": "emulated-testbed",
+    "refs_total": 9567,
+    "refs_resolved": 5,
+    "malicious_refs_total": 9567,
+    "malicious_refs_unresolved": 9562,
+    "unresolved": {
+      "apt": [
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12813",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12814",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12815",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12816",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12818",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12817",
+        "host=CLIENT2.breach.local;channel=Windows PowerShell;record_id=12819",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292531",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292532",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292537",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292542",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292543",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292544",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292546",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292548",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292557",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292558",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292559",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292560",
+        "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=3292561"
+      ]
+    },
+    "ambiguous": {},
+    "unresolved_counts": {
+      "apt": 9562
+    },
+    "ambiguous_counts": {}
+  },
+  "arm": "deterministic",
+  "outcome": {
+    "incident_id": "DEDALE_D15",
+    "name": "dedale_d15",
+    "configuration": "deterministic",
+    "llm_degraded": false,
+    "llm_status": "deterministic mode (no model requested)",
+    "passed": false,
+    "benign_scenario": false,
+    "detection": {
+      "detected": false,
+      "event_recall": 0.0,
+      "malicious_events_surfaced": 0,
+      "malicious_events_total": 5
+    },
+    "analyst_load": {
+      "findings": 30,
+      "cases": 30,
+      "noise_cases": 30,
+      "triage_reduction": 0.0,
+      "case_precision": 0.0
+    },
+    "chain_quality": {
+      "primary_case_recall": 0.0,
+      "primary_case_purity": 0.0
+    },
+    "benign_discrimination": {
+      "benign_findings_identified": 0,
+      "benign_findings_total": 30,
+      "benign_recall": 0.0,
+      "malicious_findings_called_benign": 0,
+      "findings_after_triage": 30,
+      "triage_load_reduction": 0.0
+    },
+    "conclusions": {
+      "techniques_found": [],
+      "techniques_missing": [],
+      "conclusions_hit": [
+        "CLIENT2"
+      ],
+      "conclusions_missed": [
+        "scvhost.exe"
+      ],
+      "overclaimed_as_fact": []
+    },
+    "trust": {
+      "trustworthy": true,
+      "hallucinated_citations": 0,
+      "rejected_claims": 0,
+      "calibration_warnings": 0,
+      "facts": 3,
+      "inferences": 2,
+      "hypotheses": 0
+    },
+    "cost": {
+      "tool_calls": 4,
+      "runtime_seconds": 19.022
+    },
+    "notes": []
+  }
+}

@@ -25,3 +25,8 @@ reports/*.json
 
 # OS
 .DS_Store
+
+# External validation datasets (M14): fetched by scripts/fetch_external.py, never committed
+data/external/*
+!data/external/MANIFEST.json
+!data/external/dedale_winlogbeat_zip_index.json

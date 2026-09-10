@@ -56,5 +56,5 @@ Grants
 | sort by GrantTime desc
 
 // pandas equivalent:
-//   grants = same shape as K8S-001; execs = controls[verb=="create" & resource_type=="pods/exec"]
+//   grants = same shape as K8S-001; execs = controls[verb=="exec" & resource_type=="pods/exec"]  // adapter canonicalises create/connect/get -> exec
 //   for each grant: match execs where actor == grant.target_actor, within window

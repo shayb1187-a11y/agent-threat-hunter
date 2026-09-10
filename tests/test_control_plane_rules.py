@@ -207,7 +207,7 @@ def _grant_row(**overrides) -> dict:
 def _exec_row(**overrides) -> dict:
     row = {
         "timestamp": T0 + timedelta(minutes=3), "device": "k8s:c1", "user": "ci-runner",
-        "actor": "ci-runner", "verb": "create", "resource_type": "pods/exec",
+        "actor": "ci-runner", "verb": "exec", "resource_type": "pods/exec",
         "resource_name": "web-1", "resource_namespace": "prod",
     }
     row.update(overrides)

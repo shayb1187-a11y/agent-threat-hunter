@@ -160,8 +160,11 @@ class ExecShortlyAfterPrivilegeGrant(Detector):
         grants = _privilege_grants(controls)
         if grants.empty:
             return []
+        # ``exec`` is the canonical verb the adapter emits for a shell into a container,
+        # whatever HTTP-shaped verb (create/connect/get) the apiserver logged. Matching
+        # on ``create`` here missed 100% of the execs in a real 1.37 cluster's audit log.
         execs = controls[
-            (controls["verb"] == "create") & (controls["resource_type"] == _EXEC_RESOURCE_TYPE)
+            (controls["verb"] == "exec") & (controls["resource_type"] == _EXEC_RESOURCE_TYPE)
         ]
         if execs.empty:
             return []

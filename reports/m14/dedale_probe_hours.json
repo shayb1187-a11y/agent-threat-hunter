@@ -1,0 +1,88 @@
+{
+  "dataset": "dedale_probe_hours",
+  "source_kind": "winlogbeat",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 1383837,
+    "rows_kept": 6580,
+    "rows_dropped": 1377257,
+    "kept_fraction": 0.0048,
+    "kept_by_table": {
+      "process": 5934,
+      "network": 0,
+      "logon": 646,
+      "control": 0
+    },
+    "drop_classes": [],
+    "unmapped_classes": {
+      "Microsoft-Windows-Sysmon/Operational:11": 395009,
+      "Microsoft-Windows-Sysmon/Operational:26": 339036,
+      "Microsoft-Windows-Sysmon/Operational:7": 331881,
+      "Microsoft-Windows-Sysmon/Operational:10": 230887,
+      "Microsoft-Windows-Sysmon/Operational:22": 52073,
+      "Microsoft-Windows-Sysmon/Operational:18": 9700,
+      "Microsoft-Windows-Sysmon/Operational:17": 6660,
+      "Microsoft-Windows-Sysmon/Operational:5": 5976,
+      "Microsoft-Windows-Sysmon/Operational:2": 2451,
+      "Microsoft-Windows-Sysmon/Operational:9": 1897,
+      "Security:4672": 646,
+      "Security:5379": 397,
+      "System:8019": 120,
+      "Application:16394": 77,
+      "Application:16384": 77,
+      "Security:4634": 72,
+      "System:7040": 60,
+      "Security:4799": 60,
+      "System:1500": 36,
+      "Windows PowerShell:800": 33,
+      "Microsoft-Windows-PowerShell/Operational:4103": 33,
+      "System:1501": 31,
+      "Microsoft-Windows-Sysmon/Operational:15": 20,
+      "Application:10023": 11,
+      "Windows PowerShell:600": 6
+    },
+    "load_seconds": 307.6
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 6580,
+      "events_by_table": {
+        "process": 5934,
+        "network": 0,
+        "logon": 646,
+        "control": 0
+      },
+      "window_hours": 284.0,
+      "window_days": 11.83,
+      "hosts": 30,
+      "identities": 57,
+      "platforms": [
+        "windows"
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "cost_seconds": {
+      "hunt": 3.042,
+      "environment": 0.449,
+      "triage": 0.0,
+      "correlate": 0.0
+    }
+  }
+}

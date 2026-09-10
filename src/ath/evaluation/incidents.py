@@ -35,10 +35,20 @@ The benign incident carries no malicious events and its success condition is *ze
 detections*. Evaluation suites that only measure attack scenarios systematically reward
 trigger-happy detection, because the cost of a false alarm never appears in the numbers.
 
-Determinism
------------
-Runs with no language model. Every figure below is reproducible from the telemetry, so a
-regression shows up as a changed number rather than as a changed mood.
+Determinism, and the one deliberate exception
+----------------------------------------------
+By default this runs with no language model. Every figure is then reproducible from the
+telemetry, so a regression shows up as a changed number rather than as a changed mood.
+
+Milestone 14 adds a second *arm*: the identical pipeline -- same rules, correlation,
+specialists, tools and verifier, same cases -- with a real model in place of
+:class:`~ath.agent.llm.NullLLM`. The model plans and synthesises; it still cannot author
+a FACT or create a finding. Nothing about the measurement changes between arms except
+:attr:`IncidentOutcome.configuration`, which names which arm produced the row, and the
+LLM arm's figures are recorded rather than reproduced, because they cannot be. The
+criteria under which the LLM arm counts as an improvement are fixed in
+``docs/m14-data-acquisition-plan.md`` section 5.1, before any run: more claims, longer
+output and more tool calls are reported, never credited.
 """
 
 from __future__ import annotations
@@ -48,7 +58,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ath.agent.claims import ClaimType, ClaimVerifier
-from ath.agent.llm import NullLLM
+from ath.agent.llm import LLMClient, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
 from ath.agent.tools import ToolBox
 from ath.correlation import correlate
@@ -105,6 +115,13 @@ class IncidentOutcome:
     """What the pipeline actually produced for one incident."""
 
     incident: Incident
+
+    configuration: str = "deterministic"
+    """Which arm produced this row: ``deterministic`` (NullLLM) or the model's name."""
+    llm_degraded: bool = False
+    """True when an LLM arm fell back to deterministic planning mid-run (key, quota,
+    outage). Reported so an LLM row that silently ran deterministic cannot pass as one."""
+    llm_status: str = ""
 
     # -- detection ------------------------------------------------------------------
     detected: bool = False
@@ -241,6 +258,9 @@ class IncidentOutcome:
         return {
             "incident_id": self.incident.incident_id,
             "name": self.incident.name,
+            "configuration": self.configuration,
+            "llm_degraded": self.llm_degraded,
+            "llm_status": self.llm_status,
             "passed": self.passed,
             "benign_scenario": self.incident.is_benign,
             "detection": {
@@ -292,11 +312,30 @@ class IncidentOutcome:
         }
 
 
-def run_incident(incident: Incident, config: HuntConfig | None = None) -> IncidentOutcome:
-    """Run the full deterministic pipeline over one incident and measure the result."""
+def run_incident(
+    incident: Incident,
+    config: HuntConfig | None = None,
+    *,
+    llm: LLMClient | None = None,
+    investigation_config: InvestigationConfig | None = None,
+) -> IncidentOutcome:
+    """Run the full pipeline over one incident and measure the result.
+
+    With no ``llm`` (the default) the run is fully deterministic. Passing a real client
+    switches only the investigation stage to the LLM arm; detection, triage and
+    correlation are identical either way, which is what makes the two rows comparable.
+    """
     started = time.perf_counter()
     telemetry = incident.telemetry
-    outcome = IncidentOutcome(incident=incident)
+    llm = llm if llm is not None else NullLLM()
+    if investigation_config is None:
+        investigation_config = InvestigationConfig(
+            use_llm_planner=llm.available, use_llm_synthesis=llm.available,
+        )
+    outcome = IncidentOutcome(
+        incident=incident,
+        configuration=llm.name if llm.available else "deterministic",
+    )
     malicious = set(incident.malicious_event_ids)
     outcome.malicious_events_total = len(malicious)
 
@@ -369,12 +408,14 @@ def run_incident(incident: Incident, config: HuntConfig | None = None) -> Incide
     orchestrator = InvestigationOrchestrator(
         tools,
         ClaimVerifier(telemetry),
-        llm=NullLLM(),
-        config=InvestigationConfig(use_llm_planner=False, use_llm_synthesis=False),
+        llm=llm,
+        config=investigation_config,
         environment=environment,
     )
     state = orchestrator.investigate(target)
 
+    outcome.llm_degraded = bool(state.llm_degraded)
+    outcome.llm_status = str(state.llm_status)
     outcome.facts = len(state.facts)
     outcome.inferences = len(state.inferences)
     outcome.hypotheses = len(state.hypotheses)
@@ -438,6 +479,14 @@ class BenchmarkResult:
         }
 
 
-def run_benchmark(incidents: list[Incident]) -> BenchmarkResult:
-    """Run every incident and collect the outcomes."""
-    return BenchmarkResult(outcomes=tuple(run_incident(i) for i in incidents))
+def run_benchmark(
+    incidents: list[Incident],
+    *,
+    llm: LLMClient | None = None,
+    investigation_config: InvestigationConfig | None = None,
+) -> BenchmarkResult:
+    """Run every incident under one arm and collect the outcomes."""
+    return BenchmarkResult(outcomes=tuple(
+        run_incident(i, llm=llm, investigation_config=investigation_config)
+        for i in incidents
+    ))

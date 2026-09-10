@@ -1,0 +1,278 @@
+{
+  "_about": "M14 external validation datasets. Everything under data/external/ except this file is gitignored and re-fetchable from the entries below. Labels are read only by ath.evaluation; adapters never see them. sha256 values are of the exact bytes fetched on fetched_on.",
+  "datasets": {
+    "flaws_cloud": {
+      "name": "flaws.cloud public CloudTrail logs",
+      "publisher": "Summit Route (Scott Piper)",
+      "url": "https://summitroute.com/downloads/flaws_cloudtrail_logs.tar",
+      "source_page": "https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/",
+      "license": "UNVERIFIED (no license statement found; released as a public research dataset). Internal evaluation only; do not redistribute; commit nothing derived from it.",
+      "provenance": "real",
+      "telemetry": "AWS CloudTrail management events, {Records:[...]} JSON, gzipped, 20 files in one tar",
+      "files": [
+        {
+          "path": "flaws_cloud/raw/flaws_cloudtrail_logs.tar",
+          "bytes": 251688960,
+          "sha256": "f26c2b8da56bb00d695a57f00f86208117582b9216bb52424d68e718ca2a96aa"
+        }
+      ],
+      "fetched_on": "2026-09-10",
+      "fetch_command": "curl -sSL -o data/external/flaws_cloud/raw/flaws_cloudtrail_logs.tar https://summitroute.com/downloads/flaws_cloudtrail_logs.tar",
+      "subset_kept": "whole tar, read in place by CloudTrailSource (tar + gzip support added in M14 step 1); nothing extracted",
+      "labels": "none (narrative only)",
+      "probe_2026-09-10": {
+        "events": 1939207,
+        "time_min": "2017-02-12T19:57:06Z",
+        "time_max": "2020-10-07T21:03:30Z",
+        "distinct_eventNames": 1242,
+        "ath_mappable_auth": {
+          "AssumeRole": 79322,
+          "GetSessionToken": 298,
+          "ConsoleLogin": 81,
+          "GetFederationToken": 19
+        },
+        "ath_mappable_mgmt": {
+          "CreateAccessKey": 53,
+          "AttachUserPolicy": 32,
+          "PutUserPolicy": 8,
+          "StopLogging": 2,
+          "DeleteTrail": 1
+        },
+        "unmapped_fraction_by_eventName": 0.9588,
+        "identity_types": {
+          "IAMUser": 1825650,
+          "AWSService": 57616,
+          "AssumedRole": 42315,
+          "Root": 10997,
+          "AWSAccount": 2628
+        },
+        "histogram_file": "flaws_cloud/probe_eventname_histogram.json"
+      },
+      "e0_existing_adapter_2026-09-10": {
+        "rows_read": 1939207,
+        "rows_kept": 21904,
+        "rows_dropped": 1917303,
+        "logon": 21808,
+        "control": 96,
+        "wall_seconds": 88.1,
+        "largest_drop_reasons": {
+          "control/eventName not mapped (1,233 distinct names)": 1859391,
+          "logon/userIdentity no usable principal name": 57912
+        },
+        "note": "57,912 authentication records dropped for 'no usable principal' are almost certainly AWSService-invoked AssumeRole; the adapter's _principal() does not read invokedBy. Recorded as an adapter gap, not fixed here."
+      },
+      "e0_after_step1_2026-09-10": {
+        "rows_read": 1939207,
+        "rows_kept": 79520,
+        "kept_fraction": 0.041,
+        "logon": 79424,
+        "control": 96,
+        "wall_seconds": 174.2,
+        "change": "invokedBy principal fallback attributes the 57,616 AWSService-invoked AssumeRole records; findings unchanged at 39 (ATH-005 x36, AWS-002 x3), so the added rows added coverage without adding noise",
+        "report": "reports/m14/flaws_cloud.json"
+      }
+    },
+    "k8s_ci": {
+      "name": "Kubernetes CI e2e kube-apiserver audit log (ci-kubernetes-e2e-gci-gce run 2065053743543488512)",
+      "publisher": "Kubernetes project test-infra (public GCS bucket kubernetes-ci-logs)",
+      "url": "https://storage.googleapis.com/kubernetes-ci-logs/logs/ci-kubernetes-e2e-gci-gce/2065053743543488512/artifacts/bootstrap-e2e-master/kube-apiserver-audit.log",
+      "license": "UNVERIFIED (public bucket, no license text). Internal evaluation only.",
+      "provenance": "real (real kube-apiserver; workload is e2e tests, benign only)",
+      "telemetry": "audit.k8s.io/v1 NDJSON, mixed Metadata/Request/RequestResponse levels",
+      "files": [
+        {
+          "path": "k8s_ci/raw/kube-apiserver-audit.2065053743543488512.log",
+          "bytes": 507679070,
+          "sha256": "3bf4cbc048eacceb4a6b5c4b5af8198c8a526490be070bb7af8c2002a6fefffd"
+        }
+      ],
+      "fetched_on": "2026-09-10",
+      "fetch_command": "curl -sSL -o data/external/k8s_ci/raw/kube-apiserver-audit.2065053743543488512.log <url>",
+      "subset_kept": "one whole run, read in place (NDJSON support added in M14 step 2)",
+      "labels": "none (benign only)",
+      "probe_2026-09-10": {
+        "lines": 289503,
+        "response_complete": 267979,
+        "time_min": "2026-06-11T12:53:50Z",
+        "time_max": "2026-06-11T13:33:02Z",
+        "levels": {
+          "Request": 170059,
+          "Metadata": 52317,
+          "RequestResponse": 45603
+        },
+        "rbac_binding_creates": 1989,
+        "rbac_with_requestObject": 1989,
+        "pods_exec": 5962,
+        "sa_token": 2421,
+        "secrets_ops": 3329,
+        "distinct_users": 213,
+        "histogram_file": "k8s_ci/probe_histogram.json",
+        "note": "Adapter requires an EventList 'items' array; this is NDJSON, so it cannot be loaded without the small NDJSON change. 1,989 RBAC binding creates in 40 minutes is the K8S-001 false-positive pressure test."
+      },
+      "e0_after_step2_2026-09-10": {
+        "rows_read": 267979,
+        "rows_kept": 7951,
+        "kept_fraction": 0.0297,
+        "control": 7951,
+        "rbac_binding_creates": 1989,
+        "pods_exec": 5962,
+        "before_exec_fix": {
+          "rows_kept": 1989,
+          "note": "real apiservers log kubectl exec as verb get with status 101; adapter mapped only create/connect and read 101 as denied -> 0 of 5,962 execs ingested. Fixed in adapter (canonical verb 'exec'); before-fix row kept at reports/m14/k8s_ci.before-exec-fix.json"
+        },
+        "findings": {
+          "K8S-001": 55,
+          "K8S-002": 0
+        },
+        "cases": 55,
+        "singletons": 55,
+        "triage_reduction": 0.0,
+        "report": "reports/m14/k8s_ci.json"
+      }
+    },
+    "k8ntext": {
+      "name": "K8NTEXT Kubernetes audit log dataset v1.0.0",
+      "publisher": "Fondazione Bruno Kessler (daisyfbk)",
+      "url": "https://github.com/daisyfbk/k8ntext/releases/download/v1.0.0/audit-log-dataset.log",
+      "source_page": "https://github.com/daisyfbk/k8ntext",
+      "license": "CC BY-NC-ND 4.0. Internal evaluation only; no derived files committed; no redistribution.",
+      "provenance": "emulated-testbed (real kubeadm cluster, human administrator, benign only)",
+      "telemetry": "audit.k8s.io/v1 NDJSON, all RequestResponse",
+      "files": [
+        {
+          "path": "k8ntext/raw/audit-log-dataset.log",
+          "bytes": 63727748,
+          "sha256": "b77d5935c3cadb82bec6ec07971ec30e5c7329a72275e61a14f49a718d7a5b08"
+        }
+      ],
+      "fetched_on": "2026-09-10",
+      "fetch_command": "curl -sSL -o data/external/k8ntext/raw/audit-log-dataset.log <url>",
+      "subset_kept": "whole file (18,478 lines)",
+      "labels": "context ids only, no attacks",
+      "probe_2026-09-10": {
+        "histogram_file": "k8ntext/probe_histogram.json"
+      },
+      "e0_after_step2_2026-09-10": {
+        "rows_read": 18448,
+        "rows_kept": 31,
+        "kept_fraction": 0.0017,
+        "control": 31,
+        "rbac_binding_creates": 13,
+        "pods_exec": 18,
+        "findings": {},
+        "cases": 0,
+        "report": "reports/m14/k8ntext.json",
+        "note": "13 legitimate binding creates, none to a maximally privileged role: K8S-001 correctly silent; 18 human execs with no preceding grant: K8S-002 correctly silent"
+      }
+    },
+    "dedale": {
+      "name": "DEDALE: Dataset for Evaluating Detection of APT among Logs and Events",
+      "publisher": "INRIA / IRISA PIRAT (Lanvin, Majorczyk)",
+      "url": "https://doi.org/10.57745/Y5JLDG",
+      "source_page": "https://dedale.inria.fr/",
+      "license": "CC BY 4.0; cite the dataset and link https://dedale.inria.fr/ in any use or redistribution.",
+      "provenance": "emulated-testbed (about 40 VMs, AD domain breach.local, AURA-generated benign activity, 8-day APT)",
+      "telemetry": "Winlogbeat 7.10.2 ECS 1.5.0 NDJSON; archive is a zip (deflate) of 673 hourly .jsonl.bz2 files, 309 non-empty; ~1.8 GB JSON and 650-730k events per busy hour across ~30 Windows clients",
+      "archive": {
+        "dataverse_file_id": 717892,
+        "url": "https://entrepot.recherche.data.gouv.fr/api/access/datafile/717892",
+        "bytes": 27123250952,
+        "md5_prefix": "7af54ba2977f",
+        "range_requests": "supported (HTTP 206)",
+        "index_file": "dedale_winlogbeat_zip_index.json"
+      },
+      "files": [
+        {
+          "path": "dedale/raw/D15_H10_2025-01-06T10_winlogbeat_F347.jsonl.bz2",
+          "bytes": 93987839,
+          "sha256": "922302729273e36b07f7a0e6e45f915d8864f069dae4bee012b416a9b67e85d9",
+          "note": "deflate-wrapped bz2 as stored in the zip; attack-start hour"
+        },
+        {
+          "path": "dedale/raw/D3_H15_2024-12-25T15_winlogbeat_F64.jsonl.bz2",
+          "bytes": 103928879,
+          "sha256": "76372595a2840beb641dbd95f5ba0954ffac41ca3747af8a3da71bbd2261dd72",
+          "note": "deflate-wrapped bz2; benign week 1 hour"
+        }
+      ],
+      "fetched_on": "2026-09-10",
+      "fetch_command": "HTTP Range requests against the archive URL at the offsets in winlogbeat_zip_index.json (local header at offset, then 30+name+extra bytes, then usize bytes), inflate with zlib wbits=-15, then bz2 decompress",
+      "subset_kept": "two hourly files (probe). Plan: all 309 non-empty hours, filtered at fetch time to Sysmon 1/3/22, Security, PowerShell channels, per host",
+      "labels": "data/external/dedale/labels/dedale_class1_labels.json (native refs host;channel;record_id), generated by scripts/dedale_labels.py from system_logs_labels.zip class-1 files (9,567 events; 84 Sysmon 1, 0 Security). CC BY 4.0: the derived label file may be committed under tests/fixtures/external_labels/ once stable.",
+      "probe_2026-09-10": {
+        "attack_hour_D15_H10": {
+          "events": 650004,
+          "channels": {
+            "Microsoft-Windows-Sysmon/Operational": 648681,
+            "Security": 1025,
+            "System": 151,
+            "Application": 70,
+            "Windows PowerShell": 41,
+            "Microsoft-Windows-PowerShell/Operational": 36
+          },
+          "sysmon_1_process_create": 3115,
+          "sysmon_3_network": 0,
+          "sysmon_22_dns": 24139,
+          "sysmon_10_process_access": 112463,
+          "security_4624": 392,
+          "security_4625": 0,
+          "security_4688": 0
+        },
+        "benign_hour_D3_H15": {
+          "events": 733833,
+          "channels": {
+            "Microsoft-Windows-Sysmon/Operational": 732843,
+            "Security": 796,
+            "System": 99,
+            "Application": 95
+          },
+          "sysmon_1_process_create": 2819,
+          "sysmon_3_network": 0,
+          "sysmon_22_dns": 27934,
+          "security_4624": 254,
+          "security_4625": 0,
+          "security_4688": 0
+        },
+        "consequence": "Security channel present (logon successes only in sampled hours): ATH-006 can run; ATH-005 needs 4625 failures, unconfirmed. No Sysmon 3 network events in either hour: the network table will be empty, ATH-003 and the network specialist are blind on DEDALE unless Zeek conn.log (host-less) is added later. Not coerced: Sysmon 22 DNS queries are not connections."
+      },
+      "slices": {
+        "winlogbeat": "data/external/dedale/winlogbeat/D<day>_<date>.jsonl, produced by scripts/dedale_fetch_hours.py (range-fetch per hour, keep Sysmon 1/3, Security 4624/4625/4634/4648/4672, PowerShell 4103/4104); full per-hour class counts in dedale/hour_stats.json so E0 denominators survive filtering",
+        "days_requested_2026-09-10": "3 (benign) and 15 (attack start)",
+        "fetched_2026-09-10": {
+          "D03 (2024-12-25, benign week 1)": {
+            "active_hours": 11,
+            "raw_events": 9337790,
+            "kept_lines": 79574,
+            "file": "dedale/winlogbeat/D03/D03_2024-12-25.jsonl"
+          },
+          "D15 (2025-01-06, attack day 1)": {
+            "active_hours": 11,
+            "raw_events": 9125775,
+            "kept_lines": 60728,
+            "file": "dedale/winlogbeat/D15/D15_2025-01-06.jsonl"
+          },
+          "note": "per-hour class counts in dedale/hour_stats.json are the E0 denominators; the adapter's rows_read on a slice counts kept lines only"
+        }
+      },
+      "e0_probe_hours_2026-09-10": {
+        "rows_read": 1383837,
+        "rows_kept": 6580,
+        "process": 5934,
+        "logon": 646,
+        "network": 0,
+        "hosts": 30,
+        "identities": 57,
+        "findings": 0,
+        "labels_resolved": "3/9567 (only Sysmon 1 in these hours resolves)",
+        "report": "reports/m14/dedale_probe_hours.json + .deterministic.json"
+      },
+      "results_2026-09-10": {
+        "D03": "30 ATH-004 findings (lsass.exe started by wininit.exe at boot on each of 30 hosts), 30 singleton cases, 0% triage; reports/m14/dedale_d03.json",
+        "D15": "same 30 boot findings; 5 labelled process creates resolved, 0 surfaced; case precision 0%; reports/m14/dedale_d15.deterministic.json; LLM arm unavailable (no key)"
+      }
+    }
+  },
+  "_attack_generation": {
+    "status": "BLOCKED on this machine (2026-09-10): no docker, kind, kubectl or stratus installed. Injected Kubernetes attacks (plan 5.3) need a host with Docker; until then the Kubernetes rows are benign-only and carry no recall figures."
+  }
+}

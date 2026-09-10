@@ -1,0 +1,208 @@
+{
+  "dataset": "k8s_ci",
+  "source_kind": "k8s",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 267979,
+    "rows_kept": 1989,
+    "rows_dropped": 265990,
+    "kept_fraction": 0.0074,
+    "kept_by_table": {
+      "process": 0,
+      "network": 0,
+      "logon": 0,
+      "control": 1989
+    },
+    "drop_classes": [
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on pods",
+        "rows": 29742
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "patch on pods/status",
+        "rows": 11199
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on <unknown>",
+        "rows": 9938
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on pods/exec",
+        "rows": 5962
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on namespaces",
+        "rows": 5836
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on pods",
+        "rows": 5611
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "update on leases",
+        "rows": 5478
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "create on pods",
+        "rows": 5172
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on persistentvolumeclaims",
+        "rows": 4035
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "watch on configmaps",
+        "rows": 3761
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on namespaces",
+        "rows": 3434
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "create on configmaps",
+        "rows": 3212
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "delete on pods",
+        "rows": 2987
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "watch on serviceaccounts",
+        "rows": 2981
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on limitranges",
+        "rows": 2928
+      }
+    ],
+    "load_seconds": 31.7
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 1989,
+      "events_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 1989
+      },
+      "window_hours": 0.64,
+      "window_days": 0.03,
+      "hosts": 0,
+      "identities": 0,
+      "platforms": [
+        "kubernetes"
+      ]
+    },
+    "detection": {
+      "findings": 55,
+      "by_rule": {
+        "K8S-001": 55
+      },
+      "by_severity": {
+        "HIGH": 55
+      },
+      "findings_per_day": 2069.8513,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {
+        "likely_malicious": 55
+      },
+      "findings_after_triage": 55,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 55,
+      "singleton_cases": 55,
+      "links": 0,
+      "cases_per_day": 2069.8513
+    },
+    "cost_seconds": {
+      "hunt": 0.064,
+      "environment": 0.012,
+      "triage": 0.001,
+      "correlate": 0.053
+    }
+  },
+  "e8_scaling": [
+    {
+      "fraction": 0.1,
+      "events": 215,
+      "findings": 10,
+      "cases": 10,
+      "seconds": {
+        "hunt": 0.019,
+        "environment": 0.012,
+        "triage": 0.0,
+        "correlate": 0.006
+      }
+    },
+    {
+      "fraction": 0.25,
+      "events": 499,
+      "findings": 25,
+      "cases": 25,
+      "seconds": {
+        "hunt": 0.022,
+        "environment": 0.008,
+        "triage": 0.001,
+        "correlate": 0.013
+      }
+    },
+    {
+      "fraction": 0.5,
+      "events": 1131,
+      "findings": 38,
+      "cases": 38,
+      "seconds": {
+        "hunt": 0.026,
+        "environment": 0.012,
+        "triage": 0.001,
+        "correlate": 0.027
+      }
+    },
+    {
+      "fraction": 1.0,
+      "events": 1989,
+      "findings": 55,
+      "cases": 55,
+      "seconds": {
+        "hunt": 0.045,
+        "environment": 0.013,
+        "triage": 0.001,
+        "correlate": 0.054
+      }
+    }
+  ]
+}

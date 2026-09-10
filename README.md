@@ -1620,6 +1620,7 @@ sections of this README.
 | 11 | Singleton cases, process identity (hash/signer/path), multi-window prevalence, analyst feedback | ✅ done |
 | 12 | ATT&CK catalogue migrated to v19.2; shared `ath.behavior` layer closes a beacon-triage false negative; `ATH-011`/`ATH-012` (recovery inhibition, security-tool tampering) | ✅ done |
 | 13 | Adaptive crew assembly: `ath.schema.EVENT_CONTROL`, CloudTrail management-API + Kubernetes audit ingestion, `AWS-001/002`/`K8S-001/002`, `ControlPlaneAgent`, environment-driven `assemble_crew` | ✅ done |
+| 14 | Real-data validation: Winlogbeat/ECS adapter, CloudTrail tar/gz + Kubernetes NDJSON input, external labels, LLM arm in the benchmark; measured on flaws.cloud, Kubernetes CI, K8NTEXT and DEDALE -- see [docs/m14-validation-report.md](docs/m14-validation-report.md) | ✅ measured (conclusion: representation, then detection precision, then triage; LLM arm unavailable here) |
 
 ---
 

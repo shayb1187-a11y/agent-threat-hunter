@@ -136,7 +136,9 @@ def test_normalise_control_record_splits_actor_from_target() -> None:
 
     assert issue is None
     assert row["actor"] == "ops-admin"
-    assert row["target_actor"] == "worker-sa"
+    # The subject is spelled the way the audit log will later name the account as a
+    # caller, so a grant and the grantee's next action can be joined (M14 step 2).
+    assert row["target_actor"] == "system:serviceaccount:batch:worker-sa"
     assert row["actor"] != row["target_actor"]
     assert row["role_ref"] == "cluster-admin"
     assert row["decision"] == "allowed"

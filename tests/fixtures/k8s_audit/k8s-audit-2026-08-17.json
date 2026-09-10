@@ -115,7 +115,7 @@
       },
       "requestObject": {
         "subjects": [
-          {"kind": "ServiceAccount", "name": "system:serviceaccount:ci:ci-runner", "namespace": "ci"}
+          {"kind": "ServiceAccount", "name": "ci-runner", "namespace": "ci"}
         ],
         "roleRef": {"kind": "ClusterRole", "name": "cluster-admin", "apiGroup": "rbac.authorization.k8s.io"}
       },
