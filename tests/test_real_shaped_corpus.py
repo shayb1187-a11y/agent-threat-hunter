@@ -100,24 +100,6 @@ def test_dedale_benign_boot_hour_is_silent(dedale_telemetry) -> None:
     assert run_hunt(dedale_telemetry).findings == []
 
 
-@pytest.mark.xfail(strict=True, reason="M15-4: triage has 0% purchase when every real finding is HIGH+ (124/124 vetoed)")
-def test_target_triage_has_purchase_on_a_benign_corpus(dedale_telemetry) -> None:
-    findings = run_hunt(dedale_telemetry).findings
-    assessments = assess_findings(findings, build_environment_model(dedale_telemetry))
-    cleared = sum(1 for a in assessments.values() if a.disposition is Disposition.LIKELY_BENIGN)
-    assert cleared > 0
-
-
-def test_dedale_triage_pinned_veto_rate(dedale_telemetry) -> None:
-    """Today: every finding on the benign corpus is vetoed by its own severity."""
-    findings = run_hunt(dedale_telemetry).findings
-    assessments = assess_findings(findings, build_environment_model(dedale_telemetry))
-    assert all(
-        any(v.name == "graded_high_by_detection" for v in a.vetoes) for a in assessments.values()
-    )
-    assert all(a.disposition is Disposition.LIKELY_MALICIOUS for a in assessments.values())
-
-
 def test_spliced_credential_dump_fires_through_the_adapter(tmp_path, dedale_sysmon1_template) -> None:
     """Positive control through the real path: a comsvcs MiniDump shaped like a DEDALE
     record must fire ATH-004 with the spliced event cited, and it must be the only
@@ -358,3 +340,56 @@ def test_cloudtrail_shaped_pinned_findings(cloudtrail_telemetry) -> None:
     assert burst[0].severity is Severity.MEDIUM
     assert burst[0].metadata["succeeded"] is False
     assert "AWS-001" not in by_rule                   # attach was to backup, key creation for Level6 and denied
+
+
+# ======================================================================================
+# Triage across the corpora: the M15-4 determination
+# ======================================================================================
+
+
+def test_triage_veto_at_high_no_longer_stands_between_the_layer_and_a_benign_corpus(
+    dedale_telemetry, k8s_telemetry, cloudtrail_telemetry,
+) -> None:
+    """M14 measured 124 of 124 real findings vetoed by ``graded_high_by_detection`` and
+    asked whether the HIGH boundary should move. On the real-shaped corpora the answer
+    is that the boundary was never the defect. 115 of the 124 were detection-precision
+    false positives that no longer exist as findings (ATH-004 on ``lsass.exe``'s own
+    image, K8S-001 on superuser grants; M15-1, M15-3); the rest were ATH-005 bursts
+    with no success, graded HIGH by a rule whose own condition they did not meet, now
+    MEDIUM (M15-2). After those fixes no finding on a benign corpus is HIGH+, so there
+    is nothing for the veto to block and the boundary stays where it is.
+
+    Pinned per corpus so a rule that gets noisier at HIGH shows up here as a veto count
+    rather than as an argument for moving the boundary."""
+    findings_by_corpus: dict[str, int] = {}
+    vetoed_by_severity = 0
+    corpora = (
+        ("dedale", dedale_telemetry), ("k8s_ci", k8s_telemetry), ("cloudtrail", cloudtrail_telemetry),
+    )
+    for name, telemetry in corpora:
+        findings = run_hunt(telemetry).findings
+        assessments = assess_findings(findings, build_environment_model(telemetry))
+        findings_by_corpus[name] = len(findings)
+        vetoed_by_severity += sum(
+            1 for a in assessments.values()
+            if any(v.name == "graded_high_by_detection" for v in a.vetoes)
+        )
+    assert findings_by_corpus == {"dedale": 0, "k8s_ci": 0, "cloudtrail": 1}
+    assert vetoed_by_severity == 0
+
+
+def test_no_success_burst_is_needs_review_not_benign(cloudtrail_telemetry) -> None:
+    """The one finding left on the corpora: ``backup``'s burst with no success.
+
+    It is guessing that did not land (on flaws.cloud, CTF players), and *likely benign*
+    would be the wrong verdict. ``needs_review`` with nothing either way is the honest
+    reading, and it names the gap that remains after M15-4: the benign layer has no
+    signal that reads logon evidence, so a service account's stale-password loop and a
+    guesser look identical to it. That is missing evidence, not the HIGH boundary."""
+    findings = run_hunt(cloudtrail_telemetry).findings
+    assessments = assess_findings(findings, build_environment_model(cloudtrail_telemetry))
+    assert len(assessments) == 1
+    (assessment,) = assessments.values()
+    assert assessment.disposition is Disposition.NEEDS_REVIEW
+    assert assessment.vetoes == ()
+    assert assessment.benign_signals == ()

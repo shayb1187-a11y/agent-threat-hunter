@@ -55,6 +55,14 @@ BENIGN_THRESHOLD: int = 4
 # A rule that graded its own finding HIGH or above did so on evidence this layer does
 # not re-litigate. Benign assessment may only speak to findings the detection layer was
 # itself unsure about.
+#
+# M14 measured this boundary vetoing 124 of 124 findings on four real sources and asked
+# whether it should move. It stays (M15-4): 115 of those were detection-precision false
+# positives that no longer exist as findings, and the rest were ATH-005 bursts graded
+# HIGH without meeting the rule's own success condition, now MEDIUM. With the rules
+# fixed, no finding on a benign real-shaped corpus is HIGH+, so the veto blocks nothing
+# there (tests/test_real_shaped_corpus.py pins that per corpus). Moving the boundary
+# would have papered over rule defects with triage, in the wrong layer.
 MAX_SEVERITY_FOR_BENIGN: Severity = Severity.MEDIUM
 
 # Repeat outbound contacts by a script interpreter beyond which reach can no longer

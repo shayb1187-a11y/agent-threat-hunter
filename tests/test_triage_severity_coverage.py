@@ -5,6 +5,14 @@ above, the existing triage tests exercise LOW and MEDIUM, and every cloud and Ku
 rule plus ATH-004 emit HIGH+. On four real sources the layer cleared 0 of 124 findings.
 These tests pin that boundary explicitly, per emitted severity, so the design decision
 behind it (M15-4) is a visible line in the suite rather than an implicit one.
+
+M15-4 determination: the boundary stays. Of the 124 vetoed findings, 115 were
+detection-precision false positives that no longer exist (M15-1, M15-3) and the rest were
+ATH-005 bursts graded HIGH without meeting the rule's own success condition (M15-2, now
+MEDIUM). With those fixed, no finding on a benign real-shaped corpus is HIGH+, so the veto
+blocks nothing there; tests/test_real_shaped_corpus.py pins that per corpus. What the
+layer still lacks is benign evidence of a logon shape, which is a signal gap, not a
+boundary problem.
 """
 
 from __future__ import annotations
