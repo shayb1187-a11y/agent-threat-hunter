@@ -118,3 +118,34 @@ python scripts/m14_profile.py winlogbeat data/external/dedale/winlogbeat/D03 \
 python scripts/m14_profile.py k8s data/external/k8s_ci/raw k8s_ci \
     --cluster ci --out-dir reports/m15
 ```
+
+## Remediation checkpoint: xfails, tradeoffs, and what comes next
+
+**Strict xfails.** M14 left 11; all 11 are retired, each in the commit that fixed its
+defect, with the pinned measurement updated in the same change. None remain. The one that
+did not flip as written was "triage has purchase on a benign corpus": once the DEDALE hour
+yielded no findings it could never pass and stated the wrong target, so it was replaced by
+a per-corpus count of findings vetoed by severity (0/0/1 findings, 0 vetoed) and a pin that
+the one remaining real finding, a no-success guessing burst, is `needs_review` -- the
+honest verdict, not a defect. The gap the benign layer still has is a signal that reads
+logon evidence; that is missing evidence, not the HIGH boundary.
+
+**Tradeoffs stated, not hidden.** A `cluster-admin` binding created by a `system:masters`
+superuser and never used is no longer surfaced by `K8S-001` on its own; before, it was one
+of 2,070/day and not actionable either, and `K8S-002` still fires the moment the grantee
+uses the grant. A failed-logon burst with no success is an alert at MEDIUM, not a case.
+Neither cost a labelled true positive anywhere in the suite or on real data.
+
+**One representational change.** The control table gained `actor_groups` (the caller's
+asserted groups, comma-joined; empty for CloudTrail). It carries a field the Kubernetes
+adapter already parsed and dropped, and it is what let `K8S-001` read the grantor's
+standing instead of guessing from how often a grant recurs. Not a new channel or table.
+
+**Next priority: detection coverage before representation expansion, narrowly.** T1036
+(unsigned, system-like name from a user-writable path) and T1547.001 (Run-key write) are
+representable in the process table today and would move DEDALE's attack-day recall from
+0 of 5 toward 4 of 5 -- the first true-positive case on real telemetry, which M14 named as
+the precondition for the LLM arm meaning anything. With the benign corpora now silent,
+their false-positive cost is measurable the day they land. Representation (PowerShell
+4103/4104, Kubernetes `serviceaccounts/token` and `secrets`) follows: it needs both a
+table and rules that read it before it moves anything measurable.
