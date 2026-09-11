@@ -61,11 +61,18 @@ in the other: the two findings are directly connected in the process tree. Sibli
 findings are not. They are connected only by a third process that neither finding
 mentions, and which may itself be entirely innocent -- a shell is a shell.
 
-That is a real relationship but a weaker one, so it is priced lower, and the price has a
-consequence worth stating: ``sibling_lineage(+2)`` plus ``same_device(+2)`` is 4, which
-does **not** reach ``min_score``. A shared parent can therefore never link two findings
-on its own. It always needs corroboration -- the same account, or proximity in time --
-which is exactly the standard the other structural signals are held to.
+That is a real relationship but a weaker one, so it is priced lower. The weight is
+honest labelling rather than a safeguard, and it is worth being precise about which,
+because it would be easy to imply otherwise: **the weights do not gate this signal at
+all.** Two findings that share a parent necessarily share a device (+2), and the sibling
+window is the same ten minutes as ``tight_window``, so ``temporal_close`` (+2) always
+comes with it. The floor is therefore 2 + 2 + 2 = 6, which is already over
+``min_score``. Whenever the sibling predicate holds, the link is made.
+
+So the entire guard lives in the predicate -- in :meth:`_ProcessIndex.session_parents` --
+and not in the arithmetic. The +2 exists so that a reader of the output can see this was
+the weakest reason two findings were joined, which matters when a case is being argued
+with. It is not a second line of defence, and treating it as one would be a mistake.
 
 What stops every process on a workstation being everyone's sibling
 -------------------------------------------------------------------
