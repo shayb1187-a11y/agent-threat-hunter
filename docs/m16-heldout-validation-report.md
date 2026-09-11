@@ -247,6 +247,55 @@ schema needing a different adapter, not a result being avoided.
 > carry the chain", so the result is reported alongside what each capture actually
 > contains.
 
+### 4.5 H3 — attack_data AWS: **prediction wrong, and a major new defect**
+
+**Predicted ≥ 1 finding. Measured 0.** The reason is not the one I anticipated.
+
+| Measure | Value |
+| --- | --- |
+| CloudTrail records read | 2,349 |
+| **Rows ingested** | **2 (0.09%)** |
+| Distinct `eventName`s present | **109** |
+| `eventName`s ATH can map | **9** |
+| …of those 9, present in the captures | **1** (`ConsoleLogin`, 2 records) |
+| Findings | 0 |
+
+The declared NDJSON change worked — the files parse, and the suite and R5 are unchanged
+(810 passed; flaws.cloud still 1,939,207 read / 79,520 kept / 39 findings / 4 cases), so
+the change is behaviour-neutral as required and the result stands.
+
+**But the rules were never given the attack.** ATH's entire CloudTrail vocabulary is nine
+event names:
+
+```
+AssumeRole  AttachUserPolicy  ConsoleLogin  CreateAccessKey  DeleteTrail
+GetFederationToken  GetSessionToken  PutUserPolicy  StopLogging
+```
+
+The captures contain 109 distinct event names, of which exactly one is in that list. The
+single most common attack action in the corpus — `DeletePolicy`, 116 records, the IAM
+manipulation that *is* the T1098 technique — has no canonical home and is dropped, along
+with every `Describe*` reconnaissance call.
+
+**This is a newly discovered defect, not an M15 regression, and it is the most important
+result in this milestone.** It was invisible to every previous corpus for a structural
+reason: flaws.cloud has no labelled attacks, so cloud detection had only ever been
+measured by its *false positives*, and a rule set that sees almost nothing scores
+perfectly on that metric. The first held-out corpus containing actual cloud attacks put
+the real number at **0.09% representability**.
+
+It also reframes an earlier claim. flaws.cloud's 4.10% ingestion was reported in M14 as an
+ingestion-coverage figure; H3 shows the same ceiling is what makes cloud *detection*
+untestable. The two AWS rules have still never been measured against a cloud attack.
+
+**Recorded before any remediation**, per the holdout protocol. No fix is attempted in this
+section.
+
+### 4.6 R6 — suite and benchmark at the frozen commit
+
+810 passed, 1 skipped, 0 failed, 0 xfailed. Benchmark 5/5, 0 noise cases. Re-verified
+after the NDJSON change with identical results.
+
 ## 5. Conclusion
 
-*Written last.*
+*Written last — pending H1b (DEDALE D02) and the H4 decision.*

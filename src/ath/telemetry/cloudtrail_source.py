@@ -249,16 +249,75 @@ def _classify(name: str) -> str | None:
 
 
 def _decode(name: str, raw: bytes) -> tuple[Any, NormalizationIssue | None]:
-    """Parse one CloudTrail document from bytes, gunzipping first when the name says so."""
+    """Parse one CloudTrail document from bytes, gunzipping first when the name says so.
+
+    Three on-the-wire shapes are accepted, and all three are normalised to the
+    ``{"Records": [...]}`` form the caller expects:
+
+    ``{"Records": [...]}``
+        S3 delivery and console export. The original and still the common case.
+    one JSON object per line
+        How capture tools and research corpora hand out CloudTrail. Each line is one
+        record.
+    a single bare record
+        A one-event capture, with ``eventVersion``/``eventName`` at the top level.
+
+    This is an **ingestion-format** concern only. It changes which bytes can be read,
+    never what is concluded from them: no rule, threshold, severity or correlation
+    behaviour is involved, and a file that already parses as ``Records`` takes the first
+    branch and is untouched. Added in M16 so held-out CloudTrail captures could be read
+    at all -- without it they ingest zero rows and any result from them would be a
+    statement about the reader, not about the detections.
+    """
     try:
         if _classify(name) == "gzip":
             raw = gzip.decompress(raw)
-        return json.loads(raw.decode("utf-8")), None
-    except (OSError, EOFError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        text = raw.decode("utf-8")
+    except (OSError, EOFError, UnicodeDecodeError) as exc:
         return None, NormalizationIssue(
             event_type=EVENT_LOGON, reason=f"file is not valid JSON: {exc}",
             raw_reference=name,
         )
+
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        records, bad_line = _decode_json_lines(text)
+        if records is None:
+            return None, NormalizationIssue(
+                event_type=EVENT_LOGON,
+                reason=(
+                    f"file is neither a JSON document nor JSON lines: {exc} "
+                    f"(line {bad_line} does not parse)"
+                ),
+                raw_reference=name,
+            )
+        return {"Records": records}, None
+
+    # A single bare record. Wrapping it here keeps one shape for the caller rather than
+    # teaching the row loop a second one.
+    if isinstance(payload, dict) and "Records" not in payload and "eventName" in payload:
+        return {"Records": [payload]}, None
+    return payload, None
+
+
+def _decode_json_lines(text: str) -> tuple[list[Any] | None, int]:
+    """Parse JSON-lines text, or report which line broke.
+
+    All-or-nothing on purpose. Skipping unparseable lines would silently shrink the
+    denominator, and a partially-read corpus reports a false-positive *rate* against an
+    event count that was never actually read.
+    """
+    records: list[Any] = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            records.append(json.loads(stripped))
+        except json.JSONDecodeError:
+            return None, number
+    return (records, 0) if records else (None, 1)
 
 
 def _iter_payloads(files: list[Path]) -> Iterator[tuple[str, Any]]:

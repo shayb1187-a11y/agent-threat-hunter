@@ -1,0 +1,153 @@
+{
+  "dataset": "attack_data_aws",
+  "source_kind": "cloudtrail",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 2349,
+    "rows_kept": 2,
+    "rows_dropped": 2347,
+    "kept_fraction": 0.0009,
+    "kept_by_table": {
+      "process": 0,
+      "network": 0,
+      "logon": 2,
+      "control": 0
+    },
+    "drop_classes": [
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeLoadBalancers",
+        "rows": 128
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DeletePolicy",
+        "rows": 116
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeClusters",
+        "rows": 90
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeParameters",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeDBInstances",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeDBClusters",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeConfigurationRecorderStatus",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeConfigurationRecorders",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeTrails",
+        "rows": 64
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeInstanceInformation",
+        "rows": 32
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeClusterParameterGroups",
+        "rows": 32
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeReservedNodes",
+        "rows": 32
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeDBParameterGroups",
+        "rows": 32
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeDBSnapshots",
+        "rows": 32
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeRouteTables",
+        "rows": 32
+      }
+    ],
+    "unmapped_classes": {},
+    "load_seconds": 0.0
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 2,
+      "events_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 0
+      },
+      "window_hours": 0.0,
+      "window_days": 0.0,
+      "hosts": 1,
+      "identities": 1,
+      "platforms": [
+        "aws"
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "cost_seconds": {
+      "hunt": 0.008,
+      "environment": 0.004,
+      "triage": 0.0,
+      "correlate": 0.0
+    }
+  }
+}
