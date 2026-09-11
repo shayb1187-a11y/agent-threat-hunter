@@ -488,6 +488,7 @@ def _normalise_control_record(
         "source": MANAGEMENT_SOURCE_NAME,
         "source_ref": f"eventID={event_id};File={file_name}",
         "actor": actor,
+        "actor_groups": "",  # CloudTrail asserts no group memberships for a caller
         "verb": spec.verb,
         "resource_type": spec.resource_type,
         "resource_name": resource_name,

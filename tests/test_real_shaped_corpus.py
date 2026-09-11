@@ -221,17 +221,61 @@ def test_k8s_corpus_representation_gaps_are_counted(k8s) -> None:
     assert "get on secrets" in reasons
 
 
-def test_k8s_corpus_pinned_findings_are_the_measured_false_positives(k8s_telemetry) -> None:
-    findings = run_hunt(k8s_telemetry).findings
-    assert {f.rule_id for f in findings} == {"K8S-001"}
-    assert len(findings) == 4  # bootstrap system:masters + three per-test-namespace default SAs
-    assert all(f.metadata.get("role_ref") == "cluster-admin" for f in findings)
-    assert all(len(c.findings) == 1 for c in correlate(findings, k8s_telemetry))
+def test_k8s_corpus_grantors_carry_their_superuser_group(k8s) -> None:
+    """Regression artifact (M15-3): the feature that separates every CI grant from the
+    modelled escalation, the grantor's ``system:masters`` membership, was parsed and
+    dropped by the adapter before this milestone."""
+    controls = k8s.tables[EVENT_CONTROL]
+    grants = controls[controls["resource_type"] == "clusterrolebindings"]
+    assert len(grants) == 5
+    assert set(grants["actor"]) == {"system:apiserver", "kubecfg"}
+    assert all("system:masters" in g.split(",") for g in grants["actor_groups"])
 
 
-@pytest.mark.xfail(strict=True, reason="M15-3: K8S-001 fires on every legitimate cluster-admin binding (2,070/day on CI); needs a prevalence term")
-def test_target_k8s_benign_bootstrap_is_silent(k8s_telemetry) -> None:
+def test_k8s_benign_bootstrap_is_silent(k8s_telemetry) -> None:
+    """M15-3, fixed: 55 K8S-001 findings in 38 minutes of CI (2,070/day), all
+    cluster-admin grants by ``system:masters`` superusers -- the apiserver's bootstrap
+    binding to ``system:masters`` itself and the e2e harness's per-test-namespace grants.
+    Both are read off the audit record (asserted above), not off how often they recur."""
     assert run_hunt(k8s_telemetry).findings == []
+
+
+def _spliced_grant(lines: list[str], username: str, groups: list[str], grantee_ns: str, grantee: str) -> dict:
+    """A cluster-admin binding shaped like the corpus's per-test grants, by a chosen caller."""
+    template = next(json.loads(l) for l in lines if json.loads(l).get("objectRef", {}).get("resource") == "clusterrolebindings"
+                    and "default" in json.dumps(json.loads(l).get("requestObject", {}).get("subjects", [])))
+    event = json.loads(json.dumps(template))
+    event["user"] = {"username": username, "groups": groups}
+    event["auditID"] = "spliced-grant-1"
+    event["objectRef"]["name"] = "escalate"
+    event["requestObject"]["metadata"] = {"name": "escalate"}
+    event["requestObject"]["subjects"] = [{"kind": "ServiceAccount", "name": grantee, "namespace": grantee_ns}]
+    event["stageTimestamp"] = template["stageTimestamp"][:17] + "30.000000Z"
+    return event
+
+
+def test_spliced_escalation_by_a_service_account_fires_through_the_adapter(tmp_path) -> None:
+    """Positive control on the real corpus: the INC-005 shape, a service account with no
+    superuser group binding cluster-admin to another service account, fires K8S-001
+    beside the silent bootstrap and harness grants."""
+    lines = (K8S / "kube-apiserver-audit.sample.log").read_text(encoding="utf-8").splitlines()
+    spliced = _spliced_grant(lines, "system:serviceaccount:ci:ci-deployer",
+                             ["system:serviceaccounts", "system:serviceaccounts:ci", "system:authenticated"], "ci", "ci-runner")
+    (tmp_path / "audit.log").write_text("\n".join(lines + [json.dumps(spliced)]) + "\n", encoding="utf-8")
+    findings = run_hunt(_telemetry(K8sAuditSource(tmp_path, cluster="ci").load())).findings
+    assert [f.rule_id for f in findings] == ["K8S-001"]
+    assert findings[0].user == "system:serviceaccount:ci:ci-runner"
+    assert findings[0].metadata["actor"] == "system:serviceaccount:ci:ci-deployer"
+
+
+def test_spliced_grant_by_an_rbac_admin_still_fires_through_the_adapter(tmp_path) -> None:
+    """A kubeadm-style administrator is not ``system:masters``; its grant still fires."""
+    lines = (K8S / "kube-apiserver-audit.sample.log").read_text(encoding="utf-8").splitlines()
+    spliced = _spliced_grant(lines, "kubernetes-admin", ["kubeadm:cluster-admins", "system:authenticated"], "ci", "ci-runner")
+    (tmp_path / "audit.log").write_text("\n".join(lines + [json.dumps(spliced)]) + "\n", encoding="utf-8")
+    findings = run_hunt(_telemetry(K8sAuditSource(tmp_path, cluster="ci").load())).findings
+    assert [f.rule_id for f in findings] == ["K8S-001"]
+    assert findings[0].metadata["actor"] == "kubernetes-admin"
 
 
 def test_k8s_exec_after_grant_fires_through_the_adapter(tmp_path) -> None:

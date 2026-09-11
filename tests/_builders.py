@@ -74,11 +74,12 @@ def logon(user: str, device: str, *, logon_type: int | None = 3, source_ip: str 
 def ctrl(actor: str, verb: str, resource_type: str, resource_name: str, *,
          target_actor: str = "", role_ref: str = "", namespace: str = "",
          decision: str = "allowed", device: str = "k8s:c1", source_ip: str = "10.0.0.1",
-         when: datetime | None = None, source: str = "k8s_audit") -> dict[str, Any]:
+         when: datetime | None = None, source: str = "k8s_audit",
+         actor_groups: str = "") -> dict[str, Any]:
     return {
         "event_id": _eid("c"), "timestamp": when or at(), "event_type": EVENT_CONTROL,
         "device": device, "user": target_actor or actor, "source": source, "source_ref": "",
-        "actor": actor, "verb": verb, "resource_type": resource_type,
+        "actor": actor, "actor_groups": actor_groups, "verb": verb, "resource_type": resource_type,
         "resource_name": resource_name, "resource_namespace": namespace,
         "target_actor": target_actor, "role_ref": role_ref, "decision": decision,
         "source_ip": source_ip,

@@ -25,15 +25,55 @@ _EXEC_RESOURCE_TYPE = "pods/exec"
 # carry -- the audit log records that a role was bound, not what the role grants.
 HIGH_PRIVILEGE_ROLE_NAMES: frozenset[str] = frozenset({"cluster-admin", "admin"})
 
+# Identities the API server allows everything *before* RBAC is consulted. The
+# ``system:masters`` group is wired into the apiserver's authorizer chain, not into any
+# binding, which has two consequences this module relies on:
+#
+# * a binding *to* it grants nothing. The apiserver itself creates exactly this one at
+#   every start (``cluster-admin -> system:masters``, labelled
+#   ``kubernetes.io/bootstrapping=rbac-defaults``); it is a documented no-op.
+# * a binding created *by* a member escalates no one relative to the grantor, who could
+#   already do everything the grantee now can. That is administration -- a break-glass
+#   credential, bootstrap tooling, an e2e harness -- not the compromised low-privilege
+#   credential K8S-001 describes.
+#
+# Ordinary administrators are *not* in this group: a kubeadm ``kubernetes-admin`` holds
+# cluster-admin through a binding (``kubeadm:cluster-admins``), a CI deployer through
+# whatever it was given, and their grants still fire. This is the feature that separated
+# every one of the 55 K8S-001 findings on a real CI apiserver (grantors ``kubecfg`` and
+# ``system:apiserver``, both ``system:masters``) from the modelled escalation (a service
+# account in ``system:serviceaccounts`` only), and it is read from the audit record
+# rather than inferred from how often the grant happens.
+SUPERUSER_GROUPS: frozenset[str] = frozenset({"system:masters"})
+
+
+def _names(joined: object) -> set[str]:
+    """Split a comma-joined identity list (``target_actor``, ``actor_groups``)."""
+    return {part for part in str(joined or "").split(",") if part}
+
 
 def _privilege_grants(controls):
-    """RBAC bindings that name a high-privilege role, shared by both rules below."""
-    return controls[
+    """RBAC bindings that name a high-privilege role and confer it on someone.
+
+    Shared by both rules below. A binding whose every subject is already a superuser
+    (the apiserver's own bootstrap ``cluster-admin -> system:masters``) confers
+    nothing and is excluded here; a binding that names a superuser group *and* another
+    subject still grants that other subject and is kept.
+    """
+    candidates = controls[
         (controls["verb"] == "create")
         & (controls["resource_type"].isin(_RBAC_RESOURCE_TYPES))
         & (controls["role_ref"].isin(HIGH_PRIVILEGE_ROLE_NAMES))
         & (controls["target_actor"].fillna("") != "")
-    ].sort_values("timestamp")
+    ]
+    confers = candidates["target_actor"].map(
+        lambda t: bool(_names(t) - SUPERUSER_GROUPS)
+    ).astype(bool)  # an empty map() is object-typed and would select columns, not rows
+    return candidates[confers].sort_values("timestamp")
+
+
+def _grantor_is_superuser(grant) -> bool:
+    return bool(_names(grant.get("actor_groups", "")) & SUPERUSER_GROUPS)
 
 
 @register
@@ -52,12 +92,24 @@ class RbacPrivilegeEscalationGrant(Detector):
     Detection shape
     ---------------
     Any ``create`` on ``rolebindings``/``clusterrolebindings`` whose ``role_ref``
-    matches :data:`HIGH_PRIVILEGE_ROLE_NAMES`. Reports the beneficiary (the binding's
-    ``target_actor``) as the finding's ``user``, never the identity that created the
-    binding -- those are frequently different, and conflating them would point an
-    analyst at the wrong account. See K8S-002 for the follow-on chain, and the module
-    docstring for what this rule structurally cannot see (a custom role's actual
-    permissions).
+    matches :data:`HIGH_PRIVILEGE_ROLE_NAMES`, **unless the grantor is already a
+    superuser** (:data:`SUPERUSER_GROUPS`, read from the audit record's asserted
+    groups). An escalation is a grantor conferring standing it did not itself have;
+    a ``system:masters`` member conferring cluster-admin is administration, and on a
+    real CI apiserver it was every one of 55 findings in 38 minutes (2,070/day, M14).
+    A binding to ``system:masters`` itself confers nothing and is excluded in
+    :func:`_privilege_grants`, for both rules.
+
+    What this deliberately gives up: a superuser creating a cluster-admin binding as a
+    *backdoor* is no longer surfaced by this rule on its own. It is the same event as
+    the harness's scaffolding and nothing in a single audit record tells them apart;
+    K8S-002 still fires the moment the grantee uses the grant, whoever made it.
+
+    Reports the beneficiary (the binding's ``target_actor``) as the finding's
+    ``user``, never the identity that created the binding -- those are frequently
+    different, and conflating them would point an analyst at the wrong account. See
+    K8S-002 for the follow-on chain, and the module docstring for what this rule
+    structurally cannot see (a custom role's actual permissions).
     """
 
     rule_id = "K8S-001"
@@ -65,8 +117,8 @@ class RbacPrivilegeEscalationGrant(Detector):
     severity = Severity.HIGH
     description = "Detects a RoleBinding/ClusterRoleBinding naming cluster-admin or admin."
     fields_used = (
-        "actor", "verb", "resource_type", "resource_name", "target_actor", "role_ref",
-        "timestamp",
+        "actor", "actor_groups", "verb", "resource_type", "resource_name", "target_actor",
+        "role_ref", "timestamp",
     )
     channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
     false_positives = (
@@ -82,6 +134,8 @@ class RbacPrivilegeEscalationGrant(Detector):
         grants = _privilege_grants(controls)
         findings: list[Finding] = []
         for _, grant in grants.iterrows():
+            if _grantor_is_superuser(grant):
+                continue
             target = grant["target_actor"]
             findings.append(self.make_finding(
                 device=grant["device"],
@@ -97,11 +151,14 @@ class RbacPrivilegeEscalationGrant(Detector):
                     f"'{grant['actor']}' created {grant['resource_type']} "
                     f"'{grant['resource_name']}', granting the maximally-privileged "
                     f"role '{grant['role_ref']}' to '{target}'. Very few legitimate "
-                    "workloads need this level of access; a grant of it is worth "
-                    "review even when the grantor is a normal administrative account."
+                    "workloads need this level of access, and the grantor is not a "
+                    "superuser, so this grant confers standing the grantor did not "
+                    "itself hold; it is worth review even when the grantor is an "
+                    "ordinary administrative account."
                 ),
                 metadata={
                     "actor": grant["actor"],
+                    "actor_groups": sorted(_names(grant.get("actor_groups", ""))),
                     "target_actor": target,
                     "role_ref": grant["role_ref"],
                     "resource_type": grant["resource_type"],

@@ -33,6 +33,7 @@ def _control_telemetry(rows: list[dict]) -> Telemetry:
         row.setdefault("source", "test")
         row.setdefault("source_ref", "")
         row.setdefault("resource_namespace", "")
+        row.setdefault("actor_groups", "")
         row.setdefault("target_actor", "")
         row.setdefault("role_ref", "")
         row.setdefault("decision", "allowed")
@@ -188,6 +189,62 @@ def test_k8s001_stays_quiet_on_an_ordinary_role_grant() -> None:
     assert findings == []
 
 
+def _cluster_admin_grant(actor: str, actor_groups: str, target: str, name: str = "b") -> dict:
+    return {
+        "timestamp": T0, "device": "k8s:c1", "user": target, "actor": actor,
+        "actor_groups": actor_groups, "verb": "create",
+        "resource_type": "clusterrolebindings", "resource_name": name,
+        "target_actor": target, "role_ref": "cluster-admin",
+    }
+
+
+def test_k8s001_is_silent_when_the_grantor_is_already_a_superuser() -> None:
+    """M15-3, from Kubernetes CI: 55 of 55 findings were grants by ``system:masters``
+    members (``kubecfg``, ``system:apiserver``). The authorizer allows that group
+    everything before RBAC is consulted, so its grant escalates no one relative to it."""
+    rows = [_cluster_admin_grant(
+        "kubecfg", "system:masters,system:authenticated",
+        "system:serviceaccount:volumemode-2343:default", "volumemode-2343--cluster-admin",
+    )]
+    assert get_detector("K8S-001").detect(_control_telemetry(rows)) == []
+
+
+def test_k8s001_still_fires_for_an_rbac_administrator() -> None:
+    """An ordinary admin holds cluster-admin through a binding, not the authorizer, and
+    its grant is the shape the rule describes: standing conferred by a non-superuser."""
+    rows = [_cluster_admin_grant(
+        "kubernetes-admin", "kubeadm:cluster-admins,system:authenticated",
+        "system:serviceaccount:ci:ci-runner",
+    )]
+    findings = get_detector("K8S-001").detect(_control_telemetry(rows))
+    assert len(findings) == 1
+    assert findings[0].metadata["actor_groups"] == ["kubeadm:cluster-admins", "system:authenticated"]
+
+
+def test_k8s001_still_fires_for_a_service_account_grantor() -> None:
+    """The INC-005 shape, with the groups a real apiserver asserts for a service account."""
+    rows = [_cluster_admin_grant(
+        "system:serviceaccount:ci:ci-deployer", "system:serviceaccounts,system:authenticated",
+        "system:serviceaccount:ci:ci-runner",
+    )]
+    assert len(get_detector("K8S-001").detect(_control_telemetry(rows))) == 1
+
+
+def test_k8s001_is_silent_on_the_bootstrap_binding_to_system_masters() -> None:
+    """``cluster-admin -> system:masters`` confers nothing: the group is superuser by
+    construction. A binding that names it *and* another subject still grants that other
+    subject, and is kept."""
+    rows = [_cluster_admin_grant("system:apiserver", "system:masters", "system:masters", "cluster-admin")]
+    assert get_detector("K8S-001").detect(_control_telemetry(rows)) == []
+
+    mixed = [_cluster_admin_grant(
+        "ci-deployer", "", "system:masters,system:serviceaccount:ci:ci-runner", "mixed",
+    )]
+    findings = get_detector("K8S-001").detect(_control_telemetry(mixed))
+    assert len(findings) == 1
+    assert findings[0].user == "system:masters,system:serviceaccount:ci:ci-runner"
+
+
 # ======================================================================================
 # K8S-002: exec shortly after a privilege grant
 # ======================================================================================
@@ -246,6 +303,19 @@ def test_k8s002_stays_quiet_outside_the_escalation_window() -> None:
         _grant_row(), _exec_row(timestamp=T0 + timedelta(hours=6)),
     ]))
     assert findings == []
+
+
+def test_k8s002_still_fires_when_a_superuser_made_the_grant() -> None:
+    """The grantee's escalation is real whoever granted it. K8S-001 stands down for a
+    superuser's grant (M15-3); K8S-002 keys on the grantee *using* it and must not."""
+    rows = [
+        _grant_row(actor="kubecfg", actor_groups="system:masters,system:authenticated"),
+        _exec_row(),
+    ]
+    assert get_detector("K8S-001").detect(_control_telemetry([dict(rows[0])])) == []
+    findings = get_detector("K8S-002").detect(_control_telemetry(rows))
+    assert len(findings) == 1
+    assert findings[0].metadata["grantor"] == "kubecfg"
 
 
 def test_k8s_rules_declare_container_audit_explicitly() -> None:

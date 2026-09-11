@@ -118,6 +118,14 @@ LOGON_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
 # ath.telemetry.cloudtrail_source and ath.telemetry.k8s_audit_source for what maps here.
 CONTROL_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     "actor",               # principal that made the call, e.g. an IAM user or k8s user/SA
+    # Group memberships the platform asserted for the caller, comma-joined, e.g.
+    # "system:masters,system:authenticated" from a Kubernetes audit event's
+    # `user.groups`. Carried because a grant's meaning depends on what the grantor
+    # already held: `system:masters` is allowed everything before RBAC is consulted,
+    # so a cluster-admin binding it creates is administration, not escalation
+    # (Kubernetes CI, M14: 55 of 55 K8S-001 findings). Empty when the source asserts
+    # no groups (CloudTrail).
+    "actor_groups",
     "verb",                # e.g. "create", "delete", "get", "attach", "exec"
     "resource_type",       # e.g. "iam:policy", "rolebindings", "pods/exec"
     "resource_name",       # the specific resource acted upon

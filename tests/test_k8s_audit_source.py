@@ -120,7 +120,7 @@ def test_normalise_control_record_splits_actor_from_target() -> None:
         "auditID": "constructed-0001",
         "stage": "ResponseComplete",
         "verb": "create",
-        "user": {"username": "ops-admin"},
+        "user": {"username": "ops-admin", "groups": ["ops", "system:authenticated"]},
         "sourceIPs": ["10.1.1.1"],
         "objectRef": {
             "resource": "clusterrolebindings", "name": "escalate", "apiVersion": "v1",
@@ -142,3 +142,10 @@ def test_normalise_control_record_splits_actor_from_target() -> None:
     assert row["actor"] != row["target_actor"]
     assert row["role_ref"] == "cluster-admin"
     assert row["decision"] == "allowed"
+    # The caller's asserted groups travel with the row (M15-3): K8S-001 reads them to
+    # tell a superuser's administrative grant from an escalation.
+    assert row["actor_groups"] == "ops,system:authenticated"
+
+    item["user"] = {"username": "bare"}
+    row, _ = _normalise_control_record(item, "constructed.json", 1, "clusterA")
+    assert row["actor_groups"] == ""

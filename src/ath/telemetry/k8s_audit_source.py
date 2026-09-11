@@ -364,6 +364,14 @@ def _normalise_control_record(
     source_ips = item.get("sourceIPs") or []
     source_ip = str(source_ips[0]) if source_ips else ""
 
+    # The caller's groups, as the authenticator asserted them. ``system:masters`` here
+    # is what separates a superuser's administrative grant from an escalation, and it
+    # was parsed and dropped until M15-3.
+    groups = user.get("groups") if isinstance(user, dict) else None
+    actor_groups = ",".join(
+        str(g) for g in (groups if isinstance(groups, list) else []) if g
+    )
+
     return {
         "event_id": "",  # assigned by the caller, densely and uniquely
         "timestamp": timestamp,
@@ -373,6 +381,7 @@ def _normalise_control_record(
         "source": SOURCE_NAME,
         "source_ref": f"auditID={audit_id};File={file_name}",
         "actor": actor,
+        "actor_groups": actor_groups,
         "verb": verb,
         "resource_type": resource_type,
         "resource_name": str(object_ref.get("name") or ""),

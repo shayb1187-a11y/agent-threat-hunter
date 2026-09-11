@@ -226,8 +226,12 @@ FP_CASES: tuple[Case, ...] = (
         ctrl("ops_bob", "delete", "cloudtrail:trail", "legacy-trail", device="aws:123/us-east-1", source="cloudtrail_mgmt")]), "fires"),
     # ---------------------------------------------------------------- K8S-001
     Case("K8S-001", 0, "Legitimate cluster bootstrap", lambda: telemetry(ctrls=[
-        ctrl("kubecfg", "create", "clusterrolebindings", "cluster-admin", target_actor="system:masters", role_ref="cluster-admin")]),
-        "fires:target_silent", "measured on Kubernetes CI: 2,070 findings/day; M15-3 says K8S-001 needs a prevalence term"),
+        ctrl("system:apiserver", "create", "clusterrolebindings", "cluster-admin", target_actor="system:masters",
+             role_ref="cluster-admin", actor_groups="system:authenticated,system:masters"),
+        ctrl("kubecfg", "create", "clusterrolebindings", "platform-operator", target_actor="system:serviceaccount:platform:operator",
+             role_ref="cluster-admin", actor_groups="system:masters,system:authenticated", when=at(1))]),
+        "silent", "was 2,070/day on Kubernetes CI (M15-3): the bootstrap binding confers nothing on a group that is "
+        "superuser before RBAC, and a superuser's grant to an operator SA escalates no one relative to the grantor"),
     # ---------------------------------------------------------------- K8S-002
     Case("K8S-002", 0, "A platform-team break-glass", lambda: telemetry(ctrls=[
         ctrl("sre-oncall", "create", "clusterrolebindings", "breakglass", target_actor="sre-oncall", role_ref="cluster-admin"),
