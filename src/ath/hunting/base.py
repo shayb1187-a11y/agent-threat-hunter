@@ -79,11 +79,16 @@ SCRIPT_INTERPRETERS: frozenset[str] = frozenset(
     }
 )
 
-# Microsoft Office applications that should essentially never spawn an interpreter.
+# Office-suite applications that should essentially never spawn an interpreter. The
+# behaviour ATH-001 describes -- a document's macro reaching for a shell -- is a property
+# of the document format, not of the vendor: LibreOffice opens .doc/.docm files, runs
+# their macros, and on DEDALE's attack day was the application that opened the lure
+# (``soffice.exe`` launches ``soffice.bin``, which is the process that spawns; M14 D15).
 OFFICE_APPLICATIONS: frozenset[str] = frozenset(
     {
         "winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe",
         "msaccess.exe", "onenote.exe", "visio.exe", "mspub.exe",
+        "soffice.exe", "soffice.bin",
     }
 )
 
