@@ -1,0 +1,68 @@
+{
+  "dataset": "dedale_d03",
+  "source_kind": "winlogbeat",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 79574,
+    "rows_kept": 58279,
+    "rows_dropped": 21295,
+    "kept_fraction": 0.7324,
+    "kept_by_table": {
+      "process": 43994,
+      "network": 0,
+      "logon": 14285,
+      "control": 0
+    },
+    "drop_classes": [],
+    "unmapped_classes": {
+      "Security:4672": 14137,
+      "Microsoft-Windows-PowerShell/Operational:4103": 6360,
+      "Security:4634": 468,
+      "Security:4648": 210,
+      "Microsoft-Windows-PowerShell/Operational:4104": 120
+    },
+    "load_seconds": 87.3
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 58279,
+      "events_by_table": {
+        "process": 43994,
+        "network": 0,
+        "logon": 14285,
+        "control": 0
+      },
+      "window_hours": 10.66,
+      "window_days": 0.44,
+      "hosts": 30,
+      "identities": 66,
+      "platforms": [
+        "windows"
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "cost_seconds": {
+      "hunt": 16.817,
+      "environment": 1.684,
+      "triage": 0.0,
+      "correlate": 0.0
+    }
+  }
+}

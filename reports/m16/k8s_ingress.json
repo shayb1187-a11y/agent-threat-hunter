@@ -1,0 +1,153 @@
+{
+  "dataset": "k8s_ingress",
+  "source_kind": "k8s",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 48974,
+    "rows_kept": 234,
+    "rows_dropped": 48740,
+    "kept_fraction": 0.0048,
+    "kept_by_table": {
+      "process": 0,
+      "network": 0,
+      "logon": 0,
+      "control": 234
+    },
+    "drop_classes": [
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "update on leases",
+        "rows": 11543
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on <unknown>",
+        "rows": 10471
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on leases",
+        "rows": 2404
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on configmaps",
+        "rows": 2339
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on pods",
+        "rows": 1274
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on clusterrolebindings",
+        "rows": 1144
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on clusterroles",
+        "rows": 1089
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on pods",
+        "rows": 771
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on serviceaccounts",
+        "rows": 638
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on services",
+        "rows": 608
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on statefulsets",
+        "rows": 537
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on roles",
+        "rows": 475
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on endpointslices",
+        "rows": 475
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on endpoints",
+        "rows": 468
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "patch on pods/status",
+        "rows": 465
+      }
+    ],
+    "unmapped_classes": {},
+    "load_seconds": 1.7
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 234,
+      "events_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 234
+      },
+      "window_hours": 1.29,
+      "window_days": 0.05,
+      "hosts": 0,
+      "identities": 0,
+      "platforms": [
+        "kubernetes"
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "cost_seconds": {
+      "hunt": 0.018,
+      "environment": 0.004,
+      "triage": 0.0,
+      "correlate": 0.0
+    }
+  }
+}

@@ -131,7 +131,121 @@ not an artefact of a cluster).
 
 ## 4. Results
 
-*Recorded after each run against the frozen commit. Populated below as runs complete.*
+### 4.1 Regression — all six expectations met
+
+Run against `9350149`. Records in `reports/m16/`.
+
+| Id | Expected | Measured | |
+| --- | --- | --- | --- |
+| R1 | DEDALE D03: 0 findings | 58,279 events, **0 findings, 0 cases** | ✅ |
+| R2 | DEDALE D15: 0 findings, recall 0/5 | 49,276 rows, **0 findings, 0 cases, recall 0.0 (0/5)** | ✅ |
+| R3 | k8s_ci: 0 findings | 7,951 control rows, **0 findings, 0 cases** | ✅ |
+| R4 | K8NTEXT: 0 findings | 31 control rows, **0 findings, 0 cases** | ✅ |
+| R5 | flaws.cloud: 39 findings, 4 cases | 79,520 rows, **39 findings** (ATH-005 ×36, AWS-002 ×3), **4 cases** | ✅ |
+| R6 | Benchmark 5/5, 0 noise; suite 810/0/0 | *see §4.5* | ✅ |
+
+The M15 improvements have not rotted, and the M14/M15 numbers remain reproducible.
+
+### 4.2 H2 — Kubernetes `conformance`/ingress workload: prediction held, evidence weak
+
+**Amendment to the plan, recorded before the run.** H2 was specified as "a second
+Kubernetes audit source from a different cluster/workload style", with the intended
+failure mode being *a different provisioner's identity model*. That is **not testable with
+available public data**, and my original probe was wrong: I read `HTTP 200` from a GCS
+prefix listing as "job exists", but GCS answers 200 for an *empty* listing. Enumerating
+all **6,496** jobs in `kubernetes-ci-logs` and checking artifacts directly:
+
+- `kind` jobs exist (`ci-kind-dra-*`) but archive **no** audit log.
+- AWS- and CAPZ-provisioned jobs archive **no** audit log.
+- Only the GCE `artifacts/bootstrap-e2e-master/kube-apiserver-audit.log` convention
+  publishes one.
+
+So H2 was re-scoped to `ci-kubernetes-e2e-gci-gce-ingress` run `2064903754573942784`
+(67 MB, sha256 `970c307f…`): **a different workload and a different cluster instance, on
+the same provisioner.**
+
+| Measure | Value |
+| --- | --- |
+| Rows read / kept | 48,974 / 234 (0.48%) |
+| RBAC binding creates ingested | **154** (142 clusterrolebindings, 12 rolebindings) |
+| Pod execs ingested | 80 |
+| `cluster-admin` grants present | 1 |
+| **K8S-001 findings** | **0** |
+| **K8S-002 findings** | **0** |
+
+**Not vacuous:** the rule had 154 binding creates to fire on, including
+`system:apiserver` granting `cluster-admin` to `system:masters` — exactly the suppression
+case — and stayed silent.
+
+**But weak.** Comparing grantor identities against the corpus the fix was tuned on:
+
+```
+ingress binding-creating actors:  system:addon-manager, system:apiserver
+ci      binding-creating actors:  kubecfg, system:addon-manager, system:apiserver
+actors NEW in ingress:            (none)
+roles  NEW in ingress:            (none)
+```
+
+Every grantor identity and every role in the held-out corpus was **already present in the
+tuning corpus**. H2 therefore shows the fix is not specific to one CI *run*; it says
+nothing about whether it generalises to a different identity model. The question the
+holdout was designed to answer remains open, and is recorded as a coverage gap rather
+than counted as a pass.
+
+### 4.3 H1 — DEDALE D07: prediction held, but the test was underpowered
+
+| Measure | D03 (tuning) | **D07 (held out)** |
+| --- | --- | --- |
+| Raw archive volume | 1.35 GB | **41.7 MB** |
+| Process rows | 43,994 | **1,449** |
+| **Active hosts** | **30** | **1** |
+| **`lsass.exe` events (the ATH-004 trigger)** | **30** | **1** |
+| ATH-004 findings | 0 (was 30 pre-M15) | **0** |
+| Total findings | 0 | **0** |
+
+The prediction (0 ATH-004, ≤2 total) held. **The test is much weaker than intended**, and
+the cause is my day selection, not the data: D07 is Sunday 29 December. Reading per-day
+volumes out of the archive index afterwards shows D06, D07, D13, D14, D20, D21, D27 and
+D28 are all ≈30–48 MB against ≈1.3 GB for every weekday — the testbed is essentially idle
+at weekends. I chose a holiday Sunday by accident and gave the fix **one** opportunity to
+misfire instead of thirty.
+
+This is recorded as a **low-power pass**, not a pass.
+
+### 4.4 Amended pre-registration — written before H1b and H3 ran
+
+**H1b — DEDALE D02.** Selection criterion, fixed before fetching and independent of any
+ATH output: *the highest-volume unfetched benign day by compressed archive size*. That is
+D02 at 1,447,695,645 bytes. Selecting on data volume is a power criterion; selecting on
+findings would be tuning, and is not what happened here.
+
+> **Prediction: 0 ATH-004 findings, and ≤ 2 findings in total, across ~30 hosts.**
+> D02 should carry roughly D03's 30 boot-time LSASS events. If the ATH-004 fix were
+> fitted to D03, this is where it shows. The residual risk remains unexercised rules —
+> D03 contained no backup, shadow-copy or security-tool administration, so ATH-002,
+> ATH-011 and ATH-012 have never met a full benign DEDALE weekday. A finding from one of
+> those is a **new** defect, not an M15 regression.
+
+**H3 — attack_data AWS.** Five native-CloudTrail captures kept
+(`aws_login_sfa`, `aws_iam_delete_policy`, `aws_security_scanner`,
+`aws_iam_accessdenied_discovery_events`, `aws_iam_assume_role_policy_brute_force`). The
+`asl_ocsf_*` and `amazon_security_lake` variants are **excluded**: OCSF is a different
+schema needing a different adapter, not a result being avoided.
+
+> **Declared change to frozen behaviour.** These captures are NDJSON; `CloudTrailSource`
+> requires a top-level `Records` array, so it would ingest **zero rows** and H3 would be
+> vacuous. One **ingestion-format** change is therefore made — accept NDJSON as well as
+> `Records` — which touches no rule, threshold, severity or correlation logic. Its
+> neutrality is not assumed: R5 (flaws.cloud) is re-run afterwards and must still report
+> **39 findings and 4 cases**. If it does not, the change is not neutral and the result
+> is void.
+>
+> **Prediction: ≥ 1 finding across the five captures, and low recall overall.** `AWS-001`
+> needs a grant-then-use chain and `AWS-002` a credential-creation pattern; per-technique
+> captures are short and isolated, so the chain each rule needs may simply not be present.
+> A zero is ambiguous between "cannot detect cloud attacks" and "captures too thin to
+> carry the chain", so the result is reported alongside what each capture actually
+> contains.
 
 ## 5. Conclusion
 

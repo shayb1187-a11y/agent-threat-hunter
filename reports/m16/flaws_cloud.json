@@ -1,0 +1,162 @@
+{
+  "dataset": "flaws_cloud",
+  "source_kind": "cloudtrail",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 1939207,
+    "rows_kept": 79520,
+    "rows_dropped": 1859687,
+    "kept_fraction": 0.041,
+    "kept_by_table": {
+      "process": 0,
+      "network": 0,
+      "logon": 79424,
+      "control": 96
+    },
+    "drop_classes": [
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "RunInstances",
+        "rows": 1323105
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeSnapshots",
+        "rows": 102510
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "GetBucketAcl",
+        "rows": 42651
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeInstances",
+        "rows": 18935
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "GetCallerIdentity",
+        "rows": 17128
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "GetPolicyVersion",
+        "rows": 14783
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "ListBuckets",
+        "rows": 13362
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeSpotPriceHistory",
+        "rows": 10720
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeSnapshotAttribute",
+        "rows": 9114
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeVpcs",
+        "rows": 7072
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "ListFunctions202224",
+        "rows": 6593
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "CreateDefaultVpc",
+        "rows": 6431
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "ListEntitiesForPolicy",
+        "rows": 6329
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeSecurityGroups",
+        "rows": 5975
+      },
+      {
+        "event_type": "control",
+        "field": "eventName",
+        "reason": "DescribeLoadBalancers",
+        "rows": 5963
+      }
+    ],
+    "unmapped_classes": {},
+    "load_seconds": 184.8
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 79520,
+      "events_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 79424,
+        "control": 96
+      },
+      "window_hours": 31991.98,
+      "window_days": 1333.0,
+      "hosts": 16,
+      "identities": 17,
+      "platforms": [
+        "aws"
+      ]
+    },
+    "detection": {
+      "findings": 39,
+      "by_rule": {
+        "ATH-005": 36,
+        "AWS-002": 3
+      },
+      "by_severity": {
+        "CRITICAL": 4,
+        "MEDIUM": 35
+      },
+      "findings_per_day": 0.0293,
+      "findings_per_host_day": 0.0018
+    },
+    "triage": {
+      "dispositions": {
+        "likely_malicious": 4,
+        "needs_review": 35
+      },
+      "findings_after_triage": 39,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 4,
+      "singleton_cases": 4,
+      "links": 0,
+      "cases_per_day": 0.003
+    },
+    "cost_seconds": {
+      "hunt": 4.39,
+      "environment": 2.865,
+      "triage": 0.001,
+      "correlate": 0.039
+    }
+  }
+}
