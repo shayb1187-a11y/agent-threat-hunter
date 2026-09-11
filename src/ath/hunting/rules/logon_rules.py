@@ -62,7 +62,18 @@ class BruteForceThenSuccess(Detector):
     * group by ``(device, user, source_ip)`` -- one account, one target, one origin
     * find a sliding window containing >= ``bruteforce_min_failures`` failures
     * look for a success from the same triple within ``bruteforce_success_window``
-    * severity CRITICAL if a success followed, HIGH if it did not
+    * severity CRITICAL if a success followed, MEDIUM if it did not
+
+    Why the success condition decides the grade
+    -------------------------------------------
+    The success is the rule's own stated condition; a burst without one is the "tried
+    and failed" half of the paragraph above. It is still worth an analyst's look (a
+    stale service password, a scanner, or genuine guessing that has not landed yet),
+    but grading it HIGH said nothing about outcome and defeated the layers downstream:
+    a lone HIGH finding is raised as a case on its own and the benign layer defers to
+    HIGH, so on 3.7 years of a real trail 35 of 36 bursts with no success each became
+    an uncorroborated, untriageable case (flaws.cloud, M14). MEDIUM keeps the finding
+    and lets severity carry the information it is supposed to carry.
 
     Choosing the threshold
     ----------------------
@@ -158,10 +169,11 @@ class BruteForceThenSuccess(Detector):
                         "the account is now compromised."
                     )
                 else:
-                    severity = Severity.HIGH
+                    severity = Severity.MEDIUM
                     outcome = (
                         "No successful logon was observed from this source within the "
-                        "correlation window, so the attempt appears unsuccessful."
+                        "correlation window, so the attempt appears unsuccessful and "
+                        "is graded on the guessing alone, not on a compromise."
                     )
 
                 findings.append(

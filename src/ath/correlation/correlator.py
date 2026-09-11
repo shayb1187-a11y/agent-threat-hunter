@@ -29,6 +29,10 @@ Signal                Weight Meaning
 shared_evidence         +3   The same telemetry event supports both findings.
 same_process            +3   Both cite activity by the same (host, PID).
 process_lineage         +3   A process in one finding is the parent of one in the other.
+sibling_lineage         +2   Both findings' processes were started by the *same parent
+                             instance*, and that parent looks like a single session
+                             rather than a launcher. The weakest structural signal --
+                             see below -- and deliberately worth less than the others.
 host_movement           +3   One finding's host is the other's authentication source or
                              target -- a directed host-to-host relationship.
 auth_then_exec          +3   A successful authentication to a host, followed shortly by
@@ -49,6 +53,55 @@ signals are worth more than circumstantial ones, and no combination of circumsta
 signals alone can reach a link, because of rule (2). Same-host + same-user + close-in-
 time sums to 6, which clears ``min_score`` -- and is still refused, because on a single
 workstation those three facts are true of almost every pair of alerts.
+
+Why ``sibling_lineage`` is worth 2 and not 3
+--------------------------------------------
+``process_lineage`` requires that a process in one finding *is* the parent of a process
+in the other: the two findings are directly connected in the process tree. Sibling
+findings are not. They are connected only by a third process that neither finding
+mentions, and which may itself be entirely innocent -- a shell is a shell.
+
+That is a real relationship but a weaker one, so it is priced lower, and the price has a
+consequence worth stating: ``sibling_lineage(+2)`` plus ``same_device(+2)`` is 4, which
+does **not** reach ``min_score``. A shared parent can therefore never link two findings
+on its own. It always needs corroboration -- the same account, or proximity in time --
+which is exactly the standard the other structural signals are held to.
+
+What stops every process on a workstation being everyone's sibling
+-------------------------------------------------------------------
+Naively, "same parent process" links far too much: ``explorer.exe`` is the parent of
+everything a user launches all day, and ``services.exe`` of everything the machine runs.
+A rule keying on shared parentage alone would merge a morning's unrelated alerts into
+one case and call it an attack chain.
+
+The guard is not a list of parent names to ignore. Name lists are wrong in both
+directions -- they miss the launcher you did not think of, and an attacker who renames a
+shell walks through them. Instead, two properties are measured **from the telemetry
+itself**, and a parent has to satisfy both:
+
+``fan-out``      how many distinct children it started. An operator's shell session
+                 starts a handful; an installer or a service host starts hundreds.
+``spawn span``   the wall-clock time between its first and last child. This is the
+                 discriminating one. A shell an operator is typing into spawns its
+                 children over seconds or minutes. A desktop shell spawns them across
+                 the whole working day.
+
+On this project's own dataset the separation is stark, and both sides of it are real
+rather than constructed::
+
+    PC03/7419    6 children over  3m40s   the ransomware operator's shell
+    PC01/6612    4 children over  3m19s   the intrusion's discovery burst
+    PC05/631     4 children over  2h45m   a user's desktop shell -- OUTLOOK, WINWORD,
+                                          chrome, powershell, spread over a morning
+
+``PC05/631`` is the case that matters. It has a *small* fan-out, so fan-out alone would
+have admitted it; its two-and-three-quarter-hour span is what rules it out. This is why
+the span bound carries the weight and the fan-out bound is defence in depth.
+
+**Honest limit on the fan-out bound.** The largest fan-out anywhere in this dataset is
+6, so ``max_session_fan_out`` is never the binding constraint here and this dataset
+cannot validate its value. It is exercised only by a synthetic unit test. The span bound
+is the one measured against real generated telemetry.
 
 What stops unrelated findings from grouping
 -------------------------------------------
@@ -73,6 +126,14 @@ What could still cause false correlation -- stated honestly
   which are chains -- but it means one bad link can merge two cases.
 * **Busy service accounts.** An account used by automation across many hosts generates
   ``same_user`` plus ``host_movement`` broadly, and would over-group.
+* **A shell used for two unrelated things.** ``sibling_lineage`` cannot tell an operator
+  who ran two stages of one attack from an administrator who ran two unrelated commands
+  in one ``cmd.exe`` inside ten minutes. Both are genuinely "one session", and the
+  correlator groups them. That is a deliberate trade: the session is the unit of human
+  intent, and separating them would need intent, which the telemetry does not carry.
+* **PID reuse, again.** The sibling relation keys on ``(device, parent_pid)`` and
+  inherits the same recycling weakness as ``same_process``, bounded by the same
+  ``max_gap``.
 """
 
 from __future__ import annotations
@@ -80,6 +141,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 
@@ -95,6 +157,7 @@ logger = get_logger(__name__)
 W_SHARED_EVIDENCE = 3
 W_SAME_PROCESS = 3
 W_PROCESS_LINEAGE = 3
+W_SIBLING_LINEAGE = 2
 W_HOST_MOVEMENT = 3
 W_AUTH_THEN_EXEC = 3
 W_SAME_DEVICE = 2
@@ -103,7 +166,14 @@ W_TEMPORAL_CLOSE = 2
 W_TEMPORAL_NEAR = 1
 
 STRUCTURAL_SIGNALS = frozenset(
-    {"shared_evidence", "same_process", "process_lineage", "host_movement", "auth_then_exec"}
+    {
+        "shared_evidence",
+        "same_process",
+        "process_lineage",
+        "sibling_lineage",
+        "host_movement",
+        "auth_then_exec",
+    }
 )
 
 # Rules whose findings represent a successful authentication landing on a host.
@@ -125,6 +195,16 @@ class CorrelationConfig:
         tight_window: Gap qualifying for the stronger temporal signal.
         auth_exec_window: How long after an authentication a remote execution on the
             same host still counts as caused by it.
+        sibling_window: How far apart two findings sharing a parent process may be and
+            still be treated as siblings. Separate from ``tight_window`` so the sibling
+            relation can be tightened without changing what ``temporal_close`` means.
+        max_session_fan_out: The most distinct children a parent may have started and
+            still be read as one session rather than a launcher. Defence in depth: the
+            largest fan-out in this project's dataset is 6, so this bound is never the
+            binding constraint there and only a synthetic test exercises it.
+        max_session_span: The longest a parent's children may be spread over and still
+            be read as one session. This is the bound that does the real work -- a
+            desktop shell has a small fan-out but spawns across the whole day.
         min_case_size: Cases smaller than this are discarded as isolated findings,
             unless the finding clears ``singleton_min_severity``.
         singleton_min_severity: A finding that linked to nothing still becomes a
@@ -152,6 +232,9 @@ class CorrelationConfig:
     tight_window: timedelta = timedelta(minutes=10)
     singleton_min_severity: Severity = Severity.HIGH
     auth_exec_window: timedelta = timedelta(minutes=15)
+    sibling_window: timedelta = timedelta(minutes=10)
+    max_session_fan_out: int = 12
+    max_session_span: timedelta = timedelta(minutes=10)
     min_case_size: int = 2
 
 
@@ -161,18 +244,29 @@ class _ProcessIndex:
     Built once per correlation run. Maps each telemetry event id to the
     ``(device, pid)`` it ran as, and to the ``(device, parent_pid)`` that started it,
     which is what lets us assert process lineage between two findings.
+
+    It also records, for every parent observed, how many distinct children it started
+    and over what span. Those two numbers are what separate a shell an operator is
+    typing into from a launcher that starts things all day -- see
+    :meth:`session_parents`.
     """
 
     def __init__(self, telemetry: Telemetry) -> None:
         self.pid_of: dict[str, tuple[str, int]] = {}
         self.parent_of: dict[str, tuple[str, int]] = {}
+        self._children: dict[tuple[str, int], set[int]] = {}
+        self._spawned_at: dict[tuple[str, int], list[Any]] = {}
 
         procs = telemetry.processes
         for row in procs.itertuples(index=False):
             if pd.notna(row.process_id):
                 self.pid_of[row.event_id] = (row.device, int(row.process_id))
             if pd.notna(row.parent_process_id):
-                self.parent_of[row.event_id] = (row.device, int(row.parent_process_id))
+                parent = (row.device, int(row.parent_process_id))
+                self.parent_of[row.event_id] = parent
+                if pd.notna(row.process_id):
+                    self._children.setdefault(parent, set()).add(int(row.process_id))
+                self._spawned_at.setdefault(parent, []).append(row.timestamp)
 
         # Network events inherit the PID of the process that opened the connection,
         # which is what links a PowerShell execution to its own outbound traffic.
@@ -186,6 +280,35 @@ class _ProcessIndex:
 
     def parents(self, finding: Finding) -> set[tuple[str, int]]:
         return {self.parent_of[e] for e in finding.event_ids if e in self.parent_of}
+
+    def fan_out(self, parent: tuple[str, int]) -> int:
+        """How many distinct child processes this parent was observed to start."""
+        return len(self._children.get(parent, ()))
+
+    def spawn_span(self, parent: tuple[str, int]) -> timedelta:
+        """Wall-clock time between this parent's first and last observed child."""
+        times = self._spawned_at.get(parent)
+        if not times:
+            return timedelta(0)
+        return max(times) - min(times)
+
+    def session_parents(
+        self, finding: Finding, config: CorrelationConfig
+    ) -> set[tuple[str, int]]:
+        """Those of the finding's parents that look like a single session.
+
+        A parent qualifies when it started few enough children, closely enough
+        together, to read as one burst of activity rather than a launcher that starts
+        things all day. Both bounds come off the telemetry, so no process is named here
+        and there is no allow-list to keep up to date -- a renamed shell is measured
+        exactly like any other.
+        """
+        return {
+            parent
+            for parent in self.parents(finding)
+            if self.fan_out(parent) <= config.max_session_fan_out
+            and self.spawn_span(parent) <= config.max_session_span
+        }
 
 
 def _hosts_of(finding: Finding) -> set[str]:
@@ -232,6 +355,14 @@ def score_pair(
     if (pids_a & index.parents(b)) or (pids_b & index.parents(a)):
         score += W_PROCESS_LINEAGE
         signals.append(f"process_lineage(+{W_PROCESS_LINEAGE})")
+
+    # Siblings: neither finding is the other's parent, but the same parent instance
+    # started both, and that parent reads as one session rather than a launcher.
+    if _time_gap(a, b) <= config.sibling_window and (
+        index.session_parents(a, config) & index.session_parents(b, config)
+    ):
+        score += W_SIBLING_LINEAGE
+        signals.append(f"sibling_lineage(+{W_SIBLING_LINEAGE})")
 
     # Directed host relationship: one finding's host is the other's auth source/target.
     hosts_a, hosts_b = _hosts_of(a), _hosts_of(b)

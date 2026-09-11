@@ -17,6 +17,9 @@ Expectations:
 * ``silent``  -- the rule handles this benign activity; it must produce no finding.
 * ``fires``   -- the rule fires on it. That is a documented cost, and the test pins it so
   the cost cannot grow or shrink unnoticed.
+* ``fires:not_high`` -- the rule fires, and grades it below HIGH: a documented cost the
+  detection itself has already discounted, pinned so neither the firing nor the grade
+  can drift.
 * ``fires:target_silent`` / ``fires:target_not_high`` -- the rule fires today, and the
   M15 plan says it should not (or should not at HIGH). The pinned test passes; a second,
   strict-xfail test states the target so the suite turns red *deliberately* when the fix
@@ -113,8 +116,8 @@ FP_CASES: tuple[Case, ...] = (
         proc("rundll32.exe", r"rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump 712 C:\Users\Public\lsass.dmp full", "cmd.exe", user="redteam")]), "fires"),
     # ---------------------------------------------------------------- ATH-005
     Case("ATH-005", 0, "A service account with a stale", lambda: telemetry(
-        logons=failures("svc_backup", "FS02", "10.10.20.40", 12)), "fires:target_not_high",
-        "12 failures, no success: fires HIGH today; M15-3 says severity must follow the success condition"),
+        logons=failures("svc_backup", "FS02", "10.10.20.40", 12)), "fires:not_high",
+        "12 failures, no success: fires at MEDIUM since M15-3, when severity was made to follow the success condition"),
     Case("ATH-005", 1, "A user whose phone", lambda: telemetry(
         logons=failures("jdoe", "MAIL01", "10.10.30.7", 12) + [
             logon("jdoe", "MAIL01", logon_type=3, source_ip="10.10.30.7", when=at(5))]), "fires",
@@ -123,7 +126,7 @@ FP_CASES: tuple[Case, ...] = (
         f for host in ("PC01", "PC02", "PC03", "PC04") for f in failures("svc_scan", host, "10.10.99.5", 4)]), "silent",
         "failures are grouped per device; a scanner spreads them thin"),
     Case("ATH-005", 3, "A misconfigured application", lambda: telemetry(
-        logons=failures("svc_app", "SQL01", "10.10.20.55", 30, spacing_seconds=2)), "fires:target_not_high"),
+        logons=failures("svc_app", "SQL01", "10.10.20.55", 30, spacing_seconds=2)), "fires:not_high"),
     Case("ATH-005", 4, "Account lockout thresholds", lambda: telemetry(
         logons=failures("jdoe", "FS02", "10.10.20.15", 5) + [
             logon("jdoe", "FS02", logon_type=3, source_ip="10.10.20.15", action="failure",
@@ -262,6 +265,10 @@ def test_declared_false_positive_behaves_as_pinned(case: Case) -> None:
             # Pin today's behaviour exactly, so the target test below is the only place
             # the intended behaviour is stated.
             assert all(f.severity in (Severity.HIGH, Severity.CRITICAL) for f in findings)
+        elif case.expect == "fires:not_high":
+            assert all(f.severity not in (Severity.HIGH, Severity.CRITICAL) for f in findings), (
+                f"{case.rule_id}[{case.index}] is pinned as firing below HIGH on: {case.opening}"
+            )
 
 
 _TARGETS = [c for c in FP_CASES if c.expect.startswith("fires:target")]

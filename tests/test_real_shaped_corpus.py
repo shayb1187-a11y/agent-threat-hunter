@@ -302,11 +302,8 @@ def test_cloudtrail_shaped_pinned_findings(cloudtrail_telemetry) -> None:
     assert len(burst) == 1
     assert burst[0].user == "backup"
     assert "No successful logon" in burst[0].reason
-    assert burst[0].severity is Severity.HIGH        # pinned defect, see target below
+    # M15-3, fixed: a burst with no success was HIGH (35/36 on flaws.cloud); the grade
+    # now follows the rule's own success condition.
+    assert burst[0].severity is Severity.MEDIUM
+    assert burst[0].metadata["succeeded"] is False
     assert "AWS-001" not in by_rule                   # attach was to backup, key creation for Level6 and denied
-
-
-@pytest.mark.xfail(strict=True, reason="M15-3: ATH-005 grades a burst with no success HIGH (35/36 on flaws.cloud)")
-def test_target_cloudtrail_no_success_burst_is_not_high(cloudtrail_telemetry) -> None:
-    findings = [f for f in run_hunt(cloudtrail_telemetry).findings if f.rule_id == "ATH-005"]
-    assert findings and all(f.severity not in (Severity.HIGH, Severity.CRITICAL) for f in findings)

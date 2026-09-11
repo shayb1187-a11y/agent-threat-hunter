@@ -506,8 +506,13 @@ def test_ath005_threshold_is_the_tuning_knob(telemetry) -> None:
     assert any(f.user != "svc_backup" for f in findings)
 
 
-def test_ath005_high_not_critical_without_a_success(telemetry) -> None:
-    """Remove the successful logon; severity must drop."""
+def test_ath005_medium_not_critical_without_a_success(telemetry) -> None:
+    """Remove the successful logon; severity must drop below HIGH.
+
+    M15-3, from flaws.cloud: 35 of 36 real bursts had no success and were graded HIGH,
+    which made each one a singleton case the benign layer could not touch. The
+    success is the rule's own condition, so its absence must show in the grade.
+    """
     logons = telemetry.logons
     burst_success = logons[
         (logons["user"] == "svc_backup")
@@ -520,7 +525,7 @@ def test_ath005_high_not_critical_without_a_success(telemetry) -> None:
     )
     findings = get_detector("ATH-005").run(stripped)
     assert len(findings) == 1
-    assert findings[0].severity is Severity.HIGH
+    assert findings[0].severity is Severity.MEDIUM
     assert findings[0].metadata["succeeded"] is False
 
 
