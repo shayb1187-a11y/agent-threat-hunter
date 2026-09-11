@@ -249,6 +249,24 @@ _LSASS_PATTERNS: dict[str, str] = {
     "rundll32 MiniDump export": r"rundll32.{0,80}\bminidump\b",
 }
 
+# Indicators that describe LSASS as the *target* of a command, and so are matched
+# against the arguments only. ``lsass.exe`` names itself in argv[0] every time it
+# starts (``wininit.exe -> C:\Windows\system32\lsass.exe`` at boot), and a rule that
+# reads that as "a command line referenced lsass" fires once per host per boot: 30
+# findings a day on a 30-host estate doing nothing (DEDALE, M14). The image path is
+# what a process *is*, never what it acts on.
+_ARGUMENT_ONLY_INDICATORS: frozenset[str] = frozenset({"explicit lsass reference"})
+
+
+def _arguments(command_line: str) -> str:
+    """The command line with argv[0] (the image path, quoted or bare) removed."""
+    stripped = command_line.lstrip()
+    if stripped.startswith('"'):
+        closing = stripped.find('"', 1)
+        return stripped[closing + 1:] if closing != -1 else ""
+    parts = stripped.split(None, 1)
+    return parts[1] if len(parts) > 1 else ""
+
 
 @register
 class LsassCredentialAccess(Detector):
@@ -267,6 +285,15 @@ class LsassCredentialAccess(Detector):
     dropping Mimikatz, the attacker calls the ``MiniDump`` export of Microsoft's own
     signed ``comsvcs.dll`` via ``rundll32.exe``. No attacker binary touches disk, so
     antivirus file scanning sees nothing unusual.
+
+    What a reference to LSASS is, and is not
+    -----------------------------------------
+    The "explicit lsass reference" indicator means *another process named LSASS on its
+    command line*, as a target. It is therefore matched against the arguments, never
+    argv[0]: ``lsass.exe`` starting at boot carries its own image path and nothing
+    else, and that is the service starting, not credential access. The tool-shaped
+    indicators (``comsvcs.dll ... MiniDump``, ``procdump ... lsass``, ``sekurlsa::``)
+    are matched against the full line because the tool name is part of the evidence.
 
     Honest limitation -- state this in an interview
     ------------------------------------------------
@@ -303,9 +330,13 @@ class LsassCredentialAccess(Detector):
             command_line = (row["command_line"] or "").lower()
             if not command_line:
                 continue
+            arguments = _arguments(command_line)
             matched = [
                 name for name, pattern in _LSASS_PATTERNS.items()
-                if re.search(pattern, command_line)
+                if re.search(
+                    pattern,
+                    arguments if name in _ARGUMENT_ONLY_INDICATORS else command_line,
+                )
             ]
             if not matched:
                 continue

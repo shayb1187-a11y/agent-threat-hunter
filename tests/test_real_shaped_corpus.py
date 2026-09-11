@@ -92,19 +92,11 @@ def test_dedale_corpus_is_the_boot_chain_the_generator_never_had(dedale_telemetr
     assert (procs["signature_status"] == SIG_UNKNOWN).all()
 
 
-def test_dedale_corpus_pinned_findings_are_the_measured_defect(dedale_telemetry) -> None:
-    """Regression artifact of M14: the only rule that fires on a benign boot is ATH-004,
-    on lsass.exe's own image path. Pinned exactly so the cost cannot change silently."""
-    findings = run_hunt(dedale_telemetry).findings
-    assert {f.rule_id for f in findings} == {"ATH-004"}
-    hit = dedale_telemetry.processes[dedale_telemetry.processes["event_id"].isin(
-        {e for f in findings for e in f.event_ids})]
-    assert set(hit["process_name"]) == {"lsass.exe"}
-    assert all(f.severity is Severity.CRITICAL for f in findings)
-
-
-@pytest.mark.xfail(strict=True, reason="M15-3: ATH-004 must not match the image path of lsass.exe itself (30/day on DEDALE)")
-def test_target_dedale_benign_boot_hour_is_silent(dedale_telemetry) -> None:
+def test_dedale_benign_boot_hour_is_silent(dedale_telemetry) -> None:
+    """Regression artifact of M14 (M15-3, fixed): ATH-004 fired on ``lsass.exe``'s own
+    image path once per host per boot, 30 findings a day on a benign estate. The boot
+    record is still in the corpus (asserted above); the rule now reads argv[0] as what
+    the process *is*, not what it references, and the benign hour is silent."""
     assert run_hunt(dedale_telemetry).findings == []
 
 
@@ -128,8 +120,8 @@ def test_dedale_triage_pinned_veto_rate(dedale_telemetry) -> None:
 
 def test_spliced_credential_dump_fires_through_the_adapter(tmp_path, dedale_sysmon1_template) -> None:
     """Positive control through the real path: a comsvcs MiniDump shaped like a DEDALE
-    record must fire ATH-004 with the spliced event cited, and nothing else must join it
-    but the pinned lsass.exe boot findings."""
+    record must fire ATH-004 with the spliced event cited, and it must be the only
+    finding: the boot chain beside it, ``lsass.exe`` included, stays silent."""
     src = DEDALE / "client2_2024-12-25_boot.jsonl"
     spliced = _dedale_record(
         dedale_sysmon1_template, name="rundll32.exe", executable=r"C:\Windows\System32\rundll32.exe",
@@ -141,6 +133,7 @@ def test_spliced_credential_dump_fires_through_the_adapter(tmp_path, dedale_sysm
     findings = run_hunt(telemetry).findings
     dump = [f for f in findings if f.rule_id == "ATH-004" and "comsvcs.dll MiniDump" in f.metadata.get("indicators", ())]
     assert len(dump) == 1
+    assert findings == dump
     cited = telemetry.processes[telemetry.processes["event_id"].isin(dump[0].event_ids)]
     assert (cited["process_name"] == "rundll32.exe").all()
 

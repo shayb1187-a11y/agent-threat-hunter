@@ -449,6 +449,33 @@ def test_ath004_silent_on_clean_telemetry(telemetry) -> None:
     assert get_detector("ATH-004").run(stripped) == []
 
 
+def test_ath004_reads_argv0_as_the_image_not_a_reference() -> None:
+    """M15-3, from DEDALE: ``lsass.exe`` names itself in argv[0] every boot.
+
+    The "explicit lsass reference" indicator means another process naming LSASS as a
+    target, so it is matched on the arguments only. The service starting is silent;
+    the same word in an argument, bare or after a quoted image, still fires; and the
+    tool-shaped indicators keep the whole line.
+    """
+    from _builders import proc, telemetry
+
+    boot = proc("lsass.exe", r"C:\Windows\system32\lsass.exe", "wininit.exe", user="SYSTEM")
+    assert get_detector("ATH-004").run(telemetry(procs=[boot])) == []
+
+    quoted_boot = proc("lsass.exe", r'"C:\Windows\system32\lsass.exe"', "wininit.exe", user="SYSTEM")
+    assert get_detector("ATH-004").run(telemetry(procs=[quoted_boot])) == []
+
+    targeted = proc("procdump64.exe", r'"C:\Tools\procdump64.exe" -ma lsass.exe C:\Temp\out.dmp', "cmd.exe")
+    findings = get_detector("ATH-004").run(telemetry(procs=[targeted]))
+    assert len(findings) == 1
+    assert {"explicit lsass reference", "procdump against lsass"} <= set(findings[0].metadata["indicators"])
+
+    taskmgr_style = proc("rundll32.exe", r"rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump 712 C:\Users\Public\lsass.dmp full", "cmd.exe")
+    findings = get_detector("ATH-004").run(telemetry(procs=[taskmgr_style]))
+    assert len(findings) == 1
+    assert "explicit lsass reference" in findings[0].metadata["indicators"]
+
+
 # ======================================================================================
 # ATH-005 -- Brute force
 # ======================================================================================
