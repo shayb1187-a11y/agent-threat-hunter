@@ -345,3 +345,21 @@ def test_benchmark_serialises(data_dir) -> None:
     assert len(payload["incidents"]) == 4
     assert payload["passed"] == 4
     assert "benign_discrimination" in payload["incidents"][0]
+
+
+# ======================================================================================
+# Targets: the pinned numbers above encode known defects. Each gets a strict xfail
+# stating the intended value, so a fix turns the suite red on purpose and the pinned
+# number is updated in the same change (docs/test-quality-root-causes.md, P7).
+# ======================================================================================
+
+
+@pytest.mark.xfail(strict=True, reason="M15-4: the benign look-alike still forms a second case; case precision is pinned at 0.5 above")
+def test_target_windows_incident_has_no_noise_case(windows) -> None:
+    assert windows.noise_cases == 0
+    assert windows.case_precision == 1.0
+
+
+@pytest.mark.xfail(strict=True, reason="M15-4: a quiet day still raises one case; pinned as findings==2/cases==1 above")
+def test_target_quiet_day_raises_no_case(quiet) -> None:
+    assert quiet.cases == 0

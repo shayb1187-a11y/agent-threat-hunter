@@ -433,7 +433,13 @@ def test_ath004_detects_comsvcs_minidump(hunt, ground_truth) -> None:
 
 
 def test_ath004_silent_on_clean_telemetry(telemetry) -> None:
-    """Strip the one malicious command line; the rule must produce nothing."""
+    """Strip the one malicious command line; the rule must produce nothing.
+
+    On its own this is a vacuous negative control: the synthetic world never starts
+    ``lsass.exe``, so it could not catch the rule matching lsass.exe's own image path
+    (30 findings/day on DEDALE, M14). The non-vacuous version runs on captured records in
+    tests/test_real_shaped_corpus.py; this one stays as the attack-minus-one check only.
+    """
     clean = telemetry.processes[
         ~telemetry.processes["command_line"].str.contains("comsvcs", case=False, na=False)
     ]
