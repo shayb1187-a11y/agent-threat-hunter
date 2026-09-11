@@ -534,3 +534,19 @@ def triage_summary(assessments: dict[str, TriageAssessment]) -> dict[str, int]:
     for assessment in assessments.values():
         counts[assessment.disposition.value] += 1
     return counts
+
+
+def set_aside_ids(assessments: dict[str, TriageAssessment]) -> frozenset[str]:
+    """Ids of the findings this layer dispositioned ``likely_benign``.
+
+    What the correlator is handed (``correlate(..., set_aside=...)``) so that a group of
+    findings every one of which already carries a cited counter-case is not raised as
+    an investigation (M15-4). Ids rather than assessments, deliberately: the correlator
+    does not decide which findings are benign, it is told -- and it still never removes
+    a finding from the output, it only declines to raise a case that would cost an
+    analyst an investigation for nothing.
+    """
+    return frozenset(
+        finding_id for finding_id, assessment in assessments.items()
+        if assessment.disposition is Disposition.LIKELY_BENIGN
+    )

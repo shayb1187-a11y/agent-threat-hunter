@@ -68,6 +68,7 @@ from ath.triage import (
     Verdict,
     assess_findings,
     score_feedback,
+    set_aside_ids,
     triage_summary,
     verdict_from_assessment,
 )
@@ -480,7 +481,10 @@ def cmd_chains(args: argparse.Namespace, settings: Settings) -> int:
         min_score=args.min_score,
         require_structural=not args.allow_circumstantial,
     )
-    cases = correlate(result.findings, telemetry, config)
+    # Findings triage explained still print under `hunt --triage`; they do not raise a
+    # case on their own (M15-4).
+    assessments = assess_findings(result.findings, build_environment_model(telemetry))
+    cases = correlate(result.findings, telemetry, config, set_aside=set_aside_ids(assessments))
 
     if args.json:
         out = Path(args.json)
@@ -586,7 +590,9 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
     """Run the autonomous investigation agent over one or all correlated cases."""
     telemetry = load_telemetry(settings.raw_data_dir)
     result = run_hunt(telemetry, config=HuntConfig())
-    cases = correlate(result.findings, telemetry)
+    environment = build_environment_model(telemetry)
+    assessments = assess_findings(result.findings, environment)
+    cases = correlate(result.findings, telemetry, set_aside=set_aside_ids(assessments))
 
     if not cases:
         print("No correlated cases to investigate. Run `python main.py chains` first.")
@@ -616,8 +622,7 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
     # is absent, rather than run and report nothing -- the distinction between "nothing
     # happened" and "we cannot see", carried into the investigation layer.
     orchestrator = InvestigationOrchestrator(
-        tools, verifier, llm=llm, config=config,
-        environment=build_environment_model(telemetry),
+        tools, verifier, llm=llm, config=config, environment=environment,
     )
 
     all_states = []
@@ -653,7 +658,9 @@ def cmd_report(args: argparse.Namespace, settings: Settings) -> int:
     """Investigate case(s) and render a calibrated Markdown report for each."""
     telemetry = load_telemetry(settings.raw_data_dir)
     result = run_hunt(telemetry, config=HuntConfig())
-    cases = correlate(result.findings, telemetry)
+    environment = build_environment_model(telemetry)
+    assessments = assess_findings(result.findings, environment)
+    cases = correlate(result.findings, telemetry, set_aside=set_aside_ids(assessments))
 
     if not cases:
         print("No correlated cases to report on. Run `python main.py chains` first.")
@@ -677,8 +684,7 @@ def cmd_report(args: argparse.Namespace, settings: Settings) -> int:
     # is absent, rather than run and report nothing -- the distinction between "nothing
     # happened" and "we cannot see", carried into the investigation layer.
     orchestrator = InvestigationOrchestrator(
-        tools, verifier, llm=llm, config=config,
-        environment=build_environment_model(telemetry),
+        tools, verifier, llm=llm, config=config, environment=environment,
     )
 
     out_dir = Path(args.out_dir) if args.out_dir else settings.reports_dir

@@ -48,7 +48,10 @@ def test_counts_match_the_layers_called_directly(telemetry, profile) -> None:
     )
     assert profile.findings_after_triage == profile.findings - benign
 
-    cases = correlate(hunt.findings, telemetry)
+    # The profile hands correlation the findings triage explained (M15-4), so the
+    # direct call must too, or the two would disagree on a benign look-alike's case.
+    explained = {fid for fid, a in assessments.items() if a.disposition is Disposition.LIKELY_BENIGN}
+    cases = correlate(hunt.findings, telemetry, set_aside=explained)
     assert profile.cases == len(cases)
     assert profile.singleton_cases == sum(1 for c in cases if len(c.findings) == 1)
 

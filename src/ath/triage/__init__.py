@@ -26,6 +26,7 @@ from ath.triage.benign import (
     TriageAssessment,
     assess_finding,
     assess_findings,
+    set_aside_ids,
     triage_summary,
 )
 
@@ -40,6 +41,7 @@ __all__ = [
     "TriageAssessment",
     "assess_finding",
     "assess_findings",
+    "set_aside_ids",
     "triage_summary",
     "FEEDBACK_FILENAME",
     "FeedbackMetrics",

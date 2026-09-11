@@ -113,6 +113,17 @@ What stops unrelated findings from grouping
 * Directionality. ``host_movement`` is asserted only where an authentication actually
   connects two hosts, not merely because two hosts appear in the same case.
 
+What the triage verdict does here
+---------------------------------
+Nothing to the links. A finding the benign layer set aside (``likely_benign``, with cited
+evidence) still links, still joins a case that has an unexplained finding in it, and is
+never dropped from the output. What it cannot do is *raise* a case by itself: a component
+whose every member was set aside is not turned into an investigation, because each member
+already carries the counter-case an investigation would produce, and raising it cost an
+analyst a case for nothing (the benign look-alike's second case in INC-001 and the quiet
+day's only case, M15-4). The correlator does not decide which findings are benign; it is
+told, by finding id, in ``set_aside``.
+
 What could still cause false correlation -- stated honestly
 ------------------------------------------------------------
 * **Shared infrastructure.** A jump box or terminal server legitimately produces
@@ -138,7 +149,7 @@ What could still cause false correlation -- stated honestly
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
@@ -444,6 +455,8 @@ def correlate(
     findings: Sequence[Finding],
     telemetry: Telemetry,
     config: CorrelationConfig | None = None,
+    *,
+    set_aside: Collection[str] = (),
 ) -> list[InvestigationCase]:
     """Group findings into investigation cases using deterministic evidence.
 
@@ -451,6 +464,11 @@ def correlate(
         findings: Findings to correlate.
         telemetry: Source telemetry, needed for process-lineage look-ups.
         config: Correlation parameters.
+        set_aside: Finding ids the triage layer dispositioned ``likely_benign`` with
+            cited evidence (``ath.triage.set_aside_ids``). A connected component made
+            up entirely of set-aside findings is not raised as a case; a set-aside
+            finding that links to an unexplained one still joins that case. Links and
+            findings are never affected, only whether a case is raised.
 
     Returns:
         Cases of at least ``config.min_case_size`` findings, ordered by start time.
@@ -512,6 +530,12 @@ def correlate(
 
     cases: list[InvestigationCase] = []
     for members in groups.values():
+        if set_aside and all(f.finding_id in set_aside for f in members):
+            logger.debug(
+                "No case for %s: every finding in the group was set aside by triage",
+                ", ".join(f.finding_id for f in members),
+            )
+            continue
         if len(members) < config.min_case_size and not _warrants_singleton(
             members, config
         ):

@@ -151,15 +151,18 @@ def test_correlation_measurably_reduces_triage_load(windows) -> None:
     assert windows.triage_reduction > 0.7
 
 
-def test_known_false_positive_is_counted_as_noise(windows) -> None:
-    """Half the cases an analyst sees on this dataset are false alarms.
-
-    An uncomfortable number that must stay visible: the benign look-alike produces a
-    second case, so case precision is 0.5. Reporting only the intrusion's perfect
-    recall would describe a system that does not exist.
+def test_known_false_positive_no_longer_costs_a_case(windows) -> None:
+    """The benign look-alike is still detected and still counted; it no longer forms a
+    case (M15-4). Until then half the cases on this dataset were false alarms: the
+    administrator's two findings were explained by triage and raised as a case anyway,
+    so case precision was pinned at 0.5. Both findings remain in the output, both carry
+    a cited benign verdict, and the correlator is told not to raise a case for a group
+    that is entirely explained.
     """
-    assert windows.noise_cases == 1
-    assert windows.case_precision == 0.5
+    assert windows.benign_findings_total == 2
+    assert windows.benign_findings_identified == 2
+    assert windows.noise_cases == 0
+    assert windows.case_precision == 1.0
 
 
 # ======================================================================================
@@ -261,12 +264,13 @@ def test_quiet_day_still_raises_findings(quiet) -> None:
 
     Worth pinning separately from the triage result. The benign-evidence layer does not
     make the false positives stop happening -- it explains them -- and conflating the
-    two would hide a real regression if the rules themselves got noisier.
+    two would hide a real regression if the rules themselves got noisier. What changed
+    in M15-4 is the case: two explained findings no longer raise one.
     """
     assert quiet.incident.is_benign
     assert quiet.findings == 2
-    assert quiet.cases == 1
-    assert quiet.noise_cases == 1
+    assert quiet.cases == 0
+    assert quiet.noise_cases == 0
 
 
 def test_quiet_day_false_alarms_are_all_explained(quiet) -> None:
@@ -311,21 +315,23 @@ def test_standard_suite_includes_kubernetes_when_a_fixture_dir_is_given(data_dir
 
 
 def test_benchmark_reports_current_state_honestly(data_dir) -> None:
-    """Pins the headline: 3 of 3, with two noise cases still raised.
+    """Pins the headline: 4 of 4, and where the false positives went.
 
-    Noise cases stay at 2 deliberately. The triage layer explains false positives; it
-    does not stop them being raised, and a metric that hid them would remove the
-    pressure to make the rules themselves better. "All incidents pass" is therefore
-    not the same claim as "the system is quiet", and these two assertions are kept
-    side by side so the difference stays visible.
+    Until M15-4 three noise cases were raised across the suite (the administrator's
+    look-alike in INC-001, INC-004 and the quiet day), kept visible so a metric could
+    not hide them. They are now zero, and the pressure that number applied has to be
+    kept somewhere else: the look-alike findings are still raised by the rules and
+    still counted here, every one of them explained, so a rule getting noisier or a
+    benign verdict going missing shows up as a finding count, not as silence.
     """
     result = run_benchmark(standard_suite(data_dir, CLOUDTRAIL))
     assert result.total == 4
     assert result.passed == 4
-    # Grew by one with INC-004: the ransomware-prep telemetry still contains the
-    # administrator's encoded-PowerShell look-alike, which raises its own case there
-    # exactly as it does in INC-001.
-    assert result.total_noise_cases == 3
+    assert result.total_noise_cases == 0
+    benign_total = sum(o.benign_findings_total for o in result.outcomes)
+    benign_identified = sum(o.benign_findings_identified for o in result.outcomes)
+    assert benign_total == 6  # the look-alike's two findings, in INC-001, INC-004 and INC-003
+    assert benign_identified == benign_total
 
 
 def test_no_incident_clears_a_true_positive(data_dir) -> None:
@@ -345,21 +351,3 @@ def test_benchmark_serialises(data_dir) -> None:
     assert len(payload["incidents"]) == 4
     assert payload["passed"] == 4
     assert "benign_discrimination" in payload["incidents"][0]
-
-
-# ======================================================================================
-# Targets: the pinned numbers above encode known defects. Each gets a strict xfail
-# stating the intended value, so a fix turns the suite red on purpose and the pinned
-# number is updated in the same change (docs/test-quality-root-causes.md, P7).
-# ======================================================================================
-
-
-@pytest.mark.xfail(strict=True, reason="M15-4: the benign look-alike still forms a second case; case precision is pinned at 0.5 above")
-def test_target_windows_incident_has_no_noise_case(windows) -> None:
-    assert windows.noise_cases == 0
-    assert windows.case_precision == 1.0
-
-
-@pytest.mark.xfail(strict=True, reason="M15-4: a quiet day still raises one case; pinned as findings==2/cases==1 above")
-def test_target_quiet_day_raises_no_case(quiet) -> None:
-    assert quiet.cases == 0

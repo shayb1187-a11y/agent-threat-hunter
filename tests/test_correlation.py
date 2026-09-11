@@ -152,6 +152,38 @@ def test_findings_beyond_max_gap_never_link(telemetry) -> None:
     assert all(case.is_singleton for case in cases)
 
 
+def _explained_pair() -> tuple[Finding, Finding]:
+    """Two findings on the same event: shared evidence links them structurally."""
+    a = _mk("ATH-002", "PC07", "adm_sarah", 0, "evt-A")
+    b = _mk("ATH-003", "PC07", "adm_sarah", 1, "evt-A")
+    return a, b
+
+
+def test_findings_set_aside_by_triage_do_not_raise_a_case_on_their_own(telemetry) -> None:
+    """M15-4: a group whose every finding carries a cited benign verdict is not an
+    investigation. Findings and links are untouched; the case is simply not raised."""
+    a, b = _explained_pair()
+    assert len(correlate([a, b], telemetry, CorrelationConfig())) == 1
+    cases = correlate([a, b], telemetry, CorrelationConfig(), set_aside={a.finding_id, b.finding_id})
+    assert cases == []
+
+
+def test_a_set_aside_finding_still_joins_an_unexplained_case(telemetry) -> None:
+    """Context is kept: the explained finding rides along with the one that is not."""
+    a, b = _explained_pair()
+    cases = correlate([a, b], telemetry, CorrelationConfig(), set_aside={a.finding_id})
+    assert len(cases) == 1
+    assert {f.finding_id for f in cases[0].findings} == {a.finding_id, b.finding_id}
+
+
+def test_a_lone_set_aside_finding_is_not_raised_even_when_severe(telemetry) -> None:
+    """Severity earns a singleton its case; a cited benign verdict on that same finding
+    is the triage layer's answer to the severity, and the correlator honours it."""
+    lone = _mk("ATH-004", "PC99", "nobody", 0, "evt-Z")
+    assert len(correlate([lone], telemetry, CorrelationConfig())) == 1
+    assert correlate([lone], telemetry, CorrelationConfig(), set_aside={lone.finding_id}) == []
+
+
 def test_duplicate_finding_ids_raise(telemetry) -> None:
     """A key collision would merge findings with no link recorded -- fail loudly."""
     a = _mk("ATH-002", "PC01", "jdoe", 0, "evt-DUP")

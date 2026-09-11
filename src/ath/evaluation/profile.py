@@ -24,7 +24,7 @@ from ath.correlation import correlate
 from ath.environment import build_environment_model
 from ath.hunting import HuntConfig, run_hunt
 from ath.telemetry.loader import Telemetry
-from ath.triage import assess_findings
+from ath.triage import assess_findings, set_aside_ids
 
 
 @dataclass
@@ -155,7 +155,7 @@ def profile_telemetry(telemetry: Telemetry, config: HuntConfig | None = None) ->
     profile.findings_after_triage = profile.findings - dispositions.get("likely_benign", 0)
 
     t0 = time.perf_counter()
-    cases = correlate(hunt.findings, telemetry)
+    cases = correlate(hunt.findings, telemetry, set_aside=set_aside_ids(assessments))
     profile.seconds_correlate = time.perf_counter() - t0
     profile.cases = len(cases)
     profile.singleton_cases = sum(1 for c in cases if len(c.findings) == 1)

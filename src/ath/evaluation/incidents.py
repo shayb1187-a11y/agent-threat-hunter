@@ -68,7 +68,7 @@ from ath.logging_setup import get_logger
 from ath.mitre.mapper import map_findings
 from ath.reporting.language import audit_calibration
 from ath.telemetry.loader import Telemetry
-from ath.triage import Disposition, assess_findings
+from ath.triage import Disposition, assess_findings, set_aside_ids
 
 logger = get_logger(__name__)
 
@@ -361,7 +361,10 @@ def run_incident(
             outcome.benign_findings_identified += int(called_benign)
         outcome.findings_after_triage += int(not called_benign)
 
-    cases = correlate(hunt.findings, telemetry)
+    # A group of findings every one of which triage explained is not raised as a case
+    # (M15-4): the findings stay counted above, the investigation they would have cost
+    # does not happen.
+    cases = correlate(hunt.findings, telemetry, set_aside=set_aside_ids(assessments))
     outcome.cases = len(cases)
     outcome.noise_cases = sum(
         1 for c in cases if not (set(c.event_ids) & malicious)
@@ -390,10 +393,12 @@ def run_incident(
         # -- and therefore ran no investigation -- report a clean pass: exactly the
         # "passed for the wrong reason" failure this harness exists to catch.
         outcome.conclusions_missed = tuple(incident.must_conclude)
+        set_aside = outcome.findings - outcome.findings_after_triage
         outcome.notes.append(
-            "no correlated case was produced, so no investigation ran; correlation "
-            "needs at least two structurally linked findings and this incident "
-            f"produced {outcome.findings}"
+            "no case was raised, so no investigation ran: this incident produced "
+            f"{outcome.findings} finding(s), {set_aside} of them set aside by triage as "
+            "likely benign, and nothing unexplained was severe enough or linked to "
+            "anything"
         )
         outcome.runtime_seconds = time.perf_counter() - started
         return outcome
