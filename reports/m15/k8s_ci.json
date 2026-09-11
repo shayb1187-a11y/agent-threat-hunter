@@ -1,0 +1,153 @@
+{
+  "dataset": "k8s_ci",
+  "source_kind": "k8s",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 267979,
+    "rows_kept": 7951,
+    "rows_dropped": 260028,
+    "kept_fraction": 0.0297,
+    "kept_by_table": {
+      "process": 0,
+      "network": 0,
+      "logon": 0,
+      "control": 7951
+    },
+    "drop_classes": [
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on pods",
+        "rows": 29742
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "patch on pods/status",
+        "rows": 11199
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on <unknown>",
+        "rows": 9938
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on namespaces",
+        "rows": 5836
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on pods",
+        "rows": 5611
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "update on leases",
+        "rows": 5478
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "create on pods",
+        "rows": 5172
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on persistentvolumeclaims",
+        "rows": 4035
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "watch on configmaps",
+        "rows": 3761
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "get on namespaces",
+        "rows": 3434
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "create on configmaps",
+        "rows": 3212
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "delete on pods",
+        "rows": 2987
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "watch on serviceaccounts",
+        "rows": 2981
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "list on limitranges",
+        "rows": 2928
+      },
+      {
+        "event_type": "control",
+        "field": "objectRef",
+        "reason": "update on namespaces/finalize",
+        "rows": 2915
+      }
+    ],
+    "unmapped_classes": {},
+    "load_seconds": 41.8
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 7951,
+      "events_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 7951
+      },
+      "window_hours": 0.64,
+      "window_days": 0.03,
+      "hosts": 0,
+      "identities": 0,
+      "platforms": [
+        "kubernetes"
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "cost_seconds": {
+      "hunt": 0.367,
+      "environment": 0.021,
+      "triage": 0.0,
+      "correlate": 0.0
+    }
+  }
+}

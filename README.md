@@ -1276,25 +1276,32 @@ incident, does an analyst end up better off?**
 `python main.py benchmark` runs the whole pipeline over labelled incidents and measures
 what an analyst would actually receive. It currently reports **5 of 5 incidents meeting their
 success condition** -- which is exactly when a benchmark is most at risk of becoming
-decorative, so the numbers underneath stay reported individually. "All incidents pass"
-is not the same claim as "the system is quiet": the Windows scenario still raises a
-false-positive case, and case precision is still 50%.
+decorative, so the numbers underneath stay reported individually.
+
+As of M15 the suite raises **0 noise cases**, where it raised 3 at the M14 checkpoint.
+That is a real improvement and also the point at which this table becomes least
+informative, because a benchmark that is green everywhere has stopped discriminating.
+The numbers that matter now are on telemetry this project did not generate, where the
+same pipeline was producing **67.5 false positives a day** from a quiet Windows estate
+and **2,070 a day** from an idle Kubernetes cluster — see
+[docs/m15-validation-report.md](docs/m15-validation-report.md) for the before/after and
+for the failures those corpora exposed that this table never could.
 
 | | INC-001 Windows intrusion | INC-002 Cloud credential stuffing | INC-004 Ransomware prep | INC-005 Kubernetes escalation | INC-003 Quiet day |
 | --- | --- | --- | --- | --- | --- |
 | **Verdict** | PASS | PASS | PASS | PASS | PASS |
 | Detected | yes | yes | yes | yes | n/a (success = silence) |
 | Event recall | 100% (31/31) | 93% (13/14) | 100% (6/6) | 100% (2/2) | — |
-| Findings → cases | 13 → 2 | 1 → **0** | 4 → 3 | 2 → 1 | 2 → **1** |
-| Triage reduction | 85% | — | 25% | 50% | — |
-| Noise cases | **1** | 0 | **1** | 0 | **1** |
+| Findings → cases | 13 → **1** | 1 → 1 | 4 → **1** | 2 → 1 | 2 → **0** |
+| Triage reduction | 92% | — | 75% | 50% | 100% |
+| Noise cases | **0** | 0 | **0** | 0 | **0** |
 | Findings after triage | 11 | 1 | 2 | 2 | **0** |
-| Facts produced | 19 | **2** | 1 | 3 | 1 |
-| Case precision | **50%** | — | 67% | 100% | 0% |
-| Chain recall / purity | 100% / 100% | — | 50% / 100% | 100% / 100% | — |
-| Claims | 19 fact, 28 inference, 2 hypothesis | **none** | 1 fact, 2 inference | 3 fact, 5 inference | 1 fact, 5 inference |
+| Facts produced | 19 | **2** | 2 | 3 | **0** |
+| Case precision | **100%** | 100% | **100%** | 100% | 100% |
+| Chain recall / purity | 100% / 100% | 93% / 100% | **100% / 100%** ▲ | 100% / 100% | — |
+| Claims | 19 fact, 28 inference, 2 hypothesis | 2 fact, 4 inference | 2 fact, 3 inference | 3 fact, 5 inference | **none — no case raised** |
 | Fabricated citations | 0 | 0 | 0 | 0 | 0 |
-| Cost | 43 tool calls, 0.41s | 3 tool calls, 0.02s | 3 tool calls, 0.30s | 5 tool calls, 0.03s | 7 tool calls |
+| Cost | 43 tool calls, 0.37s | 3 tool calls, 0.02s | 6 tool calls, 0.41s | 5 tool calls, 0.03s | **0 tool calls** |
 
 ### What the failures mean
 
@@ -1320,9 +1327,54 @@ changed from `cases == 0` to `findings_after_triage == 0` when that layer was ad
 that is a deliberate change of bar, argued in `IncidentOutcome.passed`, and noise cases
 are still reported so the case that is raised stays visible.
 
-**INC-001: half the cases are false alarms.** Case precision is 50% — the intrusion is
-found perfectly (100% recall, 100% purity, in a single case) but the IT administrator's
-encoded-PowerShell look-alike produces a second case alongside it.
+**INC-001 used to report half its cases as false alarms, and no longer does.** The
+intrusion was always found perfectly — 100% recall, 100% purity, one case — but the IT
+administrator's encoded-PowerShell look-alike raised a second case beside it, so case
+precision read 50%. Triage had been explaining that look-alike correctly the whole time;
+correlation simply was not consulting the verdict, so an explained false positive still
+became a case an analyst had to open. Since M15-6 it does not, and INC-001 reports one
+case at 100% precision. The finding is still raised and still counted — the change is
+that an explanation now reaches the analyst's queue instead of an alert.
+
+**INC-004 split one operator's session in half, and fixing it made a headline number
+worse.** Recovery inhibition (`ATH-011`) and security-tool tampering (`ATH-012`) were
+both run from one `cmd.exe`, but that shell is itself no finding — so nothing connected
+the two detections to each other. Correlation knew `process_lineage`, which asserts that
+a process in one finding *is* the parent of a process in the other; it had no relation
+for a **fan**, where two findings are siblings under a parent neither of them mentions.
+The chain recall was **50%**: both halves detected, neither able to see the other.
+
+The fix is a new structural signal, [`sibling_lineage`](src/ath/correlation/correlator.py),
+and the interesting part is the guard rather than the relation. "Same parent process"
+naively links far too much — `explorer.exe` is the parent of everything a user runs all
+day — so a parent has to first look like *one session*, judged on two properties read off
+the telemetry: how many children it started, and the span between its first and last.
+That is deliberately not a list of parent names to ignore: name lists miss the launcher
+you did not think of, and an attacker who renames a shell walks straight through them.
+This dataset contains both sides of the distinction, which is what makes it testable:
+
+| parent | children | span | |
+| --- | --- | --- | --- |
+| `PC03/7419` | 6 | 3m40s | the ransomware operator's shell — one session |
+| `PC01/6612` | 4 | 3m19s | the intrusion's discovery burst — one session |
+| `PC05/631` | 4 | **2h45m** | a user's desktop shell — *not* one session |
+
+`PC05/631` is the case that matters: its fan-out is small, so a fan-out bound alone would
+have let it through, and only the span rules it out.
+
+**The measured cost.** Across every pair of findings on the full dataset the relation
+fires **3 times, and all 3 join findings from the same ground-truth scenario** — it
+merges nothing across scenario boundaries. INC-001 is unchanged by it and the quiet day
+gains no residual load.
+
+It is worth recording what this number did while the work was in flight, because it is a
+good illustration of why a ratio is a poor headline. When `sibling_lineage` landed alone,
+INC-004's case precision *fell* from 67% to 50% — the two true-positive cases became one,
+so the score went from 2-good-of-3 to 1-good-of-2 while the analyst's actual load went
+from 3 cases to 2. The system got better and the metric got worse. M15-6 then removed the
+remaining noise case, and the same metric now reads 100%. Neither the fall nor the rise
+says much on its own; the case count falling 3 → 1 with chain recall rising 50% → 100% is
+the part that describes what an analyst receives.
 
 **INC-005 repeated INC-002's story, for a missing specialist instead of a missing case
 (Milestone 13).** `K8S-001`/`K8S-002` fired on Kubernetes audit telemetry and correlated
