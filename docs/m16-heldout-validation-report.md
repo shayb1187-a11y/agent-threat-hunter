@@ -421,6 +421,159 @@ recording: **the environment model took 17.9 s and correlation 8.8 s, against 9.
 the entire hunt** — building a connection pattern per `(host, remote_ip)` pair is now the
 dominant term, where on synthetic data detection always was.
 
+### 4.9 S1 — DEDALE D18, sealed: run once, after everything
+
+**Hypothesis:** with every M16 result already frozen, a mid-APT day from the same estate
+that was never fetched, never inspected and never tuned against should (a) raise no false
+positives, and (b) remain undetected for the same representation reason D15 did.
+**Falsifier for (a):** any finding on this day is a false positive *or* a genuine
+detection, and either would need explaining against a day nothing was fitted to.
+**Provenance:** DEDALE D18 (2025-01-09), attack week, **sealed** — fetched as bytes only
+while H4 ran, opened once, after H1b/H4 were recorded and committed.
+**Frozen implementation:** `git diff m16-freeze..HEAD` over `hunting/`, `correlation/`,
+`triage/` and `mitre/` is empty; the only `src/` changes in this milestone are two
+telemetry adapters, and D18 reaches the rules through the untouched Winlogbeat path.
+
+| Measure | Value |
+| --- | --- |
+| Rows read / ingested | 60,435 / **48,893 (80.9%)** |
+| Labelled malicious refs | 9,567 |
+| **…resolvable in ingested telemetry** | **2 (0.02%)** |
+| …never ingested | **9,565** |
+| Findings / cases / noise cases | **0 / 0 / 0** |
+| TP / FP / FN | **0 / 0 / 2** |
+| Precision / recall | undefined (no findings) / **0.0** |
+| Correlation / triage | neither engaged — nothing to work on |
+| Conclusions | `CLIENT2` missed |
+| Trust | 0 fabricated citations, 0 rejected claims, 0 overclaims |
+| **Verdict** | **(a) strong pass, (b) confirmed representation failure** |
+
+Both halves matter and they point opposite ways. **No false positives on a day nothing
+was fitted to** is the strongest single piece of generalisation evidence in this
+milestone, because it is the only dataset that was sealed through the entire remediation
+history. And **0 of 2 recall, with 9,565 of 9,567 labelled events never ingested**, is
+the same ceiling H3 found in the cloud, in a second environment: the attack is not missed
+by the rules, it is invisible to the reader.
+
 ## 5. Conclusion
 
-*Written last — pending the sealed D18 run.*
+### 5.1 Results by class
+
+**Regression success.** R1–R6 all reproduced at the frozen commit: DEDALE D03 and D15,
+`k8s_ci` and K8NTEXT silent; flaws.cloud 39 findings in 4 cases; benchmark 5/5, 0 noise
+cases; suite green. M15 has not rotted and its numbers remain reproducible.
+
+**Generalization success — three results, in descending strength.**
+
+1. **DEDALE D02 (H1b).** 28 boot-time LSASS events across 30 hosts and 36 users on a day
+   never inspected, and **0 findings**, where the equivalent day produced 30 findings and
+   30 singleton cases before M15-1. Plus 2.4× the tuning day's logon volume with ATH-005
+   and ATH-006 silent throughout.
+2. **DEDALE D18 (S1, sealed).** 0 findings on a mid-APT day that was sealed through the
+   entire milestone. Nothing was fitted to it, and nothing fired.
+3. **COMISET (H4).** 0 ATH-004 findings on 15,095 process creates arriving through a
+   different adapter, field map and Sysmon configuration — the argv[0] fix is not tied to
+   the ECS representation.
+
+Together with the metamorphic layer — 36 invariance assertions across host, user, PID,
+timestamp, path, cluster, namespace and service account — the M15 fixes key on security
+semantics rather than on the corpora that exposed them. **That is the milestone's answer,
+and it is a positive one.**
+
+**Weak or inconclusive evidence — held to that label deliberately.**
+
+- **H2 (Kubernetes ingress).** 0 findings on 154 binding creates including a
+  `cluster-admin` grant to `system:masters`, so not vacuous — but **every grantor identity
+  and role in the holdout already appeared in the tuning corpus**. It shows the fix is not
+  specific to one CI *run*. It says nothing about a different identity model.
+- **H1 (DEDALE D07).** 0 findings, but a weekend day: 1 active host and 1 LSASS event
+  against 30 and 30. One chance to misfire, not thirty. A low-power pass, superseded by
+  H1b but kept in the record because the fault was my day selection.
+- **H4's five findings.** ATH-002 ×3, ATH-010, ATH-012, none cleared by triage, and
+  **unclassifiable**: COMISET's technique fields are sysmon-modular `RuleName` annotations,
+  not ground truth, so they can be called neither true nor false positives.
+
+**Representation failure — the dominant limitation, found twice, in two environments.**
+
+| | H3 (AWS, held out) | S1 (DEDALE D18, sealed) |
+| --- | --- | --- |
+| Attack telemetry present | 2,349 CloudTrail records | 9,567 labelled events |
+| Operations / events ATH can represent | **2 (0.09%)** | **2 (0.02%)** |
+| Findings | 0 | 0 |
+| Cause | 109 distinct API operations, ATH maps 9, 1 present | labelled events live in channels with no canonical table |
+
+Neither is a detection failure. In both cases the rules were never shown the attack. The
+cloud form of it is the sharper statement:
+
+```
+109 observed API operations -> ATH maps 9 -> only 1 supported operation present
+   -> 0.09% ingestion -> attack invisible
+```
+
+**Newly discovered defects, frozen before remediation.**
+
+- **M16-1** (metamorphic). ATH-004 strips `argv[0]` with `split(None, 1)`, so an unquoted
+  image path containing a space leaks a path fragment into the arguments and fires
+  CRITICAL on a process that is merely starting. Unreachable from DEDALE, whose LSASS
+  lives in a space-free system path. Pinned as a strict xfail.
+- **M16-2** (H3). Cloud representability is 0.09% on real attack telemetry. Recorded as
+  the pre-remediation baseline for the next milestone.
+- **M16-3** (H4, measurement). M14's dataset assessment recorded COMISET as carrying
+  per-event ATT&CK ground truth. It does not, and any precision computed against those
+  fields would have been agreement with another tool's heuristic.
+
+**Untestable on available public data.**
+
+- **A different Kubernetes identity model.** Of **6,496** jobs in `kubernetes-ci-logs`,
+  only the GCE `bootstrap-e2e-master` convention publishes an apiserver audit log; `kind`,
+  AWS and CAPZ jobs publish none. The provisioner-generalisation question cannot be
+  answered from public CI data, and my original probe was wrong to claim otherwise — GCS
+  answers `HTTP 200` for an empty prefix listing.
+- **A real-environment Windows corpus.** COMISET REAL (31.7 GB) is the genuinely
+  non-laboratory dataset, and Zenodo serves no range requests, so it cannot be
+  subset-fetched the way DEDALE was.
+- **Recall on real telemetry, anywhere.** Every corpus reached either has no attack, or
+  has an attack ATH cannot represent. No held-out true positive was measured in this
+  milestone, and none was measurable.
+- Still blocked from M14: Stratus injection (no Docker/kind/kubectl) and BOTS v3
+  (Splunk export).
+
+### 5.2 The question
+
+> **Did M15 generalize beyond the datasets used to develop its fixes, and where did
+> held-out validation show that ATH still fails because of representation, detection, or
+> environment assumptions?**
+
+**M15 generalized.** The fixes were not fitted to their corpora. The strongest evidence is
+DEDALE D02 — 28 independent opportunities to reproduce the original false positive on an
+uninspected day, none taken — corroborated by a sealed attack day that stayed silent, by a
+different-schema corpus reaching the same rule through a different adapter, and by 36
+metamorphic invariance assertions. On the question M16 was convened to answer, the answer
+is yes.
+
+**The generalisation is narrower than that sentence sounds, in three specific ways.**
+
+*Representation is the dominant failure, and it is not close.* Held-out validation put two
+independent numbers on it: **0.09%** of a real cloud attack and **0.02%** of a sealed
+Windows attack day were representable at all. Every cloud and Windows recall figure in
+this project is bounded by ingestion, not by detection, and no amount of rule work moves
+them. This is where the next milestone belongs, and it should model **control-plane
+behaviour families** — credential lifecycle, policy modification, reconnaissance,
+audit-trail tampering — rather than adding `DeletePolicy` and the rest of the current
+attack_data corpus one event name at a time, which would reproduce in cloud exactly the
+overfitting M16 was built to detect.
+
+*Detection failures are real but second-order.* M16-1 is a genuine one — and notably, it
+is an **environment assumption inside a fix that was otherwise correct**: M15-1 reasoned
+rightly that argv[0] is what a process *is*, then implemented it with a whitespace split
+that only works where paths have no spaces. It was invisible to every corpus and took a
+metamorphic permutation to reach, which is an argument for keeping that layer.
+
+*Environment assumptions were tested unevenly.* Windows generalisation is now
+well-evidenced across day, host, user and schema. Kubernetes is evidenced only within a
+single identity model, and the experiment that would settle it cannot be run on public
+data. flaws.cloud and COMISET both turned out to carry weaker ground truth than M14
+recorded. The honest position is that **ATH is validated on Windows endpoint telemetry,
+provisionally validated on Kubernetes, and unvalidated for detection on cloud** — not
+because the cloud rules are wrong, but because nothing has ever shown them an attack they
+could see.
