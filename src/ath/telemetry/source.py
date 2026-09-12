@@ -32,6 +32,17 @@ could not normalise as a list of :class:`NormalizationIssue` objects and *drops*
 rows rather than raising, while everything that did parse still goes through the exact
 same ``coerce_and_validate`` the synthetic path uses -- messiness is handled at
 ingestion, not by weakening the canonical schema's guarantees.
+
+A source vouches for what it admits
+------------------------------------
+"Messy" is not the same as "not mine". A directory of exports also holds the files the
+pipeline wrote *about* the export, and an adapter that reads every file with a matching
+extension counts those lines as telemetry it failed to normalise -- wrong denominator,
+and one lucky key away from a wrong table. So a directory-reading source first decides,
+per file, whether it recognises the file as carrying its own telemetry shape
+(:mod:`ath.telemetry.admission`), and records that decision on
+:attr:`SourceLoadResult.admitted_files`. Nothing a source has not positively recognised
+reaches ``rows_read``, the issue list, or a table.
 """
 
 from __future__ import annotations
@@ -44,6 +55,7 @@ from typing import Any
 import pandas as pd
 
 from ath.schema import TABLE_FILES
+from ath.telemetry.admission import FileAdmission
 
 
 @dataclass(frozen=True)
@@ -91,13 +103,28 @@ class SourceLoadResult:
         issues: Rows that could not be normalised, preserved for the record.
         ground_truth: Evaluation labels, when the source has any (only the synthetic
             source does; a real export has no labels, and callers must handle that).
-        rows_read: Total raw rows the source attempted to process, across all tables.
+        rows_read: Total raw rows the source attempted to process, across all tables --
+            counted over **admitted files only**, so it is a count of records the source
+            positively recognised as its own telemetry rather than of lines that
+            happened to sit in the directory.
     """
 
     tables: dict[str, pd.DataFrame]
     issues: list[NormalizationIssue] = field(default_factory=list)
     ground_truth: dict[str, Any] | None = None
     rows_read: int = 0
+    admitted_files: tuple[FileAdmission, ...] = ()
+    """The boundary's decision about every candidate file the source listed.
+
+    A directory-reading adapter used to treat every file with a matching extension as
+    telemetry, which put a pipeline's own sidecar files into the denominator (and, one
+    lucky key away, into the tables). Now each candidate is positively recognised or
+    refused, and the refusals are *here* -- with a reason and a record count -- rather
+    than as per-line normalisation issues that read as a lossy export. Empty for a source
+    that reads no directory (the synthetic generator, an explicitly-pathed export).
+
+    See :mod:`ath.telemetry.admission`.
+    """
     unmapped: dict[str, int] = field(default_factory=dict)
     """Rows the source recognised but has no canonical home for, counted per class.
 
@@ -120,14 +147,30 @@ class SourceLoadResult:
     def rows_dropped(self) -> int:
         return len(self.issues) + sum(self.unmapped.values())
 
+    @property
+    def rejected_files(self) -> tuple[FileAdmission, ...]:
+        """Candidate files the boundary refused -- not telemetry, and reported as such."""
+        return tuple(a for a in self.admitted_files if not a.admitted)
+
     def issues_for(self, event_type: str) -> list[NormalizationIssue]:
         return [i for i in self.issues if i.event_type == event_type]
 
     def summary(self) -> str:
-        return (
+        text = (
             f"{self.rows_kept} row(s) normalised, {self.rows_dropped} dropped "
             f"(of {self.rows_read} read)"
         )
+        if not self.admitted_files:
+            return text
+        rejected = self.rejected_files
+        text += f"; {len(self.admitted_files) - len(rejected)} file(s) admitted"
+        if rejected:
+            not_read = sum(a.line_or_record_count for a in rejected)
+            text += (
+                f", {len(rejected)} rejected as not this source's telemetry "
+                f"({not_read} record(s) never read)"
+            )
+        return text
 
 
 class TelemetrySource(ABC):

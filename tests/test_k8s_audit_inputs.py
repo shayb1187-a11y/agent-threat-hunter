@@ -70,12 +70,23 @@ def test_one_corrupt_line_costs_one_line(tmp_path, event_list) -> None:
     assert bad[0].raw_reference == "audit.log#line=4"
 
 
-def test_a_file_that_is_nothing_parseable_is_one_issue(tmp_path) -> None:
+def test_a_file_that_is_nothing_parseable_is_refused_at_the_boundary(tmp_path) -> None:
+    """One fact about the file, not two facts about its lines, and no issues at all.
+
+    It used to arrive as one :class:`NormalizationIssue`, which put it in the same list
+    as records this adapter genuinely failed to map. A file that is not an audit log is
+    not a normalisation failure -- it is a file this source does not vouch for, and it
+    belongs on the admission record with the lines it therefore never read.
+    """
     (tmp_path / "audit.log").write_text("garbage\nmore garbage\n", encoding="utf-8")
     (tmp_path / "good.json").write_text(FIXTURE_FILE.read_text(encoding="utf-8"))
     result = K8sAuditSource(tmp_path, cluster="c").load()
-    file_issues = [i for i in result.issues if i.raw_reference == "audit.log"]
-    assert len(file_issues) == 1
+
+    assert not [i for i in result.issues if "audit.log" in i.raw_reference]
+    refused = [a for a in result.rejected_files if a.path == "audit.log"]
+    assert len(refused) == 1
+    assert "does not parse" in refused[0].reason
+    assert refused[0].line_or_record_count == 2
     assert result.rows_kept > 0
 
 

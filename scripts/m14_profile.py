@@ -116,6 +116,11 @@ def main() -> int:
             "rows_dropped": result.rows_dropped,
             "kept_fraction": round(result.rows_kept / result.rows_read, 4) if result.rows_read else 0.0,
             "kept_by_table": {k: int(len(v)) for k, v in result.tables.items()},
+            # What the denominator is a denominator *of*: rows_read counts records from
+            # admitted files only, so the refusals have to be printed beside it.
+            "files_listed": len(result.admitted_files),
+            "files_admitted": len(result.admitted_files) - len(result.rejected_files),
+            "files_rejected": [a.to_dict() for a in result.rejected_files],
             "drop_classes": issue_classes(result),
             "unmapped_classes": dict(sorted(result.unmapped.items(), key=lambda kv: -kv[1])[:25]),
             "load_seconds": round(load_seconds, 1),
@@ -142,6 +147,10 @@ def main() -> int:
     pf = record["profile_full"]
     print(f"{args.dataset}: read {e0['rows_read']:,} kept {e0['rows_kept']:,} "
           f"({e0['kept_fraction']:.2%}) in {e0['load_seconds']}s")
+    print(f"  files {e0['files_admitted']}/{e0['files_listed']} admitted"
+          + "".join(f"\n    rejected {r['path']}: {r['reason']} "
+                    f"({r['line_or_record_count']} record(s) not read)"
+                    for r in e0["files_rejected"]))
     print(f"  findings {pf['detection']['findings']} {pf['detection']['by_rule']}  "
           f"per day {pf['detection']['findings_per_day']}")
     print(f"  triage {pf['triage']['dispositions']}  after triage {pf['triage']['findings_after_triage']}")

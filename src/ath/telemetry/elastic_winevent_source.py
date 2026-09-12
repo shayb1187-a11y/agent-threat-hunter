@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterable, Iterator
 
 import pandas as pd
 
@@ -45,6 +45,7 @@ from ath.schema import (
     SIG_UNKNOWN,
     TABLE_COLUMNS,
 )
+from ath.telemetry.admission import FileAdmission, admit_lines
 from ath.telemetry.normalize import coerce_and_validate
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 from ath.telemetry.winlogbeat_source import LOGON_FAILURE_REASONS
@@ -107,6 +108,46 @@ def _timestamp(record: dict[str, Any]) -> Any:
     return pd.NaT
 
 
+TELEMETRY_NAME = "Elastic-exported Windows events"
+
+
+def _unwrap(record: Any) -> Any:
+    """Strip the Elasticsearch search-hit envelope, when the export still carries it.
+
+    A raw dump keeps the event under ``_source`` with the channel only derivable from
+    ``_index``; a prepared slice is already unwrapped. Doing this in one place means the
+    admission sniff and the record loop judge the same shape -- otherwise a raw dump
+    would be refused at the boundary for lacking fields that are one level down.
+    """
+    if isinstance(record, dict) and isinstance(record.get("_source"), dict):
+        inner = dict(record["_source"])
+        inner.setdefault("_doc_id", record.get("_id", ""))
+        index = str(record.get("_index", ""))
+        inner.setdefault("_channel", index.rsplit("-", 1)[0].split("winevent-")[-1])
+        return inner
+    return record
+
+
+def _looks_like_record(record: Any) -> bool:
+    """Does this object carry the fields that identify an Elastic Windows event?
+
+    Exactly the fields :meth:`ElasticWinEventSource.load` reads first and cannot proceed
+    without: ``event_id`` (with ``_channel``, the routing key in :data:`EVENT_ROUTING`)
+    and one of the timestamp keys :func:`_timestamp` tries. Presence only -- a record
+    carrying these keys with unusable values *is* this source's telemetry, and is refused
+    one record at a time by :func:`_build`, which is a different fact with a different
+    denominator.
+    """
+    if not isinstance(record, dict):
+        return False
+    if not _text(record.get("event_id")):
+        return False
+    return any(
+        record.get(key)
+        for key in ("_channel", "event_original_time", "@timestamp", "event_recorded_time")
+    )
+
+
 @dataclass
 class ElasticWinEventSource(TelemetrySource):
     """Read an NDJSON slice of Elastic-exported Windows events into canonical telemetry.
@@ -140,10 +181,19 @@ class ElasticWinEventSource(TelemetrySource):
         }
         issues: list[NormalizationIssue] = []
         unmapped: dict[str, int] = {}
+        admissions: list[FileAdmission] = []
         rows_read = 0
 
         for path in files:
-            for line_number, record in _iter_records(path, issues):
+            # Shape first. A statistics sidecar written next to a slice is a *.json file
+            # in this same directory, and reading its lines as events put 513 non-events
+            # into this corpus' denominator before this boundary existed.
+            admission, numbered = admit_lines(
+                path.name, _open_lines(path), _looks_like_record,
+                telemetry=TELEMETRY_NAME, unwrap=_unwrap,
+            )
+            admissions.append(admission)
+            for line_number, record in _iter_records(path.name, numbered, issues):
                 rows_read += 1
                 channel = _text(record.get("_channel")).lower()
                 event_id = _text(record.get("event_id"))
@@ -167,46 +217,59 @@ class ElasticWinEventSource(TelemetrySource):
             )
             for event_type in rows
         }
+        rejected = [a for a in admissions if not a.admitted]
         logger.info(
-            "%s: %d record(s) read, %d kept, %d unmapped class(es)",
-            self.name, rows_read, sum(len(v) for v in rows.values()), len(unmapped),
+            "%s: %d file(s) admitted, %d rejected; %d record(s) read, %d kept, "
+            "%d unmapped class(es)",
+            self.name, len(admissions) - len(rejected), len(rejected), rows_read,
+            sum(len(v) for v in rows.values()), len(unmapped),
         )
+        for refusal in rejected:
+            logger.warning("%s: %s", self.name, refusal)
         return SourceLoadResult(
             tables=tables, issues=issues, rows_read=rows_read, unmapped=unmapped,
+            admitted_files=tuple(admissions),
         )
+
+
+def _open_lines(path: Path) -> Iterator[str]:
+    """Yield the file's raw lines one at a time, so a 2 GB slice never lands in memory."""
+    with path.open(encoding="utf-8", errors="replace") as handle:
+        yield from handle
 
 
 def _iter_records(
-    path: Path, issues: list[NormalizationIssue]
+    file_name: str,
+    numbered_lines: Iterable[tuple[int, str]],
+    issues: list[NormalizationIssue],
 ) -> Iterator[tuple[int, dict[str, Any]]]:
     """Yield ``(line_number, record)``, reporting unparseable lines as issues.
 
-    A bad line is one issue, not a crash: a truncated export is a fact about the world,
-    and losing the other million events over it would be the wrong failure mode.
+    Takes the numbered lines of an *admitted* file (see
+    :func:`ath.telemetry.admission.admit_lines`) rather than opening one itself: a file
+    the boundary refused must produce no issues at all, and the cleanest way to guarantee
+    that is for this loop never to see its lines.
+
+    A bad line inside an admitted file is one issue, not a crash: a truncated export is a
+    fact about the world, and losing the other million events over it would be the wrong
+    failure mode.
     """
-    with path.open(encoding="utf-8", errors="replace") as handle:
-        for line_number, line in enumerate(handle, start=1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                record = json.loads(stripped)
-            except json.JSONDecodeError as exc:
-                issues.append(NormalizationIssue(
-                    event_type=EVENT_PROCESS,
-                    reason=f"line is not valid JSON: {exc}",
-                    raw_reference=f"{path.name}:{line_number}",
-                ))
-                continue
-            # An export that still carries the search-hit envelope is unwrapped here so
-            # a raw dump works as well as a prepared slice.
-            if "_source" in record and isinstance(record["_source"], dict):
-                inner = dict(record["_source"])
-                inner.setdefault("_doc_id", record.get("_id", ""))
-                index = str(record.get("_index", ""))
-                inner.setdefault("_channel", index.rsplit("-", 1)[0].split("winevent-")[-1])
-                record = inner
-            yield line_number, record
+    for line_number, line in numbered_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            record = json.loads(stripped)
+        except json.JSONDecodeError as exc:
+            issues.append(NormalizationIssue(
+                event_type=EVENT_PROCESS,
+                reason=f"line is not valid JSON: {exc}",
+                raw_reference=f"{file_name}:{line_number}",
+            ))
+            continue
+        # An export that still carries the search-hit envelope is unwrapped so a raw
+        # dump works as well as a prepared slice -- the same unwrap the boundary used.
+        yield line_number, _unwrap(record)
 
 
 def _core(

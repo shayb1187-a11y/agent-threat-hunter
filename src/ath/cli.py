@@ -80,6 +80,7 @@ from ath.telemetry import (
     load_telemetry,
     write_telemetry,
 )
+from ath.telemetry.source import SourceLoadResult
 
 logger = get_logger(__name__)
 
@@ -796,6 +797,27 @@ def cmd_engineer(args: argparse.Namespace, settings: Settings) -> int:
 # ======================================================================================
 
 
+def _print_admission(result: SourceLoadResult) -> None:
+    """Print which candidate files the adapter vouched for, and which it refused.
+
+    Printed *before* the row counts, because it is what those counts are counts of: a
+    refused file contributes no rows read and no normalisation issues, so an import that
+    silently skipped half a directory would otherwise look like a clean, small import.
+    """
+    if not result.admitted_files:
+        return
+    refused = result.rejected_files
+    admitted = len(result.admitted_files) - len(refused)
+    print(f"  files    {admitted} admitted, {len(refused)} rejected")
+    for refusal in refused[:20]:
+        print(
+            f"    {_c('x', 'HIGH')} {refusal.path}: {refusal.reason} "
+            f"({refusal.line_or_record_count} record(s) not read)"
+        )
+    if len(refused) > 20:
+        print(f"    ... and {len(refused) - 20} more")
+
+
 def cmd_import_defender(args: argparse.Namespace, settings: Settings) -> int:
     """Normalize a real Microsoft Defender advanced-hunting export into canonical telemetry."""
     directory = Path(args.directory) if args.directory else None
@@ -812,6 +834,7 @@ def cmd_import_defender(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\n{_c('=== DEFENDER EXPORT IMPORT ===', 'BOLD')}")
     print(result.summary())
+    _print_admission(result)
     for event_type in ("process", "network", "logon"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
@@ -846,6 +869,7 @@ def cmd_import_cloudtrail(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\n{_c('=== CLOUDTRAIL IMPORT ===', 'BOLD')}")
     print(result.summary())
+    _print_admission(result)
     for event_type in ("process", "network", "logon", "control"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
@@ -880,6 +904,7 @@ def cmd_import_k8s_audit(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\n{_c('=== KUBERNETES AUDIT IMPORT ===', 'BOLD')}")
     print(result.summary())
+    _print_admission(result)
     for event_type in ("process", "network", "logon", "control"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")

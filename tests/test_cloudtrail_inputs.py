@@ -81,12 +81,20 @@ def test_tar_member_provenance_names_the_archive_and_the_member(tmp_path) -> Non
     assert refs.str.contains("File=bundle.tar:CloudTrail_x.json.gz").all()
 
 
-def test_corrupt_gzip_is_one_issue_not_a_crash(tmp_path) -> None:
+def test_corrupt_gzip_is_one_refusal_not_a_crash(tmp_path) -> None:
+    """The other file still loads, and the broken one is reported as unread, not unmapped.
+
+    It used to arrive as a ``NormalizationIssue``, i.e. in the same list as CloudTrail
+    records this adapter chose not to map -- which reads as "we got this and could not
+    use it" when the truth is "we never managed to read this at all".
+    """
     (tmp_path / "bad.json.gz").write_bytes(b"\x1f\x8b definitely not gzip")
     (tmp_path / "good.json").write_bytes(FIXTURE_FILE.read_bytes())
     result = CloudTrailSource(tmp_path).load()
-    assert any("not valid JSON" in i.reason and i.raw_reference == "bad.json.gz"
-               for i in result.issues)
+
+    assert not [i for i in result.issues if i.raw_reference == "bad.json.gz"]
+    refused = [a for a in result.rejected_files if a.path == "bad.json.gz"]
+    assert len(refused) == 1 and "does not parse" in refused[0].reason
     assert result.rows_kept > 0
 
 

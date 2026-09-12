@@ -42,6 +42,13 @@ import pandas as pd
 
 from ath.logging_setup import get_logger
 from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN
+from ath.telemetry.admission import (
+    ADMITTED,
+    REASON_UNPARSEABLE,
+    REASON_WRONG_SHAPE,
+    REJECTED,
+    FileAdmission,
+)
 from ath.telemetry.normalize import coerce_and_validate
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
@@ -124,6 +131,21 @@ REQUIRED_DEFENDER_COLUMNS: dict[str, tuple[str, ...]] = {
     EVENT_LOGON: ("Timestamp", "DeviceName", "AccountName", "LogonType", "ActionType"),
 }
 
+TELEMETRY_NAME = "a Defender advanced-hunting export"
+
+
+def _missing_identifying_columns(raw: pd.DataFrame, event_type: str) -> list[str]:
+    """This adapter's recognition predicate, at header level rather than record level.
+
+    A tabular export identifies itself by its **header**, not by its file name: the
+    columns in :data:`REQUIRED_DEFENDER_COLUMNS` are the ones every downstream rename and
+    every derived field read, and a CSV without them is not a Defender export of this
+    table -- whatever ``*process*``/``*network*``/``*logon*`` happens to appear in its
+    name. Returning the missing names rather than a bool so the refusal can say which
+    columns it looked for, which is the difference between a usable report and "no".
+    """
+    return [c for c in REQUIRED_DEFENDER_COLUMNS[event_type] if c not in raw.columns]
+
 
 def _read_export_file(path: Path) -> pd.DataFrame:
     """Read a Defender export in either CSV or JSON (array or NDJSON) format.
@@ -147,13 +169,21 @@ def _read_export_file(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, dtype=str, keep_default_na=False, encoding="utf-8-sig")
 
 
-def _find_table_file(directory: Path, keyword: str) -> Path | None:
-    """Find a file in ``directory`` whose name contains ``keyword`` (case-insensitive)."""
-    for candidate in sorted(directory.iterdir()):
-        if candidate.is_file() and keyword.lower() in candidate.name.lower():
-            if candidate.suffix.lower() in (".csv", ".json"):
-                return candidate
-    return None
+def _find_table_files(directory: Path, keyword: str) -> list[Path]:
+    """Every file in ``directory`` whose name contains ``keyword`` (case-insensitive).
+
+    All of them, not the first: a file name is a hint, and the header is the evidence.
+    :meth:`DefenderExportSource.load` takes the first candidate whose header identifies
+    it, so a statistics file called ``network_summary.csv`` sitting beside
+    ``DeviceNetworkEvents.csv`` no longer displaces the export it describes.
+    """
+    return [
+        candidate
+        for candidate in sorted(directory.iterdir())
+        if candidate.is_file()
+        and keyword.lower() in candidate.name.lower()
+        and candidate.suffix.lower() in (".csv", ".json")
+    ]
 
 
 @dataclass
@@ -179,31 +209,41 @@ class DefenderExportSource(TelemetrySource):
     logon_path: Path | None = None
     name: str = SOURCE_NAME
 
-    def _resolve_path(self, event_type: str, explicit: Path | None, keyword: str) -> Path | None:
+    def _candidates(self, explicit: Path | None, keyword: str) -> list[Path]:
         if explicit is not None:
-            return explicit
+            return [explicit]
         if self.directory is not None:
-            return _find_table_file(self.directory, keyword)
-        return None
+            return _find_table_files(self.directory, keyword)
+        return []
 
     def load(self) -> SourceLoadResult:
-        paths = {
-            EVENT_PROCESS: self._resolve_path(EVENT_PROCESS, self.process_path, "process"),
-            EVENT_NETWORK: self._resolve_path(EVENT_NETWORK, self.network_path, "network"),
-            EVENT_LOGON: self._resolve_path(EVENT_LOGON, self.logon_path, "logon"),
+        candidates = {
+            EVENT_PROCESS: self._candidates(self.process_path, "process"),
+            EVENT_NETWORK: self._candidates(self.network_path, "network"),
+            EVENT_LOGON: self._candidates(self.logon_path, "logon"),
         }
 
         tables: dict[str, pd.DataFrame] = {}
         issues: list[NormalizationIssue] = []
+        admissions: list[FileAdmission] = []
         rows_read = 0
 
-        for event_type, path in paths.items():
-            if path is None:
+        for event_type, paths in candidates.items():
+            admitted: tuple[Path, pd.DataFrame] | None = None
+            for path in paths:
+                admission, raw = _admit_export(path, event_type)
+                admissions.append(admission)
+                if admission.admitted and admitted is None and raw is not None:
+                    admitted = (path, raw)
+
+            if admitted is None:
                 logger.info("No export file found for %s; treating as empty", event_type)
                 tables[event_type] = _empty_canonical_frame(event_type)
                 continue
 
-            raw = _read_export_file(path)
+            path, raw = admitted
+            # Only now: a file the header did not identify contributes nothing to the
+            # denominator, because it was never this export's telemetry to lose.
             rows_read += len(raw)
             df, table_issues = _normalize_table(raw, event_type, path.name)
             issues.extend(table_issues)
@@ -212,8 +252,11 @@ class DefenderExportSource(TelemetrySource):
                 "%s: %d/%d row(s) normalised from %s", event_type, len(df), len(raw), path.name
             )
 
+        for refusal in (a for a in admissions if not a.admitted):
+            logger.warning("Defender export: %s", refusal)
         return SourceLoadResult(
-            tables=tables, issues=issues, ground_truth=None, rows_read=rows_read
+            tables=tables, issues=issues, ground_truth=None, rows_read=rows_read,
+            admitted_files=tuple(admissions),
         )
 
 
@@ -223,21 +266,48 @@ def _empty_canonical_frame(event_type: str) -> pd.DataFrame:
     return coerce_and_validate(pd.DataFrame(columns=list(TABLE_COLUMNS[event_type])), event_type)
 
 
+def _admit_export(path: Path, event_type: str) -> tuple[FileAdmission, pd.DataFrame | None]:
+    """Read one candidate export and decide whether its header identifies it.
+
+    The equivalent of :func:`ath.telemetry.admission.admit_lines` for a tabular file: the
+    "first records" a CSV offers are its column names, so the sniff is the header and the
+    predicate is :func:`_missing_identifying_columns`. A refused file yields no rows, no
+    ``rows_read``, and no :class:`NormalizationIssue` -- the refusal itself is the report.
+    """
+    try:
+        raw = _read_export_file(path)
+    except Exception as exc:  # a non-tabular file with a matching name/extension
+        return FileAdmission(
+            path.name, REJECTED, f"{REASON_UNPARSEABLE}: {exc}", "", 0,
+        ), None
+
+    missing = _missing_identifying_columns(raw, event_type)
+    if missing:
+        return FileAdmission(
+            path.name, REJECTED,
+            f"{REASON_WRONG_SHAPE}: header carries no {', '.join(missing)}, so it is "
+            f"not a Defender {event_type} export",
+            TELEMETRY_NAME, len(raw),
+        ), None
+    return FileAdmission(
+        path.name, ADMITTED,
+        f"recognised as {TELEMETRY_NAME} for {event_type}: header carries "
+        f"{', '.join(REQUIRED_DEFENDER_COLUMNS[event_type])}",
+        TELEMETRY_NAME, len(raw),
+    ), raw
+
+
 def _normalize_table(
     raw: pd.DataFrame, event_type: str, file_name: str
 ) -> tuple[pd.DataFrame, list[NormalizationIssue]]:
-    """Rename Defender columns, derive computed fields, and drop unparseable rows."""
-    issues: list[NormalizationIssue] = []
+    """Rename Defender columns, derive computed fields, and drop unparseable rows.
 
-    required = REQUIRED_DEFENDER_COLUMNS[event_type]
-    missing = [c for c in required if c not in raw.columns]
-    if missing:
-        issues.append(NormalizationIssue(
-            event_type=event_type,
-            reason=f"export is missing required Defender column(s): {', '.join(missing)}",
-            raw_reference=file_name,
-        ))
-        return _empty_canonical_frame(event_type).iloc[0:0], issues
+    Called only for a frame :func:`_admit_export` has already recognised, so the
+    identifying columns are guaranteed present here -- the "is this a Defender export at
+    all" question belongs to admission, one layer up, and asking it twice would put a
+    refused file back into the issue list.
+    """
+    issues: list[NormalizationIssue] = []
 
     if event_type == EVENT_PROCESS:
         df, row_issues = _normalize_process(raw, file_name)

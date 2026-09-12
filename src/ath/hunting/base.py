@@ -128,12 +128,31 @@ class Detector(ABC):
     """The subset of `fields_used` this rule reads only to sharpen or explain a
     finding, and never gates detection on.
 
-    An unpopulated *required* field makes a rule blind; an unpopulated optional field
-    makes its output less precise while the rule still fires correctly on its
-    remaining fields. Reporting both as failure would mark working detections broken --
-    ATH-005 on CloudTrail is the case in point: it keys on `action`, `user` and
-    `source_ip` and reads `logon_type` only to phrase the evidence, so the Windows
-    logon type CloudTrail cannot supply must not read as blindness.
+    Where the line falls, exactly
+    ------------------------------
+    A field is **REQUIRED** if it affects *either* whether a finding exists *or* what
+    severity that finding receives. **OPTIONAL** only if it affects evidence text or
+    metadata alone.
+
+    Severity is on the required side of that line because severity is not decoration: it
+    is what `ath.triage` compares against its benign boundary, so a field that only
+    "adjusts severity" decides whether the finding survives triage at all -- which is
+    indistinguishable, from an analyst's queue, from deciding whether the finding exists.
+    A field declared optional because "it only changes the severity" would make a rule
+    that silently drops every finding it produces read as healthy.
+
+    The two worked examples this rule of thumb was drawn from (M18-1):
+
+    * ATH-003's `remote_port` -- REQUIRED. The rule fires without it, but the port is
+      what raises the finding to high; unpopulated, every finding lands below triage's
+      boundary.
+    * ATH-005's `logon_type` -- OPTIONAL. It appears only in the evidence sentence, so
+      the Windows logon type CloudTrail cannot supply costs phrasing, not detection.
+
+    An unpopulated *required* field makes a rule blind (or silently benign); an
+    unpopulated optional field makes its output less precise while the rule still fires,
+    and still fires at the same severity, on its remaining fields. Reporting both as
+    failure would mark working detections broken.
 
     Every entry must appear in `fields_used`, and each one is justified against the
     line of the rule body that reads it.

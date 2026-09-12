@@ -73,6 +73,7 @@ from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
 )
+from ath.telemetry.admission import FileAdmission, admit_lines
 from ath.telemetry.normalize import coerce_and_validate
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
@@ -141,6 +142,25 @@ def _open_lines(path: Path) -> Iterator[str]:
             yield line.rstrip("\n")
 
 
+TELEMETRY_NAME = "Winlogbeat ECS Windows events"
+
+
+def _looks_like_record(record: Any) -> bool:
+    """Does this object carry the fields that identify a Winlogbeat ECS event?
+
+    Exactly the fields :meth:`WinlogbeatSource.load` reads first: the ``winlog`` object
+    (whose ``channel`` and ``event_id`` are the routing key) or ECS's ``event.code``
+    fallback, plus the ``@timestamp`` :func:`_timestamp` requires. Presence only: a
+    record with these keys and unusable values is Winlogbeat telemetry this adapter
+    cannot normalise, which is a per-record issue, not a statement about the file.
+    """
+    if not isinstance(record, dict):
+        return False
+    if not isinstance(record.get("winlog"), dict) and _get(record, "event.code") is None:
+        return False
+    return bool(record.get("@timestamp"))
+
+
 @dataclass
 class WinlogbeatSource(TelemetrySource):
     """Read Winlogbeat ECS NDJSON files from a directory into canonical telemetry.
@@ -176,10 +196,18 @@ class WinlogbeatSource(TelemetrySource):
         logon_rows: list[dict[str, Any]] = []
         issues: list[NormalizationIssue] = []
         unmapped: Counter[str] = Counter()
+        admissions: list[FileAdmission] = []
         rows_read = 0
 
         for path in files:
-            for line_number, line in enumerate(_open_lines(path), start=1):
+            # Shape first: a manifest or index file written beside an export matches
+            # these extensions too, and its lines are not events.
+            admission, numbered = admit_lines(
+                path.name, _open_lines(path), _looks_like_record,
+                telemetry=TELEMETRY_NAME,
+            )
+            admissions.append(admission)
+            for line_number, line in numbered:
                 if not line.strip():
                     continue
                 rows_read += 1
@@ -238,14 +266,20 @@ class WinlogbeatSource(TelemetrySource):
                 pd.DataFrame(columns=list(TABLE_COLUMNS[EVENT_CONTROL])), EVENT_CONTROL,
             ),
         }
+        rejected = [a for a in admissions if not a.admitted]
         logger.info(
-            "Winlogbeat import: %d line(s) read, %d process + %d network + %d logon row(s) "
-            "kept, %d issue(s), %d unmapped across %d class(es)",
-            rows_read, len(process_rows), len(network_rows), len(logon_rows), len(issues),
+            "Winlogbeat import: %d file(s) admitted, %d rejected; %d line(s) read, "
+            "%d process + %d network + %d logon row(s) kept, %d issue(s), %d unmapped "
+            "across %d class(es)",
+            len(admissions) - len(rejected), len(rejected), rows_read,
+            len(process_rows), len(network_rows), len(logon_rows), len(issues),
             sum(unmapped.values()), len(unmapped),
         )
+        for refusal in rejected:
+            logger.warning("Winlogbeat import: %s", refusal)
         return SourceLoadResult(
             tables=tables, issues=issues, rows_read=rows_read, unmapped=dict(unmapped),
+            admitted_files=tuple(admissions),
         )
 
 

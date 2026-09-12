@@ -185,14 +185,26 @@ def test_missing_table_produces_empty_frame_not_a_crash(tmp_path) -> None:
 
 
 def test_missing_required_defender_column_is_reported_not_crashed(tmp_path) -> None:
-    """A process export missing FileName (a required Defender column) must degrade
-    gracefully -- an issue explaining exactly what's missing, not a KeyError."""
+    """A CSV without the columns that identify a Defender process export is refused.
+
+    Graceful degradation, as before -- a named reason, not a ``KeyError``. What changed
+    is *where* the refusal is recorded: the header is this adapter's recognition
+    predicate, so a file whose header does not identify it is refused at the boundary
+    (with the column it looked for) rather than counted as one row of telemetry that
+    failed to normalise. Its rows stay out of ``rows_read``, because they were never this
+    export's rows.
+    """
     bad_csv = tmp_path / "DeviceProcessEvents.csv"
     bad_csv.write_text("Timestamp,DeviceName\n2026-01-01T00:00:00Z,PC01\n")
 
     result = DefenderExportSource(directory=tmp_path).load()
     assert len(result.tables[EVENT_PROCESS]) == 0
-    assert any("FileName" in i.reason for i in result.issues)
+    refused = [a for a in result.rejected_files if a.path == "DeviceProcessEvents.csv"]
+    assert len(refused) == 1
+    assert "FileName" in refused[0].reason
+    assert refused[0].line_or_record_count == 1
+    assert result.rows_read == 0
+    assert not result.issues
 
 
 # ======================================================================================

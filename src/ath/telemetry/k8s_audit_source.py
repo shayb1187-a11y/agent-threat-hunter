@@ -54,6 +54,12 @@ from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
 )
+from ath.telemetry.admission import (
+    FileAdmission,
+    ParsedFile,
+    SNIFF_RECORDS,
+    admit_parsed,
+)
 from ath.telemetry.normalize import coerce_and_validate
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
@@ -73,6 +79,29 @@ _RBAC_RESOURCES: frozenset[str] = frozenset({"rolebindings", "clusterrolebinding
 # 5,962 of 5,962 execs in one CI run were dropped as unmapped and K8S-002 could never
 # have fired on a real cluster. The subresource, not the verb, is what makes it an exec.
 _EXEC_VERBS: frozenset[str] = frozenset({"create", "connect", "get"})
+
+
+TELEMETRY_NAME = "Kubernetes apiserver audit events"
+
+# The API group every audit Event declares, whatever the version suffix.
+_AUDIT_API_GROUP = "audit.k8s.io/"
+
+
+def _looks_like_record(item: Any) -> bool:
+    """Does this object carry the fields that identify a Kubernetes audit event?
+
+    ``kind == "Event"`` with an ``apiVersion`` under ``audit.k8s.io`` -- the two fields
+    the apiserver stamps on every line of ``--audit-log-path`` and on every member of an
+    ``EventList``, verified present on both real logs this project reads (Kubernetes CI
+    1.37 and K8NTEXT 1.28/1.30). An event that also needs ``stage``, ``verb``,
+    ``objectRef``, ``user`` and ``stageTimestamp`` to be *mappable* is judged on those by
+    :func:`_normalise_control_record`, one record at a time: shape here, content there.
+    """
+    if not isinstance(item, dict):
+        return False
+    if str(item.get("kind") or "") != "Event":
+        return False
+    return str(item.get("apiVersion") or "").startswith(_AUDIT_API_GROUP)
 
 
 def _principal(user: dict[str, Any]) -> str:
@@ -205,13 +234,21 @@ class K8sAuditSource(TelemetrySource):
 
         control_rows: list[dict[str, Any]] = []
         issues: list[NormalizationIssue] = []
+        admissions: list[FileAdmission] = []
         rows_read = 0
 
         for path in files:
-            items, file_issues = _read_events(path)
-            issues.extend(file_issues)
-            if items is None:
+            parsed, items, file_issues = _read_events(path)
+            admission = admit_parsed(
+                path.name, parsed, _looks_like_record, telemetry=TELEMETRY_NAME,
+            )
+            admissions.append(admission)
+            if not admission.admitted:
+                # Not an audit log: its lines are not records this adapter failed to
+                # map, so they contribute no issues and no rows_read. The refusal is on
+                # the admission record instead.
                 continue
+            issues.extend(file_issues)
 
             for index, item in enumerate(items):
                 if not isinstance(item, dict):
@@ -246,59 +283,83 @@ class K8sAuditSource(TelemetrySource):
             EVENT_CONTROL: coerce_and_validate(controls, EVENT_CONTROL),
         }
 
+        rejected = [a for a in admissions if not a.admitted]
         logger.info(
-            "Kubernetes audit import: %d record(s) read, %d mapped, %d unmapped",
-            rows_read, len(control_rows), len(issues),
+            "Kubernetes audit import: %d file(s) admitted, %d rejected; %d record(s) "
+            "read, %d mapped, %d unmapped",
+            len(admissions) - len(rejected), len(rejected), rows_read,
+            len(control_rows), len(issues),
         )
-        return SourceLoadResult(tables=tables, issues=issues, rows_read=rows_read)
+        for refusal in rejected:
+            logger.warning("Kubernetes audit import: %s", refusal)
+        return SourceLoadResult(
+            tables=tables, issues=issues, rows_read=rows_read,
+            admitted_files=tuple(admissions),
+        )
 
 
-def _read_events(path: Path) -> tuple[list[Any] | None, list[NormalizationIssue]]:
-    """Return the audit events in ``path`` as a list, whichever of the two shapes it has.
+def _read_events(
+    path: Path,
+) -> tuple[ParsedFile, list[Any], list[NormalizationIssue]]:
+    """Parse ``path`` into ``(what the boundary needs, the events, per-line issues)``.
 
     An ``EventList`` document is one JSON value; the raw apiserver format is one
     ``Event`` per line. The file is sniffed by parsing, not by extension: a ``.log``
     file holding an EventList and a ``.json`` file holding NDJSON are both real things.
     Line-level failures are reported per line so a single corrupt line in a 500 MB log
-    does not cost the other 289,000.
+    does not cost the other 289,000 -- but only for a file that is *admitted*; the caller
+    discards these issues for one that is not, because "this is not an audit log" is a
+    single fact about a file, not 289,000 facts about its lines.
+
+    The returned :class:`~ath.telemetry.admission.ParsedFile` names the shape recognised
+    and carries the first records for the recognition predicate; an empty ``shape`` means
+    nothing parsed, and its ``error`` says what broke first.
     """
     text = path.read_text(encoding="utf-8", errors="replace")
     stripped = text.lstrip()
     if stripped.startswith("{") and '"items"' in stripped[:200]:
         try:
             payload = json.loads(text)
-        except json.JSONDecodeError:
-            payload = None
+        except json.JSONDecodeError as exc:
+            return ParsedFile(error=f"not a JSON document: {exc}", count=1), [], []
         if isinstance(payload, dict):
             items = payload.get("items")
             if isinstance(items, list):
-                return items, []
-            return None, [NormalizationIssue(
-                event_type=EVENT_CONTROL,
-                reason="file has no top-level 'items' array",
-                raw_reference=path.name,
-            )]
+                return (
+                    ParsedFile(
+                        shape="a top-level 'items' array",
+                        records=tuple(items[:SNIFF_RECORDS]),
+                        count=len(items),
+                    ),
+                    items,
+                    [],
+                )
+            return ParsedFile(error="no top-level 'items' array", count=1), [], []
 
-    items: list[Any] = []
+    items = []
     issues: list[NormalizationIssue] = []
+    lines = 0
+    first_error = ""
     for line_number, line in enumerate(text.splitlines(), start=1):
         if not line.strip():
             continue
+        lines += 1
         try:
             items.append(json.loads(line))
         except json.JSONDecodeError as exc:
+            if not first_error:
+                first_error = f"line {line_number} is not valid JSON: {exc}"
             issues.append(NormalizationIssue(
                 event_type=EVENT_CONTROL, reason=f"line is not valid JSON: {exc}",
                 raw_reference=f"{path.name}#line={line_number}",
             ))
-    if not items and issues:
-        # Nothing parsed at all: report the file once rather than every line, since
-        # the useful fact is "this is not an audit log", not 289,000 line errors.
-        return None, [NormalizationIssue(
-            event_type=EVENT_CONTROL, reason="file is not valid JSON (neither an "
-            "EventList nor one Event per line)", raw_reference=path.name,
-        )]
-    return items, issues
+    parsed = ParsedFile(
+        shape="one JSON Event per line" if items else "",
+        records=tuple(items[:SNIFF_RECORDS]),
+        count=lines,
+        error=first_error,
+    )
+    return parsed, items, issues
 
 
 def _empty(event_type: str) -> pd.DataFrame:

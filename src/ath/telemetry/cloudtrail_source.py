@@ -85,6 +85,12 @@ from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
 )
+from ath.telemetry.admission import (
+    FileAdmission,
+    ParsedFile,
+    SNIFF_RECORDS,
+    admit_parsed,
+)
 from ath.telemetry.normalize import coerce_and_validate
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
@@ -103,6 +109,29 @@ MANAGEMENT_SOURCE_NAME = "cloudtrail_mgmt"
 AUTH_EVENTS: frozenset[str] = frozenset(
     {"ConsoleLogin", "AssumeRole", "GetSessionToken", "GetFederationToken"}
 )
+
+
+TELEMETRY_NAME = "AWS CloudTrail records"
+
+
+def _looks_like_record(record: Any) -> bool:
+    """Does this object carry the fields that identify a CloudTrail record?
+
+    ``eventVersion``, ``eventName`` and ``eventTime`` -- the three every record in every
+    corpus this project reads carries (verified on attack_data_aws' NDJSON captures and
+    on all of flaws.cloud's 1.9M records), and the three this adapter already depends on:
+    ``eventName`` is the dispatch key in :meth:`CloudTrailSource.load`, ``eventTime`` is
+    read by :func:`_normalise_auth_record` and :func:`_normalise_control_record`, and
+    ``eventVersion`` is what makes the record self-identifying as CloudTrail rather than
+    merely as "a JSON object with a name and a time".
+
+    Presence only. A record naming an event this adapter does not map, or carrying an
+    unparseable ``eventTime``, is still CloudTrail: it is refused per record, with its own
+    issue, by the layer above.
+    """
+    if not isinstance(record, dict):
+        return False
+    return all(key in record for key in ("eventVersion", "eventName", "eventTime"))
 
 
 @dataclass(frozen=True)
@@ -178,21 +207,17 @@ class CloudTrailSource(TelemetrySource):
         logon_rows: list[dict[str, Any]] = []
         control_rows: list[dict[str, Any]] = []
         issues: list[NormalizationIssue] = []
+        admissions: list[FileAdmission] = []
         rows_read = 0
 
-        for file_name, payload_or_issue in _iter_payloads(files):
-            if isinstance(payload_or_issue, NormalizationIssue):
-                issues.append(payload_or_issue)
-                continue
-            payload = payload_or_issue
-
-            records = payload.get("Records") if isinstance(payload, dict) else None
-            if not isinstance(records, list):
-                issues.append(NormalizationIssue(
-                    event_type=EVENT_LOGON,
-                    reason="file has no top-level 'Records' array",
-                    raw_reference=file_name,
-                ))
+        for file_name, parsed, records in _iter_payloads(files):
+            # Shape first: a directory of hourly trail deliveries also holds whatever a
+            # pipeline wrote about them, and those files end in .json too.
+            admission = admit_parsed(
+                file_name, parsed, _looks_like_record, telemetry=TELEMETRY_NAME,
+            )
+            admissions.append(admission)
+            if not admission.admitted:
                 continue
 
             for index, record in enumerate(records):
@@ -228,12 +253,19 @@ class CloudTrailSource(TelemetrySource):
             EVENT_CONTROL: coerce_and_validate(controls, EVENT_CONTROL),
         }
 
+        rejected = [a for a in admissions if not a.admitted]
         logger.info(
-            "CloudTrail import: %d record(s) read, %d authentication row(s) + %d "
-            "management-activity row(s) kept, %d unmapped",
-            rows_read, len(logon_rows), len(control_rows), len(issues),
+            "CloudTrail import: %d file(s) admitted, %d rejected; %d record(s) read, "
+            "%d authentication row(s) + %d management-activity row(s) kept, %d unmapped",
+            len(admissions) - len(rejected), len(rejected), rows_read,
+            len(logon_rows), len(control_rows), len(issues),
         )
-        return SourceLoadResult(tables=tables, issues=issues, rows_read=rows_read)
+        for refusal in rejected:
+            logger.warning("CloudTrail import: %s", refusal)
+        return SourceLoadResult(
+            tables=tables, issues=issues, rows_read=rows_read,
+            admitted_files=tuple(admissions),
+        )
 
 
 def _classify(name: str) -> str | None:
@@ -248,7 +280,7 @@ def _classify(name: str) -> str | None:
     return None
 
 
-def _decode(name: str, raw: bytes) -> tuple[Any, NormalizationIssue | None]:
+def _decode(name: str, raw: bytes) -> tuple[ParsedFile, list[Any]]:
     """Parse one CloudTrail document from bytes, gunzipping first when the name says so.
 
     Three on-the-wire shapes are accepted, and all three are normalised to the
@@ -268,37 +300,49 @@ def _decode(name: str, raw: bytes) -> tuple[Any, NormalizationIssue | None]:
     branch and is untouched. Added in M16 so held-out CloudTrail captures could be read
     at all -- without it they ingest zero rows and any result from them would be a
     statement about the reader, not about the detections.
+
+    Returns:
+        ``(parsed, records)``. ``parsed`` is what
+        :func:`ath.telemetry.admission.admit_parsed` needs -- the shape recognised, the
+        first records, the total count, and (when nothing parsed) what broke. ``records``
+        is the full list, empty when the document was not recognised at all.
     """
     try:
         if _classify(name) == "gzip":
             raw = gzip.decompress(raw)
         text = raw.decode("utf-8")
     except (OSError, EOFError, UnicodeDecodeError) as exc:
-        return None, NormalizationIssue(
-            event_type=EVENT_LOGON, reason=f"file is not valid JSON: {exc}",
-            raw_reference=name,
-        )
+        return ParsedFile(error=f"cannot be decoded: {exc}", count=1), []
 
     try:
         payload = json.loads(text)
     except json.JSONDecodeError as exc:
         records, bad_line = _decode_json_lines(text)
         if records is None:
-            return None, NormalizationIssue(
-                event_type=EVENT_LOGON,
-                reason=(
-                    f"file is neither a JSON document nor JSON lines: {exc} "
+            return ParsedFile(
+                error=(
+                    f"neither a JSON document nor JSON lines: {exc} "
                     f"(line {bad_line} does not parse)"
                 ),
-                raw_reference=name,
-            )
-        return {"Records": records}, None
+                count=max(bad_line, 1),
+            ), []
+        return _parsed("one JSON record per line", records), records
 
     # A single bare record. Wrapping it here keeps one shape for the caller rather than
     # teaching the row loop a second one.
     if isinstance(payload, dict) and "Records" not in payload and "eventName" in payload:
-        return {"Records": [payload]}, None
-    return payload, None
+        return _parsed("a single bare record", [payload]), [payload]
+
+    records = payload.get("Records") if isinstance(payload, dict) else None
+    if not isinstance(records, list):
+        return ParsedFile(error="no top-level 'Records' array", count=1), []
+    return _parsed("a top-level 'Records' array", records), records
+
+
+def _parsed(shape: str, records: list[Any]) -> ParsedFile:
+    return ParsedFile(
+        shape=shape, records=tuple(records[:SNIFF_RECORDS]), count=len(records),
+    )
 
 
 def _decode_json_lines(text: str) -> tuple[list[Any] | None, int]:
@@ -320,12 +364,16 @@ def _decode_json_lines(text: str) -> tuple[list[Any] | None, int]:
     return (records, 0) if records else (None, 1)
 
 
-def _iter_payloads(files: list[Path]) -> Iterator[tuple[str, Any]]:
-    """Yield ``(file_name, parsed_payload | NormalizationIssue)`` for every document.
+def _iter_payloads(files: list[Path]) -> Iterator[tuple[str, ParsedFile, list[Any]]]:
+    """Yield ``(name, parsed, records)`` for every document, tar members included.
 
     A tar member is named ``<tar>:<member>`` so ``source_ref`` still points at one
-    specific record inside one specific archive; an archive that cannot be opened is
-    one issue, not a crash, for the same reason a malformed row is.
+    specific record inside one specific archive -- and so the admission record names the
+    member, not just the archive: admission is per document, because an archive can
+    perfectly well hold one trail file and one manifest.
+
+    An archive that cannot be opened at all is one rejected "file", not a crash, for the
+    same reason a malformed row is one issue.
     """
     for path in files:
         kind = _classify(path.name)
@@ -338,17 +386,15 @@ def _iter_payloads(files: list[Path]) -> Iterator[tuple[str, Any]]:
                         handle = archive.extractfile(member)
                         if handle is None:
                             continue
-                        name = f"{path.name}:{member.name}"
-                        payload, issue = _decode(member.name, handle.read())
-                        yield name, (issue if issue is not None else payload)
+                        parsed, records = _decode(member.name, handle.read())
+                        yield f"{path.name}:{member.name}", parsed, records
             except tarfile.TarError as exc:
-                yield path.name, NormalizationIssue(
-                    event_type=EVENT_LOGON, reason=f"tar archive cannot be read: {exc}",
-                    raw_reference=path.name,
-                )
+                yield path.name, ParsedFile(
+                    error=f"tar archive cannot be read: {exc}", count=1,
+                ), []
             continue
-        payload, issue = _decode(path.name, path.read_bytes())
-        yield path.name, (issue if issue is not None else payload)
+        parsed, records = _decode(path.name, path.read_bytes())
+        yield path.name, parsed, records
 
 
 def _empty(event_type: str) -> pd.DataFrame:
