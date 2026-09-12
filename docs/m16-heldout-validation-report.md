@@ -296,6 +296,42 @@ section.
 810 passed, 1 skipped, 0 failed, 0 xfailed. Benchmark 5/5, 0 noise cases. Re-verified
 after the NDJSON change with identical results.
 
+### 4.7 H1b — DEDALE D02: **strong pass**
+
+**Hypothesis (stated before the run):** 0 ATH-004 findings and ≤ 2 findings in total.
+**Falsifier:** a single ATH-004 finding would show the fix was fitted to D03's boot
+pattern; a finding from ATH-002/011/012 would be a new defect on a benign weekday.
+**Provenance:** DEDALE D02 (2024-12-24), emulated-testbed, **truly held out** — never
+fetched or inspected before this run, selected on compressed archive size alone.
+
+| | hosts | users | process rows | logon rows | **`lsass.exe` events** | findings |
+| --- | --- | --- | --- | --- | --- | --- |
+| D03 (tuning) | 30 | 36 | 43,994 | 14,285 | **30** | 0 |
+| D07 (H1, low-power) | 1 | 7 | 1,449 | 142 | **1** | 0 |
+| **D02 (H1b, held out)** | **30** | **36** | **46,510** | **34,736** | **28** | **0** |
+
+| Measure | Value |
+| --- | --- |
+| Representability | 81,246 of 122,978 kept (66.07%) |
+| Findings / cases | **0 / 0** |
+| TP / FP / FN | no attack present; every finding would be an FP. **FP = 0** |
+| Correlation / triage | no findings, so neither engaged |
+| Runtime | hunt 19.9 s on 81,246 events |
+| **Verdict** | **strong** |
+
+This is the test H1 was meant to be. D02 carries the same trigger material as the tuning
+day — 28 boot-time LSASS events across the same 30 hosts — so the ATH-004 fix had 28
+independent opportunities to misfire on a day it was never shown, and took none of them.
+Before M15-1 the equivalent day produced 30 findings and 30 singleton cases.
+
+It is also a harder authentication test than the tuning day by accident: 34,736 logon
+rows against D03's 14,285, **2.4×**, with ATH-005 and ATH-006 still silent throughout.
+
+The residual risk named in the pre-registration did not materialise — no ATH-002, ATH-011
+or ATH-012 finding — but neither was it *exercised*: a benign DEDALE weekday simply
+contains no backup, shadow-copy or security-tool administration. Those three rules remain
+unmeasured against real benign Windows telemetry, which is a coverage gap, not a pass.
+
 ## 5. Conclusion
 
-*Written last — pending H1b (DEDALE D02) and the H4 decision.*
+*Written last — pending H4 (COMISET) and the sealed D18 run.*
