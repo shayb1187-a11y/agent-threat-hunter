@@ -129,3 +129,50 @@ def verb_class(verb: str) -> str:
         is represented in full either way.
     """
     return VERB_CLASSES.get(verb.strip().lower(), OTHER)
+
+
+# The Kubernetes resources whose *creation* is a grant. RBAC has no ``attach`` verb:
+# a binding is granted by creating a RoleBinding or ClusterRoleBinding object, so the
+# verb alone ("create") classifies as CREATE and says nothing about the permission that
+# moved. The resource is what makes it a grant, which is why :func:`is_grant` needs both.
+#
+# Declared here rather than imported from :mod:`ath.telemetry.k8s_audit_source`, whose
+# ``_RBAC_RESOURCES`` is the same set, because the dependency runs
+# ``telemetry -> behavior`` and may not be reversed. Two declarations of one fact is a
+# drift risk, so a test asserts the two sets are equal; that is the seam, stated.
+RBAC_BINDING_RESOURCES: Final[frozenset[str]] = frozenset({
+    "rolebindings", "clusterrolebindings",
+})
+
+
+def is_grant(verb: str, resource_type: str) -> bool:
+    """Whether a control row is grant-shaped: a permission moved to some identity.
+
+    Two ways a row can be one, because two platforms express the same act differently:
+
+    * the verb itself is a grant verb (:data:`GRANT`) -- AWS' ``attach``, ``add``,
+      ``associate``, and their peers;
+    * or the row *creates* one of :data:`RBAC_BINDING_RESOURCES` -- Kubernetes, where
+      granting is done by creating an object and the verb is therefore ``create``.
+
+    This is a statement about the shape of the action, not about its risk: the
+    overwhelming majority of grants are administration. It exists so that a column
+    which only a grant can carry -- who the grant targets, which role it names -- is
+    measured over the rows that could carry it, instead of over every read in the trail.
+
+    Args:
+        verb: The canonical control-row verb.
+        resource_type: The canonical resource type the row acted on.
+
+    Returns:
+        True when the row grants something to someone.
+    """
+    if verb_class(verb) == GRANT:
+        return True
+    # The literal token, not the CREATE *class* constant they happen to share a
+    # spelling with: this clause is about the audit verb Kubernetes logs, and a
+    # future rename of the class must not silently change which rows are grants.
+    return (
+        verb.strip().lower() == "create"
+        and resource_type.strip().lower() in RBAC_BINDING_RESOURCES
+    )

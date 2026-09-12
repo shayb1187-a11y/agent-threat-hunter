@@ -175,6 +175,17 @@ LOGON_TYPE_NAMES: Final[dict[int, str]] = {
     11: "CachedInteractive",
 }
 
+# The logon types that arrive from somewhere else. An interactive console logon (2) or
+# an unlock (7) happens at the keyboard: there is no source host and no source address
+# to record, and a source column empty on such a row is correct rather than missing.
+# A network (3) or RemoteInteractive/RDP (10) logon came over the wire, and a source
+# column empty on one of those is a real loss of attribution.
+#
+# Declared here, beside LOGON_TYPE_NAMES, because it is a statement about what the
+# canonical `logon_type` codes *mean* -- the same reason the names live here -- and not
+# about any rule, source or dataset that reads them.
+REMOTE_LOGON_TYPES: Final[frozenset[int]] = frozenset({3, 10})
+
 
 class SchemaError(ValueError):
     """Raised when a telemetry table does not match the declared schema."""

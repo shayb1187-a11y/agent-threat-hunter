@@ -43,8 +43,15 @@ that a single "supported" collapses:
 
     NOT_ELIGIBLE  the tables this rule reads are empty -- it had no input
     UNUSABLE      a field it *filters on* is populated on < UNUSABLE_BELOW of the rows
+                    that field applies to
     DEGRADED      everything it filters on is present; something it reads is sparse
     USABLE        every declared field is populated
+
+A field's denominator is the rows it could legitimately carry a value on, declared once
+in `ath.environment.channels.FIELD_APPLICABILITY` and never by a rule. Measuring
+`target_actor` over 1.86M CloudTrail reads reported AWS-001 blind on a corpus where
+every one of its 132 grants carried the field (M18-3); a field with no applicable row in
+a dataset is reported as not applicable there and moves no verdict in either direction.
 
 Eligibility, usability and detection are reported side by side and never merged, which
 is what keeps "0 findings" from meaning three different things at once.
@@ -404,17 +411,39 @@ class FieldUsability:
 
     @property
     def fraction(self) -> float:
+        """Populated among the rows the field applies to -- the graded fraction."""
         return self.population.fraction
+
+    @property
+    def applicable(self) -> bool:
+        """False when this dataset holds no row the field could carry a value on.
+
+        Such a field grades nothing. It cannot make a rule UNUSABLE (there is no loss
+        to report) and it cannot make one DEGRADED (there is no sparseness either):
+        the honest statement is that the question does not arise in this data, and
+        that statement is what gets printed.
+        """
+        return self.population.applicable
 
     def to_dict(self) -> dict[str, Any]:
         return {**self.population.to_dict(), "required": self.required}
 
     def __str__(self) -> str:
-        return (
-            f"{self.column} {self.population.populated} of {self.population.rows} "
-            f"{self.table} rows ({self.fraction:.2%}, "
-            f"{'required' if self.required else 'optional'})"
+        requirement = "required" if self.required else "optional"
+        if not self.applicable:
+            return (
+                f"{self.column} not applicable in this data -- "
+                f"{self.population.applicability_reason}, and no row of "
+                f"{self.population.rows} {self.table} rows is one ({requirement})"
+            )
+        measured = (
+            f"{self.population.measured_populated} of "
+            f"{self.population.measured_rows} applicable {self.table} rows "
+            f"({self.fraction:.2%}"
         )
+        if self.population.applicable_rows is not None:
+            measured += f"; {self.population.raw_fraction:.2%} of all {self.population.rows}"
+        return f"{self.column} {measured}, {requirement})"
 
 
 @dataclass(frozen=True)
@@ -462,13 +491,27 @@ class RuleRunnability:
         """Required fields starved below :data:`UNUSABLE_BELOW` -- the blinding ones."""
         return tuple(
             f.column for f in self.fields
-            if f.required and f.fraction < UNUSABLE_BELOW
+            if f.applicable and f.required and f.fraction < UNUSABLE_BELOW
         )
 
     @property
     def sparse_fields(self) -> tuple[str, ...]:
         """Every declared field below :data:`DEGRADED_BELOW`, required or optional."""
-        return tuple(f.column for f in self.fields if f.fraction < DEGRADED_BELOW)
+        return tuple(
+            f.column for f in self.fields
+            if f.applicable and f.fraction < DEGRADED_BELOW
+        )
+
+    @property
+    def not_applicable_fields(self) -> tuple[str, ...]:
+        """Declared fields no row in this dataset could have carried a value on.
+
+        Reported as its own list rather than folded into either of the two above,
+        because it is a third fact: not blind, not sparse, simply not asked. A trail of
+        pure reads contains no grant, so nothing about ``target_actor`` is known from it
+        -- and saying so is different from saying the column is empty.
+        """
+        return tuple(f.column for f in self.fields if not f.applicable)
 
     @property
     def eligible_rows(self) -> int:
@@ -490,6 +533,7 @@ class RuleRunnability:
             "fields": [f.to_dict() for f in self.fields],
             "unpopulated_fields": list(self.unpopulated_fields),
             "sparse_fields": list(self.sparse_fields),
+            "not_applicable_fields": list(self.not_applicable_fields),
             "detail": self.detail,
         }
 
@@ -726,7 +770,16 @@ def _field_verdict(
             "its silence says nothing about what occurred"
         )
 
-    starved = [f for f in fields if f.required and f.fraction < UNUSABLE_BELOW]
+    # Fields the dataset holds no applicable row for are set aside before either
+    # threshold is applied. Neither verdict has anything to say about them: there is no
+    # value missing from a row that could not have carried one, and pretending there is
+    # reports blindness that does not exist -- the defect this whole branch exists to
+    # remove. They are still carried on `not_applicable_fields`, so the reader sees the
+    # field was declared and why it was not graded.
+    graded = [f for f in fields if f.applicable]
+    skipped = [f for f in fields if not f.applicable]
+
+    starved = [f for f in graded if f.required and f.fraction < UNUSABLE_BELOW]
     if starved:
         return RuleVerdict.UNUSABLE, (
             "required field(s) effectively unpopulated: "
@@ -742,7 +795,7 @@ def _field_verdict(
             "find nothing regardless of what occurred"
         )
 
-    sparse = [f for f in fields if f.fraction < DEGRADED_BELOW]
+    sparse = [f for f in graded if f.fraction < DEGRADED_BELOW]
     if sparse:
         return RuleVerdict.DEGRADED, (
             "reads sparsely populated field(s): "
@@ -753,10 +806,23 @@ def _field_verdict(
     if support is not RuleSupport.SUPPORTED:
         return RuleVerdict.DEGRADED, ""  # detail comes from the channel reasoning
 
-    return RuleVerdict.USABLE, (
-        f"every declared field is populated on the {len(fields)} measured column(s) "
-        "of its input table(s)" if fields else ""
+    if not graded:
+        return RuleVerdict.USABLE, (
+            "no declared field applies to any row of its input table(s): "
+            + "; ".join(str(f) for f in sorted(skipped, key=lambda f: f.column))
+            if skipped else ""
+        )
+
+    detail = (
+        f"every declared field is populated on the {len(graded)} measured column(s) "
+        "of its input table(s)"
     )
+    if skipped:
+        detail += (
+            "; not applicable in this data: "
+            + ", ".join(sorted(f.column for f in skipped))
+        )
+    return RuleVerdict.USABLE, detail
 
 
 def assess_rule(

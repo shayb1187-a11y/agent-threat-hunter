@@ -46,6 +46,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -54,6 +59,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -62,6 +72,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -70,6 +85,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -78,6 +98,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -86,11 +111,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
     },
@@ -113,6 +144,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -121,6 +157,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -129,6 +170,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -137,6 +183,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -145,11 +196,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 3,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -174,6 +231,11 @@
           "rows": 589477,
           "populated": 589477,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -182,6 +244,11 @@
           "rows": 589477,
           "populated": 1,
           "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -190,6 +257,11 @@
           "rows": 589477,
           "populated": 589477,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -198,6 +270,11 @@
           "rows": 589477,
           "populated": 589477,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -206,6 +283,11 @@
           "rows": 589477,
           "populated": 1,
           "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
           "required": false
         },
         {
@@ -214,6 +296,11 @@
           "rows": 589477,
           "populated": 589477,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -222,6 +309,11 @@
           "rows": 589477,
           "populated": 1,
           "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -230,6 +322,11 @@
           "rows": 589477,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
           "required": false
         },
         {
@@ -238,6 +335,11 @@
           "rows": 589477,
           "populated": 589477,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -246,6 +348,11 @@
           "rows": 589477,
           "populated": 589471,
           "fraction": 0.99998982,
+          "raw_fraction": 0.99998982,
+          "applicable_rows": 589477,
+          "applicable_populated": 589471,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
@@ -259,8 +366,9 @@
         "remote_port",
         "remote_url"
       ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 network rows (0.00%, required); remote_port 1 of 589477 network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 applicable network rows (0.00%, required); remote_port 1 of 589477 applicable network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "ATH-004",
@@ -281,6 +389,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -289,6 +402,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -297,6 +415,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -305,6 +428,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -313,11 +441,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -342,6 +476,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -350,6 +489,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -357,7 +501,12 @@
           "column": "failure_reason",
           "rows": 6063,
           "populated": 54,
-          "fraction": 0.00890648,
+          "fraction": 1.0,
+          "raw_fraction": 0.00890648,
+          "applicable_rows": 54,
+          "applicable_populated": 54,
+          "applicable": true,
+          "applicability_reason": "a successful logon has no failure reason",
           "required": false
         },
         {
@@ -366,6 +515,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": false
         },
         {
@@ -373,7 +527,12 @@
           "column": "source_device",
           "rows": 6063,
           "populated": 339,
-          "fraction": 0.05591291,
+          "fraction": 0.57988166,
+          "raw_fraction": 0.05591291,
+          "applicable_rows": 338,
+          "applicable_populated": 196,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
           "required": false
         },
         {
@@ -381,7 +540,12 @@
           "column": "source_ip",
           "rows": 6063,
           "populated": 514,
-          "fraction": 0.08477651,
+          "fraction": 0.37278107,
+          "raw_fraction": 0.08477651,
+          "applicable_rows": 338,
+          "applicable_populated": 126,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
           "required": true
         },
         {
@@ -390,6 +554,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -398,17 +567,21 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [
-        "failure_reason",
-        "source_device",
         "source_ip"
       ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): failure_reason 54 of 6063 logon rows (0.89%, optional); source_device 339 of 6063 logon rows (5.59%, optional); source_ip 514 of 6063 logon rows (8.48%, required) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated field(s): source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, required) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "ATH-006",
@@ -431,6 +604,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -439,6 +617,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -447,6 +630,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -454,7 +642,12 @@
           "column": "source_device",
           "rows": 6063,
           "populated": 339,
-          "fraction": 0.05591291,
+          "fraction": 0.57988166,
+          "raw_fraction": 0.05591291,
+          "applicable_rows": 338,
+          "applicable_populated": 196,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
           "required": true
         },
         {
@@ -462,7 +655,12 @@
           "column": "source_ip",
           "rows": 6063,
           "populated": 514,
-          "fraction": 0.08477651,
+          "fraction": 0.37278107,
+          "raw_fraction": 0.08477651,
+          "applicable_rows": 338,
+          "applicable_populated": 126,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
           "required": false
         },
         {
@@ -471,6 +669,11 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -479,16 +682,21 @@
           "rows": 6063,
           "populated": 6063,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [
-        "source_device",
         "source_ip"
       ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): source_device 339 of 6063 logon rows (5.59%, required); source_ip 514 of 6063 logon rows (8.48%, optional) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated field(s): source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, optional) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "ATH-007",
@@ -509,6 +717,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -517,6 +730,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -525,6 +743,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -533,6 +756,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -541,6 +769,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -549,11 +782,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
     },
@@ -576,6 +815,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -584,6 +828,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -592,6 +841,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -600,6 +854,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -608,11 +867,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -635,6 +900,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -643,6 +913,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -651,6 +926,11 @@
           "rows": 15095,
           "populated": 15068,
           "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -659,6 +939,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -667,11 +952,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -694,6 +985,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -702,6 +998,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -710,6 +1011,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -718,6 +1024,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -726,11 +1037,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 1,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -753,6 +1070,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -761,6 +1083,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -769,6 +1096,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -777,6 +1109,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -785,11 +1122,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -812,6 +1155,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -820,6 +1168,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -828,6 +1181,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -836,6 +1194,11 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -844,11 +1207,17 @@
           "rows": 15095,
           "populated": 15095,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 1,
       "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
     },
@@ -869,6 +1238,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
     },
@@ -889,6 +1259,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
     },
@@ -909,6 +1280,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
     },
@@ -929,6 +1301,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
     }
@@ -945,8 +1318,8 @@
     "unsupported": 5,
     "degraded": 2
   },
-  "hunt_seconds": 2.6,
-  "load_seconds": 0.5,
+  "hunt_seconds": 7.5,
+  "load_seconds": 0.8,
   "source": {
     "kind": "canonical_parquet",
     "path": "reports\\m17\\canonical"

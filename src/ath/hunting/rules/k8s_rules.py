@@ -123,6 +123,18 @@ class RbacPrivilegeEscalationGrant(Detector):
     )
     tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
+    optional_fields = frozenset({"resource_name"})
+    """Detection is entirely :func:`_privilege_grants` -- ``verb == "create"``,
+    ``resource_type`` in the binding resources, ``role_ref`` in the high-privilege
+    names, ``target_actor`` non-empty -- plus the ``actor_groups`` superuser test. The
+    binding *object's own name* gates nothing: it is read in the evidence summary
+    (``f"via {grant['resource_type']} '{grant['resource_name']}'"``), the reason
+    sentence, and the metadata. ``actor_groups`` stays required: it decides whether a
+    finding exists at all (a ``system:masters`` grantor is skipped), which is the
+    severity-and-existence side of the line.
+
+    ``resource_type`` and ``target_actor`` also stay required, and so does ``role_ref``:
+    each of the three appears in a filter above."""
     false_positives = (
         "Legitimate cluster bootstrap or platform-team tooling that binds cluster-admin "
         "to a small, known set of break-glass accounts or operator service accounts.",
@@ -207,6 +219,14 @@ class ExecShortlyAfterPrivilegeGrant(Detector):
     )
     tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
+    optional_fields = frozenset({"resource_name", "resource_namespace"})
+    """The chain is grant -> exec, and both halves filter without either column: the
+    grant on :func:`_privilege_grants`, the exec on ``verb == "exec"`` and
+    ``resource_type == _EXEC_RESOURCE_TYPE``, and the join on ``actor ==
+    target_actor`` inside the escalation window. The pod's name and namespace are read
+    only to say *which* pod in the evidence summary, the reason sentence and the
+    metadata. An exec into a pod whose namespace the adapter did not record is still
+    a CRITICAL finding about the same identity."""
     false_positives = (
         "A platform-team break-glass workflow that grants elevated access and then "
         "immediately uses it for a documented, legitimate operational task.",

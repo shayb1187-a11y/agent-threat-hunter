@@ -193,6 +193,14 @@ class CloudTrailLoggingDisabled(Detector):
     fields_used = ("actor", "verb", "resource_type", "resource_name", "timestamp")
     tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY})
+    optional_fields = frozenset({"resource_name"})
+    """Detection keys on the *service* and the verb -- ``in_service & verb.isin({"stop",
+    "delete"})`` -- and ``resource_name`` appears in neither term. Every read of it is
+    output: the evidence summary (``f"{row['actor']} {row['verb']} trail
+    {row['resource_name']}"``), the reason sentence that follows, and nothing else.
+    A trail whose name the adapter could not recover is still detected, at the same
+    CRITICAL severity, and is described as "trail ''" instead of by name. By the
+    ``Detector.optional_fields`` rule that is enrichment, not a gate."""
     false_positives = (
         "A deliberate, change-managed decommissioning of a trail being replaced by "
         "another (e.g. during an account-wide logging migration).",

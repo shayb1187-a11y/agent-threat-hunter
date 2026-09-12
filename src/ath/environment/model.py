@@ -52,14 +52,21 @@ from ath.environment.channels import (
     measure_field_populations,
 )
 from ath.netaddr import is_public_ip
-from ath.schema import EVENT_CONTROL, SIG_VALID, describe_logon_type
+from ath.schema import (
+    EVENT_CONTROL,
+    REMOTE_LOGON_TYPES,
+    SIG_VALID,
+    describe_logon_type,
+)
 from ath.telemetry.loader import Telemetry
 
 # Logon types indicating someone is working *at* a machine, which is what makes it
 # look like a workstation rather than a service target.
 _INTERACTIVE_LOGON_TYPES: frozenset[int] = frozenset({2, 7, 10, 11})
 # Logon types indicating a machine is being *reached* -- the shape of a server.
-_REMOTE_LOGON_TYPES: frozenset[int] = frozenset({3, 10})
+# Imported rather than restated: which logon types come from elsewhere is a property
+# of the canonical column, and two copies of it could disagree.
+_REMOTE_LOGON_TYPES: frozenset[int] = REMOTE_LOGON_TYPES
 
 # Process images that indicate a security or management product is present. Detecting
 # existing controls matters because a capability plan should not propose building what

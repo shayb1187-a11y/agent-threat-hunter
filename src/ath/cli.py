@@ -1279,16 +1279,39 @@ def cmd_visibility(args: argparse.Namespace, settings: Settings) -> int:
             f"[channels: {rule.support.value}, {rule.eligible_rows} eligible row(s)]: "
             f"{rule.detail}"
         )
-        named = set(rule.sparse_fields)
+        # Three lists, not one: starved, sparse, and "the question does not arise in
+        # this data". The third is printed whenever it is non-empty, because a reader
+        # who sees a rule declare a field and never sees it again cannot tell whether
+        # it was measured and passed or skipped.
+        named = set(rule.sparse_fields) | set(rule.not_applicable_fields)
         for usability in rule.fields:
-            if usability.column in named or args.all:
-                requirement = "required" if usability.required else "optional"
+            if usability.column not in named and not args.all:
+                continue
+            requirement = "required" if usability.required else "optional"
+            population = usability.population
+            if not usability.applicable:
                 print(
                     f"      {usability.column:<22} "
-                    f"{usability.population.populated:>9,} of "
-                    f"{usability.population.rows:<9,} {usability.table} row(s)  "
-                    f"{usability.fraction:>8.2%}  ({requirement})"
+                    f"{'not applicable':>21}  in "
+                    f"{population.rows:<9,} {usability.table} row(s)  "
+                    f"{'--':>8}  ({requirement})  "
+                    f"[{population.applicability_reason}]"
                 )
+                continue
+            # The applicable fraction is what the verdict reads, so it is the one in
+            # the column the eye lands on; the whole-table fraction follows it, and is
+            # printed only where the two differ -- an unconditional field has one
+            # number and printing it twice would suggest otherwise.
+            raw = (
+                f"  [{population.raw_fraction:.2%} of all {population.rows:,}]"
+                if population.applicable_rows is not None else ""
+            )
+            print(
+                f"      {usability.column:<22} "
+                f"{population.measured_populated:>9,} of "
+                f"{population.measured_rows:<9,} applicable {usability.table} row(s)  "
+                f"{usability.fraction:>8.2%}  ({requirement}){raw}"
+            )
     if all(r.verdict is RuleVerdict.USABLE for r in report.rules) and not args.all:
         print("  every rule's declared fields are populated "
               "(use --all to list per-rule detail)")

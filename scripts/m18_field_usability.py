@@ -130,6 +130,12 @@ def measure(corpus: str, telemetry: Telemetry) -> dict:
             "fields": [f.to_dict() for f in rule.fields],
             "unpopulated_fields": list(rule.unpopulated_fields),
             "sparse_fields": list(rule.sparse_fields),
+            # The third list, carried beside the other two rather than folded into
+            # either: a field no row in this corpus could have carried a value on is
+            # neither starved nor sparse, and an artifact that only recorded the first
+            # two would leave a reader unable to tell "measured and fine" from
+            # "the question does not arise here".
+            "not_applicable_fields": list(rule.not_applicable_fields),
             "findings": findings_by_rule.get(rule.rule_id, 0),
             "detail": rule.detail,
         })
@@ -161,10 +167,17 @@ def print_table(record: dict) -> None:
     for rule in record["rules"]:
         tables = ",".join(rule["declared_tables"]) or "-"
         starved = ", ".join(
-            f"{f['column']}={f['fraction']:.5f}{'' if f['required'] else ' (opt)'}"
+            f"{f['column']}={f['fraction']:.5f}"
+            f"[raw {f['raw_fraction']:.5f} of {f['rows']:,}]"
+            f"{'' if f['required'] else ' (opt)'}"
             for f in rule["fields"]
             if f["column"] in rule["sparse_fields"]
         )
+        if rule["not_applicable_fields"]:
+            starved += (
+                ("; " if starved else "")
+                + "n/a here: " + ", ".join(rule["not_applicable_fields"])
+            )
         print(
             f"{rule['rule_id']:<9} {tables:<9} {rule['eligible_rows']:>9,} "
             f"{rule['verdict_before']:<12} {rule['verdict']:<13} "

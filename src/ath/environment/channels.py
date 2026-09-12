@@ -42,9 +42,14 @@ analysis in :mod:`ath.environment.coverage`.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+
+import pandas as pd
+
+from ath.behavior.control_plane import is_grant
 
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
@@ -54,6 +59,7 @@ from ath.schema import (
     EVENT_LOGON,
     EVENT_NETWORK,
     EVENT_PROCESS,
+    REMOTE_LOGON_TYPES,
     TABLE_COLUMNS,
 )
 from ath.telemetry.loader import Telemetry
@@ -314,15 +320,19 @@ class ChannelAssessment:
         return f"{self.channel.value}: {self.state.value} -- {self.detail}"
 
 
-def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tuple[int, int]:
-    """Count rows carrying a usable value for one canonical column.
+def _populated_in(df: pd.DataFrame, column: str) -> tuple[int, int]:
+    """``(populated, rows)`` for one column of one frame.
+
+    Split out from :func:`_count_populated` so the same definition of "carries a usable
+    value" applies whether the frame is a whole table or the subset of it a column
+    applies to (:data:`FIELD_APPLICABILITY`). Two definitions would let the raw fraction
+    and the applicable fraction disagree about the same cell.
 
     Supports a ``"column:value"`` form so a channel can be evidenced by a specific
     *value* rather than by mere column presence -- ``direction:inbound`` is the case
     that forces this: the column is always populated, so counting non-empty cells
     would report inbound visibility as complete when there is none.
     """
-    df = telemetry.table(event_type)
     total = len(df)
     if total == 0:
         return 0, 0
@@ -343,6 +353,142 @@ def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tupl
     return int((filled.str.len() > 0).sum()), total
 
 
+def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tuple[int, int]:
+    """Count rows of a whole canonical table carrying a usable value for one column.
+
+    Whole-table on purpose: this is what the *channel* view needs. "Is there any
+    authentication telemetry here" is a question about the dataset, and narrowing it to
+    the rows some column applies to would answer a different question.
+    """
+    return _populated_in(telemetry.table(event_type), column)
+
+
+# --------------------------------------------------------------------------------------
+# Applicability: the rows a column can legitimately carry a value on.
+#
+# The defect this exists for is the mirror image of the one per-field population was
+# built to catch. M18-3 made every CloudTrail management call a control row, and
+# `target_actor` -- a column only a grant can fill -- went from 0.6% of 96 rows to 0.6%
+# of 1,857,154. The measurement was correct and the conclusion ("AWS-001 is blind on
+# flaws.cloud") was false: among the 132 grant-shaped rows in that trail, target_actor
+# and role_ref are populated. Reporting blindness that does not exist spends the same
+# trust as hiding blindness that does.
+#
+# WHERE THIS LIVES, AND WHY HERE
+# -------------------------------
+# Applicability is a property of the canonical schema -- failure_reason is empty on a
+# successful logon by the schema's own definition of the column, not because of anything
+# a rule does. The natural home is therefore ath.schema, and the piece of it that needs
+# no other module does live there (REMOTE_LOGON_TYPES, beside LOGON_TYPE_NAMES).
+#
+# The predicates themselves cannot. Deciding whether a control row is grant-shaped needs
+# ath.behavior.control_plane.is_grant, and the dependency direction runs
+# schema -> telemetry -> behavior -> environment: ath.schema importing ath.behavior would
+# invert it. So the table is declared here, in the module that performs the population
+# measurement and is already allowed to import ath.behavior -- one declaration,
+# immediately above its only consumer.
+#
+# What it may never be is a property of a detector. A rule that chose its own denominator
+# could make itself look usable by narrowing the rows it is judged on, which is precisely
+# the reassurance this project exists to refuse. Detector has no applicability attribute,
+# and a test asserts that none appears.
+# --------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FieldApplicability:
+    """Which rows a canonical column can legitimately carry a value on.
+
+    Attributes:
+        applies_to: Given the table, a boolean mask of the rows the column applies to.
+            Vectorised, because it runs over every row of a multi-million-row table.
+        reason: What those rows have in common, in one clause, for the line a reader
+            sees when a dataset contains none of them.
+    """
+
+    applies_to: Callable[[pd.DataFrame], "pd.Series"]
+    reason: str
+
+
+_PAIR_SEPARATOR = "\x1f"
+"""Joins two canonical column values into one key.
+
+ASCII unit separator: the character whose job this is, it cannot occur in a verb or a
+resource type, and so two distinct pairs cannot collide into one key. NUL would be the
+other obvious choice and is unusable -- pandas' string concatenation silently drops it,
+which would collide every pair into one."""
+
+
+def _grant_shaped(df: pd.DataFrame) -> pd.Series:
+    """Control rows that move a permission to an identity.
+
+    Decided by :func:`ath.behavior.control_plane.is_grant` -- the single definition --
+    but evaluated once per distinct ``(verb, resource_type)`` pair rather than once per
+    row: a real trail carries 1.9M rows and a few hundred distinct pairs.
+    """
+    verbs = df["verb"].astype("string").fillna("")
+    resources = df["resource_type"].astype("string").fillna("")
+    keys = (verbs + _PAIR_SEPARATOR + resources).astype("string")
+    decisions = {
+        key: is_grant(*key.split(_PAIR_SEPARATOR, 1)) for key in keys.dropna().unique()
+    }
+    return keys.map(decisions).fillna(False).astype(bool)
+
+
+def _failed_logon(df: pd.DataFrame) -> pd.Series:
+    """Logon rows that record a failure -- the only rows a failure reason belongs on."""
+    return df["action"].astype("string").fillna("") == "failure"
+
+
+def _logon_from_elsewhere(df: pd.DataFrame) -> pd.Series:
+    """Logon rows that could name where they came from.
+
+    A console logon has no source host and no source address: the person was at the
+    keyboard. A remote type (:data:`ath.schema.REMOTE_LOGON_TYPES`) did come from
+    somewhere, and a missing source on one of those is real lost attribution.
+
+    An *unknown* logon type counts as applicable. A source that cannot supply
+    ``logon_type`` at all -- CloudTrail is exactly this -- must still be measured on its
+    source attribution, and assuming those rows away would turn a source's blindness
+    into a clean bill of health. The assumption points in the one direction that cannot
+    manufacture reassurance.
+    """
+    logon_type = pd.to_numeric(df["logon_type"], errors="coerce")
+    return logon_type.isna() | logon_type.isin(REMOTE_LOGON_TYPES)
+
+
+FIELD_APPLICABILITY: dict[tuple[str, str], FieldApplicability] = {
+    (EVENT_CONTROL, "target_actor"): FieldApplicability(
+        applies_to=_grant_shaped,
+        reason="only a grant-shaped action names a beneficiary",
+    ),
+    (EVENT_CONTROL, "role_ref"): FieldApplicability(
+        applies_to=_grant_shaped,
+        reason="only a grant-shaped action names the role or policy it confers",
+    ),
+    (EVENT_LOGON, "failure_reason"): FieldApplicability(
+        applies_to=_failed_logon,
+        reason="a successful logon has no failure reason",
+    ),
+    (EVENT_LOGON, "source_device"): FieldApplicability(
+        applies_to=_logon_from_elsewhere,
+        reason="an interactive console logon has no source host",
+    ),
+    (EVENT_LOGON, "source_ip"): FieldApplicability(
+        applies_to=_logon_from_elsewhere,
+        reason="an interactive console logon has no source address",
+    ),
+}
+"""``(table, column)`` -> the rows that column applies to. Absent means *every* row.
+
+Deliberately short. A column belongs here only when the canonical schema says a value on
+the excluded rows would be wrong -- never when a dataset merely happens not to populate
+it. That distinction is the whole difference between this table and an excuse:
+``resource_name`` is empty on 97.6% of the flaws.cloud trail because the adapter often
+cannot recover it, which is a real gap in representation and stays measured as one.
+"""
+
+
 @dataclass(frozen=True)
 class FieldPopulation:
     """How well one canonical column is populated in one dataset.
@@ -355,23 +501,72 @@ class FieldPopulation:
     on 1 -- one channel reported AVAILABLE, and every rule reading the other three
     returned zero findings that read as clean data.
 
+    Two fractions, never merged. ``raw_fraction`` is over the whole table and answers
+    "how much of this dataset carries the column"; ``fraction`` is over the rows the
+    column *applies* to (:data:`FIELD_APPLICABILITY`) and answers "where the column
+    could have carried a value, did it". Only the second can grade a rule: measuring
+    ``target_actor`` over 1.86M CloudTrail reads reports a working rule as blind, and
+    measuring it over nothing at all would report a blind one as working.
+
     Attributes:
         table: Canonical event type the column belongs to.
         column: Canonical column name.
         rows: Rows in that table. Zero means the table is absent from this dataset, in
             which case the column was not measured rather than measured as empty.
         populated: Rows carrying a usable value, by the same definition the channel
-            measurement uses (see :func:`_count_populated`).
+            measurement uses (see :func:`_populated_in`).
+        applicable_rows: Rows the column applies to. ``None`` when no applicability is
+            declared for this column, which means it applies to every row.
+        applicable_populated: Of those, the rows carrying a usable value.
+        applicability_reason: What the applicable rows have in common, carried from the
+            declaration so a report can say *why* a column was not measured instead of
+            leaving the reader to guess. Empty for an unconditional column.
     """
 
     table: str
     column: str
     rows: int
     populated: int
+    applicable_rows: int | None = None
+    applicable_populated: int | None = None
+    applicability_reason: str = ""
+
+    @property
+    def measured_rows(self) -> int:
+        """The denominator the verdict uses: applicable rows, or every row."""
+        return self.rows if self.applicable_rows is None else self.applicable_rows
+
+    @property
+    def measured_populated(self) -> int:
+        """The numerator that goes with :attr:`measured_rows`."""
+        return (
+            self.populated if self.applicable_populated is None
+            else self.applicable_populated
+        )
+
+    @property
+    def applicable(self) -> bool:
+        """Whether this dataset contains any row the column applies to at all.
+
+        False only when a declared predicate matched nothing -- a trail of pure reads
+        has no grant for ``target_actor`` to be missing from. Such a column is reported
+        as not applicable in this data and grades nothing, in either direction.
+        """
+        return self.measured_rows > 0
 
     @property
     def fraction(self) -> float:
-        """Fraction of rows carrying a value; 0.0 when there was nothing to measure."""
+        """Populated among applicable -- the fraction every verdict reads."""
+        return 0.0 if not self.measured_rows else self.measured_populated / self.measured_rows
+
+    @property
+    def raw_fraction(self) -> float:
+        """Populated over the whole table, reported beside :attr:`fraction`, never instead.
+
+        Kept because it is the number an ingestion question is asked in: "1.8% of the
+        control table carries a role reference" is the right sentence about the import,
+        and the wrong one about the rule.
+        """
         return 0.0 if not self.rows else self.populated / self.rows
 
     def to_dict(self) -> dict[str, Any]:
@@ -384,22 +579,55 @@ class FieldPopulation:
             # are of the order 1/589,477, and rounding one of those to 0.0 would hide
             # exactly the measurement it was built to surface.
             "fraction": round(self.fraction, 8),
+            "raw_fraction": round(self.raw_fraction, 8),
+            "applicable_rows": self.measured_rows,
+            "applicable_populated": self.measured_populated,
+            "applicable": self.applicable,
+            "applicability_reason": self.applicability_reason,
         }
 
     def __str__(self) -> str:
+        if not self.applicable:
+            return (
+                f"{self.table}.{self.column}: not applicable in this data -- "
+                f"{self.applicability_reason}, and no row of {self.rows} is one"
+            )
+        if self.applicable_rows is None:
+            return (
+                f"{self.table}.{self.column}: {self.populated}/{self.rows} "
+                f"({self.fraction:.1%})"
+            )
         return (
-            f"{self.table}.{self.column}: {self.populated}/{self.rows} "
-            f"({self.fraction:.1%})"
+            f"{self.table}.{self.column}: {self.measured_populated}/"
+            f"{self.measured_rows} applicable ({self.fraction:.1%}); "
+            f"{self.populated}/{self.rows} of all rows ({self.raw_fraction:.1%})"
         )
 
 
 def measure_field_population(
     telemetry: Telemetry, table: str, column: str
 ) -> FieldPopulation:
-    """Measure one canonical column against loaded telemetry."""
+    """Measure one canonical column against loaded telemetry.
+
+    Both fractions are computed here, in one place, so no consumer can choose which
+    denominator it prefers: the applicable one is what :mod:`ath.environment.coverage`
+    grades on, the whole-table one is carried beside it, and a column with no declared
+    applicability has them equal by construction.
+    """
     populated, rows = _count_populated(telemetry, table, column)
+    applicability = FIELD_APPLICABILITY.get((table, column))
+    if applicability is None or rows == 0:
+        return FieldPopulation(
+            table=table, column=column, rows=rows, populated=populated
+        )
+
+    df = telemetry.table(table)
+    applicable = df[applicability.applies_to(df)]
+    applicable_populated, applicable_rows = _populated_in(applicable, column)
     return FieldPopulation(
-        table=table, column=column, rows=rows, populated=populated
+        table=table, column=column, rows=rows, populated=populated,
+        applicable_rows=applicable_rows, applicable_populated=applicable_populated,
+        applicability_reason=applicability.reason,
     )
 
 

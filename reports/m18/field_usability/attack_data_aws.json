@@ -46,6 +46,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -68,6 +69,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -90,6 +92,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
     },
@@ -112,6 +115,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -134,6 +138,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -142,6 +151,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -150,6 +164,11 @@
           "rows": 2,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "a successful logon has no failure reason",
           "required": false
         },
         {
@@ -158,6 +177,11 @@
           "rows": 2,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 2,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
           "required": false
         },
         {
@@ -166,6 +190,11 @@
           "rows": 2,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 2,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
           "required": false
         },
         {
@@ -174,6 +203,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
           "required": true
         },
         {
@@ -182,6 +216,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -190,17 +229,24 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [
-        "failure_reason",
         "logon_type",
         "source_device"
       ],
+      "not_applicable_fields": [
+        "failure_reason"
+      ],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): failure_reason 0 of 2 logon rows (0.00%, optional); logon_type 0 of 2 logon rows (0.00%, optional); source_device 0 of 2 logon rows (0.00%, optional) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated field(s): logon_type 0 of 2 applicable logon rows (0.00%, optional); source_device 0 of 2 applicable logon rows (0.00%; 0.00% of all 2, optional) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "ATH-006",
@@ -221,6 +267,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -229,6 +280,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -237,6 +293,11 @@
           "rows": 2,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 2,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -245,6 +306,11 @@
           "rows": 2,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 2,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
           "required": true
         },
         {
@@ -253,6 +319,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
           "required": false
         },
         {
@@ -261,6 +332,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -269,6 +345,11 @@
           "rows": 2,
           "populated": 2,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2,
+          "applicable_populated": 2,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
@@ -280,8 +361,9 @@
         "logon_type",
         "source_device"
       ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: logon_type 0 of 2 logon rows (0.00%, required); source_device 0 of 2 logon rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: logon_type 0 of 2 applicable logon rows (0.00%, required); source_device 0 of 2 applicable logon rows (0.00%; 0.00% of all 2, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "ATH-007",
@@ -302,6 +384,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -324,6 +407,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -346,6 +430,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -367,6 +452,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -388,6 +474,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -409,6 +496,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -419,9 +507,9 @@
         "control": 2347
       },
       "eligible_rows": 2347,
-      "verdict": "unusable",
+      "verdict": "usable",
       "verdict_before": "supported",
-      "runnable": false,
+      "runnable": true,
       "missing_channels": [],
       "degraded_channels": [],
       "fields": [
@@ -431,6 +519,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -439,6 +532,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -446,7 +544,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.05240733,
+          "fraction": 0.0,
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -455,6 +558,11 @@
           "rows": 2347,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -463,6 +571,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -471,18 +584,22 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
-      "unpopulated_fields": [
-        "target_actor"
-      ],
-      "sparse_fields": [
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "not_applicable_fields": [
         "role_ref",
         "target_actor"
       ],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "every declared field is populated on the 4 measured column(s) of its input table(s); not applicable in this data: role_ref, target_actor"
     },
     {
       "rule_id": "AWS-002",
@@ -503,6 +620,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -511,7 +633,12 @@
           "rows": 2347,
           "populated": 123,
           "fraction": 0.05240733,
-          "required": true
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 2347,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -519,6 +646,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -527,6 +659,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -535,6 +672,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
@@ -542,8 +684,9 @@
       "sparse_fields": [
         "resource_name"
       ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): resource_name 123 of 2347 control rows (5.24%, required) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated field(s): resource_name 123 of 2347 applicable control rows (5.24%, optional) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "K8S-001",
@@ -566,6 +709,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -574,6 +722,11 @@
           "rows": 2347,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -582,7 +735,12 @@
           "rows": 2347,
           "populated": 123,
           "fraction": 0.05240733,
-          "required": true
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 2347,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -590,6 +748,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -597,7 +760,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.05240733,
+          "fraction": 0.0,
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -606,6 +774,11 @@
           "rows": 2347,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -614,6 +787,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -622,21 +800,27 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [
-        "actor_groups",
-        "target_actor"
+        "actor_groups"
       ],
       "sparse_fields": [
         "actor_groups",
-        "resource_name",
+        "resource_name"
+      ],
+      "not_applicable_fields": [
         "role_ref",
         "target_actor"
       ],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 2347 control rows (0.00%, required); target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 2347 applicable control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "K8S-002",
@@ -659,6 +843,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -667,7 +856,12 @@
           "rows": 2347,
           "populated": 123,
           "fraction": 0.05240733,
-          "required": true
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 2347,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -675,7 +869,12 @@
           "rows": 2347,
           "populated": 0,
           "fraction": 0.0,
-          "required": true
+          "raw_fraction": 0.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -683,6 +882,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -690,7 +894,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.05240733,
+          "fraction": 0.0,
+          "raw_fraction": 0.05240733,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -699,6 +908,11 @@
           "rows": 2347,
           "populated": 0,
           "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 0,
+          "applicable_populated": 0,
+          "applicable": false,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -707,6 +921,11 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -715,35 +934,40 @@
           "rows": 2347,
           "populated": 2347,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 2347,
+          "applicable_populated": 2347,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
-      "unpopulated_fields": [
-        "resource_namespace",
-        "target_actor"
-      ],
+      "unpopulated_fields": [],
       "sparse_fields": [
         "resource_name",
-        "resource_namespace",
+        "resource_namespace"
+      ],
+      "not_applicable_fields": [
         "role_ref",
         "target_actor"
       ],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: resource_namespace 0 of 2347 control rows (0.00%, required); target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "depends on absent telemetry (container_audit); this rule will run and find nothing regardless of what occurred"
     }
   ],
   "total_findings": 0,
   "verdict_counts": {
     "not_eligible": 10,
     "degraded": 2,
-    "unusable": 4
+    "unusable": 3,
+    "usable": 1
   },
   "before_counts": {
     "unsupported": 12,
     "supported": 4
   },
   "hunt_seconds": 0.0,
-  "load_seconds": 1.2,
+  "load_seconds": 0.1,
   "source": {
     "kind": "cloudtrail",
     "path": "data\\external\\attack_data_aws\\raw"

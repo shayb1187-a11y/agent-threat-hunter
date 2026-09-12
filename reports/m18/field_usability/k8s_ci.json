@@ -46,6 +46,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -68,6 +69,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -90,6 +92,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
     },
@@ -112,6 +115,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -133,6 +137,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
     },
@@ -154,6 +159,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
     },
@@ -176,6 +182,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -198,6 +205,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -220,6 +228,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -241,6 +250,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -262,6 +272,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -283,6 +294,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
     },
@@ -307,6 +319,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -315,6 +332,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -322,7 +344,12 @@
           "column": "role_ref",
           "rows": 7951,
           "populated": 1989,
-          "fraction": 0.25015721,
+          "fraction": 1.0,
+          "raw_fraction": 0.25015721,
+          "applicable_rows": 1989,
+          "applicable_populated": 1989,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -330,7 +357,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.25003144,
+          "fraction": 0.99949723,
+          "raw_fraction": 0.25003144,
+          "applicable_rows": 1989,
+          "applicable_populated": 1988,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -339,6 +371,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -347,14 +384,17 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
     },
@@ -379,6 +419,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -387,7 +432,12 @@
           "rows": 7951,
           "populated": 7950,
           "fraction": 0.99987423,
-          "required": true
+          "raw_fraction": 0.99987423,
+          "applicable_rows": 7951,
+          "applicable_populated": 7950,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -395,6 +445,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -403,6 +458,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -411,11 +471,17 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
       "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
     },
@@ -426,7 +492,7 @@
         "control": 7951
       },
       "eligible_rows": 7951,
-      "verdict": "degraded",
+      "verdict": "usable",
       "verdict_before": "supported",
       "runnable": true,
       "missing_channels": [],
@@ -438,6 +504,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -446,6 +517,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -454,7 +530,12 @@
           "rows": 7951,
           "populated": 7950,
           "fraction": 0.99987423,
-          "required": true
+          "raw_fraction": 0.99987423,
+          "applicable_rows": 7951,
+          "applicable_populated": 7950,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -462,6 +543,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -469,7 +555,12 @@
           "column": "role_ref",
           "rows": 7951,
           "populated": 1989,
-          "fraction": 0.25015721,
+          "fraction": 1.0,
+          "raw_fraction": 0.25015721,
+          "applicable_rows": 1989,
+          "applicable_populated": 1989,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -477,7 +568,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.25003144,
+          "fraction": 0.99949723,
+          "raw_fraction": 0.25003144,
+          "applicable_rows": 1989,
+          "applicable_populated": 1988,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -486,6 +582,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -494,16 +595,19 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): role_ref 1989 of 7951 control rows (25.02%, required); target_actor 1988 of 7951 control rows (25.00%, required) -- the rule still fires on its remaining fields"
+      "detail": "every declared field is populated on the 8 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "K8S-002",
@@ -512,7 +616,7 @@
         "control": 7951
       },
       "eligible_rows": 7951,
-      "verdict": "degraded",
+      "verdict": "usable",
       "verdict_before": "supported",
       "runnable": true,
       "missing_channels": [],
@@ -524,6 +628,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -532,7 +641,12 @@
           "rows": 7951,
           "populated": 7950,
           "fraction": 0.99987423,
-          "required": true
+          "raw_fraction": 0.99987423,
+          "applicable_rows": 7951,
+          "applicable_populated": 7950,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -540,7 +654,12 @@
           "rows": 7951,
           "populated": 6667,
           "fraction": 0.83851088,
-          "required": true
+          "raw_fraction": 0.83851088,
+          "applicable_rows": 7951,
+          "applicable_populated": 6667,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
         },
         {
           "table": "control",
@@ -548,6 +667,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -555,7 +679,12 @@
           "column": "role_ref",
           "rows": 7951,
           "populated": 1989,
-          "fraction": 0.25015721,
+          "fraction": 1.0,
+          "raw_fraction": 0.25015721,
+          "applicable_rows": 1989,
+          "applicable_populated": 1989,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
           "required": true
         },
         {
@@ -563,7 +692,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.25003144,
+          "fraction": 0.99949723,
+          "raw_fraction": 0.25003144,
+          "applicable_rows": 1989,
+          "applicable_populated": 1988,
+          "applicable": true,
+          "applicability_reason": "only a grant-shaped action names a beneficiary",
           "required": true
         },
         {
@@ -572,6 +706,11 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         },
         {
@@ -580,30 +719,33 @@
           "rows": 7951,
           "populated": 7951,
           "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 7951,
+          "applicable_populated": 7951,
+          "applicable": true,
+          "applicability_reason": "",
           "required": true
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "sparse_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): role_ref 1989 of 7951 control rows (25.02%, required); target_actor 1988 of 7951 control rows (25.00%, required) -- the rule still fires on its remaining fields"
+      "detail": "every declared field is populated on the 8 measured column(s) of its input table(s)"
     }
   ],
   "total_findings": 0,
   "verdict_counts": {
     "not_eligible": 12,
     "unusable": 2,
-    "degraded": 2
+    "usable": 2
   },
   "before_counts": {
     "unsupported": 14,
     "supported": 2
   },
-  "hunt_seconds": 0.1,
-  "load_seconds": 15.1,
+  "hunt_seconds": 0.4,
+  "load_seconds": 28.1,
   "source": {
     "kind": "k8s",
     "path": "data\\external\\k8s_ci\\raw"

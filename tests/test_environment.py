@@ -435,12 +435,18 @@ def test_similar_telemetry_yields_a_similar_posture(environment, defender_enviro
     identical -- as they should be, since both carry the same *kinds* of telemetry.
     The model reads telemetry shape, not the source's name, and this pins that.
 
-    The per-field measurement (M18) then finds a difference the channel view cannot
-    see, and it is a real one rather than a naming artefact: the Defender fixture's
-    single logon row carries no `source_device`, and ATH-006 *filters* on
-    `source_device`, so on that fixture the rule cannot fire at all. Channel-level
-    equality is still asserted; the field-level difference is asserted to be exactly
-    that rule and nothing else, so neither measurement can drift unnoticed.
+    The per-field measurement (M18) looked for a difference here and found one that was
+    not real: the Defender fixture's single logon row is a *console* logon (type 2),
+    which has no source host by definition, and the measurement read its empty
+    `source_device` as ATH-006 being blind. It was not blind; it had no remote logon to
+    be blind about. M18-4 made applicability part of the measurement, and the two
+    postures agree at field granularity too.
+
+    What is asserted instead is the shape of that agreement, which is stronger than the
+    equality: on the generated corpus `source_device` is measured (238 remote logons)
+    and populated, and on the Defender fixture it is reported not applicable rather than
+    empty. Both halves must hold, so neither "applicability swallowed a real gap" nor
+    "the console case came back as blindness" can pass unnoticed.
     """
     assert environment.available_channels == defender_environment.available_channels
     generated = assess_coverage(environment)
@@ -455,10 +461,18 @@ def test_similar_telemetry_yields_a_similar_posture(environment, defender_enviro
         r.rule_id for r in imported.rules
         if r.verdict is not next(g.verdict for g in generated.rules if g.rule_id == r.rule_id)
     }
-    assert differing == {"ATH-006"}, differing
-    ath006 = next(r for r in imported.rules if r.rule_id == "ATH-006")
-    assert ath006.verdict is RuleVerdict.UNUSABLE
-    assert "source_device" in ath006.unpopulated_fields
+    assert differing == set(), differing
+
+    on_defender = next(r for r in imported.rules if r.rule_id == "ATH-006")
+    assert on_defender.verdict is RuleVerdict.USABLE
+    assert "source_device" in on_defender.not_applicable_fields
+    assert "source_device" not in on_defender.unpopulated_fields
+
+    on_generated = next(r for r in generated.rules if r.rule_id == "ATH-006")
+    measured = {f.column: f for f in on_generated.fields}
+    assert "source_device" not in on_generated.not_applicable_fields
+    assert measured["source_device"].population.applicable_rows > 0
+    assert measured["source_device"].fraction == 1.0
 
 
 def test_different_telemetry_yields_a_different_posture(
