@@ -19,20 +19,26 @@ import pytest
 
 from ath.environment import (
     CHANNEL_SPECS,
+    DEGRADED_BELOW,
     FIELD_TO_CHANNEL,
     TECHNIQUE_WATCHLIST,
+    UNUSABLE_BELOW,
     ChannelState,
     CoverageState,
     RuleSupport,
+    RuleVerdict,
     TelemetryChannel,
+    assess_channels,
     assess_coverage,
     build_environment_model,
 )
 from ath.hunting.base import all_detectors
 from ath.mitre.attack import TECHNIQUES
-from ath.schema import CORE_COLUMNS
+from ath.schema import CORE_COLUMNS, TABLE_COLUMNS
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import Telemetry, load_telemetry
+
+from tests import _builders as build
 
 
 @pytest.fixture(scope="module")
@@ -421,16 +427,38 @@ def cloudtrail_environment():
 
 
 def test_similar_telemetry_yields_a_similar_posture(environment, defender_environment) -> None:
-    """Two Windows endpoint sources should assess the same, and that is correct.
+    """Two Windows endpoint sources assess the same *at channel granularity*.
 
     This started as a "two environments must differ" test and passed for the wrong
     reason: the Defender fixture records no `source_device`, and the channel model
     then wrongly declared source attribution absent. Fixing that made these two
     identical -- as they should be, since both carry the same *kinds* of telemetry.
     The model reads telemetry shape, not the source's name, and this pins that.
+
+    The per-field measurement (M18) then finds a difference the channel view cannot
+    see, and it is a real one rather than a naming artefact: the Defender fixture's
+    single logon row carries no `source_device`, and ATH-006 *filters* on
+    `source_device`, so on that fixture the rule cannot fire at all. Channel-level
+    equality is still asserted; the field-level difference is asserted to be exactly
+    that rule and nothing else, so neither measurement can drift unnoticed.
     """
     assert environment.available_channels == defender_environment.available_channels
-    assert assess_coverage(environment).counts == assess_coverage(defender_environment).counts
+    generated = assess_coverage(environment)
+    imported = assess_coverage(defender_environment)
+
+    assert (
+        {r.rule_id: r.support for r in generated.rules}
+        == {r.rule_id: r.support for r in imported.rules}
+    ), "the same channels must yield the same channel-level support"
+
+    differing = {
+        r.rule_id for r in imported.rules
+        if r.verdict is not next(g.verdict for g in generated.rules if g.rule_id == r.rule_id)
+    }
+    assert differing == {"ATH-006"}, differing
+    ath006 = next(r for r in imported.rules if r.rule_id == "ATH-006")
+    assert ath006.verdict is RuleVerdict.UNUSABLE
+    assert "source_device" in ath006.unpopulated_fields
 
 
 def test_different_telemetry_yields_a_different_posture(
@@ -608,3 +636,272 @@ def test_coverage_provenance_tracks_the_actual_source(defender_environment) -> N
     """Provenance must follow the telemetry, not be a constant."""
     report = assess_coverage(defender_environment)
     assert report.provenance["data_sources"] == ["defender_export"]
+
+
+# ======================================================================================
+# Per-field usability (M18): a rule is only as usable as the fields it filters on
+#
+# The defect these guard is the one the M17 external evaluation found on COMISET, and
+# it is invisible to every measurement that came before them: `remote_ip` populated on
+# 100% of 589,477 network rows, `remote_port`/`protocol`/`direction` populated on 1, the
+# NETWORK_FLOW channel reported AVAILABLE, ATH-003 reported SUPPORTED, and ATH-003's
+# zero findings read as clean data. Each test below is built so it fails if the
+# field-level check is removed -- deleting it must not leave a green suite.
+# ======================================================================================
+
+
+def _rule(telemetry: Telemetry, rule_id: str):
+    """The runnability verdict for one rule against one in-memory telemetry set."""
+    report = assess_coverage(build_environment_model(telemetry))
+    return next(r for r in report.rules if r.rule_id == rule_id)
+
+
+def _blank(rows: list[dict], *columns: str, keep_first: int = 0) -> list[dict]:
+    """Empty the named columns on every row but the first ``keep_first``.
+
+    This is the M17-2 shape in one function: an adapter that inferred its field names
+    from one sampled record, mapped that record correctly, and lost the attribute on
+    every other row. Takes column names as data so the same helper reproduces the shape
+    on the network, logon and control tables without a line of per-table code.
+    """
+    out = []
+    for index, row in enumerate(rows):
+        row = dict(row)
+        if index >= keep_first:
+            for column in columns:
+                row[column] = None if column == "remote_port" else ""
+        out.append(row)
+    return out
+
+
+def test_channel_view_calls_a_lost_attribute_available_and_the_field_view_does_not() -> None:
+    """The M17-2 regression shape, both halves asserted.
+
+    Fails without the field-level check: the channel measurement reports NETWORK_FLOW
+    AVAILABLE (asserted here, deliberately, as proof the old measurement misses this),
+    so ATH-003 would come back DEGRADED at worst and its zero findings would again be
+    indistinguishable from clean data.
+    """
+    rows = [
+        build.net("powershell.exe", "203.0.113.9", 443, device="PC07", user="aholt",
+                  when=build.at(seconds=i), url="http://203.0.113.9/a")
+        for i in range(250)
+    ]
+    telemetry = build.telemetry(
+        # A process row so PROCESS_EXECUTION is available: the only thing wrong with
+        # this dataset must be the three lost network attributes.
+        procs=[build.proc("powershell.exe", "powershell.exe -c 1", "explorer.exe",
+                          device="PC07", user="aholt")],
+        nets=_blank(rows, "remote_port", "protocol", "direction", keep_first=1),
+    )
+
+    channels = assess_channels(telemetry)
+    assert channels[TelemetryChannel.NETWORK_FLOW].state is ChannelState.AVAILABLE, (
+        "the channel view is supposed to miss this -- if it no longer does, this test "
+        "is not exercising the gap it was written for"
+    )
+
+    ath003 = _rule(telemetry, "ATH-003")
+    assert ath003.verdict is RuleVerdict.UNUSABLE
+    assert set(ath003.sparse_fields) == {"remote_port", "protocol", "direction"}
+    assert set(ath003.unpopulated_fields) == {"remote_port", "direction"}
+    for usability in ath003.fields:
+        if usability.column in ath003.sparse_fields:
+            assert usability.fraction == 1 / 250
+
+
+def test_the_same_shape_on_the_logon_table_makes_its_rule_unusable() -> None:
+    """Generalisation, table two: no rule-specific code, different values throughout.
+
+    Fails without the field-level check: `unpopulated_fields` would be empty and
+    nothing would name `action` as the lost column.
+    """
+    rows = [
+        build.logon("rburke", "FS09", logon_type=3, source_ip="198.51.100.24",
+                    source_device="WKS44", action="failure", failure_reason="bad_password",
+                    when=build.at(seconds=i * 5))
+        for i in range(220)
+    ]
+    telemetry = build.telemetry(logons=_blank(rows, "action", keep_first=1))
+
+    ath005 = _rule(telemetry, "ATH-005")
+    assert ath005.verdict is RuleVerdict.UNUSABLE
+    assert ath005.unpopulated_fields == ("action",)
+    assert "action" in ath005.detail and "220" in ath005.detail
+
+
+def test_the_same_shape_on_the_control_table_makes_its_rule_unusable() -> None:
+    """Generalisation, table three -- and the strongest of the three.
+
+    The CLOUD_MANAGEMENT_ACTIVITY channel is AVAILABLE here (it is evidenced by the
+    source value, which every row carries), so nothing but the field measurement can
+    reach this verdict. Fails without the field-level check with AWS-002 reported
+    USABLE while `resource_type` -- the column its filter compares -- is empty.
+    """
+    rows = [
+        build.ctrl("svc-deployer", "stop", "cloudtrail:trail", "org-trail",
+                   device="aws:222233334444/eu-west-1", source_ip="192.0.2.77",
+                   source="cloudtrail_mgmt", when=build.at(seconds=i * 30))
+        for i in range(240)
+    ]
+    telemetry = build.telemetry(ctrls=_blank(rows, "resource_type", keep_first=1))
+
+    channels = assess_channels(telemetry)
+    assert channels[TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY].state.usable
+
+    aws002 = _rule(telemetry, "AWS-002")
+    assert aws002.verdict is RuleVerdict.UNUSABLE
+    assert aws002.unpopulated_fields == ("resource_type",)
+
+
+def test_an_empty_declared_table_is_not_eligible_and_says_so_distinctly() -> None:
+    """"No input" and "input I cannot read" are different facts with different remedies.
+
+    Fails without the field-level check: there would be no NOT_ELIGIBLE state at all,
+    and both cases would collapse into the channel view's single `unsupported`.
+    """
+    telemetry = build.telemetry(
+        procs=[build.proc("whoami.exe", "whoami", "cmd.exe", device="PC11", user="mchan")],
+    )
+
+    eligible = _rule(telemetry, "ATH-004")
+    starved = _rule(telemetry, "ATH-005")
+
+    assert starved.verdict is RuleVerdict.NOT_ELIGIBLE
+    assert starved.verdict is not RuleVerdict.UNUSABLE
+    assert starved.to_dict()["verdict"] == "not_eligible"
+    assert starved.to_dict()["tables"] == {"logon": 0}
+    assert not starved.runnable
+    assert starved.fields == (), "an empty table cannot have a measured field fraction"
+    assert eligible.verdict is RuleVerdict.USABLE
+
+
+def test_only_an_optional_field_sparse_is_degraded_not_unusable() -> None:
+    """ATH-003 grades on `remote_url` and detects without it.
+
+    Fails without the field-level check by never reaching DEGRADED for a field reason
+    at all; fails with a check that ignores `optional_fields` by reporting a working
+    rule UNUSABLE -- the error that spends a reader's trust for nothing.
+    """
+    rows = [
+        build.net("cscript.exe", "203.0.113.40", 8080, device="PC21", user="tnadel",
+                  when=build.at(seconds=i * 2))
+        for i in range(200)
+    ]
+    telemetry = build.telemetry(
+        procs=[build.proc("cscript.exe", "cscript x.vbs", "explorer.exe",
+                          device="PC21", user="tnadel")],
+        nets=rows,  # remote_url empty on every row; everything else populated
+    )
+
+    ath003 = _rule(telemetry, "ATH-003")
+    assert ath003.verdict is RuleVerdict.DEGRADED
+    assert ath003.sparse_fields == ("remote_url",)
+    assert not ath003.unpopulated_fields
+    assert ath003.runnable
+
+
+def test_the_two_thresholds_are_boundaries_not_approximations() -> None:
+    """Exactly at each threshold, and one row either side of it.
+
+    Fails without the field-level check (no verdict moves at all), and fails if either
+    comparison is written ``<=`` instead of ``<`` -- which would report a rule sitting
+    exactly on the documented floor as blind.
+    """
+    def network(populated: int, total: int) -> Telemetry:
+        rows = [
+            build.net("wscript.exe", "203.0.113.77", 443, device="PC33", user="dgrey",
+                      when=build.at(seconds=i), url="http://203.0.113.77/z")
+            for i in range(total)
+        ]
+        return build.telemetry(
+            procs=[build.proc("wscript.exe", "wscript a.js", "explorer.exe",
+                              device="PC33", user="dgrey")],
+            nets=_blank(rows, "direction", keep_first=populated),
+        )
+
+    assert UNUSABLE_BELOW == 0.01 and DEGRADED_BELOW == 0.5
+
+    # exactly at the unusable floor: 2/200 == 0.01 -> not unusable
+    at_floor = _rule(network(2, 200), "ATH-003")
+    assert at_floor.verdict is RuleVerdict.DEGRADED
+    assert at_floor.sparse_fields == ("direction",)
+
+    # one row below it: 1/200 == 0.005 -> unusable
+    below_floor = _rule(network(1, 200), "ATH-003")
+    assert below_floor.verdict is RuleVerdict.UNUSABLE
+    assert below_floor.unpopulated_fields == ("direction",)
+
+    # exactly at the partial threshold: 100/200 == 0.5 -> not degraded
+    at_partial = _rule(network(100, 200), "ATH-003")
+    assert at_partial.verdict is RuleVerdict.USABLE
+    assert not at_partial.sparse_fields
+
+    # one row below it: 99/200 == 0.495 -> degraded
+    below_partial = _rule(network(99, 200), "ATH-003")
+    assert below_partial.verdict is RuleVerdict.DEGRADED
+    assert below_partial.sparse_fields == ("direction",)
+
+
+def test_every_rule_declares_tables_that_carry_the_fields_it_declares() -> None:
+    """The static declaration check: a rule cannot be measured on a field it misfiled.
+
+    Guards the drift that made this milestone necessary in both directions -- a rule
+    declaring a field no declared table carries (measured as 0% forever, or silently
+    skipped), and a rule declaring a table none of its fields belong to (counted as
+    eligible input it never reads, which is exactly the stale ATH-007 entry in the M17
+    script's hard-coded table map).
+
+    Fails if a new rule omits `tables`, misspells a field, or lists an `optional_fields`
+    entry that is not in `fields_used`.
+    """
+    core = set(CORE_COLUMNS)
+    for detector in all_detectors():
+        assert detector.tables, f"{detector.rule_id} declares no input table"
+        for table in detector.tables:
+            assert table in TABLE_COLUMNS, f"{detector.rule_id}: unknown table {table!r}"
+
+        declared_columns = {c for t in detector.tables for c in TABLE_COLUMNS[t]}
+        for name in detector.fields_used:
+            if name in core:
+                continue
+            assert name in declared_columns, (
+                f"{detector.rule_id} declares field {name!r}, which no table it "
+                f"declares ({sorted(detector.tables)}) carries"
+            )
+
+        for table in detector.tables:
+            specific = set(TABLE_COLUMNS[table]) - core
+            assert specific & set(detector.fields_used), (
+                f"{detector.rule_id} declares table {table!r} but reads none of its "
+                "columns"
+            )
+
+        assert detector.optional_fields <= set(detector.fields_used), (
+            f"{detector.rule_id}: optional_fields not a subset of fields_used"
+        )
+
+
+def test_the_verdict_logic_names_no_rule_table_or_field() -> None:
+    """An anti-overfitting guard on the module that decides verdicts.
+
+    The verdict must be computed from what detectors declare. A rule id, table name or
+    column name appearing in the decision path would mean the measurement was tuned to
+    the corpus that exposed the defect, and the next corpus would go unmeasured.
+    """
+    import inspect
+
+    from ath.environment import coverage
+
+    for function in (
+        coverage.rule_field_usability, coverage._field_verdict, coverage._table_rows,
+        coverage._gating_channels_for_rule,
+    ):
+        body = inspect.getsource(function)
+        body = body.split('"""')[0] + body.split('"""')[-1]  # docstrings may cite cases
+        for forbidden in ("ATH-", "AWS-", "K8S-", "remote_port", "remote_url",
+                          "direction", "logon_type", "source_device"):
+            assert forbidden not in body, (
+                f"{function.__name__} names {forbidden!r}; the verdict must read only "
+                "what detectors declare"
+            )

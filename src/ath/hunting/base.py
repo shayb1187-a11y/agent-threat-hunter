@@ -108,6 +108,37 @@ class Detector(ABC):
     fields_used: tuple[str, ...] = ()
     false_positives: tuple[str, ...] = ()
 
+    tables: frozenset[str] = frozenset()
+    """Canonical tables (``ath.schema`` ``EVENT_*`` values) this rule reads.
+
+    Declared because eligibility -- "was there any input for this rule at all" -- is
+    otherwise not computable from the detector. The M17 evaluation had to carry a
+    hard-coded rule-id-to-table map outside the rule set to report it, and that map
+    had already drifted from the code it described (it credited ATH-007 with the logon
+    table, which ATH-007 never reads).
+
+    Eligibility, usability and detection are three separate measurements:
+    eligibility is this declaration against row counts, usability is `fields_used`
+    against per-field population, and detection is findings. Collapsing any two of
+    them is how "0 findings" comes to mean "clean data" when it meant "empty table" or
+    "the field this rule filters on was never populated".
+    """
+
+    optional_fields: frozenset[str] = frozenset()
+    """The subset of `fields_used` this rule reads only to sharpen or explain a
+    finding, and never gates detection on.
+
+    An unpopulated *required* field makes a rule blind; an unpopulated optional field
+    makes its output less precise while the rule still fires correctly on its
+    remaining fields. Reporting both as failure would mark working detections broken --
+    ATH-005 on CloudTrail is the case in point: it keys on `action`, `user` and
+    `source_ip` and reads `logon_type` only to phrase the evidence, so the Windows
+    logon type CloudTrail cannot supply must not read as blindness.
+
+    Every entry must appear in `fields_used`, and each one is justified against the
+    line of the rule body that reads it.
+    """
+
     channels: frozenset[TelemetryChannel] = frozenset()
     """Telemetry channels this rule depends on, declared explicitly.
 

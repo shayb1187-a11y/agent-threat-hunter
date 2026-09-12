@@ -18,6 +18,7 @@ import pandas as pd
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import truncate
+from ath.schema import EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 # Extensions that can structurally contain an Office macro. This is a fact about the
@@ -76,6 +77,7 @@ class OfficeMacroAttachmentOpened(Detector):
     severity = Severity.MEDIUM
     description = "Detects Outlook opening an Office document in a macro-capable format."
     fields_used = ("parent_process_name", "process_name", "command_line", "device", "user")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "Legitimate business documents that happen to be distributed in a macro-capable "
         "format (e.g. .xlsm templates used for shared calculations) without containing "

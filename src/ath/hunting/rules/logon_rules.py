@@ -13,7 +13,7 @@ import pandas as pd
 
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
-from ath.schema import describe_logon_type
+from ath.schema import EVENT_LOGON, describe_logon_type
 from ath.telemetry.loader import Telemetry
 
 
@@ -97,6 +97,16 @@ class BruteForceThenSuccess(Detector):
         "device", "user", "source_ip", "source_device", "action",
         "failure_reason", "logon_type", "timestamp",
     )
+    tables = frozenset({EVENT_LOGON})
+    optional_fields = frozenset({"logon_type", "source_device", "failure_reason"})
+    """Detection keys on ``action`` (``logons["action"] == "failure"``/``"success"``)
+    grouped by ``(device, user, source_ip)``; none of these three appears in any
+    filter. ``logon_type`` is read only inside
+    ``describe_logon_type(row["logon_type"])`` when phrasing evidence,
+    ``failure_reason`` only in the parenthetical after it, and ``source_device``
+    only in the finding's metadata. This is what lets ATH-005 be reported as
+    working on CloudTrail, where the Windows logon type does not exist and the
+    adapter correctly leaves it null."""
     false_positives = (
         "A service account with a stale cached password retrying automatically -- by "
         "far the most common cause of failure bursts in real environments.",
@@ -250,6 +260,13 @@ class ForeignHostAuthentication(Detector):
     fields_used = (
         "device", "user", "source_device", "source_ip", "logon_type", "action", "timestamp",
     )
+    tables = frozenset({EVENT_LOGON})
+    optional_fields = frozenset({"source_ip"})
+    """Read only to name the origin in the evidence summary
+    (``f"({row['source_ip']}) via "``). ``logon_type`` and ``source_device`` are
+    deliberately NOT optional: both are hard filters (``logon_type.isin(...)`` for
+    ownership and remote logons, ``source_device.fillna("") != ""``), which is why
+    this rule correctly declines to fire on control-plane telemetry."""
     false_positives = (
         "Jump boxes, bastion hosts and admin workstations where many accounts "
         "legitimately authenticate outward.",

@@ -46,8 +46,10 @@ import pandas as pd
 from ath.environment.channels import (
     ChannelAssessment,
     ChannelState,
+    FieldPopulation,
     TelemetryChannel,
     assess_channels,
+    measure_field_populations,
 )
 from ath.netaddr import is_public_ip
 from ath.schema import EVENT_CONTROL, SIG_VALID, describe_logon_type
@@ -366,6 +368,12 @@ class EnvironmentModel:
             not an edge case. Computed by union, never by picking the "primary" one.
         security_controls: Security/management products observed running.
         channels: Measured telemetry availability (see :mod:`ath.environment.channels`).
+        field_populations: Measured population of every canonical column, keyed by
+            ``(table, column)``. Carried here for the same reason ``channels`` is: both
+            are counted off the telemetry this model was built from, and a consumer
+            that re-derived them would be a second place counting the same rows. It is
+            what lets :mod:`ath.environment.coverage` judge a rule on the fields it
+            filters on rather than on the one column that evidences its channel.
         data_sources: Which telemetry sources contributed (``synthetic``, ``defender_export``).
         observation_window: ``(first, last)`` timestamps observed.
         event_count: Total events the model was derived from.
@@ -387,6 +395,7 @@ class EnvironmentModel:
     platforms: frozenset[str] = frozenset()
     security_controls: dict[str, str] = field(default_factory=dict)
     channels: dict[TelemetryChannel, ChannelAssessment] = field(default_factory=dict)
+    field_populations: dict[tuple[str, str], FieldPopulation] = field(default_factory=dict)
     data_sources: tuple[str, ...] = ()
     observation_window: tuple[pd.Timestamp, pd.Timestamp] | None = None
     event_count: int = 0
@@ -862,6 +871,7 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
     platform, platform_reason = _infer_platform(telemetry)
     platforms = _infer_platforms(telemetry, platform)
     channels = assess_channels(telemetry)
+    field_populations = measure_field_populations(telemetry)
 
     sources: set[str] = set()
     for df in (processes, network, logons, telemetry.controls):
@@ -879,6 +889,7 @@ def build_environment_model(telemetry: Telemetry) -> EnvironmentModel:
         platforms=platforms,
         security_controls=controls,
         channels=channels,
+        field_populations=field_populations,
         data_sources=tuple(sorted(sources)),
         observation_window=telemetry.time_range if telemetry.event_count else None,
         event_count=telemetry.event_count,

@@ -7,6 +7,7 @@ import pandas as pd
 from ath.hunting.base import SCRIPT_INTERPRETERS, Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import is_public_ip, truncate
+from ath.schema import EVENT_NETWORK
 from ath.telemetry.loader import Telemetry
 
 
@@ -43,8 +44,15 @@ class InterpreterExternalConnection(Detector):
     description = "Detects PowerShell and similar interpreters making outbound external connections."
     fields_used = (
         "process_name", "process_id", "remote_ip", "remote_port", "direction",
-        "remote_url", "device", "user", "timestamp",
+        "protocol", "remote_url", "device", "user", "timestamp",
     )
+    tables = frozenset({EVENT_NETWORK})
+    optional_fields = frozenset({"protocol", "remote_url"})
+    """Both appear in the evidence summary only, never in the detection mask:
+    ``f"{row['remote_ip']}:{row['remote_port']}/{row['protocol']}"`` and the
+    ``url=`` clause after it. ``remote_port`` is *not* optional -- it decides the
+    cleartext-HTTP severity grade and is the field an analyst pivots on, so losing
+    it is a real loss of detection quality, not a cosmetic one."""
     false_positives = (
         "PowerShell installing modules from the PowerShell Gallery.",
         "Scripts calling cloud management APIs (Azure, AWS, Microsoft Graph).",

@@ -11,6 +11,7 @@ from ath.behavior import extract_security_tool_behaviors
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import truncate
+from ath.schema import EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 
@@ -57,6 +58,7 @@ class SecurityToolTampering(Detector):
         "acted upon rather than on the utility used."
     )
     fields_used = ("command_line", "process_name", "device", "user", "timestamp")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "An administrator disabling real-time protection to install or troubleshoot "
         "software -- common, and the single largest source of noise for this rule.",

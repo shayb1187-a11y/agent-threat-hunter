@@ -15,6 +15,7 @@ import pandas as pd
 from ath.channels import TelemetryChannel
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
+from ath.schema import EVENT_CONTROL
 from ath.telemetry.loader import Telemetry
 
 # The IAM shapes AWS-001 chains together -- policy grants, and access-key creation.
@@ -68,6 +69,7 @@ class IamPrivilegeEscalationChain(Detector):
     fields_used = (
         "actor", "verb", "resource_type", "target_actor", "role_ref", "timestamp",
     )
+    tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY})
     false_positives = (
         "Routine onboarding: an administrator grants a new identity permissions, and "
@@ -171,6 +173,7 @@ class CloudTrailLoggingDisabled(Detector):
     severity = Severity.CRITICAL
     description = "Detects StopLogging/DeleteTrail -- an audit trail being turned off."
     fields_used = ("actor", "verb", "resource_type", "resource_name", "timestamp")
+    tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY})
     false_positives = (
         "A deliberate, change-managed decommissioning of a trail being replaced by "

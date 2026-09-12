@@ -49,8 +49,25 @@ from typing import Any
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
 from ath.channels import TelemetryChannel
-from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
+from ath.schema import (
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    TABLE_COLUMNS,
+)
 from ath.telemetry.loader import Telemetry
+
+DEFAULT_PARTIAL_THRESHOLD: float = 0.5
+"""Fraction of rows that must carry a value before a measurement counts as complete.
+
+Declared once, here, because it is the boundary between "present" and "present but
+too sparse to rely on" for *both* measurements built on it: a channel's
+``PARTIAL``/``AVAILABLE`` split (:class:`ChannelSpec.partial_threshold`, whose default
+this is) and a rule's ``DEGRADED`` verdict over individual fields
+(:mod:`ath.environment.coverage`). Two copies of the same threshold would let the
+channel view and the field view disagree about the same column.
+"""
 
 
 class ChannelState(str, Enum):
@@ -94,7 +111,7 @@ class ChannelSpec:
     description: str
     evidence_columns: tuple[tuple[str, str], ...] = ()
     closes_gap_by: str = ""
-    partial_threshold: float = 0.5
+    partial_threshold: float = DEFAULT_PARTIAL_THRESHOLD
 
 
 # --------------------------------------------------------------------------------------
@@ -324,6 +341,83 @@ def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tupl
         return int(series.notna().sum()), total
     filled = series.astype("string").fillna("")
     return int((filled.str.len() > 0).sum()), total
+
+
+@dataclass(frozen=True)
+class FieldPopulation:
+    """How well one canonical column is populated in one dataset.
+
+    The channel view measures a *kind* of observation through a single nominated
+    evidence column, which is enough to answer "is there any network telemetry here"
+    and structurally unable to answer "does the field this rule filters on carry a
+    value". COMISET is the case that proves the difference: ``remote_ip`` populated on
+    100% of 589,477 network rows, ``remote_port``/``protocol``/``direction`` populated
+    on 1 -- one channel reported AVAILABLE, and every rule reading the other three
+    returned zero findings that read as clean data.
+
+    Attributes:
+        table: Canonical event type the column belongs to.
+        column: Canonical column name.
+        rows: Rows in that table. Zero means the table is absent from this dataset, in
+            which case the column was not measured rather than measured as empty.
+        populated: Rows carrying a usable value, by the same definition the channel
+            measurement uses (see :func:`_count_populated`).
+    """
+
+    table: str
+    column: str
+    rows: int
+    populated: int
+
+    @property
+    def fraction(self) -> float:
+        """Fraction of rows carrying a value; 0.0 when there was nothing to measure."""
+        return 0.0 if not self.rows else self.populated / self.rows
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "table": self.table,
+            "column": self.column,
+            "rows": self.rows,
+            "populated": self.populated,
+            # Eight places, not the usual four: the fractions this exists to report
+            # are of the order 1/589,477, and rounding one of those to 0.0 would hide
+            # exactly the measurement it was built to surface.
+            "fraction": round(self.fraction, 8),
+        }
+
+    def __str__(self) -> str:
+        return (
+            f"{self.table}.{self.column}: {self.populated}/{self.rows} "
+            f"({self.fraction:.1%})"
+        )
+
+
+def measure_field_population(
+    telemetry: Telemetry, table: str, column: str
+) -> FieldPopulation:
+    """Measure one canonical column against loaded telemetry."""
+    populated, rows = _count_populated(telemetry, table, column)
+    return FieldPopulation(
+        table=table, column=column, rows=rows, populated=populated
+    )
+
+
+def measure_field_populations(
+    telemetry: Telemetry,
+) -> dict[tuple[str, str], FieldPopulation]:
+    """Measure every column of every canonical table, keyed by ``(table, column)``.
+
+    Deliberately exhaustive and rule-agnostic: this is a property of the *telemetry*,
+    measured once, and any consumer -- a rule verdict, a report, a future specialist --
+    looks up the columns it cares about. Measuring only the columns some rule happens
+    to declare today would make the measurement move whenever the rule set moves.
+    """
+    return {
+        (table, column): measure_field_population(telemetry, table, column)
+        for table, columns in TABLE_COLUMNS.items()
+        for column in columns
+    }
 
 
 def assess_channel(telemetry: Telemetry, spec: ChannelSpec) -> ChannelAssessment:

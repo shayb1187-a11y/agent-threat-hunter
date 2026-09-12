@@ -24,6 +24,7 @@ from ath.hunting.indicators import (
     find_evasion_flags,
     truncate,
 )
+from ath.schema import EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 
@@ -67,6 +68,7 @@ class OfficeSpawnsInterpreter(Detector):
     fields_used = (
         "parent_process_name", "process_name", "command_line", "device", "user", "timestamp",
     )
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "Legitimate Office add-ins or COM automation that shell out to scripts.",
         "Line-of-business applications that drive Excel/Word macros for reporting.",
@@ -155,6 +157,7 @@ class EncodedPowerShell(Detector):
     severity = Severity.MEDIUM
     description = "Detects and decodes PowerShell -EncodedCommand payloads."
     fields_used = ("process_name", "command_line", "parent_process_name", "device", "user")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "Configuration management (SCCM/Intune/Ansible/Chef) routinely wraps scripts "
         "in -EncodedCommand to avoid shell quoting issues.",
@@ -364,6 +367,7 @@ class LsassCredentialAccess(Detector):
     severity = Severity.CRITICAL
     description = "Detects command lines consistent with dumping LSASS process memory."
     fields_used = ("command_line", "process_name", "parent_process_name", "device", "user")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "IT support intentionally capturing an LSASS dump to debug an authentication "
         "or crash issue (Sysinternals procdump is a legitimate tool).",
@@ -469,6 +473,7 @@ class RemoteServiceExecution(Detector):
     fields_used = (
         "parent_process_name", "process_name", "command_line", "device", "user", "timestamp",
     )
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "IT administrators legitimately using PsExec for remote support.",
         "Monitoring, backup or deployment agents that run scripts via a service.",
@@ -588,6 +593,7 @@ class DataStagingArchive(Detector):
     severity = Severity.MEDIUM
     description = "Detects archive creation over bulk paths or into staging directories."
     fields_used = ("command_line", "process_name", "parent_process_name", "device", "user")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "Legitimate backup jobs and scheduled archive tasks.",
         "Users compressing a folder to share or email.",

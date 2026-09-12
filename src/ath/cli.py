@@ -46,7 +46,7 @@ from ath.correlation import CorrelationConfig, correlate
 from ath.environment import (
     ChannelState,
     CoverageState,
-    RuleSupport,
+    RuleVerdict,
     assess_coverage,
     build_environment_model,
 )
@@ -1235,13 +1235,37 @@ def cmd_visibility(args: argparse.Namespace, settings: Settings) -> int:
     print()
 
     print(_c("=== DETECTION SUPPORT ===", "BOLD"))
+    # Three separate measurements, printed as three separate things: eligibility (are
+    # there rows at all), usability (are the fields this rule filters on populated),
+    # and the channel verdict. A rule whose required field is empty is reported here,
+    # never as a silent zero in the hunt output.
+    verdict_colours = {
+        RuleVerdict.USABLE: "LOW",
+        RuleVerdict.DEGRADED: "MEDIUM",
+        RuleVerdict.UNUSABLE: "HIGH",
+        RuleVerdict.NOT_ELIGIBLE: "MEDIUM",
+    }
     for rule in report.rules:
-        if rule.support is RuleSupport.SUPPORTED and not args.all:
+        if rule.verdict is RuleVerdict.USABLE and not args.all:
             continue
-        colour = "HIGH" if rule.support is RuleSupport.UNSUPPORTED else "MEDIUM"
-        print(f"  {rule.rule_id}  {_c(rule.support.value, colour)}: {rule.detail}")
-    if not report.unrunnable_rules and not args.all:
-        print("  every rule's core telemetry is present "
+        verdict = _c(rule.verdict.value, verdict_colours[rule.verdict])
+        print(
+            f"  {rule.rule_id}  {verdict} "
+            f"[channels: {rule.support.value}, {rule.eligible_rows} eligible row(s)]: "
+            f"{rule.detail}"
+        )
+        named = set(rule.sparse_fields)
+        for usability in rule.fields:
+            if usability.column in named or args.all:
+                requirement = "required" if usability.required else "optional"
+                print(
+                    f"      {usability.column:<22} "
+                    f"{usability.population.populated:>9,} of "
+                    f"{usability.population.rows:<9,} {usability.table} row(s)  "
+                    f"{usability.fraction:>8.2%}  ({requirement})"
+                )
+    if all(r.verdict is RuleVerdict.USABLE for r in report.rules) and not args.all:
+        print("  every rule's declared fields are populated "
               "(use --all to list per-rule detail)")
     print()
 

@@ -18,6 +18,7 @@ import pandas as pd
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import truncate
+from ath.schema import EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 # Each discovery binary mapped to the ATT&CK technique its use corresponds to. Used by
@@ -80,6 +81,7 @@ class DiscoveryCommandSequence(Detector):
     severity = Severity.MEDIUM
     description = "Detects >=2 distinct discovery binaries sharing a parent process in a short window."
     fields_used = ("process_name", "parent_process_id", "device", "user", "timestamp")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "IT support running a single discovery command (e.g. ipconfig /all, whoami) "
         "during routine troubleshooting -- excluded by design, since a lone command "

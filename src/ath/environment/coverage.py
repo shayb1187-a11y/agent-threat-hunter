@@ -31,6 +31,23 @@ grade the exam it wrote. The watchlist therefore includes techniques this projec
 
 Entries that also exist in the ATT&CK catalogue must agree with it on name, which a
 test enforces, so the two cannot drift apart.
+
+Rules are graded on fields, not only on channels
+------------------------------------------------
+The technique split above rests on per-rule verdicts, and a rule is only as usable as
+the individual fields it filters on. Channel availability cannot see that: a channel is
+evidenced by one nominated column, so a dataset carrying ``remote_ip`` on every network
+row and ``remote_port``/``protocol``/``direction`` on one row reports NETWORK_FLOW as
+AVAILABLE (COMISET, M17-2). :class:`RuleVerdict` therefore separates three questions
+that a single "supported" collapses:
+
+    NOT_ELIGIBLE  the tables this rule reads are empty -- it had no input
+    UNUSABLE      a field it *filters on* is populated on < UNUSABLE_BELOW of the rows
+    DEGRADED      everything it filters on is present; something it reads is sparse
+    USABLE        every declared field is populated
+
+Eligibility, usability and detection are reported side by side and never merged, which
+is what keeps "0 findings" from meaning three different things at once.
 """
 
 from __future__ import annotations
@@ -41,14 +58,46 @@ from enum import Enum
 from typing import Any
 
 from ath.environment.channels import (
+    DEFAULT_PARTIAL_THRESHOLD,
     ChannelAssessment,
     ChannelState,
+    FieldPopulation,
     TelemetryChannel,
 )
 from ath.environment.model import EnvironmentModel
 from ath.hunting.base import Detector, all_detectors
 from ath.mitre.attack import TECHNIQUES, Tactic
 from ath.mitre.mapper import MAPPING_RULES
+from ath.schema import TABLE_COLUMNS
+
+# --------------------------------------------------------------------------------------
+# Where the line between blind, weakened and working is drawn, for a single field.
+#
+# Two thresholds, because a field can fail a rule in two different ways. A field
+# populated on almost nothing is not sparse data, it is a missing field wearing a
+# column's name: the rule runs, filters everything out, and reports zero. A field
+# populated on some but not most rows leaves the rule working on what it can see.
+# --------------------------------------------------------------------------------------
+
+UNUSABLE_BELOW: float = 0.01
+"""Below this fraction a required field is treated as absent, not as sparse.
+
+Set from measurement, not taste: COMISET carried ``remote_port``, ``protocol`` and
+``direction`` on 1 of 589,477 network rows (0.00017%), ATH-003 filtered on
+``direction``, returned zero findings, and the zero was read as clean data. Anything
+this starved cannot support a detection, and saying so is the whole point of this
+module -- a rule reported as supported while its filter field is empty converts
+blindness into reassurance.
+"""
+
+DEGRADED_BELOW: float = DEFAULT_PARTIAL_THRESHOLD
+"""Below this fraction a field is present but too sparse to rely on.
+
+Deliberately *the same* number the channel measurement uses for its
+``PARTIAL``/``AVAILABLE`` split (:data:`ath.environment.channels.DEFAULT_PARTIAL_THRESHOLD`),
+imported rather than repeated so the channel view and the field view can never
+disagree about the same column.
+"""
 
 # Which canonical schema field belongs to which telemetry channel. This is the join
 # that makes rule runnability computable: a rule declares `fields_used`, and this maps
@@ -279,39 +328,168 @@ class RuleSupport(str, Enum):
     UNSUPPORTED = "unsupported"
 
 
+class RuleVerdict(str, Enum):
+    """Whether a rule can work here, measured field by field rather than channel by channel.
+
+    The channel measurement asks "is there network telemetry", which a single nominated
+    evidence column can answer. It cannot ask "does the column this rule filters on
+    carry a value", and that is a different question with the same consequence as a
+    missing rule. COMISET is the measured case: ``NETWORK_FLOW`` came back AVAILABLE
+    (``remote_ip`` on 100% of 589,477 rows) while ATH-003's ``direction`` and
+    ``remote_port`` filters saw 1 populated row each. The channel view did grade
+    ATH-003 unsupported there -- but for an unrelated reason, the absent ``remote_url``
+    enrichment channel, which the rule does not filter on at all. Right verdict,
+    wrong cause, and an operator sent to onboard a web proxy instead of fixing the
+    adapter that dropped the port.
+
+    Four outcomes, because three different things are being separated -- and each has a
+    different remedy:
+
+    ``NOT_ELIGIBLE``
+        Every table this rule reads is empty. Nothing about the rule is in question;
+        there was no input. Remedy: onboard that telemetry, or accept that this rule
+        does not apply to this dataset.
+    ``UNUSABLE``
+        There was input, and a field the rule *filters on* is populated on less than
+        :data:`UNUSABLE_BELOW` of it (or the channel it needs is absent outright). The
+        rule runs, finds nothing, and looks healthy. Remedy: fix the ingestion of that
+        field -- no threshold change and no rule edit can recover it.
+    ``DEGRADED``
+        Every required field is present; something the rule reads is sparse. The rule
+        fires on its remaining fields and grades or explains less precisely.
+    ``USABLE``
+        Every declared field is populated above the threshold.
+    """
+
+    NOT_ELIGIBLE = "not_eligible"
+    UNUSABLE = "unusable"
+    DEGRADED = "degraded"
+    USABLE = "usable"
+
+    @property
+    def runnable(self) -> bool:
+        """Whether this rule's findings -- or its silence -- can be believed."""
+        return self in (RuleVerdict.USABLE, RuleVerdict.DEGRADED)
+
+    @property
+    def remedy(self) -> str:
+        return {
+            "not_eligible": "none -- this rule's input table is absent from this dataset",
+            "unusable": "restore the named field(s) in ingestion; the rule cannot see without them",
+            "degraded": "improve population of the named field(s) to sharpen grading",
+            "usable": "none -- every declared field is populated",
+        }[self.value]
+
+
+@dataclass(frozen=True)
+class FieldUsability:
+    """One field a rule declares, measured on one table the rule declares it reads.
+
+    Attributes:
+        population: The measurement (table, column, rows, populated, fraction).
+        required: False when the rule declared this field in ``optional_fields`` --
+            read to sharpen or explain a finding, never to gate detection.
+    """
+
+    population: FieldPopulation
+    required: bool = True
+
+    @property
+    def column(self) -> str:
+        return self.population.column
+
+    @property
+    def table(self) -> str:
+        return self.population.table
+
+    @property
+    def fraction(self) -> float:
+        return self.population.fraction
+
+    def to_dict(self) -> dict[str, Any]:
+        return {**self.population.to_dict(), "required": self.required}
+
+    def __str__(self) -> str:
+        return (
+            f"{self.column} {self.population.populated} of {self.population.rows} "
+            f"{self.table} rows ({self.fraction:.2%}, "
+            f"{'required' if self.required else 'optional'})"
+        )
+
+
 @dataclass(frozen=True)
 class RuleRunnability:
     """Whether a registered detection can actually be trusted in this environment.
 
+    Carries two measurements of the same rule, deliberately not merged. ``support`` is
+    the channel-level verdict -- "does this deployment have authentication telemetry at
+    all" -- and ``verdict`` is the field-level one -- "is the column this rule filters
+    on populated". A rule can pass the first and fail the second, which is exactly the
+    failure this class exists to make visible; merging them would hide whichever one
+    happened to be reported second.
+
     Attributes:
         rule_id: The rule assessed.
         title: Its human-readable title.
-        support: Measured support level.
+        support: Measured channel-level support.
+        verdict: Measured field-level verdict, including table eligibility.
         missing_channels: Channels the rule needs that are absent entirely.
         degraded_channels: Channels present but too sparse to rely on.
+        fields: Per-field population for every field the rule declares on a table it
+            declares. Empty when no field populations were supplied, in which case
+            ``verdict`` falls back to what the channel measurement alone can say.
+        tables: Row count per declared table, so eligibility is readable directly.
         detail: One-line summary.
     """
 
     rule_id: str
     title: str
     support: RuleSupport
+    verdict: RuleVerdict = RuleVerdict.USABLE
     missing_channels: tuple[TelemetryChannel, ...] = ()
     degraded_channels: tuple[TelemetryChannel, ...] = ()
+    fields: tuple[FieldUsability, ...] = ()
+    tables: tuple[tuple[str, int], ...] = ()
     detail: str = ""
 
     @property
     def runnable(self) -> bool:
         """True when the rule will produce trustworthy findings at all."""
-        return self.support is not RuleSupport.UNSUPPORTED
+        return self.verdict.runnable
+
+    @property
+    def unpopulated_fields(self) -> tuple[str, ...]:
+        """Required fields starved below :data:`UNUSABLE_BELOW` -- the blinding ones."""
+        return tuple(
+            f.column for f in self.fields
+            if f.required and f.fraction < UNUSABLE_BELOW
+        )
+
+    @property
+    def sparse_fields(self) -> tuple[str, ...]:
+        """Every declared field below :data:`DEGRADED_BELOW`, required or optional."""
+        return tuple(f.column for f in self.fields if f.fraction < DEGRADED_BELOW)
+
+    @property
+    def eligible_rows(self) -> int:
+        """Rows available to this rule across the tables it declares."""
+        return sum(rows for _, rows in self.tables)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "rule_id": self.rule_id,
             "title": self.title,
             "support": self.support.value,
+            "verdict": self.verdict.value,
+            "verdict_remedy": self.verdict.remedy,
             "runnable": self.runnable,
             "missing_channels": [c.value for c in self.missing_channels],
             "degraded_channels": [c.value for c in self.degraded_channels],
+            "tables": {table: rows for table, rows in self.tables},
+            "eligible_rows": self.eligible_rows,
+            "fields": [f.to_dict() for f in self.fields],
+            "unpopulated_fields": list(self.unpopulated_fields),
+            "sparse_fields": list(self.sparse_fields),
             "detail": self.detail,
         }
 
@@ -450,10 +628,153 @@ def _channels_for_rule(detector: Detector) -> set[TelemetryChannel]:
     return channels_for_fields(detector.fields_used)
 
 
+def rule_field_usability(
+    detector: Detector,
+    populations: dict[tuple[str, str], FieldPopulation],
+) -> tuple[FieldUsability, ...]:
+    """Look up each field a rule declares, on each table the rule declares.
+
+    Reads nothing but the detector's own declarations and the measured populations --
+    no rule id, table name or column name appears here, so a new rule is covered the
+    moment it declares ``tables`` and ``fields_used``.
+
+    A declared field is skipped for a table that does not carry that column: rules read
+    one table each today, and a field belongs to whichever of its declared tables has
+    it. That a field belongs to *no* declared table is a declaration error rather than
+    a measurement result, and is caught by the static declaration test instead of being
+    silently reported as 0% here.
+
+    A table with no rows contributes no field measurements at all. The fraction of
+    nothing is not zero, it is unmeasured -- and reporting it as zero would grade a rule
+    with no input as blind rather than as not applicable.
+    """
+    if not populations:
+        return ()
+
+    results: list[FieldUsability] = []
+    for table in sorted(detector.tables):
+        columns = set(TABLE_COLUMNS.get(table, ()))
+        for name in sorted(detector.fields_used):
+            if name not in columns:
+                continue
+            population = populations.get((table, name))
+            if population is None or population.rows == 0:
+                continue
+            results.append(FieldUsability(
+                population=population, required=name not in detector.optional_fields,
+            ))
+    return tuple(results)
+
+
+def _table_rows(
+    detector: Detector, populations: dict[tuple[str, str], FieldPopulation]
+) -> tuple[tuple[str, int], ...]:
+    """Row count for each table the rule declares, read off the measured populations.
+
+    Every canonical column is measured, so any column of the table answers how many
+    rows it has; ``event_id`` is present on every table by construction.
+    """
+    rows: list[tuple[str, int]] = []
+    for table in sorted(detector.tables):
+        measured = [p for (t, _), p in populations.items() if t == table]
+        rows.append((table, measured[0].rows if measured else 0))
+    return tuple(rows)
+
+
+def _gating_channels_for_rule(detector: Detector) -> set[TelemetryChannel]:
+    """The channels a rule's *detection* depends on, optional enrichment excluded.
+
+    ``_channels_for_rule`` answers "what telemetry does this rule touch", which is the
+    right question for the channel-level `support` grade and is left untouched. It is
+    the wrong question for a verdict, because it cannot tell a filter field from an
+    evidence field: ATH-003 declares ``remote_url``, so a dataset with no URLs makes
+    NETWORK_URL absent and the rule "depends on absent telemetry" -- while it detects
+    on ``remote_ip``/``direction`` and fires perfectly well. Rules that declare
+    `channels` explicitly are unaffected: an explicit declaration is a statement that
+    those channels *are* the dependency.
+    """
+    if detector.channels:
+        return set(detector.channels)
+    return channels_for_fields(
+        name for name in detector.fields_used if name not in detector.optional_fields
+    )
+
+
+def _field_verdict(
+    fields: tuple[FieldUsability, ...],
+    tables: tuple[tuple[str, int], ...],
+    missing_gating: tuple[TelemetryChannel, ...],
+    support: RuleSupport,
+) -> tuple[RuleVerdict, str]:
+    """Grade a rule on its declared tables and fields, then on its gating channels.
+
+    Precedence, worst first, and each step answers a question the next one cannot:
+    no input at all; then a filter field that carries no value, or a gating channel
+    that is absent outright; then a weakened field; then working.
+
+    Fields are checked *before* channels because they say more. "``direction`` is
+    populated on 1 of 589,477 network rows" names the column to fix; "depends on absent
+    telemetry (network_flow)" names a category, and on the COMISET shape it is not even
+    true -- the channel was AVAILABLE. The channel reasoning still decides the verdict
+    when no field measurement is available (an absent-by-schema channel has no column to
+    count), and is carried verbatim either way on ``support`` and ``missing_channels``.
+    """
+    if tables and all(rows == 0 for _, rows in tables):
+        named = ", ".join(table for table, _ in tables)
+        return RuleVerdict.NOT_ELIGIBLE, (
+            f"no input: every table this rule reads is empty ({named}); "
+            "its silence says nothing about what occurred"
+        )
+
+    starved = [f for f in fields if f.required and f.fraction < UNUSABLE_BELOW]
+    if starved:
+        return RuleVerdict.UNUSABLE, (
+            "required field(s) effectively unpopulated: "
+            + "; ".join(str(f) for f in sorted(starved, key=lambda f: f.column))
+            + " -- this rule filters on them, so it runs, matches nothing, and its "
+            "zero must not be read as clean data"
+        )
+
+    if missing_gating:
+        return RuleVerdict.UNUSABLE, (
+            "depends on absent telemetry "
+            f"({', '.join(c.value for c in missing_gating)}); this rule will run and "
+            "find nothing regardless of what occurred"
+        )
+
+    sparse = [f for f in fields if f.fraction < DEGRADED_BELOW]
+    if sparse:
+        return RuleVerdict.DEGRADED, (
+            "reads sparsely populated field(s): "
+            + "; ".join(str(f) for f in sorted(sparse, key=lambda f: f.column))
+            + " -- the rule still fires on its remaining fields"
+        )
+
+    if support is not RuleSupport.SUPPORTED:
+        return RuleVerdict.DEGRADED, ""  # detail comes from the channel reasoning
+
+    return RuleVerdict.USABLE, (
+        f"every declared field is populated on the {len(fields)} measured column(s) "
+        "of its input table(s)" if fields else ""
+    )
+
+
 def assess_rule(
-    detector: Detector, channels: dict[TelemetryChannel, ChannelAssessment]
+    detector: Detector,
+    channels: dict[TelemetryChannel, ChannelAssessment],
+    populations: dict[tuple[str, str], FieldPopulation] | None = None,
 ) -> RuleRunnability:
-    """Decide whether one rule's telemetry dependencies are actually satisfied."""
+    """Decide whether one rule's telemetry dependencies are actually satisfied.
+
+    Args:
+        detector: The rule to assess.
+        channels: Measured channel availability.
+        populations: Measured per-column population, keyed by ``(table, column)``. When
+            omitted the verdict is whatever the channel measurement alone can say --
+            which is the pre-M18 behaviour, and is why a model built without telemetry
+            still assesses.
+    """
+    populations = populations or {}
     required = _channels_for_rule(detector)
     missing = tuple(sorted(
         (c for c in required if not channels[c].state.observable), key=lambda c: c.value
@@ -481,13 +802,23 @@ def assess_rule(
         support = RuleSupport.SUPPORTED
         detail = "all required telemetry channels are available"
 
+    fields = rule_field_usability(detector, populations)
+    tables = _table_rows(detector, populations) if populations else ()
+    missing_gating = tuple(
+        c for c in missing if c in _gating_channels_for_rule(detector)
+    )
+    verdict, field_detail = _field_verdict(fields, tables, missing_gating, support)
+
     return RuleRunnability(
         rule_id=detector.rule_id,
         title=detector.title,
         support=support,
+        verdict=verdict,
         missing_channels=missing,
         degraded_channels=degraded,
-        detail=detail,
+        fields=fields,
+        tables=tables,
+        detail=field_detail or detail,
     )
 
 
@@ -522,8 +853,12 @@ def assess_coverage(
     """
     detectors = detectors if detectors is not None else all_detectors()
     channels = environment.channels
+    # Measured once when the model was built from telemetry, for the same reason
+    # `channels` is: coverage assesses a *model*, and re-deriving either here would
+    # mean two places counting the same rows.
+    populations = environment.field_populations
 
-    rules = tuple(assess_rule(d, channels) for d in detectors)
+    rules = tuple(assess_rule(d, channels, populations) for d in detectors)
     # A degraded rule still fires; only an unsupported one cannot be credited.
     trustworthy_rules = {r.rule_id for r in rules if r.runnable}
     degraded_rules = {

@@ -17,6 +17,7 @@ from ath.behavior import extract_recovery_behaviors
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import truncate
+from ath.schema import EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 
@@ -70,6 +71,7 @@ class RecoveryInhibition(Detector):
         "matches and read-only enumeration does not."
     )
     fields_used = ("command_line", "process_name", "device", "user", "timestamp")
+    tables = frozenset({EVENT_PROCESS})
     false_positives = (
         "Backup software legitimately rotating or pruning old shadow copies.",
         "An administrator clearing space on a volume that has run out of shadow storage.",

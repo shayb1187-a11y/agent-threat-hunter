@@ -13,6 +13,7 @@ from __future__ import annotations
 from ath.channels import TelemetryChannel
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
+from ath.schema import EVENT_CONTROL
 from ath.telemetry.loader import Telemetry
 
 _RBAC_RESOURCE_TYPES: frozenset[str] = frozenset({"rolebindings", "clusterrolebindings"})
@@ -120,6 +121,7 @@ class RbacPrivilegeEscalationGrant(Detector):
         "actor", "actor_groups", "verb", "resource_type", "resource_name", "target_actor",
         "role_ref", "timestamp",
     )
+    tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
     false_positives = (
         "Legitimate cluster bootstrap or platform-team tooling that binds cluster-admin "
@@ -203,6 +205,7 @@ class ExecShortlyAfterPrivilegeGrant(Detector):
         "actor", "verb", "resource_type", "resource_name", "resource_namespace",
         "target_actor", "role_ref", "timestamp",
     )
+    tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CONTAINER_AUDIT})
     false_positives = (
         "A platform-team break-glass workflow that grants elevated access and then "
