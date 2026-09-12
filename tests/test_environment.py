@@ -717,10 +717,17 @@ def test_channel_view_calls_a_lost_attribute_available_and_the_field_view_does_n
 
     ath003 = _rule(telemetry, "ATH-003")
     assert ath003.verdict is RuleVerdict.UNUSABLE
-    assert set(ath003.sparse_fields) == {"remote_port", "protocol", "direction"}
+    # Three columns were lost and all three are reported, in the two lists that say
+    # different things about them: `remote_port` and `direction` gate the detection and
+    # are what makes this UNUSABLE; `protocol` is declared optional, so its loss thins
+    # the evidence and grades nothing (M18-5).
+    assert set(ath003.sparse_fields) == {"remote_port", "direction"}
+    assert ath003.sparse_optional_fields == ("protocol",)
     assert set(ath003.unpopulated_fields) == {"remote_port", "direction"}
+    lost = set(ath003.sparse_fields) | set(ath003.sparse_optional_fields)
+    assert lost == {"remote_port", "protocol", "direction"}
     for usability in ath003.fields:
-        if usability.column in ath003.sparse_fields:
+        if usability.column in lost:
             assert usability.fraction == 1 / 250
 
 
@@ -790,29 +797,90 @@ def test_an_empty_declared_table_is_not_eligible_and_says_so_distinctly() -> Non
     assert eligible.verdict is RuleVerdict.USABLE
 
 
-def test_only_an_optional_field_sparse_is_degraded_not_unusable() -> None:
-    """ATH-003 grades on `remote_url` and detects without it.
+def test_only_an_optional_field_sparse_is_usable_with_the_evidence_cost_reported() -> None:
+    """ATH-003 phrases evidence with `protocol` and detects identically without it.
 
-    Fails without the field-level check by never reaching DEGRADED for a field reason
-    at all; fails with a check that ignores `optional_fields` by reporting a working
-    rule UNUSABLE -- the error that spends a reader's trust for nothing.
+    This asserted DEGRADED until M18-5, and the semantics changed under it. M18-2 fixed
+    what required and optional mean: a *required* field affects whether a finding exists
+    or how it is graded, an *optional* one affects the evidence text or metadata alone.
+    Under that definition an empty optional field cannot weaken a detection -- the rule
+    fires on the same rows with the same severities -- so a DEGRADED verdict was telling
+    a reader their detection was compromised when nothing about it was, which is the
+    same misuse of trust as hiding a real gap. The loss is real but it is a loss of
+    explanation, so it is reported and not graded.
+
+    Fails if an optional field moves the verdict again (DEGRADED here), if the evidence
+    cost is dropped instead of reported (`sparse_optional_fields` empty, nothing in the
+    detail), or if `sparse_fields` quietly keeps grading optional fields.
     """
     rows = [
         build.net("cscript.exe", "203.0.113.40", 8080, device="PC21", user="tnadel",
-                  when=build.at(seconds=i * 2))
+                  when=build.at(seconds=i * 2), url="http://203.0.113.40/a")
         for i in range(200)
     ]
     telemetry = build.telemetry(
         procs=[build.proc("cscript.exe", "cscript x.vbs", "explorer.exe",
                           device="PC21", user="tnadel")],
-        nets=rows,  # remote_url empty on every row; everything else populated
+        # `protocol` empty on every row, everything else populated. Chosen over
+        # `remote_url` because NETWORK_URL is evidenced by that one column, so emptying
+        # it takes the channel down too and the DEGRADED would come from the channel
+        # measurement rather than the field one -- a different statement, tested
+        # elsewhere. NETWORK_FLOW stays AVAILABLE here, asserted below, so the only
+        # thing that could move this verdict is the optional field.
+        nets=[dict(row, protocol="") for row in rows],
+    )
+
+    ath003 = _rule(telemetry, "ATH-003")
+    assert ath003.support is RuleSupport.SUPPORTED, (
+        "the channel view must have nothing to say here, or this test is not "
+        "exercising the field rule it was written for"
+    )
+    assert ath003.verdict is RuleVerdict.USABLE
+    assert ath003.sparse_fields == ()
+    assert ath003.sparse_optional_fields == ("protocol",)
+    assert not ath003.unpopulated_fields
+    assert ath003.runnable
+    assert "evidence detail reduced: protocol" in ath003.detail
+
+    payload = ath003.to_dict()
+    assert payload["verdict"] == "usable"
+    assert payload["sparse_fields"] == []
+    assert payload["sparse_optional_fields"] == ["protocol"]
+
+
+def test_a_sparse_required_field_still_degrades_and_names_the_optional_one_apart() -> None:
+    """Both kinds of loss at once: one grades, the other is reported beside it.
+
+    30% of rows carry `direction` (required: ATH-003 filters on it) and none carry
+    `remote_url` (optional: it phrases the evidence). The verdict must rest on the first
+    alone and must still say the second happened.
+
+    Fails if optional fields are graded again (the detail would name `remote_url` as a
+    reason for DEGRADED), and fails if suppressing them from the verdict also suppressed
+    them from the report -- trading one misreading for another.
+    """
+    rows = [
+        build.net("mshta.exe", "203.0.113.52", 8443, device="PC29", user="kbeale",
+                  when=build.at(seconds=i * 2))
+        for i in range(200)
+    ]
+    telemetry = build.telemetry(
+        procs=[build.proc("mshta.exe", "mshta x.hta", "explorer.exe",
+                          device="PC29", user="kbeale")],
+        nets=_blank(rows, "direction", keep_first=60),  # 0.30, under DEGRADED_BELOW
     )
 
     ath003 = _rule(telemetry, "ATH-003")
     assert ath003.verdict is RuleVerdict.DEGRADED
-    assert ath003.sparse_fields == ("remote_url",)
+    assert ath003.sparse_fields == ("direction",)
+    assert ath003.sparse_optional_fields == ("remote_url",)
     assert not ath003.unpopulated_fields
-    assert ath003.runnable
+
+    reason, _, reported = ath003.detail.partition("; evidence detail reduced: ")
+    assert "direction" in reason and "remote_url" not in reason, (
+        "the verdict's reason must name only the field that moved it"
+    )
+    assert reported.startswith("remote_url")
 
 
 def test_the_two_thresholds_are_boundaries_not_approximations() -> None:

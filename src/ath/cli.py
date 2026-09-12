@@ -1279,11 +1279,16 @@ def cmd_visibility(args: argparse.Namespace, settings: Settings) -> int:
             f"[channels: {rule.support.value}, {rule.eligible_rows} eligible row(s)]: "
             f"{rule.detail}"
         )
-        # Three lists, not one: starved, sparse, and "the question does not arise in
-        # this data". The third is printed whenever it is non-empty, because a reader
-        # who sees a rule declare a field and never sees it again cannot tell whether
-        # it was measured and passed or skipped.
-        named = set(rule.sparse_fields) | set(rule.not_applicable_fields)
+        # Four lists, not one: starved, sparse, "evidence detail reduced" (an optional
+        # field too sparse to phrase a finding with, which changes no verdict), and
+        # "the question does not arise in this data". The last two are printed whenever
+        # they are non-empty, because a reader who sees a rule declare a field and never
+        # sees it again cannot tell whether it was measured and passed or skipped.
+        named = (
+            set(rule.sparse_fields)
+            | set(rule.sparse_optional_fields)
+            | set(rule.not_applicable_fields)
+        )
         for usability in rule.fields:
             if usability.column not in named and not args.all:
                 continue

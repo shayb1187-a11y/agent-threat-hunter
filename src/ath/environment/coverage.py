@@ -44,14 +44,32 @@ that a single "supported" collapses:
     NOT_ELIGIBLE  the tables this rule reads are empty -- it had no input
     UNUSABLE      a field it *filters on* is populated on < UNUSABLE_BELOW of the rows
                     that field applies to
-    DEGRADED      everything it filters on is present; something it reads is sparse
-    USABLE        every declared field is populated
+    DEGRADED      everything it filters on is present; a field it filters on is sparse
+    USABLE        every field it filters on is populated
+
+Only a required field moves the verdict
+----------------------------------------
+Required and optional mean something precise here (M18-2): a *required* field affects
+whether a finding exists or how it is graded; an *optional* field affects the evidence
+text or the metadata alone. An optional field that is empty therefore cannot weaken
+detection -- the rule fires on exactly the same rows and grades them exactly the same
+way -- so it may not move the verdict, and since M18-5 it does not. It is reported
+instead, on `RuleRunnability.sparse_optional_fields` and as "evidence detail reduced" in
+the detail line, because a thinner evidence paragraph is a real cost and hiding it would
+be its own kind of dishonesty.
+
+The rule this replaces graded required and optional alike, which produced two verdicts
+that said "this detection is weakened" about detections nothing had weakened: AWS-002
+was DEGRADED on flaws.cloud solely because `resource_name` is populated on 2.4% of the
+trail, and ATH-005 solely because CloudTrail carries no `logon_type` or `source_device`.
+Both found everything they were going to find. A DEGRADED that a reader cannot act on
+spends the same trust an unreported gap does.
 
 A field's denominator is the rows it could legitimately carry a value on, declared once
 in `ath.environment.channels.FIELD_APPLICABILITY` and never by a rule. Measuring
 `target_actor` over 1.86M CloudTrail reads reported AWS-001 blind on a corpus where
-every one of its 132 grants carried the field (M18-3); a field with no applicable row in
-a dataset is reported as not applicable there and moves no verdict in either direction.
+every one of its grants carried the field (M18-3); a field with no applicable row in a
+dataset is reported as not applicable there and moves no verdict in either direction.
 
 Eligibility, usability and detection are reported side by side and never merged, which
 is what keeps "0 findings" from meaning three different things at once.
@@ -384,7 +402,7 @@ class RuleVerdict(str, Enum):
             "not_eligible": "none -- this rule's input table is absent from this dataset",
             "unusable": "restore the named field(s) in ingestion; the rule cannot see without them",
             "degraded": "improve population of the named field(s) to sharpen grading",
-            "usable": "none -- every declared field is populated",
+            "usable": "none -- every field this rule filters on is populated",
         }[self.value]
 
 
@@ -394,8 +412,16 @@ class FieldUsability:
 
     Attributes:
         population: The measurement (table, column, rows, populated, fraction).
-        required: False when the rule declared this field in ``optional_fields`` --
-            read to sharpen or explain a finding, never to gate detection.
+        required: True when this field affects whether a finding exists or how it is
+            graded. False when the rule declared it in ``optional_fields`` -- read to
+            phrase the evidence or carry metadata, never to decide or grade a finding.
+
+            This is the distinction that decides whether the field may move a verdict.
+            A required field that is empty blinds the rule; an optional one that is
+            empty leaves it finding exactly what it would have found, described in
+            fewer words. Only the first is a detection problem, so only the first is
+            graded -- the second is reported on
+            :attr:`RuleRunnability.sparse_optional_fields` instead.
     """
 
     population: FieldPopulation
@@ -496,10 +522,32 @@ class RuleRunnability:
 
     @property
     def sparse_fields(self) -> tuple[str, ...]:
-        """Every declared field below :data:`DEGRADED_BELOW`, required or optional."""
+        """Required fields below :data:`DEGRADED_BELOW` -- the weakening ones.
+
+        Required only, since M18-5. These are the fields whose sparseness costs the rule
+        findings or grading accuracy, which is what DEGRADED is a statement about; an
+        optional field that is empty costs a sentence of evidence and is listed on
+        :attr:`sparse_optional_fields` instead.
+        """
         return tuple(
             f.column for f in self.fields
-            if f.applicable and f.fraction < DEGRADED_BELOW
+            if f.applicable and f.required and f.fraction < DEGRADED_BELOW
+        )
+
+    @property
+    def sparse_optional_fields(self) -> tuple[str, ...]:
+        """Optional fields below :data:`DEGRADED_BELOW` -- thinner evidence, same findings.
+
+        Reported and never graded. The rule fires on the same rows and assigns the same
+        severities whether these carry a value or not (that is what made them optional),
+        so a verdict that moved on them would be telling a reader their detection is
+        weakened when nothing about it is. What *is* true is that its evidence paragraph
+        will say less, and that is worth a line of its own -- suppressing it entirely
+        would trade one misreading for another.
+        """
+        return tuple(
+            f.column for f in self.fields
+            if f.applicable and not f.required and f.fraction < DEGRADED_BELOW
         )
 
     @property
@@ -533,6 +581,7 @@ class RuleRunnability:
             "fields": [f.to_dict() for f in self.fields],
             "unpopulated_fields": list(self.unpopulated_fields),
             "sparse_fields": list(self.sparse_fields),
+            "sparse_optional_fields": list(self.sparse_optional_fields),
             "not_applicable_fields": list(self.not_applicable_fields),
             "detail": self.detail,
         }
@@ -762,6 +811,12 @@ def _field_verdict(
     true -- the channel was AVAILABLE. The channel reasoning still decides the verdict
     when no field measurement is available (an absent-by-schema channel has no column to
     count), and is carried verbatim either way on ``support`` and ``missing_channels``.
+
+    Only *required* fields are graded. An optional field is read to phrase evidence or
+    carry metadata and changes neither whether a finding exists nor how it is graded, so
+    its sparseness cannot weaken a detection and may not move this verdict; it is
+    reported by :func:`_evidence_detail_reduced`, appended to whichever detail line
+    wins, and on :attr:`RuleRunnability.sparse_optional_fields`.
     """
     if tables and all(rows == 0 for _, rows in tables):
         named = ", ".join(table for table, _ in tables)
@@ -779,6 +834,8 @@ def _field_verdict(
     graded = [f for f in fields if f.applicable]
     skipped = [f for f in fields if not f.applicable]
 
+    # Required only, in both thresholds: see the module docstring. An optional field
+    # at 0% leaves the rule finding exactly what it would have found.
     starved = [f for f in graded if f.required and f.fraction < UNUSABLE_BELOW]
     if starved:
         return RuleVerdict.UNUSABLE, (
@@ -795,7 +852,7 @@ def _field_verdict(
             "find nothing regardless of what occurred"
         )
 
-    sparse = [f for f in graded if f.fraction < DEGRADED_BELOW]
+    sparse = [f for f in graded if f.required and f.fraction < DEGRADED_BELOW]
     if sparse:
         return RuleVerdict.DEGRADED, (
             "reads sparsely populated field(s): "
@@ -814,8 +871,8 @@ def _field_verdict(
         )
 
     detail = (
-        f"every declared field is populated on the {len(graded)} measured column(s) "
-        "of its input table(s)"
+        f"every field this rule filters on is populated on the {len(graded)} measured "
+        "column(s) of its input table(s)"
     )
     if skipped:
         detail += (
@@ -823,6 +880,30 @@ def _field_verdict(
             + ", ".join(sorted(f.column for f in skipped))
         )
     return RuleVerdict.USABLE, detail
+
+
+def _evidence_detail_reduced(fields: tuple[FieldUsability, ...]) -> str:
+    """The clause naming optional fields too sparse to phrase evidence with, if any.
+
+    Appended to whichever detail line the verdict produced, rather than folded into it,
+    because it is a different kind of statement: the verdict says what this rule can and
+    cannot detect here, and this says how much the finding it does produce will be able
+    to explain. A reader who sees "usable" needs to know the second without being told
+    the first is in doubt.
+    """
+    reduced = sorted(
+        (f for f in fields
+         if f.applicable and not f.required and f.fraction < DEGRADED_BELOW),
+        key=lambda f: f.column,
+    )
+    if not reduced:
+        return ""
+    return (
+        "; evidence detail reduced: "
+        + "; ".join(str(f) for f in reduced)
+        + " -- read to phrase or annotate a finding and not to decide or grade one, so "
+        "every finding this rule would make it still makes"
+    )
 
 
 def assess_rule(
@@ -874,6 +955,9 @@ def assess_rule(
         c for c in missing if c in _gating_channels_for_rule(detector)
     )
     verdict, field_detail = _field_verdict(fields, tables, missing_gating, support)
+    # Appended after the two details compete, so it survives whichever one won: a rule
+    # that is DEGRADED on its channels and thin on its evidence fields is both things.
+    detail = (field_detail or detail) + _evidence_detail_reduced(fields)
 
     return RuleRunnability(
         rule_id=detector.rule_id,
@@ -884,7 +968,7 @@ def assess_rule(
         degraded_channels=degraded,
         fields=fields,
         tables=tables,
-        detail=field_detail or detail,
+        detail=detail,
     )
 
 

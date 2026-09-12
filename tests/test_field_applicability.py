@@ -222,15 +222,18 @@ def test_a_failure_reason_is_measured_over_failures() -> None:
     assert ath005.verdict is RuleVerdict.USABLE
 
 
-def test_a_failure_reason_missing_from_the_failures_still_degrades() -> None:
+def test_a_failure_reason_missing_from_the_failures_is_still_measured_and_reported() -> None:
     """The same shape with every failure's reason empty.
 
-    ATH-005 declares failure_reason optional (it phrases evidence, it does not gate a
-    finding), so the verdict is DEGRADED and not UNUSABLE -- stated here rather than
-    left to the reader, because "the rule still fires" and "the rule sees nothing" are
-    the two answers this whole module exists to keep apart.
+    ATH-005 declares failure_reason optional -- it phrases the evidence and gates
+    nothing -- so under the M18-2 definition of optional its emptiness cannot weaken the
+    detection, and since M18-5 it does not move the verdict. What it must never do is
+    disappear: applicability narrows the denominator and is not allowed to excuse the
+    numerator, so the 0-of-50 is measured, and the evidence cost is reported on
+    `sparse_optional_fields` and in the detail line.
 
-    Fails if applicability is allowed to hide a genuine loss.
+    Fails if applicability hides a genuine loss (the field would read as not applicable,
+    or be missing from both lists), and fails if an optional field grades again.
     """
     telemetry = build.telemetry(logons=_successes(1_000) + _failures(50, reason=""))
 
@@ -239,9 +242,10 @@ def test_a_failure_reason_missing_from_the_failures_still_degrades() -> None:
     assert field.applicable and field.population.applicable_rows == 50
     assert field.fraction == 0.0
     assert not field.required, "ATH-005 reads failure_reason for phrasing only"
-    assert ath005.verdict is RuleVerdict.DEGRADED
-    assert "failure_reason" in ath005.sparse_fields
+    assert "failure_reason" not in ath005.sparse_fields
     assert "failure_reason" not in ath005.unpopulated_fields
+    assert "failure_reason" in ath005.sparse_optional_fields
+    assert "evidence detail reduced: failure_reason" in ath005.detail
 
 
 def test_a_console_logon_is_not_missing_the_source_it_cannot_have() -> None:

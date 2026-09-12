@@ -121,9 +121,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 6 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-002",
@@ -206,9 +207,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 3,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-003",
@@ -362,13 +364,15 @@
       ],
       "sparse_fields": [
         "direction",
+        "remote_port"
+      ],
+      "sparse_optional_fields": [
         "protocol",
-        "remote_port",
         "remote_url"
       ],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 applicable network rows (0.00%, required); remote_port 1 of 589477 applicable network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 applicable network rows (0.00%, required); remote_port 1 of 589477 applicable network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: protocol 1 of 589477 applicable network rows (0.00%, optional); remote_url 0 of 589477 applicable network rows (0.00%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "ATH-004",
@@ -451,9 +455,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-005",
@@ -579,6 +584,7 @@
       "sparse_fields": [
         "source_ip"
       ],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "reads sparsely populated field(s): source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, required) -- the rule still fires on its remaining fields"
@@ -691,12 +697,13 @@
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
+      "sparse_fields": [],
+      "sparse_optional_fields": [
         "source_ip"
       ],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, optional) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated telemetry (auth_source_attribution); it still fires on its remaining fields, but any grading that depends on these is weakened; evidence detail reduced: source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "ATH-007",
@@ -792,9 +799,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 6 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-008",
@@ -877,9 +885,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-009",
@@ -962,9 +971,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-010",
@@ -1047,9 +1057,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 1,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-011",
@@ -1132,9 +1143,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "ATH-012",
@@ -1217,9 +1229,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 1,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "AWS-001",
@@ -1238,6 +1251,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
@@ -1259,6 +1273,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
@@ -1280,6 +1295,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
@@ -1301,6 +1317,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
@@ -1318,8 +1335,8 @@
     "unsupported": 5,
     "degraded": 2
   },
-  "hunt_seconds": 7.5,
-  "load_seconds": 0.8,
+  "hunt_seconds": 2.6,
+  "load_seconds": 0.6,
   "source": {
     "kind": "canonical_parquet",
     "path": "reports\\m17\\canonical"

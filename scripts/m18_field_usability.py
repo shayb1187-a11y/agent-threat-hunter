@@ -130,6 +130,11 @@ def measure(corpus: str, telemetry: Telemetry) -> dict:
             "fields": [f.to_dict() for f in rule.fields],
             "unpopulated_fields": list(rule.unpopulated_fields),
             "sparse_fields": list(rule.sparse_fields),
+            # Optional fields too sparse to phrase evidence with. Carried separately
+            # because they moved the verdict until M18-5 and now do not: an artifact
+            # that merged them back into `sparse_fields` would make a USABLE rule look
+            # like it had been graded on something it was not.
+            "sparse_optional_fields": list(rule.sparse_optional_fields),
             # The third list, carried beside the other two rather than folded into
             # either: a field no row in this corpus could have carried a value on is
             # neither starved nor sparse, and an artifact that only recorded the first
@@ -166,12 +171,13 @@ def print_table(record: dict) -> None:
     print("-" * len(header))
     for rule in record["rules"]:
         tables = ",".join(rule["declared_tables"]) or "-"
+        named = set(rule["sparse_fields"]) | set(rule.get("sparse_optional_fields", []))
         starved = ", ".join(
             f"{f['column']}={f['fraction']:.5f}"
             f"[raw {f['raw_fraction']:.5f} of {f['rows']:,}]"
-            f"{'' if f['required'] else ' (opt)'}"
+            f"{'' if f['required'] else ' (opt, no verdict effect)'}"
             for f in rule["fields"]
-            if f["column"] in rule["sparse_fields"]
+            if f["column"] in named
         )
         if rule["not_applicable_fields"]:
             starved += (

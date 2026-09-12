@@ -46,6 +46,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -69,6 +70,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -92,6 +94,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
@@ -115,6 +118,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -137,6 +141,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
@@ -159,6 +164,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
@@ -182,6 +188,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -205,6 +212,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -228,6 +236,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -250,6 +259,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -272,6 +282,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -294,6 +305,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -349,7 +361,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1989,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -362,7 +374,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1988,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -394,6 +406,7 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
@@ -481,6 +494,7 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
@@ -560,7 +574,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1989,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -573,7 +587,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1988,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -605,9 +619,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 8 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 8 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "K8S-002",
@@ -684,7 +699,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1989,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -697,7 +712,7 @@
           "applicable_rows": 1989,
           "applicable_populated": 1988,
           "applicable": true,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -729,9 +744,10 @@
       ],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 8 measured column(s) of its input table(s)"
+      "detail": "every field this rule filters on is populated on the 8 measured column(s) of its input table(s)"
     }
   ],
   "total_findings": 0,
@@ -744,8 +760,8 @@
     "unsupported": 14,
     "supported": 2
   },
-  "hunt_seconds": 0.4,
-  "load_seconds": 28.1,
+  "hunt_seconds": 0.1,
+  "load_seconds": 13.7,
   "source": {
     "kind": "k8s",
     "path": "data\\external\\k8s_ci\\raw"

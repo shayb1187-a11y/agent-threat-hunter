@@ -46,6 +46,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -69,6 +70,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -92,6 +94,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
@@ -115,6 +118,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -126,7 +130,7 @@
         "logon": 2
       },
       "eligible_rows": 2,
-      "verdict": "degraded",
+      "verdict": "usable",
       "verdict_before": "supported",
       "runnable": true,
       "missing_channels": [],
@@ -238,7 +242,8 @@
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
+      "sparse_fields": [],
+      "sparse_optional_fields": [
         "logon_type",
         "source_device"
       ],
@@ -246,7 +251,7 @@
         "failure_reason"
       ],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): logon_type 0 of 2 applicable logon rows (0.00%, optional); source_device 0 of 2 applicable logon rows (0.00%; 0.00% of all 2, optional) -- the rule still fires on its remaining fields"
+      "detail": "every field this rule filters on is populated on the 7 measured column(s) of its input table(s); not applicable in this data: failure_reason; evidence detail reduced: logon_type 0 of 2 applicable logon rows (0.00%, optional); source_device 0 of 2 applicable logon rows (0.00%; 0.00% of all 2, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "ATH-006",
@@ -361,6 +366,7 @@
         "logon_type",
         "source_device"
       ],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "required field(s) effectively unpopulated: logon_type 0 of 2 applicable logon rows (0.00%, required); source_device 0 of 2 applicable logon rows (0.00%; 0.00% of all 2, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
@@ -384,6 +390,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -407,6 +414,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -430,6 +438,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -452,6 +461,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -474,6 +484,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -496,6 +507,7 @@
       "fields": [],
       "unpopulated_fields": [],
       "sparse_fields": [],
+      "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
       "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
@@ -507,9 +519,9 @@
         "control": 2347
       },
       "eligible_rows": 2347,
-      "verdict": "usable",
+      "verdict": "unusable",
       "verdict_before": "supported",
-      "runnable": true,
+      "runnable": false,
       "missing_channels": [],
       "degraded_channels": [],
       "fields": [
@@ -544,12 +556,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.0,
+          "fraction": 0.84246575,
           "raw_fraction": 0.05240733,
-          "applicable_rows": 0,
-          "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicable_rows": 146,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -559,10 +571,10 @@
           "populated": 0,
           "fraction": 0.0,
           "raw_fraction": 0.0,
-          "applicable_rows": 0,
+          "applicable_rows": 146,
           "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -592,14 +604,16 @@
           "required": true
         }
       ],
-      "unpopulated_fields": [],
-      "sparse_fields": [],
-      "not_applicable_fields": [
-        "role_ref",
+      "unpopulated_fields": [
         "target_actor"
       ],
+      "sparse_fields": [
+        "target_actor"
+      ],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "every declared field is populated on the 4 measured column(s) of its input table(s); not applicable in this data: role_ref, target_actor"
+      "detail": "required field(s) effectively unpopulated: target_actor 0 of 146 applicable control rows (0.00%; 0.00% of all 2347, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "AWS-002",
@@ -608,7 +622,7 @@
         "control": 2347
       },
       "eligible_rows": 2347,
-      "verdict": "degraded",
+      "verdict": "usable",
       "verdict_before": "supported",
       "runnable": true,
       "missing_channels": [],
@@ -681,12 +695,13 @@
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
+      "sparse_fields": [],
+      "sparse_optional_fields": [
         "resource_name"
       ],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): resource_name 123 of 2347 applicable control rows (5.24%, optional) -- the rule still fires on its remaining fields"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s); evidence detail reduced: resource_name 123 of 2347 applicable control rows (5.24%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "K8S-001",
@@ -760,12 +775,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.0,
+          "fraction": 0.84246575,
           "raw_fraction": 0.05240733,
-          "applicable_rows": 0,
-          "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicable_rows": 146,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -775,10 +790,10 @@
           "populated": 0,
           "fraction": 0.0,
           "raw_fraction": 0.0,
-          "applicable_rows": 0,
+          "applicable_rows": 146,
           "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -809,18 +824,19 @@
         }
       ],
       "unpopulated_fields": [
-        "actor_groups"
+        "actor_groups",
+        "target_actor"
       ],
       "sparse_fields": [
         "actor_groups",
-        "resource_name"
-      ],
-      "not_applicable_fields": [
-        "role_ref",
         "target_actor"
       ],
+      "sparse_optional_fields": [
+        "resource_name"
+      ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 2347 applicable control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 2347 applicable control rows (0.00%, required); target_actor 0 of 146 applicable control rows (0.00%; 0.00% of all 2347, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: resource_name 123 of 2347 applicable control rows (5.24%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "K8S-002",
@@ -894,12 +910,12 @@
           "column": "role_ref",
           "rows": 2347,
           "populated": 123,
-          "fraction": 0.0,
+          "fraction": 0.84246575,
           "raw_fraction": 0.05240733,
-          "applicable_rows": 0,
-          "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names the role or policy it confers",
+          "applicable_rows": 146,
+          "applicable_populated": 123,
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
           "required": true
         },
         {
@@ -909,10 +925,10 @@
           "populated": 0,
           "fraction": 0.0,
           "raw_fraction": 0.0,
-          "applicable_rows": 0,
+          "applicable_rows": 146,
           "applicable_populated": 0,
-          "applicable": false,
-          "applicability_reason": "only a grant-shaped action names a beneficiary",
+          "applicable": true,
+          "applicability_reason": "only an action that changes an identity's authority names that identity",
           "required": true
         },
         {
@@ -942,25 +958,26 @@
           "required": true
         }
       ],
-      "unpopulated_fields": [],
+      "unpopulated_fields": [
+        "target_actor"
+      ],
       "sparse_fields": [
+        "target_actor"
+      ],
+      "sparse_optional_fields": [
         "resource_name",
         "resource_namespace"
       ],
-      "not_applicable_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "not_applicable_fields": [],
       "findings": 0,
-      "detail": "depends on absent telemetry (container_audit); this rule will run and find nothing regardless of what occurred"
+      "detail": "required field(s) effectively unpopulated: target_actor 0 of 146 applicable control rows (0.00%; 0.00% of all 2347, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: resource_name 123 of 2347 applicable control rows (5.24%, optional); resource_namespace 0 of 2347 applicable control rows (0.00%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     }
   ],
   "total_findings": 0,
   "verdict_counts": {
     "not_eligible": 10,
-    "degraded": 2,
-    "unusable": 3,
-    "usable": 1
+    "usable": 2,
+    "unusable": 4
   },
   "before_counts": {
     "unsupported": 12,

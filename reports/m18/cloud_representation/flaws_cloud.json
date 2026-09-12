@@ -141,7 +141,7 @@
         }
       }
     },
-    "usability_source": "<local-checkout>\\agentic-threat-hunter\\reports\\m18\\field_usability\\flaws_cloud.json"
+    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_dba8501_flaws_cloud.json"
   },
   "after": {
     "ledger": {
@@ -176,9 +176,9 @@
         "resource_type": 1.0,
         "actor": 1.0,
         "decision": 1.0,
-        "target_actor": 0.0061,
-        "role_ref": 0.0176,
-        "resource_name": 0.0241
+        "target_actor": 0.0001,
+        "role_ref": 0.0,
+        "resource_name": 0.0008
       },
       "distinct_verbs": 51,
       "verb_classes": {
@@ -241,14 +241,10 @@
       {
         "rule_id": "ATH-005",
         "eligible_rows": 79424,
-        "verdict": "degraded",
+        "verdict": "usable",
         "verdict_before": "supported",
         "findings": 36,
-        "sparse_fields": [
-          "failure_reason",
-          "logon_type",
-          "source_device"
-        ],
+        "sparse_fields": [],
         "unpopulated_fields": []
       },
       {
@@ -269,26 +265,22 @@
       {
         "rule_id": "AWS-001",
         "eligible_rows": 1857154,
-        "verdict": "unusable",
+        "verdict": "degraded",
         "verdict_before": "supported",
         "findings": 0,
         "sparse_fields": [
           "role_ref",
           "target_actor"
         ],
-        "unpopulated_fields": [
-          "target_actor"
-        ]
+        "unpopulated_fields": []
       },
       {
         "rule_id": "AWS-002",
         "eligible_rows": 1857154,
-        "verdict": "degraded",
+        "verdict": "usable",
         "verdict_before": "supported",
         "findings": 3,
-        "sparse_fields": [
-          "resource_name"
-        ],
+        "sparse_fields": [],
         "unpopulated_fields": []
       },
       {
@@ -299,13 +291,11 @@
         "findings": 0,
         "sparse_fields": [
           "actor_groups",
-          "resource_name",
           "role_ref",
           "target_actor"
         ],
         "unpopulated_fields": [
-          "actor_groups",
-          "target_actor"
+          "actor_groups"
         ]
       },
       {
@@ -315,15 +305,10 @@
         "verdict_before": "unsupported",
         "findings": 0,
         "sparse_fields": [
-          "resource_name",
-          "resource_namespace",
           "role_ref",
           "target_actor"
         ],
-        "unpopulated_fields": [
-          "resource_namespace",
-          "target_actor"
-        ]
+        "unpopulated_fields": []
       }
     ],
     "findings_by_rule": {
@@ -7516,9 +7501,9 @@
     "raw_records": {}
   },
   "cost": {
-    "load_seconds": 2288.2,
-    "measure_seconds": 38.7,
-    "peak_bytes": 2450591744,
-    "peak_gb": 2.282
+    "load_seconds": 52.1,
+    "measure_seconds": 12.7,
+    "peak_bytes": 2448523264,
+    "peak_gb": 2.28
   }
 }
