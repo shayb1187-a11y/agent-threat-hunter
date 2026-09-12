@@ -482,6 +482,47 @@ history. And **0 of 2 recall, with 9,565 of 9,567 labelled events never ingested
 the same ceiling H3 found in the cloud, in a second environment: the attack is not missed
 by the rules, it is invisible to the reader.
 
+## 4.10 Four things a single "ingestion %" conflates
+
+The most important correction this milestone produced is not a number, it is a
+distinction. "3.05% ingested" was quoted as a coverage figure, and it is four different
+measurements wearing one label. They come apart badly, and ATH-003 is the case where every
+seam shows at once.
+
+| Layer | Question it answers | COMISET (H4) | DEDALE D18 (S1) |
+| --- | --- | --- | --- |
+| **1. Event-level representability** | Did the row reach a canonical table? | **3.05%** overall; network **100%**, process creation 91.2%, logon 45.3%, registry/file/DNS/PowerShell **0%** | **0.53%** overall; process creation **100%**, logon 47.2%, everything else **0%** |
+| **2. Attribute-level usability** | Did the fields a detector needs survive? | network **≈0%** — destination port and protocol present on **1 of 589,477** rows; source IP and source port have **no canonical column at all** | network **100%** (2 of 2 rows carry port and protocol) |
+| **3. Detector eligibility** | Was the rule able to run? | 12 endpoint rules eligible (15,095 process / 589,477 network / 6,063 logon); 4 cloud and Kubernetes rules **not eligible** — control table empty | 12 endpoint rules eligible; ATH-003 eligible on 2 rows |
+| **4. Actual detection success** | Did it find the thing? | 5 findings, coherent, **unscoreable** — no usable ground truth | **0 findings; TP 0, FP 0, FN 2**; recall 0.0 |
+
+**ATH-003 is the worked example.** At layer 1 it looks perfect: 589,477 network events,
+100% representable, the best-covered channel in the corpus. At layer 3 it is fully
+eligible — the table is populated and the rule runs. At layer 4 it reports zero. Read
+through layer 1 alone, that zero says *"clean data"*. It does not. At layer 2 the rule had
+**effectively no usable rows**: it needs ports and direction and received them on one
+event in 589,477 (defect M17-2). The zero is an ingestion failure wearing a detection
+zero, and only the attribute-level measurement tells them apart.
+
+So, stated as plainly as the milestone can put it:
+
+> **A high ingestion percentage is not coverage.** COMISET's network channel was 100%
+> ingested and approximately 0% usable. Until coverage is measured per *field* rather than
+> per *row*, ATH cannot distinguish "we saw nothing because nothing happened" from "we saw
+> nothing because we discarded the part that mattered" — and it reported the flattering
+> reading of exactly that situation for the whole of this milestone.
+
+Two further separations worth recording in the same place:
+
+- **Eligibility is not usability.** The four cloud/Kubernetes rules were *not eligible* on
+  COMISET (no control-plane table), which is a legitimate silence. ATH-003 *was* eligible
+  and still could not work. A coverage report that only says "the rule ran" cannot tell
+  these apart either.
+- **Detection success is not scoreability.** COMISET produced five coherent findings that
+  remain unclassified, because the corpus's technique fields are another tool's rule
+  annotations rather than ground truth. "Found something defensible" and "measured
+  precision" are different claims, and only the first is available here.
+
 ## 5. Conclusion
 
 ### 5.1 Results by class
