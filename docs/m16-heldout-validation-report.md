@@ -376,6 +376,51 @@ populates ATH's network table**. DEDALE's Sysmon 3 channel was empty in every ho
 fetched, so `ATH-003` and the network specialist have never run on real endpoint data
 until now.
 
+**H4 result.**
+
+| Measure | Value |
+| --- | --- |
+| Records in corpus prefix | 20,000,000 |
+| Ingested | 610,635 (**3.05%**) |
+| Findings | **5** — ATH-002 ×3, ATH-010 ×1, ATH-012 ×1 |
+| **ATH-004 findings** | **0** — the registered falsifier did not trigger |
+| Cases | 1 (singleton) |
+| Triage | 4 `likely_malicious`, 1 `needs_review`, **0 cleared**, 5 left to review |
+| TP / FP / FN | **not computable — see below** |
+| Runtime | ingest 890 s; hunt 9.2 s, environment 17.9 s, correlate 8.8 s |
+| **Verdict** | **partial pass on the stated hypothesis; unclassified on volume** |
+
+**The fix generalised across schema.** Zero ATH-004 findings on 15,095 process-create
+events that reached the rule through a different adapter, a different field map and a
+different organisation's Sysmon configuration. The M15-1 argv[0] fix is not tied to the
+ECS representation. That is the one thing H4 was designed to test, and it passed.
+
+**But the five findings cannot be scored, and the reason is a correction to M14.** The
+M14 candidate assessment recorded COMISET under *"Labels / ground truth: per-event ATT&CK
+technique columns"*. That is wrong. The fields carrying technique ids are
+`RuleName`/`rule_technique_id`/`rule_technique_name`, and they are the **sysmon-modular
+configuration's rule annotations** — the output of a competing detection heuristic
+attached at collection time, not curated ground truth. In the first 200,000 kept records
+they tag 98,046 events `T1036 Masquerading` and 90,515 `T1059.001 PowerShell`; those are
+rule matches, not 188,000 attacks.
+
+So for these five findings there is **no trustworthy answer to "was this real?"**. They
+cannot be called false positives — the corpus is published as containing malicious
+activity and may well contain these events deliberately — and they cannot be called true
+positives either. Scoring them against the sysmon-modular tags would be measuring
+agreement with another tool's heuristic and calling it precision.
+
+**Recorded as unclassified.** The honest summary is: 5 findings, 1 case, 0.0004 per day at
+this corpus's event rate, none cleared by triage, provenance of each unknown.
+
+**A second observation, independent of any finding.** This is the first real Windows
+corpus that populates ATH's network table: 589,477 Sysmon-3 connection events, against
+DEDALE's zero in every hour fetched. `ATH-003` and the network specialist had never run on
+real endpoint telemetry before this. The scaling cost showed up immediately and is worth
+recording: **the environment model took 17.9 s and correlation 8.8 s, against 9.2 s for
+the entire hunt** — building a connection pattern per `(host, remote_ip)` pair is now the
+dominant term, where on synthetic data detection always was.
+
 ## 5. Conclusion
 
-*Written last — pending the H4 result and the sealed D18 run.*
+*Written last — pending the sealed D18 run.*

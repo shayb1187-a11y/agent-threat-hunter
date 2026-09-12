@@ -1,0 +1,157 @@
+{
+  "dataset": "comiset_lab",
+  "source_kind": "elastic_winevent",
+  "labels": "none",
+  "e0_ingestion": {
+    "rows_read": 610635,
+    "rows_kept": 610635,
+    "rows_dropped": 513,
+    "kept_fraction": 1.0,
+    "kept_by_table": {
+      "process": 15095,
+      "network": 589477,
+      "logon": 6063,
+      "control": 0
+    },
+    "drop_classes": [
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 18 (char 17)",
+        "rows": 157
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 17 (char 16)",
+        "rows": 131
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 19 (char 18)",
+        "rows": 102
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 16 (char 15)",
+        "rows": 74
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 12 (char 11)",
+        "rows": 11
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 11 (char 10)",
+        "rows": 10
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 15 (char 14)",
+        "rows": 9
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 20 (char 19)",
+        "rows": 9
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+        "rows": 3
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 10 (char 9)",
+        "rows": 2
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 24 (char 23)",
+        "rows": 2
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Expecting property name enclosed in double quotes: line ",
+        "rows": 1
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 9 (char 8)",
+        "rows": 1
+      },
+      {
+        "event_type": "process",
+        "field": "",
+        "reason": "line is not valid JSON: Extra data: line 1 column 13 (char 12)",
+        "rows": 1
+      }
+    ],
+    "unmapped_classes": {},
+    "load_seconds": 889.8
+  },
+  "profile_full": {
+    "telemetry": {
+      "events": 610635,
+      "events_by_table": {
+        "process": 15095,
+        "network": 589477,
+        "logon": 6063,
+        "control": 0
+      },
+      "window_hours": 279966.14,
+      "window_days": 11665.26,
+      "hosts": 2,
+      "identities": 30,
+      "platforms": [
+        "windows"
+      ]
+    },
+    "detection": {
+      "findings": 5,
+      "by_rule": {
+        "ATH-012": 1,
+        "ATH-010": 1,
+        "ATH-002": 3
+      },
+      "by_severity": {
+        "HIGH": 1,
+        "MEDIUM": 4
+      },
+      "findings_per_day": 0.0004,
+      "findings_per_host_day": 0.0002
+    },
+    "triage": {
+      "dispositions": {
+        "likely_malicious": 4,
+        "needs_review": 1
+      },
+      "findings_after_triage": 5,
+      "triage_load_reduction": 0.0
+    },
+    "correlation": {
+      "cases": 1,
+      "singleton_cases": 1,
+      "links": 0,
+      "cases_per_day": 0.0001
+    },
+    "cost_seconds": {
+      "hunt": 9.232,
+      "environment": 17.909,
+      "triage": 0.0,
+      "correlate": 8.826
+    }
+  }
+}
