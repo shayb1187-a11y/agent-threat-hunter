@@ -410,8 +410,25 @@ activity and may well contain these events deliberately — and they cannot be c
 positives either. Scoring them against the sysmon-modular tags would be measuring
 agreement with another tool's heuristic and calling it precision.
 
-**Recorded as unclassified.** The honest summary is: 5 findings, 1 case, 0.0004 per day at
-this corpus's event rate, none cleared by triage, provenance of each unknown.
+**Recorded as unclassified — but the evidence is legible, and that is worth separating
+from the label.** What the five findings actually cite:
+
+| Rule | Severity | Evidence |
+| --- | --- | --- |
+| ATH-012 | HIGH | `sc stop windefend` — stopping Windows Defender |
+| ATH-010 | MEDIUM | `cmd.exe -> whoami.exe: whoami /all`, ×4 |
+| ATH-002 | MEDIUM | ×3 (evidence string truncated by a console encoding error, not re-run) |
+
+Stopping Defender and enumerating one's own privileges from a shell are not activities a
+detection engine should be embarrassed to surface on a corpus published under the title
+*"analysis of malicious events in Windows systems"*. They are far more plausibly true
+positives than false ones.
+
+That is an argument, not a measurement, and it is left as one. Without trustworthy labels
+the entry stays **unclassified**: 5 findings, 1 case, 0.0004 per day at this corpus's
+event rate, none cleared by triage. The distinction being preserved is between *"we
+measured these and they were right"* — which would be false — and *"these are defensible
+on their face and we could not verify them"*, which is what happened.
 
 **A second observation, independent of any finding.** This is the first real Windows
 corpus that populates ATH's network table: 589,477 Sysmon-3 connection events, against
@@ -491,7 +508,9 @@ and it is a positive one.**
   H1b but kept in the record because the fault was my day selection.
 - **H4's five findings.** ATH-002 ×3, ATH-010, ATH-012, none cleared by triage, and
   **unclassifiable**: COMISET's technique fields are sysmon-modular `RuleName` annotations,
-  not ground truth, so they can be called neither true nor false positives.
+  not ground truth, so they can be called neither true nor false positives. Their evidence
+  is defensible on its face — `sc stop windefend`, `whoami /all` from a shell — and that
+  is an argument rather than a measurement, so the label stays unclassified.
 
 **Representation failure — the dominant limitation, found twice, in two environments.**
 
