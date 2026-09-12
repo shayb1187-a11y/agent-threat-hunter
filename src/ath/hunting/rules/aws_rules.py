@@ -19,10 +19,24 @@ from ath.schema import EVENT_CONTROL
 from ath.telemetry.loader import Telemetry
 
 # The IAM shapes AWS-001 chains together -- policy grants, and access-key creation.
-_GRANT_RESOURCE_TYPES: frozenset[str] = frozenset({"iam:user-policy", "iam:user-inline-policy"})
+#
+# One family, two verbs. The adapter used to split a managed-policy attachment from an
+# inline one into two resource families; it now derives the family from the resource the
+# call names, so both are the same family (`iam:user-policy`) and the *verb* carries
+# which mechanism was used -- `attach` for a managed policy, `put` for an inline one.
+# Same two calls, same chain, said once instead of twice.
+_GRANT_RESOURCE_TYPES: frozenset[str] = frozenset({"iam:user-policy"})
+_GRANT_VERBS: frozenset[str] = frozenset({"attach", "put"})
 _ACCESS_KEY_RESOURCE_TYPE = "iam:access-key"
-_LOGGING_RESOURCE_TYPE = "cloudtrail:trail"
-_PAST_TENSE: dict[str, str] = {"stop": "stopped", "delete": "deleted"}
+
+# AWS-002 keys on the *service*, not on one resource family within it. A trail can be
+# stopped, deleted, or have the data store behind it deleted, and those are the same
+# action with different nouns; naming one family would make the detection depend on which
+# noun the API happened to use.
+_LOGGING_SERVICE = "cloudtrail"
+_PAST_TENSE: dict[str, str] = {
+    "stop": "stopped", "delete": "deleted", "attach": "attached", "put": "put",
+}
 
 
 @register
@@ -31,7 +45,7 @@ class IamPrivilegeEscalationChain(Detector):
 
     Attacker behaviour
     ------------------
-    ``AttachUserPolicy``/``PutUserPolicy`` on its own is not remarkable -- IAM changes
+    Attaching or putting a policy onto a user is not on its own remarkable -- IAM changes
     happen constantly in a working AWS account. What makes it worth an alert is the
     combination: policy granted to identity X, then X immediately mints a long-lived
     credential for itself. That is the shape of "escalate, then persist" -- a stolen
@@ -41,12 +55,13 @@ class IamPrivilegeEscalationChain(Detector):
 
     Detection shape
     ---------------
-    1. Find ``AttachUserPolicy``/``PutUserPolicy`` events (``target_actor`` is the
-       identity the policy was granted to -- *not* the caller who granted it; see the
-       module docstring in ``ath.telemetry.cloudtrail_source`` for why those two are
-       tracked separately).
-    2. Find a ``CreateAccessKey`` event whose **actor** matches that grant's
-       ``target_actor``, within ``HuntConfig.privilege_escalation_window``.
+    1. Find a policy attached or put onto a user (``verb`` in ``attach``/``put`` on the
+       ``iam:user-policy`` family; ``target_actor`` is the identity the policy was
+       granted to -- *not* the caller who granted it; see the module docstring in
+       ``ath.telemetry.cloudtrail_source`` for why those two are tracked separately).
+    2. Find an access-key creation (``create`` on ``iam:access-key``) whose **actor**
+       matches that grant's ``target_actor``, within
+       ``HuntConfig.privilege_escalation_window``.
     3. The grantor and the beneficiary can be, and often are, different identities --
        an administrator legitimately attaching a policy to a new hire is the same
        shape as an attacker attaching one to themselves. This rule cannot tell those
@@ -85,7 +100,7 @@ class IamPrivilegeEscalationChain(Detector):
             return []
 
         grants = controls[
-            (controls["verb"] == "attach")
+            (controls["verb"].isin(_GRANT_VERBS))
             & (controls["resource_type"].isin(_GRANT_RESOURCE_TYPES))
             & (controls["target_actor"].fillna("") != "")
         ].sort_values("timestamp")
@@ -110,12 +125,13 @@ class IamPrivilegeEscalationChain(Detector):
                 continue
 
             create = matches.iloc[0]
+            granted = _PAST_TENSE.get(grant["verb"], grant["verb"])
             evidence = (
                 Evidence(
                     event_id=grant["event_id"], timestamp=grant["timestamp"],
                     summary=(
-                        f"{grant['actor']} attached {grant['role_ref'] or grant['resource_type']} "
-                        f"to {target}"
+                        f"{grant['actor']} {granted} "
+                        f"{grant['role_ref'] or grant['resource_type']} to {target}"
                     ),
                 ),
                 Evidence(
@@ -130,7 +146,7 @@ class IamPrivilegeEscalationChain(Detector):
                 user=target,
                 evidence=evidence,
                 reason=(
-                    f"'{grant['actor']}' attached policy "
+                    f"'{grant['actor']}' {granted} policy "
                     f"'{grant['role_ref'] or grant['resource_type']}' to '{target}', who "
                     f"created an access key {delta}s later. Escalation granted and "
                     "immediately used to mint a persistent credential is consistent "
@@ -155,23 +171,25 @@ class CloudTrailLoggingDisabled(Detector):
 
     Attacker behaviour
     ------------------
-    ``StopLogging``/``DeleteTrail`` is a small, high-signal action set: turning off
-    the audit trail is not something automation does as part of ordinary operation,
+    Stopping or deleting the audit trail is a small, high-signal action set: it is not
+    something automation does as part of ordinary operation,
     and it is a step an intruder takes specifically to operate without a record. This
     is a single-event, structural detection -- no history or baseline needed, the same
     directness as ATH-004 reading a command line.
 
     Detection shape
     ---------------
-    Any ``stop``/``delete`` verb against a ``cloudtrail:trail`` resource is CRITICAL:
-    there is no ordinary-operations reading of this action that isn't itself a
-    significant change-management event.
+    Any ``stop``/``delete`` verb against a resource of the ``cloudtrail`` *service* is
+    CRITICAL: there is no ordinary-operations reading of this action that isn't itself a
+    significant change-management event. Keyed on the service rather than on one resource
+    family, because "the trail", "the trail's logging" and "the data store behind it" are
+    the same audit surface under three different nouns.
     """
 
     rule_id = "AWS-002"
     title = "CloudTrail logging disabled or trail deleted"
     severity = Severity.CRITICAL
-    description = "Detects StopLogging/DeleteTrail -- an audit trail being turned off."
+    description = "Detects an audit trail being stopped or deleted."
     fields_used = ("actor", "verb", "resource_type", "resource_name", "timestamp")
     tables = frozenset({EVENT_CONTROL})
     channels = frozenset({TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY})
@@ -185,10 +203,15 @@ class CloudTrailLoggingDisabled(Detector):
         if controls.empty:
             return []
 
-        tampering = controls[
-            (controls["resource_type"] == _LOGGING_RESOURCE_TYPE)
-            & (controls["verb"].isin({"stop", "delete"}))
-        ]
+        # `resource_type` is "<service>:<family>" for AWS rows and a bare Kubernetes
+        # resource ("pods/exec") for Kubernetes ones, so matching the service prefix
+        # selects the AWS audit service and cannot collide with a Kubernetes resource.
+        # The bare form is the service with no family, which a one-word call name yields.
+        resource_types = controls["resource_type"].fillna("")
+        in_service = resource_types.str.startswith(f"{_LOGGING_SERVICE}:") | (
+            resource_types == _LOGGING_SERVICE
+        )
+        tampering = controls[in_service & (controls["verb"].isin({"stop", "delete"}))]
         if tampering.empty:
             return []
 

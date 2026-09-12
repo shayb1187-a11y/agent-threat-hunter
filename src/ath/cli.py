@@ -886,10 +886,10 @@ def cmd_import_cloudtrail(args: argparse.Namespace, settings: Settings) -> int:
 
     print(f"\nWrote {len(written)} file(s) -> {out_dir}")
     print(
-        "\nNote: authentication maps to logon events; policy/access-key/logging "
-        "management activity maps to control events. Only the AUTH_EVENTS / "
-        "MANAGEMENT_EVENTS this adapter names are mapped -- everything else is "
-        "reported above rather than coerced. Run `python main.py visibility` to see "
+        "\nNote: authentication maps to logon events; every other management-API call "
+        "maps to a control event, with its verb and resource type read from the call's "
+        "own name and service rather than from a list of names. What is reported above "
+        "is the remainder nothing could use. Run `python main.py visibility` to see "
         "the resulting posture."
     )
     return 0

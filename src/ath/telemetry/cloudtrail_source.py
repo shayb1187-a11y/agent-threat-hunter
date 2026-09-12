@@ -18,11 +18,10 @@ never reads a Windows-specific field.
 
 What now maps to the control-plane table
 ------------------------------------------
-**Management API calls** -- ``CreateAccessKey``, ``AttachUserPolicy``, ``PutUserPolicy``,
-``StopLogging``, ``DeleteTrail`` -- used to have no home in this schema, and the tempting
-mapping was actively harmful::
+**Every other management API call.** These used to have no home in this schema, and the
+tempting mapping was actively harmful::
 
-    process_name        = "CreateAccessKey"      # not a process
+    process_name        = <the API name>         # not a process
     parent_process_name = "iam.amazonaws.com"    # not a parent process
     process_id          = <invented>             # no such concept
 
@@ -33,20 +32,39 @@ process table would make :mod:`ath.environment.channels` report ``process_execut
 ``ath.schema.EVENT_CONTROL`` exists precisely so this does not happen: an actor performs
 a verb on a resource, allowed or denied -- the same shape AWS management events and
 Kubernetes audit events both have, without borrowing endpoint vocabulary for either.
-:data:`MANAGEMENT_EVENTS` names exactly the calls this adapter maps; anything else is
-still reported as a :class:`NormalizationIssue` rather than silently coerced -- mapping
-every possible AWS API call is not this project's goal, and an unmapped call staying
-visibly unmapped is the honest outcome for the vast majority of CloudTrail's surface this
-adapter does not attempt.
 
-**Actor vs. target.** A grant-shaped call -- ``AttachUserPolicy``, ``PutUserPolicy`` --
-names a *beneficiary* (the ``userName``/``roleName`` parameter) that is frequently a
-different identity from the caller (``userIdentity``) making the API call: an
-administrator attaching a policy to someone else's account is the normal case, not the
-exception. ``actor`` is always the caller; ``target_actor`` is the beneficiary, left
-empty for calls that grant nothing to a distinct identity (``StopLogging``,
-``DeleteTrail``). Conflating the two would make a privilege-escalation chain match the
-wrong identity's later activity -- see ``ath.hunting.rules.aws_rules``.
+**Why the API names are not enumerated.** This adapter used to hold a list of five API
+names and refuse everything else, which measured as: 2 of 2,349 records (0.09%) ingested
+from a real AWS attack capture, and 96 of 1.9M from a public trail. The rules were never
+given the attack. An allowlist cannot be fixed by lengthening it -- AWS ships new API
+names continuously, and any list is a list of the calls somebody already had an opinion
+about, which is precisely the wrong input to a layer whose job is to describe.
+
+So an event name is *parsed*, not looked up. Every CloudTrail name in both corpora --
+1,241 of 1,242 distinct names on the public trail -- has the form ``VerbResourceNoun``,
+and that is all the structure needed:
+
+    ``eventName``    -> ``verb`` (first word, lowercased) + resource family (the rest,
+                        singular kebab-case, with any trailing API-version suffix cut)
+    ``eventSource``  -> service (the name minus ``.amazonaws.com``, kept literal)
+    ``resource_type``-> ``"<service>:<family>"``, or just the service for a name with no
+                        noun at all
+
+Nothing here knows what any particular call *does*, and that is the property worth
+keeping: a call nobody has ever heard of is represented exactly as well as a famous one.
+Grouping verbs into kinds of action (read / create / grant / ...) is a separate question
+answered a layer up, in :mod:`ath.behavior.control_plane`, where consumers can ask it --
+representation must not depend on it.
+
+**Actor vs. target.** A grant-shaped call names a *beneficiary* (the
+``userName``/``roleName``/``groupName`` parameter) that is frequently a different
+identity from the caller (``userIdentity``) making the API call: an administrator
+attaching a policy to someone else's account is the normal case, not the exception.
+``actor`` is always the caller; ``target_actor`` is the beneficiary, left empty for calls
+that name no identity. Conflating the two would make a privilege-escalation chain match
+the wrong identity's later activity -- see ``ath.hunting.rules.aws_rules``. This too is a
+convention over ``requestParameters``, applied to the IAM service rather than to a list
+of call names.
 
 **Network flow.** CloudTrail records the *caller's* address, not connections a workload
 opened. Mapping ``sourceIPAddress`` into the network table would describe traffic that
@@ -73,9 +91,11 @@ from __future__ import annotations
 
 import gzip
 import json
+import re
 import tarfile
 from collections.abc import Iterator
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -134,39 +154,168 @@ def _looks_like_record(record: Any) -> bool:
     return all(key in record for key in ("eventVersion", "eventName", "eventTime"))
 
 
+# The service suffix every AWS event source carries. Removed, and nothing else is: no
+# aliasing, so "monitoring" stays "monitoring" rather than becoming "cloudwatch". An
+# alias table is an allowlist wearing a different hat, and it would make the family of a
+# resource depend on whether somebody had gotten round to adding the service yet.
+_SERVICE_SUFFIX = ".amazonaws.com"
+_UNKNOWN_SERVICE = "unknown"
+
+# The first word of an event name, when the name begins with a capitalised word followed
+# by another capital or a digit: the verb, and everything after it is the resource noun.
+_VERB_AND_NOUN = re.compile(r"^([A-Z][a-z]+)(?=[A-Z0-9])(.*)$", re.DOTALL)
+# A name that is one capitalised word and nothing else: a verb with no noun.
+_VERB_ONLY = re.compile(r"^[A-Z][a-z]+$")
+
+# A trailing API-version stamp on the resource noun -- the dated variants AWS ships when
+# a call's shape changes ("...20150331", "...2020_05_31", "...2015_03_31v2"). It is a
+# property of the API's wire contract, not of the resource, and leaving it on would split
+# one resource family across as many families as the service has API revisions.
+_VERSION_SUFFIX = re.compile(r"[vV]?\d[\d_]*(?:[vV]\d+)?$")
+
+# Words inside a CamelCase noun, acronym runs kept whole: "DBInstances" -> DB, Instances;
+# "SAMLProvider" -> SAML, Provider.
+_NOUN_WORDS = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z0-9]*|[a-z0-9]+")
+
+# English plurals this project's -s rules get wrong, as words rather than as API names.
+# Five entries, not a dictionary: anything longer would be an allowlist again.
+_IRREGULAR_PLURALS: dict[str, str] = {
+    "aliases": "alias",
+    "statuses": "status",
+    "analyses": "analysis",
+    "indices": "index",
+    "vertices": "vertex",
+}
+
+
+def _singular(word: str) -> str:
+    """The singular of one lowercase English word, by suffix rules only.
+
+    The rules, in order, and what each is for:
+
+    ``aliases`` -> ``alias``
+        The handful of irregular plurals above, checked first.
+    ``status``, ``access``, ``analysis``
+        A word ending ``-us``, ``-ss`` or ``-is`` is left alone. These are the endings
+        that *look* plural and are not, and stripping them is how a "family" column ends
+        up holding ``statu`` and ``acces``.
+    ``policies`` -> ``policy``, ``repositories`` -> ``repository``
+        ``-ies`` becomes ``-y``.
+    ``addresses`` -> ``address``, ``branches`` -> ``branch``, ``boxes`` -> ``box``
+        ``-es`` after a sibilant (``ss``, ``sh``, ``ch``, ``x``, ``z``) is the whole
+        plural marker.
+    ``instances`` -> ``instance``, ``keys`` -> ``key``, ``databases`` -> ``database``
+        Otherwise a trailing ``-s`` is the plural marker.
+    """
+    if word in _IRREGULAR_PLURALS:
+        return _IRREGULAR_PLURALS[word]
+    if not word.endswith("s") or word.endswith(("ss", "us", "is")):
+        return word
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith(("sses", "shes", "ches", "xes", "zes")):
+        return word[:-2]
+    return word[:-1]
+
+
+def _family(noun: str) -> str:
+    """A resource noun as a singular kebab-case family: ``UserPolicies`` -> ``user-policy``.
+
+    The version stamp goes first (so ``Functions20150331`` and ``Functions`` are one
+    family), then the noun is split on CamelCase boundaries with acronym runs kept whole,
+    and only the **last** word is singularised -- ``AccessKeys`` is a kind of key, not a
+    kind of access.
+    """
+    noun = _VERSION_SUFFIX.sub("", noun)
+    words = [word.lower() for word in _NOUN_WORDS.findall(noun)]
+    if not words:
+        return ""
+    words[-1] = _singular(words[-1])
+    return "-".join(words)
+
+
 @dataclass(frozen=True)
-class _ManagementEventSpec:
-    """How to read one management-API event name into a control-plane row."""
+class ParsedEventName:
+    """One event name read as a verb and a resource family.
+
+    Attributes:
+        verb: The first word of the name, lowercased. For a name with no capitalised
+            first word, the whole name lowercased -- a row still gets a verb.
+        family: The rest of the name as a singular kebab-case family, or ``""`` when the
+            name is a bare verb (``Decrypt``) or was not parseable.
+        parsed: Whether the name had the ``VerbNoun`` shape at all. ``False`` is reported
+            as a normalisation issue *alongside* the row, so the fraction of names this
+            morphology does not cover stays a visible number rather than an assumption.
+    """
 
     verb: str
-    resource_type: str
-    # Field in `requestParameters` naming the beneficiary identity, if any -- e.g.
-    # AttachUserPolicy's `userName`. None for calls with no target identity.
-    target_field: str | None = None
-    # Field naming the specific role/policy granted, if any.
-    role_field: str | None = None
+    family: str
+    parsed: bool
 
 
-# The management-API surface this adapter maps. Deliberately small: covers exactly what
-# ath.hunting.rules.aws_rules needs (a policy-grant -> access-key-creation escalation
-# chain, and logging tampering), not an attempt at full CloudTrail coverage. Anything
-# else stays an unmapped NormalizationIssue, same as before this table existed.
-MANAGEMENT_EVENTS: dict[str, _ManagementEventSpec] = {
-    "AttachUserPolicy": _ManagementEventSpec(
-        verb="attach", resource_type="iam:user-policy",
-        target_field="userName", role_field="policyArn",
-    ),
-    "PutUserPolicy": _ManagementEventSpec(
-        verb="attach", resource_type="iam:user-inline-policy",
-        target_field="userName", role_field="policyName",
-    ),
-    "CreateAccessKey": _ManagementEventSpec(
-        verb="create", resource_type="iam:access-key",
-        target_field="userName",  # absent when a caller creates their own key
-    ),
-    "StopLogging": _ManagementEventSpec(verb="stop", resource_type="cloudtrail:trail"),
-    "DeleteTrail": _ManagementEventSpec(verb="delete", resource_type="cloudtrail:trail"),
-}
+@lru_cache(maxsize=None)
+def parse_event_name(event_name: str) -> ParsedEventName:
+    """Split an event name into a verb and a resource family.
+
+    Cached because a trail names the same few thousand calls a few million times; the
+    cache is bounded by the number of distinct names in the corpus (1,242 for the largest
+    one this project reads), and it also keeps one string object per verb and family
+    instead of one per row.
+    """
+    match = _VERB_AND_NOUN.match(event_name)
+    if match is not None:
+        return ParsedEventName(match.group(1).lower(), _family(match.group(2)), True)
+    if _VERB_ONLY.match(event_name):
+        return ParsedEventName(event_name.lower(), "", True)
+    return ParsedEventName(event_name.lower(), "", False)
+
+
+def _service(event_source: str) -> str:
+    """The service an event source names: ``iam.amazonaws.com`` -> ``iam``."""
+    if not event_source:
+        return _UNKNOWN_SERVICE
+    if event_source.endswith(_SERVICE_SUFFIX):
+        return event_source[: -len(_SERVICE_SUFFIX)] or _UNKNOWN_SERVICE
+    return event_source
+
+
+@lru_cache(maxsize=None)
+def resource_type_for(event_source: str, event_name: str) -> tuple[str, str, str]:
+    """``(verb, resource_type, family)`` for one (source, name) pair.
+
+    ``resource_type`` is ``"<service>:<family>"``, or the bare service when the name
+    carries no resource noun -- a service with no family is a real answer ("something
+    happened in KMS"), and inventing a family for it would be worse than saying so.
+    """
+    parsed = parse_event_name(event_name)
+    service = _service(event_source)
+    resource_type = f"{service}:{parsed.family}" if parsed.family else service
+    return parsed.verb, resource_type, parsed.family
+
+
+# Beneficiary and role, as conventions over `requestParameters` rather than as a fact
+# about any particular call.
+#
+# `_TARGET_FIELDS` is ordered most-specific-identity-first: a call that names a user
+# names that user as the beneficiary even if it also names the role or group the user is
+# being put into. `_ROLE_FIELDS` is ordered by how completely the value identifies the
+# thing granted -- a policy ARN is globally unique, a policy name is unique only within
+# the identity it is attached to, a role ARN identifies a role being handed over, and an
+# instance-profile name identifies only the vehicle a role is handed over *in*. Taking
+# the first present of each is what makes "what was granted" a single column rather than
+# a per-call decision.
+_TARGET_FIELDS: tuple[str, ...] = ("userName", "roleName", "groupName")
+_ROLE_FIELDS: tuple[str, ...] = ("policyArn", "policyName", "roleArn", "instanceProfileName")
+
+# The identity service, whose `requestParameters` those conventions hold for. Read as a
+# service, not as a set of call names: every call IAM has ever shipped names its
+# beneficiary the same way, including the ones that do not exist yet.
+_IDENTITY_SERVICE = "iam"
+
+# The family whose calls target the caller when they name no one else: creating an access
+# key with no `userName` creates one for yourself. A family-level rule, because it is
+# true of every call on that family rather than of one call's name.
+_SELF_TARGETING_FAMILY = "access-key"
 
 
 @dataclass
@@ -204,8 +353,8 @@ class CloudTrailSource(TelemetrySource):
                 "array."
             )
 
-        logon_rows: list[dict[str, Any]] = []
-        control_rows: list[dict[str, Any]] = []
+        logon_rows: list[tuple[Any, ...]] = []
+        control_rows: list[tuple[Any, ...]] = []
         issues: list[NormalizationIssue] = []
         admissions: list[FileAdmission] = []
         rows_read = 0
@@ -227,29 +376,28 @@ class CloudTrailSource(TelemetrySource):
                 if event_name in AUTH_EVENTS:
                     row, issue = _normalise_auth_record(record, file_name, index)
                     target = logon_rows
-                elif event_name in MANAGEMENT_EVENTS:
+                    columns = _LOGON_ORDER
+                else:
+                    # Everything that is not an authentication decision is management
+                    # activity, and is represented rather than refused. What it *was* is
+                    # read off the name's shape, not looked up.
                     row, issue = _normalise_control_record(record, file_name, index)
                     target = control_rows
-                else:
-                    row, issue = None, _unmapped_issue(record, file_name, index)
+                    columns = _CONTROL_ORDER
 
                 if issue is not None:
                     issues.append(issue)
                 if row is not None:
-                    target.append(row)
-
-        # Mint ids after the fact so they are dense and unique by construction.
-        for position, row in enumerate(logon_rows, start=1):
-            row["event_id"] = f"cloudtrail-logon-{position:06d}"
-        for position, row in enumerate(control_rows, start=1):
-            row["event_id"] = f"cloudtrail-control-{position:06d}"
+                    # Stored positionally, not as a dict per row. A real trail produces
+                    # millions of control rows and a 17-key dict each would cost several
+                    # times what the values themselves do.
+                    target.append(tuple(row[column] for column in columns))
 
         logons, quarantined_logons = coerce_validate_and_quarantine(
-            pd.DataFrame(logon_rows, columns=list(TABLE_COLUMNS[EVENT_LOGON])), EVENT_LOGON,
+            _frame(logon_rows, EVENT_LOGON, "cloudtrail-logon"), EVENT_LOGON,
         )
         controls, quarantined_controls = coerce_validate_and_quarantine(
-            pd.DataFrame(control_rows, columns=list(TABLE_COLUMNS[EVENT_CONTROL])),
-            EVENT_CONTROL,
+            _frame(control_rows, EVENT_CONTROL, "cloudtrail-control"), EVENT_CONTROL,
         )
         issues.extend(quarantined_logons)
         issues.extend(quarantined_controls)
@@ -263,7 +411,7 @@ class CloudTrailSource(TelemetrySource):
         rejected = [a for a in admissions if not a.admitted]
         logger.info(
             "CloudTrail import: %d file(s) admitted, %d rejected; %d record(s) read, "
-            "%d authentication row(s) + %d management-activity row(s) kept, %d unmapped",
+            "%d authentication row(s) + %d management-activity row(s) kept, %d issue(s)",
             len(admissions) - len(rejected), len(rejected), rows_read,
             len(logon_rows), len(control_rows), len(issues),
         )
@@ -458,29 +606,19 @@ def _verdict(record: dict[str, Any]) -> str:
     return "success"
 
 
-def _unmapped_issue(record: Any, file_name: str, index: int) -> NormalizationIssue:
-    """Explain why a record matched neither the auth nor the management event set.
+_LOGON_ORDER: tuple[str, ...] = TABLE_COLUMNS[EVENT_LOGON]
+_CONTROL_ORDER: tuple[str, ...] = TABLE_COLUMNS[EVENT_CONTROL]
 
-    This is now the small, honest remainder: this adapter maps the specific calls
-    ``AUTH_EVENTS`` and ``MANAGEMENT_EVENTS`` name, not every possible CloudTrail
-    ``eventName``. Anything else stays visibly unmapped rather than being coerced.
+
+def _frame(rows: list[tuple[Any, ...]], event_type: str, prefix: str) -> pd.DataFrame:
+    """Build one canonical frame from positional rows, minting dense event ids.
+
+    Ids are assigned here rather than per row so they are dense and unique by
+    construction -- a row that was refused never consumes one.
     """
-    event_name = str(record.get("eventName", "")) if isinstance(record, dict) else ""
-    event_id = record.get("eventID", "?") if isinstance(record, dict) else "?"
-    reference = f"{file_name}#record={index}, eventID={event_id}"
-    if not isinstance(record, dict):
-        return NormalizationIssue(
-            event_type=EVENT_CONTROL, reason="record is not a JSON object",
-            raw_reference=f"{file_name}#record={index}",
-        )
-    return NormalizationIssue(
-        event_type=EVENT_CONTROL, field="eventName", raw_reference=reference,
-        reason=(
-            f"{event_name or '<unnamed>'} is not one of the authentication or "
-            "management-API calls this adapter maps (see AUTH_EVENTS / "
-            "MANAGEMENT_EVENTS in ath.telemetry.cloudtrail_source)"
-        ),
-    )
+    frame = pd.DataFrame(rows, columns=list(TABLE_COLUMNS[event_type]))
+    frame["event_id"] = [f"{prefix}-{position:06d}" for position in range(1, len(frame) + 1)]
+    return frame
 
 
 def _normalise_auth_record(
@@ -545,13 +683,33 @@ def _normalise_control_record(
 ) -> tuple[dict[str, Any] | None, NormalizationIssue | None]:
     """Turn one CloudTrail management-API record into a canonical control row.
 
-    ``record["eventName"]`` is guaranteed to be a key of :data:`MANAGEMENT_EVENTS` by
-    the caller's dispatch -- this function only interprets it.
+    Any record that is not an authentication decision arrives here -- there is no
+    dispatch table to miss, and the only records refused are the ones that could not be
+    used by anything: not an object, no name, no time, no caller.
+
+    Returns:
+        ``(row, issue)``. Both can be present at once, and that combination is the point:
+        a name whose shape this parser does not cover still becomes a row (with the whole
+        name as its verb), *and* reports an issue, so "how much of the naming convention
+        holds" stays a measured number instead of an assumption.
     """
+    if not isinstance(record, dict):
+        return None, NormalizationIssue(
+            event_type=EVENT_CONTROL, reason="record is not a JSON object",
+            raw_reference=f"{file_name}#record={index}",
+        )
+
     event_id = record.get("eventID", "?")
-    event_name = str(record.get("eventName", ""))
+    event_name = str(record.get("eventName") or "")
     reference = f"{file_name}#record={index}, eventID={event_id}"
-    spec = MANAGEMENT_EVENTS[event_name]
+    if not event_name:
+        return None, NormalizationIssue(
+            event_type=EVENT_CONTROL, field="eventName", raw_reference=reference,
+            reason=(
+                "no event name; an action with no name is not a description of anything "
+                "and would occupy a row saying so"
+            ),
+        )
 
     raw_time = record.get("eventTime", "")
     timestamp = pd.to_datetime(raw_time, utc=True, errors="coerce")
@@ -562,7 +720,10 @@ def _normalise_control_record(
         )
 
     identity = record.get("userIdentity") or {}
-    actor = _principal(identity if isinstance(identity, dict) else {})
+    # Narrowed once, rather than at each read: `userIdentity` is a union type and a
+    # corpus-scale run meets every member of it, including the ones that are not objects.
+    identity = identity if isinstance(identity, dict) else {}
+    actor = _shared(_principal(identity))
     if not actor:
         return None, NormalizationIssue(
             event_type=EVENT_CONTROL, field="userIdentity", raw_reference=reference,
@@ -572,41 +733,83 @@ def _normalise_control_record(
             ),
         )
 
+    event_source = str(record.get("eventSource") or "")
+    verb, resource_type, family = resource_type_for(event_source, event_name)
+    service = _service(event_source)
+
     params = record.get("requestParameters") or {}
     params = params if isinstance(params, dict) else {}
 
-    # The beneficiary of a grant, as distinct from the caller. CreateAccessKey has no
-    # explicit target when a caller creates their own key -- the beneficiary is then
-    # the actor themself, not "no one", which matters for chaining it to a prior grant.
+    # The beneficiary of a grant, as distinct from the caller -- read from the identity
+    # service's own parameter conventions. An access-key call that names no user creates
+    # a key for the caller, so the beneficiary is the actor themself, not "no one", which
+    # is what lets it chain to a prior grant.
     target_actor = ""
-    if spec.target_field:
-        target_actor = str(params.get(spec.target_field) or "")
-        if not target_actor and event_name == "CreateAccessKey":
+    role_ref = ""
+    if service == _IDENTITY_SERVICE:
+        target_actor = _first_present(params, _TARGET_FIELDS)
+        role_ref = _first_present(params, _ROLE_FIELDS)
+        if not target_actor and family == _SELF_TARGETING_FAMILY:
             target_actor = actor
 
-    role_ref = str(params.get(spec.role_field) or "") if spec.role_field else ""
-    resource_name = target_actor or str(params.get("name") or "")
+    resource_name = target_actor or str(params.get("name") or "") or role_ref
 
     account = str(record.get("recipientAccountId") or identity.get("accountId") or "unknown")
     region = str(record.get("awsRegion") or "unknown")
     verdict = _verdict(record)
 
+    # Reported *with* the row, never instead of it: the row is the representation, the
+    # issue is the measurement of how far the naming convention holds.
+    unparsed_name = None if parse_event_name(event_name).parsed else NormalizationIssue(
+        event_type=EVENT_CONTROL, field="eventName", raw_reference=reference,
+        reason=(
+            f"{event_name!r} does not begin with a capitalised word, so no verb could be "
+            "read from it; the row is still represented, with the whole name as its verb "
+            "and the service alone as its resource type"
+        ),
+    )
+
     return {
         "event_id": "",  # assigned by the caller, densely and uniquely
         "timestamp": timestamp,
         "event_type": EVENT_CONTROL,
-        "device": f"aws:{account}/{region}",  # "host" is not a cloud concept
+        "device": _device(account, region),  # "host" is not a cloud concept
         "user": target_actor or actor,
         "source": MANAGEMENT_SOURCE_NAME,
         "source_ref": f"eventID={event_id};File={file_name}",
         "actor": actor,
         "actor_groups": "",  # CloudTrail asserts no group memberships for a caller
-        "verb": spec.verb,
-        "resource_type": spec.resource_type,
+        "verb": verb,
+        "resource_type": resource_type,
         "resource_name": resource_name,
         "resource_namespace": "",  # not a cloud concept
         "target_actor": target_actor,
         "role_ref": role_ref,
         "decision": "denied" if verdict == "failure" else "allowed",
-        "source_ip": str(record.get("sourceIPAddress") or ""),
-    }, None
+        "source_ip": _shared(str(record.get("sourceIPAddress") or "")),
+    }, unparsed_name
+
+
+def _first_present(params: dict[str, Any], fields: tuple[str, ...]) -> str:
+    """The first of ``fields`` present and non-empty in ``params``, as a string."""
+    for field_name in fields:
+        value = params.get(field_name)
+        if value:
+            return _shared(str(value))
+    return ""
+
+
+# Values that repeat across most rows of a trail -- a few hundred distinct devices and
+# caller names against millions of records. Held once each: on the public flaws.cloud
+# trail this is the difference between one string object per row and one per distinct
+# value, for six of the seventeen columns.
+_SHARED_VALUES: dict[str, str] = {}
+
+
+def _shared(value: str) -> str:
+    """One string object per distinct value, for the low-cardinality columns."""
+    return _SHARED_VALUES.setdefault(value, value)
+
+
+def _device(account: str, region: str) -> str:
+    return _shared(f"aws:{account}/{region}")

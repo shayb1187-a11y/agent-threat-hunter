@@ -306,10 +306,20 @@ def test_cloudtrail_shaped_service_invoked_calls_are_attributed(cloudtrail) -> N
     assert not any("no usable principal" in i.reason for i in cloudtrail.issues)
 
 
-def test_cloudtrail_shaped_flood_is_unmapped_and_counted(cloudtrail) -> None:
-    unmapped = [i for i in cloudtrail.issues if "RunInstances" in i.reason]
-    assert len(unmapped) == 40
+def test_cloudtrail_shaped_flood_is_represented_not_refused(cloudtrail) -> None:
+    """The 40-record instance-launch flood, which used to be 40 unmapped issues.
+
+    Same 40 records, same fixture: they are now 40 control rows describing a run of
+    `ec2:instance`, and nothing about them is reported as a failure to normalise. The
+    corpus is cut from the real trail, where this one shape is 68% of all records.
+    """
+    controls = cloudtrail.tables[EVENT_CONTROL]
+    flood = controls[controls["resource_type"] == "ec2:instance"]
+    assert len(flood) == 40
+    assert set(flood["verb"]) == {"run"}
     assert cloudtrail.rows_read == 68
+    assert cloudtrail.rows_kept == 68
+    assert cloudtrail.issues == []
 
 
 def test_cloudtrail_shaped_auth_vocabulary_covers_the_corpus() -> None:

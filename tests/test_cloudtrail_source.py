@@ -109,10 +109,21 @@ def test_management_api_calls_are_not_coerced_into_process_events(result) -> Non
 
 
 def test_management_api_calls_map_to_the_control_table(result) -> None:
+    """Every non-authentication record in the fixture, not a chosen five.
+
+    Was 3 rows and `{attach, create, stop}` -- the three calls an allowlist named. The
+    other three records in this fixture (a bucket listing, an instance enumeration, an
+    object read) were dropped as unmapped; they are the same kind of statement about the
+    same kind of action and they are now represented too.
+    """
     controls = result.tables[EVENT_CONTROL]
-    assert len(controls) == 3
+    assert len(controls) == 6
     assert set(controls["source"]) == {"cloudtrail_mgmt"}
-    assert set(controls["verb"]) == {"attach", "create", "stop"}
+    assert set(controls["verb"]) == {"attach", "create", "stop", "list", "describe", "get"}
+    assert set(controls["resource_type"]) == {
+        "iam:user-policy", "iam:access-key", "cloudtrail:logging",
+        "s3:bucket", "ec2:instance", "s3:object",
+    }
 
 
 def test_fixture_grant_is_self_service(result) -> None:
@@ -147,6 +158,10 @@ def test_grant_events_carry_a_target_actor_distinct_from_the_caller() -> None:
         "awsRegion": "us-east-1",
         "recipientAccountId": "123456789012",
         "sourceIPAddress": "203.0.113.99",
+        # The beneficiary convention is a property of the identity *service*, not of the
+        # call's name, so the record has to say which service it is -- as every real
+        # CloudTrail record does.
+        "eventSource": "iam.amazonaws.com",
         "userIdentity": {"type": "IAMUser", "userName": "ops_bob"},
         "requestParameters": {
             "userName": "dev_alice",
@@ -164,20 +179,26 @@ def test_grant_events_carry_a_target_actor_distinct_from_the_caller() -> None:
     assert row["user"] == "dev_alice"
 
 
-def test_unmapped_events_are_reported_with_a_reason(result) -> None:
-    """ListBuckets/DescribeInstances/GetObject are outside both mapped event sets.
+def test_no_record_is_refused_for_naming_an_unlisted_call(result) -> None:
+    """The inverse of the test this replaces.
 
-    This project does not attempt full CloudTrail coverage -- only the specific
-    authentication and management-API calls it names. Everything else stays visibly
-    unmapped rather than silently dropped or forced somewhere it does not belong.
+    It used to assert that a bucket listing, an instance enumeration and an object read
+    were reported as unmapped, because the adapter named five calls and refused the rest.
+    That refusal is the defect M18-3 removes: on a real AWS attack capture it dropped
+    99.9% of the corpus, so the rules were never given the attack. A record that parses
+    and is CloudTrail-shaped is now represented, and the only issues left are records
+    nothing could use -- no time, no caller.
     """
-    reasons = " ".join(i.reason for i in result.issues)
-    for event_name in ("ListBuckets", "DescribeInstances", "GetObject"):
-        assert event_name in reasons
-    assert "is not one of the authentication or management-API calls" in reasons
-    # The events this adapter now DOES map must not still be reported as unmapped.
-    for event_name in ("CreateAccessKey", "AttachUserPolicy", "StopLogging"):
-        assert event_name not in reasons
+    reasons = [i.reason for i in result.issues]
+    assert not any("is not one of" in reason for reason in reasons)
+    assert not any("this adapter maps" in reason for reason in reasons)
+    verbs_by_type = dict(zip(
+        result.tables[EVENT_CONTROL]["resource_type"],
+        result.tables[EVENT_CONTROL]["verb"],
+    ))
+    assert verbs_by_type["s3:bucket"] == "list"
+    assert verbs_by_type["ec2:instance"] == "describe"
+    assert verbs_by_type["s3:object"] == "get"
 
 
 def test_malformed_records_are_dropped_not_raised(result) -> None:
@@ -212,11 +233,13 @@ def test_all_four_tables_are_present_and_schema_valid(result) -> None:
 
 def test_source_reports_honest_counts(result) -> None:
     assert result.rows_read == 23
-    # 15 authentication rows (ConsoleLogin/AssumeRole, minus 2 malformed) + 3
-    # management-activity rows (CreateAccessKey/AttachUserPolicy/StopLogging) now kept,
-    # where the earlier adapter dropped all 3 as unmapped.
-    assert result.rows_kept == 18
-    assert result.rows_dropped == 5
+    # 15 authentication rows (ConsoleLogin/AssumeRole, minus 2 malformed) + 6
+    # management-activity rows. Was 18 kept / 5 dropped: three of those five "drops" were
+    # ordinary API calls refused for not being on a list of five names, and the two that
+    # remain are the genuinely unusable records -- one with an unparseable time, one with
+    # no principal at all.
+    assert result.rows_kept == 21
+    assert result.rows_dropped == 2
 
 
 def test_missing_directory_fails_clearly() -> None:
