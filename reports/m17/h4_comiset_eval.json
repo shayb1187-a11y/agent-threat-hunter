@@ -1,0 +1,499 @@
+{
+  "detection": {
+    "rules": [
+      {
+        "rule_id": "ATH-001",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-002",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 3,
+        "severity": {
+          "MEDIUM": 3
+        },
+        "declares_channels": [],
+        "zero_attribution": "n/a -- rule produced findings",
+        "examples": [
+          {
+            "device": "desktop-4pvps6e",
+            "user": "system",
+            "severity": "MEDIUM",
+            "event_count": 1,
+            "evidence": [
+              "beacon.exe -> powershell.exe with an encoded command; decoded: \ua6b2\u69df\u1af8\ua689\u69a8\u1aee\ua6ce\u69f7\u1acd\u06b7\u6ae2\u1a0a\ua6ce\u6ae3\u9a1a\ua689\u6ae8\u9a0b\ua675\u69ae\u1af7\ua6ce\u6ae2\u9a09\ua66d\u6ae9\u9a0b\u066e\u69f4\u1ac9\u0696\u6ade\u1a0f\u0677\u6aee\u1a0c\u066f\u6ae1\u9a0a\u06bb\u6af4\u9a18\ua66a\u6aee\u1a07\ua691\u6aa7\u1a08\ua675\u6af4\u9a16\u06a2\u69af\u1acf\ua69a\u69b2\u1ad7\u0696\u69b0\u1ace\ua699\u69ae\u9ad7\u06a2\u69b4\u9ad6\ua6a2\u69b1\u9ada\u0697\u69a7\u1ac9"
+            ],
+            "event_ids": [
+              "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353"
+            ]
+          },
+          {
+            "device": "desktop-4pvps6e",
+            "user": "system",
+            "severity": "MEDIUM",
+            "event_count": 1,
+            "evidence": [
+              "beacon.exe -> powershell.exe with an encoded command; decoded: \ua6b2\u69df\u1af8\ua689\u69a8\u1aee\ua6ce\u69f7\u1acd\u06b7\u6ae2\u1a0a\ua6ce\u6ae3\u9a1a\ua689\u6ae8\u9a0b\ua675\u69ae\u1af7\ua6ce\u6ae2\u9a09\ua66d\u6ae9\u9a0b\u066e\u69f4\u1ac9\u0696\u6ade\u1a0f\u0677\u6aee\u1a0c\u066f\u6ae1\u9a0a\u06bb\u6af4\u9a18\ua66a\u6aee\u1a07\ua691\u6aa7\u1a08\ua675\u6af4\u9a16\u06a2\u69af\u1acf\ua69a\u69b2\u1ad7\u0696\u69b0\u1ace\ua699\u69ae\u9ad7\u06a2\u69b5\u9ad9\u069f\u69b1\u9adc\u0697\u69a7\u1ac9"
+            ],
+            "event_ids": [
+              "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+            ]
+          },
+          {
+            "device": "desktop-4pvps6e",
+            "user": "system",
+            "severity": "MEDIUM",
+            "event_count": 1,
+            "evidence": [
+              "beacon.exe -> powershell.exe with an encoded command; decoded: \ua6b2\u69df\u1af8\ua689\u69a8\u1aee\ua6ce\u69f7\u1acd\u06b7\u6ae2\u1a0a\ua6ce\u6ae3\u9a1a\ua689\u6ae8\u9a0b\ua675\u69ae\u1af7\ua6ce\u6ae2\u9a09\ua66d\u6ae9\u9a0b\u066e\u69f4\u1ac9\u0696\u6ade\u1a0f\u0677\u6aee\u1a0c\u066f\u6ae1\u9a0a\u06bb\u6af4\u9a18\ua66a\u6aee\u1a07\ua691\u6aa7\u1a08\ua675\u6af4\u9a16\u06a2\u69af\u1acf\ua69a\u69b2\u1ad7\u0696\u69b0\u1ace\ua699\u69ae\u9ad7\u06a2\u69b3\u9adc\ua6a2\u69b8\u1ad7\u0697\u69a7\u1ac9"
+            ],
+            "event_ids": [
+              "comiset_slice.jsonl:9b53f01330ef3a1ad12badd6413413ba4b58e3da"
+            ]
+          }
+        ]
+      },
+      {
+        "rule_id": "ATH-003",
+        "input_tables": [
+          "network"
+        ],
+        "eligible_events": 589477,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'network': 589477}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-004",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-005",
+        "input_tables": [
+          "logon"
+        ],
+        "eligible_events": 6063,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'logon': 6063}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-006",
+        "input_tables": [
+          "logon"
+        ],
+        "eligible_events": 6063,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'logon': 6063}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-007",
+        "input_tables": [
+          "process",
+          "logon"
+        ],
+        "eligible_events": 21158,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095, 'logon': 6063}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-008",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-009",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-010",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 1,
+        "severity": {
+          "MEDIUM": 1
+        },
+        "declares_channels": [],
+        "zero_attribution": "n/a -- rule produced findings",
+        "examples": [
+          {
+            "device": "desktop-4pvps6e",
+            "user": "system",
+            "severity": "MEDIUM",
+            "event_count": 4,
+            "evidence": [
+              "cmd.exe -> whoami.exe: whoami  /all",
+              "cmd.exe -> whoami.exe: whoami  /all"
+            ],
+            "event_ids": [
+              "comiset_slice.jsonl:c7b070291f1a84b16e6c648cf308085a9b9449f0",
+              "comiset_slice.jsonl:1174958f3235629b5fb3bf883e543a6958cfffd4",
+              "comiset_slice.jsonl:e1fd3cd75d68f0a15db9c1d2fe8494e393b00240"
+            ]
+          }
+        ]
+      },
+      {
+        "rule_id": "ATH-011",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [],
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 15095}; clean data or threshold not met",
+        "examples": []
+      },
+      {
+        "rule_id": "ATH-012",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 15095,
+        "findings": 1,
+        "severity": {
+          "HIGH": 1
+        },
+        "declares_channels": [],
+        "zero_attribution": "n/a -- rule produced findings",
+        "examples": [
+          {
+            "device": "desktop-4pvps6e",
+            "user": "system",
+            "severity": "HIGH",
+            "event_count": 1,
+            "evidence": [
+              "sc  stop windefend"
+            ],
+            "event_ids": [
+              "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+            ]
+          }
+        ]
+      },
+      {
+        "rule_id": "AWS-001",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [
+          "cloud_management_activity"
+        ],
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}",
+        "examples": []
+      },
+      {
+        "rule_id": "AWS-002",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [
+          "cloud_management_activity"
+        ],
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}",
+        "examples": []
+      },
+      {
+        "rule_id": "K8S-001",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [
+          "container_audit"
+        ],
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}",
+        "examples": []
+      },
+      {
+        "rule_id": "K8S-002",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "severity": {},
+        "declares_channels": [
+          "container_audit"
+        ],
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}",
+        "examples": []
+      }
+    ],
+    "total_findings": 5
+  },
+  "network": {
+    "rows": 589477,
+    "attribute_fidelity": [
+      {
+        "attribute": "source host",
+        "canonical_column": "device",
+        "preserved": true,
+        "populated_rows": 589477
+      },
+      {
+        "attribute": "initiating process name",
+        "canonical_column": "process_name",
+        "preserved": true,
+        "populated_rows": 589477
+      },
+      {
+        "attribute": "initiating process id",
+        "canonical_column": "process_id",
+        "preserved": true,
+        "populated_rows": 589477
+      },
+      {
+        "attribute": "source IP",
+        "canonical_column": null,
+        "preserved": false,
+        "reason": "no such column exists in the canonical schema"
+      },
+      {
+        "attribute": "destination IP",
+        "canonical_column": "remote_ip",
+        "preserved": true,
+        "populated_rows": 589477
+      },
+      {
+        "attribute": "source port",
+        "canonical_column": null,
+        "preserved": false,
+        "reason": "no such column exists in the canonical schema"
+      },
+      {
+        "attribute": "destination port",
+        "canonical_column": "remote_port",
+        "preserved": true,
+        "populated_rows": 1
+      },
+      {
+        "attribute": "protocol",
+        "canonical_column": "protocol",
+        "preserved": true,
+        "populated_rows": 1
+      },
+      {
+        "attribute": "timestamp",
+        "canonical_column": "timestamp",
+        "preserved": true,
+        "populated_rows": 589477
+      },
+      {
+        "attribute": "provenance",
+        "canonical_column": "source_ref",
+        "preserved": true,
+        "populated_rows": 589477
+      }
+    ],
+    "ip_classification": {
+      "distinct_addresses_compared": 177,
+      "agree": 172,
+      "disagree": 5,
+      "agreement": 0.9718,
+      "disagreements": [
+        {
+          "ip": "a0a:7580:0:0:0:0:0:0",
+          "ath_public": false,
+          "corpus_public": true
+        },
+        {
+          "ip": "c0a8:4b02:0:0:0:0:0:0",
+          "ath_public": false,
+          "corpus_public": true
+        },
+        {
+          "ip": "e000:fc:0:0:0:0:0:0",
+          "ath_public": false,
+          "corpus_public": true
+        },
+        {
+          "ip": "c0a8:b602:0:0:0:0:0:0",
+          "ath_public": false,
+          "corpus_public": true
+        },
+        {
+          "ip": "c0a8:2f02:0:0:0:0:0:0",
+          "ath_public": false,
+          "corpus_public": true
+        }
+      ]
+    },
+    "canonical_examples": [
+      {
+        "timestamp": "1990-12-18 16:48:25.255000+00:00",
+        "device": "dc001",
+        "user": "system",
+        "process_name": "svchost.exe",
+        "process_id": "952",
+        "remote_ip": "10.66.6.21",
+        "remote_port": "389",
+        "protocol": "tcp",
+        "direction": "outbound",
+        "source_ref": "comiset_slice.jsonl:TestHELKDataWindowsSysmon000001"
+      },
+      {
+        "timestamp": "2022-11-16 19:59:53.489000+00:00",
+        "device": "desktop-4pvps6e",
+        "user": "louis",
+        "process_name": "onedrive.exe",
+        "process_id": "1120",
+        "remote_ip": "52.113.194.132",
+        "remote_port": "<NA>",
+        "protocol": "",
+        "direction": "",
+        "source_ref": "comiset_slice.jsonl:df20cc796c27af666061da939ccf1800778fa720"
+      },
+      {
+        "timestamp": "2022-11-16 19:59:58.786000+00:00",
+        "device": "desktop-4pvps6e",
+        "user": "louis",
+        "process_name": "microsoft.sharepoint.exe",
+        "process_id": "5728",
+        "remote_ip": "104.46.162.226",
+        "remote_port": "<NA>",
+        "protocol": "",
+        "direction": "",
+        "source_ref": "comiset_slice.jsonl:c74c2440afcae766f2f03188924dad9eb0b6c568"
+      }
+    ],
+    "distinct_remote_ips": 177,
+    "public_remote_ips": 118
+  },
+  "cross_channel_joins": {
+    "join_keys_available": [
+      "device",
+      "process_id",
+      "process_name",
+      "timestamp"
+    ],
+    "join_key_lost_in_ingestion": [
+      "process_guid (unique per process instance)"
+    ],
+    "network_rows": 589477,
+    "network_rows_matching_a_known_process": 589359,
+    "join_success_rate": 0.9998,
+    "records_examined_for_ambiguity": 604572,
+    "distinct_device_pid_keys": 2437,
+    "ambiguous_device_pid_keys": 2108,
+    "ambiguity_rate": 0.865,
+    "worst_key_guid_count": 27
+  },
+  "provenance": {
+    "checked": 6,
+    "reconstructed": 6,
+    "reconstruction_rate": 1.0,
+    "samples": [
+      {
+        "finding_rule": "ATH-012",
+        "canonical_event_id": "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b",
+        "source_doc_id": "4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-19T19:12:55.683Z"
+      },
+      {
+        "finding_rule": "ATH-010",
+        "canonical_event_id": "comiset_slice.jsonl:c7b070291f1a84b16e6c648cf308085a9b9449f0",
+        "source_doc_id": "c7b070291f1a84b16e6c648cf308085a9b9449f0",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-16T22:10:42.900Z"
+      },
+      {
+        "finding_rule": "ATH-010",
+        "canonical_event_id": "comiset_slice.jsonl:1174958f3235629b5fb3bf883e543a6958cfffd4",
+        "source_doc_id": "1174958f3235629b5fb3bf883e543a6958cfffd4",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-16T22:11:12.896Z"
+      },
+      {
+        "finding_rule": "ATH-002",
+        "canonical_event_id": "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353",
+        "source_doc_id": "41ece3af25e0f38cccc6d27422a388c739761353",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-18T11:15:51.211Z"
+      },
+      {
+        "finding_rule": "ATH-002",
+        "canonical_event_id": "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4",
+        "source_doc_id": "574dffe7a299a4ad9d2b1150574e2cff72b4efb4",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-18T11:17:30.010Z"
+      },
+      {
+        "finding_rule": "ATH-002",
+        "canonical_event_id": "comiset_slice.jsonl:9b53f01330ef3a1ad12badd6413413ba4b58e3da",
+        "source_doc_id": "9b53f01330ef3a1ad12badd6413413ba4b58e3da",
+        "reconstructed": true,
+        "original_channel": "sysmon",
+        "original_event_id": "1",
+        "original_time": "2022-11-19T18:08:16.187Z"
+      }
+    ]
+  },
+  "seconds": 104.4
+}
