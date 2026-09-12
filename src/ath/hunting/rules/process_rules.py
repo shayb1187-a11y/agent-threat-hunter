@@ -258,14 +258,66 @@ _LSASS_PATTERNS: dict[str, str] = {
 _ARGUMENT_ONLY_INDICATORS: frozenset[str] = frozenset({"explicit lsass reference"})
 
 
-def _arguments(command_line: str) -> str:
-    """The command line with argv[0] (the image path, quoted or bare) removed."""
-    stripped = command_line.lstrip()
+def _arguments(command_line: str, image_path: str = "", process_name: str = "") -> str:
+    """The command line with argv[0] removed -- what the process *acts on*.
+
+    Four strategies, strongest evidence first. The order is the point: the earlier ones
+    read a field that actually says where the image ends, and only the last one guesses.
+
+    1. **Quoted argv[0]** (``"C:\\Program Files\\app.exe" -flag``). Unambiguous: Windows
+       itself uses the quotes to delimit the image, so the closing quote is the answer.
+    2. **The authoritative image path.** ``file_path`` is the executable the sensor
+       resolved, independent of how the command line happens to be spelled. When the
+       command line starts with it, its length is exactly where argv[0] ends -- spaces
+       and all.
+    3. **The image's file name.** When the path was recorded differently from the command
+       line (a short path, a mapped drive, a different case), the *name* usually still
+       appears; argv[0] ends at the end of its first occurrence.
+    4. **First whitespace token.** The original behaviour, kept only as a last resort for
+       telemetry carrying no image field at all, and documented as unreliable rather than
+       silently relied upon.
+
+    Strategy 4 is what defect M16-1 was: for ``D:\\Program Files\\vendor\\lsass.exe`` it
+    yields ``Files\\vendor\\lsass.exe`` as "the arguments", so an argument-only indicator
+    matched a process that was merely starting and ATH-004 fired CRITICAL. DEDALE could
+    not expose it -- LSASS lives in ``C:\\Windows\\System32``, which has no space in it --
+    so the tuning corpus contained only the case where guessing works.
+
+    Matching is case-insensitive because Windows paths are, and an attacker choosing
+    ``LSASS.EXE`` must not land in a different branch from ``lsass.exe``.
+
+    Args:
+        command_line: The full command line. May be empty; an absent command line is a
+            fact about the telemetry, not an error, and yields no arguments.
+        image_path: The resolved executable path, when the source carries one.
+        process_name: The image file name, when the source carries one.
+
+    Returns:
+        The argument portion, or ``""`` when the command line is empty or consists of
+        argv[0] alone.
+    """
+    stripped = command_line.strip()
+    if not stripped:
+        return ""
+
     if stripped.startswith('"'):
         closing = stripped.find('"', 1)
-        return stripped[closing + 1:] if closing != -1 else ""
+        return stripped[closing + 1:].strip() if closing != -1 else ""
+
+    folded = stripped.casefold()
+
+    path = (image_path or "").strip().strip('"').casefold()
+    if path and folded.startswith(path):
+        return stripped[len(path):].strip()
+
+    name = (process_name or "").strip().strip('"').casefold()
+    if name:
+        position = folded.find(name)
+        if position != -1:
+            return stripped[position + len(name):].strip()
+
     parts = stripped.split(None, 1)
-    return parts[1] if len(parts) > 1 else ""
+    return parts[1].strip() if len(parts) > 1 else ""
 
 
 @register
@@ -330,7 +382,11 @@ class LsassCredentialAccess(Detector):
             command_line = (row["command_line"] or "").lower()
             if not command_line:
                 continue
-            arguments = _arguments(command_line)
+            arguments = _arguments(
+                command_line,
+                image_path=str(row.get("file_path") or ""),
+                process_name=str(row.get("process_name") or ""),
+            )
             matched = [
                 name for name, pattern in _LSASS_PATTERNS.items()
                 if re.search(

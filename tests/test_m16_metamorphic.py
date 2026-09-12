@@ -103,41 +103,94 @@ def test_ath004_fires_on_a_renamed_dumper() -> None:
     )]))
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="M16-1: argv[0] stripping splits on whitespace, so an unquoted image path "
-           "containing a space leaks a path fragment into the arguments",
-)
 def test_ath004_is_not_fooled_by_an_unquoted_path_containing_a_space() -> None:
-    """**Defect found by M16, frozen here rather than fixed.**
+    r"""**M16-1, found by this layer and now fixed.**
 
-    ``_arguments()`` removes argv[0] with ``split(None, 1)``. That is correct for a bare
-    path, and wrong for an unquoted one containing a space: for::
+    ``_arguments()`` used to remove argv[0] with ``split(None, 1)``, which is correct for
+    a bare path and wrong for an unquoted one containing a space: for
+    ``D:\Program Files\vendor\lsass.exe`` the split yielded ``Files\vendor\lsass.exe``
+    as "the arguments", matching the explicit-lsass-reference indicator and firing ATH-004
+    CRITICAL on a process that was merely starting.
 
-        D:\\Program Files\\vendor\\lsass.exe
-
-    the split yields ``D:\\Program`` as argv[0], leaving ``Files\\vendor\\lsass.exe`` as
-    "the arguments" -- which matches the explicit-lsass-reference indicator and fires
-    ATH-004 CRITICAL on a process that is merely starting.
-
-    DEDALE could never have exposed this: LSASS lives in ``C:\\Windows\\System32``, which
-    has no space in it, so the tuning corpus only ever contained the case that works. It
-    took a metamorphic permutation of the image path to reach it. Unquoted paths under
-    ``C:\\Program Files`` are entirely ordinary on Windows.
-
-    The M15-1 fix is still right in substance -- argv[0] is what a process *is*, not what
-    it acts on -- but its implementation carries an environment assumption about path
-    shape. A strict xfail so that the day argv[0] parsing is made quote- and space-aware,
-    this turns green and the suite goes red until the defect is struck off the ledger.
-
-    Scope note: the rule not firing is the correct outcome *for this rule*. A binary named
-    ``lsass.exe`` outside System32 is a masquerading indicator (T1036.005) and deserves an
-    alert -- from a masquerade rule, on masquerade evidence, not from a credential-access
-    rule via a string-splitting accident.
+    DEDALE could not have exposed it -- LSASS lives in ``C:\Windows\System32``, which has
+    no space -- so the tuning corpus held only the case where guessing works. The fix
+    reads the authoritative image path instead of guessing; see :func:`_arguments`.
     """
     assert not get_detector("ATH-004").run(telemetry(procs=[proc(
         "lsass.exe", r"D:\Program Files\vendor\lsass.exe", "services.exe",
         path=r"D:\Program Files\vendor\lsass.exe",
+    )]))
+
+
+# --------------------------------------------------------------------------------------
+# argv[0] parsing, adversarially. Each case is a shape real Windows telemetry produces.
+# --------------------------------------------------------------------------------------
+
+ARGV0_BENIGN = [
+    pytest.param(r"C:\Windows\System32\lsass.exe", r"C:\Windows\System32\lsass.exe",
+                 id="bare-path-no-spaces"),
+    pytest.param(r'"C:\Program Files\vendor\lsass.exe"', r"C:\Program Files\vendor\lsass.exe",
+                 id="quoted-path-with-spaces"),
+    pytest.param(r"D:\Program Files\vendor\lsass.exe", r"D:\Program Files\vendor\lsass.exe",
+                 id="unquoted-path-with-spaces"),
+    pytest.param(r"C:\WINDOWS\SYSTEM32\LSASS.EXE", r"C:\Windows\System32\lsass.exe",
+                 id="mixed-case"),
+    pytest.param(r"C:\Program Files (x86)\Odd Vendor\lsass.exe",
+                 r"C:\Program Files (x86)\Odd Vendor\lsass.exe", id="two-spaces-and-parens"),
+    pytest.param("", r"C:\Windows\System32\lsass.exe", id="missing-command-line"),
+]
+
+
+@pytest.mark.parametrize("command_line,image_path", ARGV0_BENIGN)
+def test_ath004_silent_when_lsass_only_names_itself(command_line, image_path) -> None:
+    """Every shape of "LSASS is starting". None is credential access."""
+    assert not get_detector("ATH-004").run(telemetry(procs=[proc(
+        "lsass.exe", command_line, "wininit.exe", path=image_path,
+    )]))
+
+
+ARGV0_MALICIOUS = [
+    pytest.param(r"procdump64.exe -accepteula -ma lsass.exe C:\Temp\out.dmp",
+                 r"C:\Tools\procdump64.exe", "procdump64.exe", id="executable-plus-real-arguments"),
+    pytest.param(r'"C:\Program Files\Tools\dump.exe" -ma lsass.exe out.dmp',
+                 r"C:\Program Files\Tools\dump.exe", "dump.exe", id="quoted-path-then-lsass-target"),
+    pytest.param(r"C:\Program Files\My Tools\svc.exe -ma lsass.exe out.dmp",
+                 r"C:\Program Files\My Tools\svc.exe", "svc.exe",
+                 id="unquoted-spaced-path-then-lsass-target"),
+    pytest.param(r"C:\Tools\LSASS-Dumper.exe -ma lsass.exe out.dmp",
+                 r"C:\Tools\LSASS-Dumper.exe", "LSASS-Dumper.exe",
+                 id="image-name-repeated-inside-a-real-argument"),
+]
+
+
+@pytest.mark.parametrize("command_line,image_path,name", ARGV0_MALICIOUS)
+def test_ath004_still_fires_when_lsass_is_the_target(command_line, image_path, name) -> None:
+    """The fix must not have been a way of silencing the rule.
+
+    Each of these names LSASS in the *arguments*, which is the thing ATH-004 exists to
+    see, and each wears a path shape that the parsing change had to handle.
+    """
+    assert get_detector("ATH-004").run(telemetry(procs=[proc(
+        name, command_line, "cmd.exe", path=image_path,
+    )])), f"{name} did not fire"
+
+
+def test_ath004_handles_image_and_command_line_disagreeing() -> None:
+    """Telemetry is not always self-consistent; argv[0] must still be removed.
+
+    Here ``file_path`` says one thing and the command line another, so strategy 2 cannot
+    apply and the fall-back to the image *name* is what has to work.
+    """
+    assert not get_detector("ATH-004").run(telemetry(procs=[proc(
+        "lsass.exe", r"\?\D:\Odd Path\lsass.exe", "wininit.exe",
+        path=r"C:\Windows\System32\lsass.exe",
+    )]))
+
+
+def test_ath004_with_no_image_field_falls_back_and_says_so() -> None:
+    """A source carrying no image path at all still parses, by the documented fallback."""
+    assert get_detector("ATH-004").run(telemetry(procs=[proc(
+        "x.exe", "x.exe -ma lsass.exe out.dmp", "cmd.exe", path="",
     )]))
 
 
