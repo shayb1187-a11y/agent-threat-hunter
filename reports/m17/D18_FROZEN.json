@@ -1,0 +1,349 @@
+{
+  "milestone": "M17",
+  "experiment": "S1 / D18",
+  "status": "FROZEN -- FIRST RUN",
+  "run_discipline": {
+    "fetched": "bytes only, during M16, never inspected",
+    "runs_executed": 1,
+    "tuned_against_before_run": false,
+    "tuned_against_after_run": false,
+    "ordering_disclosure": "D18 was launched while H4's supplementary finding-detail analysis was still running. No code changed between the two, and git diff over hunting/, correlation/, triage/ and mitre/ against m16-freeze is empty, so the implementation D18 met is the frozen one. The brief's ordering was followed in substance; the overlap is recorded rather than hidden."
+  },
+  "corpus": {
+    "name": "DEDALE day 18 (2025-01-09), mid-APT",
+    "publisher": "INRIA / IRISA PIRAT",
+    "license": "CC BY 4.0",
+    "provenance": "emulated-testbed",
+    "slice": "11 active hours, all 30 hosts"
+  },
+  "source_coverage": {
+    "source_events": 9220694,
+    "kept_by_fetch_filter": 60435,
+    "ingested": 60435,
+    "ingestion_issues": 0,
+    "representability_vs_source": 0.0053,
+    "by_category": [
+      {
+        "category": "file activity",
+        "source_events": 4484640,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "image loaded",
+        "source_events": 2488785,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "process access",
+        "source_events": 1633947,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "dns",
+        "source_events": 328799,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "named pipe",
+        "source_events": 121432,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "process creation",
+        "source_events": 44363,
+        "mapped": 44363,
+        "representability": 1.0
+      },
+      {
+        "category": "process terminated",
+        "source_events": 43305,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "raw disk access",
+        "source_events": 21769,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "file timestamp",
+        "source_events": 16597,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "powershell/script",
+        "source_events": 13320,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "logon/authentication",
+        "source_events": 9590,
+        "mapped": 4528,
+        "representability": 0.4722
+      },
+      {
+        "category": "other windows event",
+        "source_events": 5099,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "driver loaded",
+        "source_events": 2850,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "credential manager",
+        "source_events": 2375,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "remote thread",
+        "source_events": 2067,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "other windows security",
+        "source_events": 1502,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "file stream",
+        "source_events": 132,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "sysmon other (255)",
+        "source_events": 60,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "sysmon other (4)",
+        "source_events": 30,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "process tampering",
+        "source_events": 30,
+        "mapped": 0,
+        "representability": 0.0
+      },
+      {
+        "category": "network connection",
+        "source_events": 2,
+        "mapped": 2,
+        "representability": 1.0
+      }
+    ]
+  },
+  "observed_window": {
+    "range": "2025-01-09T08:00:25Z .. 2025-01-09T18:33:53Z",
+    "hosts": 30,
+    "users": 36,
+    "time_diversity_verdict": "one full working day, 30 hosts -- diverse by host, single day by design"
+  },
+  "detection": {
+    "findings": 0,
+    "cases": 0,
+    "noise_cases": 0,
+    "eligibility": [
+      {
+        "rule_id": "ATH-001",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-002",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-003",
+        "input_tables": [
+          "network"
+        ],
+        "eligible_events": 2,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'network': 2}"
+      },
+      {
+        "rule_id": "ATH-004",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-005",
+        "input_tables": [
+          "logon"
+        ],
+        "eligible_events": 4528,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'logon': 4528}"
+      },
+      {
+        "rule_id": "ATH-006",
+        "input_tables": [
+          "logon"
+        ],
+        "eligible_events": 4528,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'logon': 4528}"
+      },
+      {
+        "rule_id": "ATH-007",
+        "input_tables": [
+          "process",
+          "logon"
+        ],
+        "eligible_events": 48891,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363, 'logon': 4528}"
+      },
+      {
+        "rule_id": "ATH-008",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-009",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-010",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-011",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "ATH-012",
+        "input_tables": [
+          "process"
+        ],
+        "eligible_events": 44363,
+        "findings": 0,
+        "zero_attribution": "ELIGIBLE AND SILENT -- input present {'process': 44363}"
+      },
+      {
+        "rule_id": "AWS-001",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}"
+      },
+      {
+        "rule_id": "AWS-002",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}"
+      },
+      {
+        "rule_id": "K8S-001",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}"
+      },
+      {
+        "rule_id": "K8S-002",
+        "input_tables": [
+          "control"
+        ],
+        "eligible_events": 0,
+        "findings": 0,
+        "zero_attribution": "NOT ELIGIBLE -- required table(s) empty: {'control': 0}"
+      }
+    ]
+  },
+  "labels_and_misses": {
+    "labelled_malicious_refs": 9567,
+    "resolvable_in_ingested_telemetry": 2,
+    "never_ingested": 9565,
+    "surfaced": 0,
+    "true_positives": 0,
+    "false_positives": 0,
+    "false_negatives": 2,
+    "precision": null,
+    "recall": 0.0,
+    "interpretation": "The 2 false negatives are the only labelled events ATH could even have seen. The other 9,565 are a representation failure, not a detection failure."
+  },
+  "cross_channel": {
+    "network_rows": 2,
+    "network_rows_matching_a_known_process": 0,
+    "note": "Only 2 network events exist in the whole day, both NetBIOS (udp/137) attributed to pid 4 (System), which emits no process-create event. Cross-channel joining is not meaningfully measurable on D18.",
+    "port_and_protocol_present": true,
+    "contrast_with_h4": "The winlogbeat adapter preserves port/protocol/direction; defect M17-2 is specific to the Elastic/HELK adapter."
+  },
+  "provenance": {
+    "checked": 0,
+    "note": "no findings were raised, so there is no evidence chain to verify"
+  },
+  "false_positives": {
+    "count": 0,
+    "significance": "Strongest generalisation evidence available: a mid-APT day from an estate nothing was fitted to, 30 hosts, 44,363 process events, and silence."
+  },
+  "obvious_misses": {
+    "count": 2,
+    "detail": "The attack is present and labelled; 9,565 of 9,567 labelled events live in channels with no canonical table (file activity 4.48M, image loaded 2.49M, process access 1.63M, DNS 328,799, PowerShell 13,320 -- all 0% representable)."
+  },
+  "test_suite": {
+    "passed": 860,
+    "xfailed": 1
+  },
+  "code_revision_at_run": "d310f7c",
+  "code_revision_at_freeze": "5d1bde0df0a922daf4e364e6cf6fa75caa815a5c"
+}
