@@ -74,7 +74,11 @@ from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
 )
 from ath.telemetry.admission import FileAdmission, admit_lines
-from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
+from ath.telemetry.normalize import (
+    coerce_and_validate,
+    coerce_validate_and_quarantine,
+    parse_event_time,
+)
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -294,7 +298,7 @@ def _reference(record: dict[str, Any], file_name: str) -> str:
 
 def _timestamp(record: dict[str, Any], reference: str, event_type: str) -> tuple[Any, NormalizationIssue | None]:
     raw = record.get("@timestamp", "")
-    stamp = pd.to_datetime(raw, utc=True, errors="coerce")
+    stamp = parse_event_time(raw)
     if pd.isna(stamp):
         return None, NormalizationIssue(
             event_type=event_type, field="@timestamp", raw_reference=reference,

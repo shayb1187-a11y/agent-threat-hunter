@@ -46,7 +46,7 @@ from ath.schema import (
     TABLE_COLUMNS,
 )
 from ath.telemetry.admission import FileAdmission, admit_lines
-from ath.telemetry.normalize import coerce_validate_and_quarantine
+from ath.telemetry.normalize import coerce_validate_and_quarantine, parse_event_time
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 from ath.telemetry.winlogbeat_source import LOGON_FAILURE_REASONS
 
@@ -102,7 +102,7 @@ def _timestamp(record: dict[str, Any]) -> Any:
     for key in ("event_original_time", "@timestamp", "event_recorded_time"):
         raw = record.get(key)
         if raw:
-            stamp = pd.to_datetime(raw, errors="coerce", utc=True)
+            stamp = parse_event_time(raw)
             if not pd.isna(stamp):
                 return stamp
     return pd.NaT

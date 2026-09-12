@@ -18,6 +18,9 @@ The architecture this enables::
 
 from __future__ import annotations
 
+import re
+from datetime import datetime, timedelta, timezone
+
 import pandas as pd
 
 from ath.logging_setup import get_logger
@@ -61,6 +64,86 @@ INT_COLUMNS: dict[str, tuple[str, ...]] = {
     EVENT_NETWORK: ("process_id", "remote_port"),
     EVENT_LOGON: ("logon_type",),
 }
+
+
+# --------------------------------------------------------------------------------------
+# Per-record timestamp parsing.
+#
+# ``pd.to_datetime`` on a *scalar* costs ~230us on this Python 3.9 / pandas 2.2 build:
+# it has to guess the format, and it pays the full construction of a one-element
+# DatetimeIndex to do it. That is invisible while an adapter parses a handful of
+# records and ruinous the moment it parses every record of a real trail -- M18-3 made
+# every CloudTrail management event a control row, flaws.cloud went from 78k parses to
+# 1.94M, and the load went from 159s to 2,288s with flat memory.
+#
+# The fix is an exact-format reader for the shapes real telemetry actually emits, and
+# *only* those. Everything else -- a space instead of ``T``, a lowercase ``z``, a bare
+# date, an impossible month, a number, ``None`` -- is handed to ``pd.to_datetime``
+# unchanged. This is deliberately not a second parser with its own opinions: the fast
+# path either recognises a string exactly and produces the value pandas would, or it
+# does not recognise it and pandas produces the value. There is one definition of what
+# a timestamp means, and an equivalence test (tests/test_event_time_parsing.py) holds
+# the two paths to it over a hand-picked table, 2,000 generated strings and 50,000
+# distinct eventTime values drawn from the flaws.cloud trail.
+# --------------------------------------------------------------------------------------
+
+# ``[0-9]`` and not ``\d``: Python's ``\d`` matches every Unicode decimal digit, so
+# ``\d{4}`` accepts an Arabic-Indic or Devanagari year that ``int()`` then happily
+# converts -- and ``pd.to_datetime`` rejects. That is a fast path disagreeing with its
+# fallback about what a string means, which is the one thing it may never do.
+_ISO_8601 = re.compile(
+    r"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})"  # to the second
+    r"(?:\.([0-9]{1,9}))?"                                   # optional 1-9 frac digits
+    r"(?:Z|([+-])([0-9]{2}):([0-9]{2}))"                     # Z, or +HH:MM / -HH:MM
+)
+"""The one shape the fast path claims to know: RFC-3339 with an upper-case ``Z`` or a
+two-part numeric offset. Narrow on purpose -- every form left out is not a gap, it is a
+delegation, and a delegation cannot disagree with the fallback about what it means."""
+
+
+def parse_event_time(value: object) -> pd.Timestamp:
+    """Parse one record's event time to a UTC :class:`pandas.Timestamp`, or ``NaT``.
+
+    Semantically identical to ``pd.to_datetime(value, utc=True, errors="coerce")`` --
+    that call *is* the fallback, and is what runs for every input the exact-format
+    reader does not recognise, including non-strings, ``None`` and the empty string.
+    The fast path exists only to avoid pandas' format inference on the one shape that
+    accounts for essentially every row of real cloud and Kubernetes telemetry.
+
+    Args:
+        value: Whatever the source record carried in its time field.
+
+    Returns:
+        A timezone-aware UTC timestamp, or ``NaT`` when the value cannot be one.
+    """
+    if not isinstance(value, str):
+        return pd.to_datetime(value, utc=True, errors="coerce")
+
+    match = _ISO_8601.fullmatch(value)
+    if match is None:
+        return pd.to_datetime(value, utc=True, errors="coerce")
+
+    year, month, day, hour, minute, second, fraction, sign, off_h, off_m = match.groups()
+    try:
+        stamp = datetime(
+            int(year), int(month), int(day), int(hour), int(minute), int(second),
+            tzinfo=timezone.utc,
+        )
+        if sign is not None:
+            offset = timedelta(hours=int(off_h), minutes=int(off_m))
+            stamp = stamp - offset if sign == "+" else stamp + offset
+        # ``as_unit("ns")`` so the fast path cannot hand downstream code a
+        # microsecond-resolution Timestamp where the fallback hands it a nanosecond one:
+        # the values compare equal either way, but the resolution is part of the value
+        # and an optimisation may not change it.
+        parsed = pd.Timestamp(stamp).as_unit("ns")
+        nanoseconds = int((fraction or "").ljust(9, "0"))
+        return parsed + pd.Timedelta(nanoseconds, "ns") if nanoseconds else parsed
+    except (ValueError, OverflowError, OSError, pd.errors.OutOfBoundsDatetime):
+        # A well-shaped string naming an impossible instant -- month 13, 29 February in
+        # a common year, a year outside the nanosecond range. The fallback decides what
+        # those are worth, exactly as it does for a string the pattern never matched.
+        return pd.to_datetime(value, utc=True, errors="coerce")
 
 
 def coerce_types(df: pd.DataFrame, event_type: str) -> pd.DataFrame:

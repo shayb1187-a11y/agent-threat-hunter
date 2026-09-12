@@ -60,7 +60,11 @@ from ath.telemetry.admission import (
     SNIFF_RECORDS,
     admit_parsed,
 )
-from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
+from ath.telemetry.normalize import (
+    coerce_and_validate,
+    coerce_validate_and_quarantine,
+    parse_event_time,
+)
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -117,7 +121,7 @@ def _principal(user: dict[str, Any]) -> str:
 
 def _timestamp(item: dict[str, Any]) -> pd.Timestamp:
     raw = item.get("stageTimestamp") or item.get("requestReceivedTimestamp") or ""
-    return pd.to_datetime(raw, utc=True, errors="coerce")
+    return parse_event_time(raw)
 
 
 def _decision(item: dict[str, Any]) -> str:

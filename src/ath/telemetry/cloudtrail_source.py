@@ -111,7 +111,11 @@ from ath.telemetry.admission import (
     SNIFF_RECORDS,
     admit_parsed,
 )
-from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
+from ath.telemetry.normalize import (
+    coerce_and_validate,
+    coerce_validate_and_quarantine,
+    parse_event_time,
+)
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -635,7 +639,7 @@ def _normalise_auth_record(
     reference = f"{file_name}#record={index}, eventID={event_id}"
 
     raw_time = record.get("eventTime", "")
-    timestamp = pd.to_datetime(raw_time, utc=True, errors="coerce")
+    timestamp = parse_event_time(raw_time)
     if pd.isna(timestamp):
         return None, NormalizationIssue(
             event_type=EVENT_LOGON, field="eventTime", raw_reference=reference,
@@ -712,7 +716,7 @@ def _normalise_control_record(
         )
 
     raw_time = record.get("eventTime", "")
-    timestamp = pd.to_datetime(raw_time, utc=True, errors="coerce")
+    timestamp = parse_event_time(raw_time)
     if pd.isna(timestamp):
         return None, NormalizationIssue(
             event_type=EVENT_CONTROL, field="eventTime", raw_reference=reference,
