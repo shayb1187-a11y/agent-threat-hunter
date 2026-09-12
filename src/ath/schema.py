@@ -130,15 +130,26 @@ CONTROL_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     "resource_type",       # e.g. "iam:policy", "rolebindings", "pods/exec"
     "resource_name",       # the specific resource acted upon
     "resource_namespace",  # Kubernetes namespace; empty for cloud (not a cloud concept)
-    # -- who a grant targets, as distinct from who performed it ----------------------
-    # A grant-shaped action (a Kubernetes RoleBinding, an AWS AttachUserPolicy call)
-    # names a *beneficiary* that is frequently a different identity from the caller who
-    # created it. Conflating `actor` (the caller) with the beneficiary is the mistake
-    # that would make a privilege-escalation chain match the wrong identity's later
-    # activity. Left empty for actions with no target identity (StopLogging, pods/exec).
+    # -- the identity whose authority this action changed ----------------------------
+    # `target_actor` is the identity whose authority or credentials this action changed,
+    # as distinct from the caller who performed it: a Kubernetes RoleBinding, an AWS
+    # AttachUserPolicy or DeleteLoginProfile call names an identity that is frequently
+    # not the caller. Conflating `actor` (the caller) with it is the mistake that would
+    # make a privilege-escalation chain match the wrong identity's later activity.
+    #
+    # Empty on reads and on actions outside identity management -- and those two are one
+    # rule, not two exceptions. A read *about* an identity (ListAttachedUserPolicies)
+    # names that identity in exactly the parameters a grant does while changing nothing
+    # about it, so filling the column there would attribute the caller's reconnaissance
+    # to the person being enumerated. Which rows qualify is
+    # `ath.control_vocab.changes_authority`, read by the adapters that populate these
+    # columns and by the measurement that grades them, so the schema's definition and
+    # its denominator can never drift apart.
     "target_actor",
-    "role_ref",             # the specific role/policy granted, e.g. "cluster-admin" or a
-                            # policy ARN. Empty when the action does not grant a role.
+    "role_ref",             # the specific role/policy the action conferred or removed,
+                            # e.g. "cluster-admin" or a policy ARN. Empty on the same
+                            # rows `target_actor` is, and on authority changes that name
+                            # no role (AddUserToGroup, CreateAccessKey).
     "decision",             # "allowed" / "denied"
     "source_ip",            # caller's address
 )

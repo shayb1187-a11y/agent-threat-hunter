@@ -19,7 +19,12 @@ pass by matching data it was tuned on.
 
 from __future__ import annotations
 
+import ast
 import inspect
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -344,18 +349,266 @@ def test_no_detector_may_declare_its_own_applicability() -> None:
             )
 
 
-def test_the_behavior_binding_resources_match_the_kubernetes_adapter() -> None:
-    """Two declarations of one fact, held equal by test because the import is illegal.
+def test_the_kubernetes_adapter_reads_the_leaf_binding_resources() -> None:
+    """One declaration of one fact, reached by both layers.
 
-    ``ath.telemetry`` may not import ``ath.behavior``, so the adapter's ``_RBAC_RESOURCES``
-    and ``control_plane.RBAC_BINDING_RESOURCES`` are separate objects. Fails the moment
-    one gains a resource the other does not -- which would make a binding kind either
-    invisible to the grant predicate or invisible to the adapter.
+    Until M18-5 ``ath.telemetry`` could not import ``ath.behavior``, so the adapter kept
+    its own ``_RBAC_RESOURCES`` and a test held the two sets equal -- a guarded seam
+    rather than no seam. The leaf module removes it: the adapter now imports the same
+    object. Fails if a second copy is reintroduced anywhere in the adapter, or if the
+    adapter stops consulting the shared set (a binding kind would then be either
+    invisible to the predicate or invisible to the adapter, with nothing to notice).
     """
-    from ath.behavior.control_plane import RBAC_BINDING_RESOURCES
-    from ath.telemetry.k8s_audit_source import _RBAC_RESOURCES
+    from ath.control_vocab import RBAC_BINDING_RESOURCES
+    from ath.telemetry import k8s_audit_source
 
-    assert RBAC_BINDING_RESOURCES == _RBAC_RESOURCES
+    assert k8s_audit_source.RBAC_BINDING_RESOURCES is RBAC_BINDING_RESOURCES
+
+    tree = ast.parse(inspect.getsource(k8s_audit_source))
+    docstrings = {
+        id(node.body[0].value)
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef))
+        and node.body and isinstance(node.body[0], ast.Expr)
+        and isinstance(node.body[0].value, ast.Constant)
+        and isinstance(node.body[0].value.value, str)
+    }
+    literals = {
+        node.value for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        and id(node) not in docstrings
+    }
+    assert not (literals & RBAC_BINDING_RESOURCES), (
+        "the adapter names a binding resource of its own again"
+    )
+
+
+def test_the_control_vocabulary_is_a_leaf_every_layer_may_import() -> None:
+    """The whole reason the duplicate existed was an import it could not make.
+
+    Checked in a fresh interpreter *after* the predicates are exercised, so a lazy
+    import inside one of them would be caught too. Fails the moment the vocabulary grows
+    a dependency on telemetry, behavior, environment or hunting -- at which point the
+    adapters could not import it and the second copy would come back.
+    """
+    root = Path(__file__).resolve().parent.parent
+    program = (
+        "import sys\n"
+        "from ath.control_vocab import changes_authority, is_grant, verb_class\n"
+        "changes_authority('attach', 'iam:user-policy')\n"
+        "is_grant('create', 'rolebindings')\n"
+        "verb_class('describe')\n"
+        "forbidden = ('telemetry', 'behavior', 'environment', 'hunting')\n"
+        "print(','.join(sorted(m for m in sys.modules\n"
+        "    if m.split('.')[:1] == ['ath'] and m.split('.')[1:2]\n"
+        "    and m.split('.')[1] in forbidden)))\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", program], capture_output=True, text=True, cwd=str(root),
+        env={**os.environ, "PYTHONPATH": str(root / "src")},
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "", f"leaf module imported: {result.stdout.strip()}"
+
+
+# --------------------------------------------------------------------------------------
+# changes_authority: the predicate behind target_actor and role_ref
+#
+# Services, verbs and resource families below exercise the *rule* rather than any
+# corpus: ``quokka``, ``ledger`` and ``appliance`` are families invented for
+# tests/test_cloudtrail_representation.py, whose disjointness from the attack_data_aws
+# capture and the flaws.cloud top-100 is asserted programmatically there.
+# --------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("verb_class_name,verb", [
+    ("grant", "attach"), ("revoke", "detach"), ("create", "put"),
+    ("delete", "delete"), ("modify", "update"),
+])
+@pytest.mark.parametrize("resource_type", [
+    "iam:quokka-policy", "iam:ledger-user", "iam", "rolebindings", "clusterrolebindings",
+])
+def test_every_changing_class_on_an_identity_object_changes_authority(
+    verb_class_name, resource_type, verb
+) -> None:
+    """Five verb classes against the identity service and both RBAC binding kinds.
+
+    Fails if the predicate narrows back to GRANT (a revoke, a delete and a login-profile
+    update stop naming the identity whose authority they moved), and fails if the
+    binding clause is dropped (every Kubernetes grant stops naming its subject).
+    """
+    from ath.control_vocab import changes_authority, verb_class
+
+    assert verb_class(verb) == verb_class_name
+    assert changes_authority(verb, resource_type)
+
+
+@pytest.mark.parametrize("verb,resource_type", [
+    # A read on the identity service: names a user, changes nothing about that user.
+    ("list", "iam:quokka-policy"),
+    ("get", "iam:ledger-user"),
+    ("describe", "iam"),
+    ("watch", "rolebindings"),
+    # A grant-shaped verb somewhere that holds no identities.
+    ("attach", "ec2:appliance-volume"),
+    ("authorize", "ec2:appliance-fleet-ingress"),
+    ("add", "support:communication-to-case"),
+    # Neither the verb nor the resource qualifies.
+    ("teleport", "iam:quokka-policy"),
+    ("", "iam:ledger-user"),
+    ("create", "pods"),
+    # A malformed resource type with no service prefix, and not a binding.
+    ("attach", "quokkapolicy"),
+    ("delete", ""),
+])
+def test_what_does_not_change_an_authority(verb, resource_type) -> None:
+    """The near-misses, each of which a looser predicate would let through.
+
+    Fails if the verb clause is dropped (every IAM read claims a beneficiary again --
+    the 11,388-row defect), if the service clause is dropped (a volume attachment claims
+    one), or if an unknown verb or a colon-less resource type is treated as qualifying.
+    """
+    from ath.control_vocab import changes_authority
+
+    assert not changes_authority(verb, resource_type)
+
+
+def test_the_predicate_names_no_resource_family() -> None:
+    """A family list would be the allowlist defect M18-3 removed, one layer up.
+
+    ``changes_authority`` may read verb classes, IDENTITY_SERVICES and
+    RBAC_BINDING_RESOURCES and nothing else. Fails the moment a family token
+    ("user-policy", "role-policy", "login-profile", ...) is written into its body.
+    """
+    from ath import control_vocab
+
+    source = "".join(
+        line for line in inspect.getsource(control_vocab).splitlines(keepends=True)
+        if not line.lstrip().startswith("#")
+    )
+    body = source.split("def changes_authority", 1)[1]
+    for family in ("user-policy", "role-policy", "group-policy", "login-profile",
+                   "access-key", "instance-profile"):
+        assert family not in body, f"changes_authority enumerates {family!r}"
+
+
+# --------------------------------------------------------------------------------------
+# The applicability denominator that follows from it
+# --------------------------------------------------------------------------------------
+
+
+def _identity_reads(count: int) -> list[dict]:
+    """IAM reads that named a user in the raw record and change nothing about it.
+
+    The canonical shape the adapter now produces for ``ListAttachedUserPolicies`` and
+    its relatives: the caller is the actor, and the enumerated user appears nowhere.
+    """
+    return [
+        build.ctrl(
+            "mriordan", verb, "iam:quokka-policy", f"quokka-policy-{index}",
+            device="aws:519204773311/ap-southeast-2", source_ip="198.51.100.203",
+            source="cloudtrail_mgmt", when=build.at(seconds=index),
+            actor_groups="system:authenticated",
+        )
+        for index in range(count)
+        for verb in [("list", "get", "describe")[index % 3]]
+    ]
+
+
+def _authority_changes(count: int, *, target: str = "wpaulsen",
+                       role: str = "cluster-admin") -> list[dict]:
+    """Rows that change an identity's authority, one per changing verb class.
+
+    Deliberately not all grants: a revoke, a delete and a modify carry the same two
+    columns for the same reason, and a denominator built on grant-shape alone grades
+    none of them.
+    """
+    shapes = (
+        ("attach", "iam:quokka-policy"), ("detach", "iam:quokka-policy"),
+        ("update", "iam:ledger-login-profile"), ("delete", "iam:ledger-user"),
+        ("create", "rolebindings"),
+    )
+    rows = []
+    for index in range(count):
+        verb, resource_type = shapes[index % len(shapes)]
+        binding = resource_type == "rolebindings"
+        rows.append(build.ctrl(
+            "mriordan", verb, resource_type, f"{resource_type.split(':')[-1]}-{index}",
+            target_actor=target, role_ref=role,
+            namespace="payments" if binding else "",
+            device="k8s:mercury" if binding else "aws:519204773311/ap-southeast-2",
+            source_ip="198.51.100.203",
+            source="k8s_audit" if binding else "cloudtrail_mgmt",
+            when=build.at(minutes=90, seconds=index),
+            actor_groups="system:authenticated",
+        ))
+    return rows
+
+
+def test_identity_reads_are_not_in_the_denominator_of_an_authority_field() -> None:
+    """1,000 IAM reads + 20 authority changes that carry their target.
+
+    The reads name a user in the raw record and carry nothing in the canonical row, so
+    they cannot dilute a column they could never have filled. Fails if applicability is
+    still decided by ``is_grant``: the reads stay out either way, but the detach, the
+    login-profile update and the user deletion fall out of the denominator too, and the
+    field would be graded over 8 of the 20 rows that must carry it.
+    """
+    telemetry = build.telemetry(ctrls=_identity_reads(1_000) + _authority_changes(20))
+
+    aws001 = _rule(telemetry, "AWS-001")
+    for column in ("target_actor", "role_ref"):
+        field = _field(aws001, column)
+        assert field.applicable
+        assert field.population.applicable_rows == 20
+        assert field.fraction == 1.0
+        assert field.population.raw_fraction == pytest.approx(20 / 1020)
+        assert column not in aws001.sparse_fields
+    assert aws001.verdict is not RuleVerdict.DEGRADED, aws001.detail
+
+
+def test_authority_changes_with_no_target_are_still_blindness() -> None:
+    """The same shape with the target emptied on all 20.
+
+    Applicability narrows the denominator; it must never excuse the numerator. Fails if
+    "no populated applicable row" is read as "nothing to measure".
+    """
+    changes = [dict(row, target_actor="") for row in _authority_changes(20)]
+    telemetry = build.telemetry(ctrls=_identity_reads(1_000) + changes)
+
+    aws001 = _rule(telemetry, "AWS-001")
+    assert aws001.verdict is RuleVerdict.UNUSABLE
+    assert "target_actor" in aws001.unpopulated_fields
+    assert "target_actor" in aws001.detail
+    assert _field(aws001, "target_actor").population.applicable_rows == 20
+
+
+def test_a_volume_attachment_is_grant_shaped_and_names_no_identity() -> None:
+    """40 ``attach ec2:volume`` rows + 5 IAM authority changes: the denominator is 5.
+
+    This is the half of the flaws.cloud AWS-001 reading that was measurement error --
+    42 of its 132 grant-shaped rows attach a storage volume to an instance. Fails if the
+    denominator is ``is_grant``: 5 of 45 is 11%, under DEGRADED_BELOW, and AWS-001 reads
+    DEGRADED on a corpus where every authority change in it names its subject.
+    """
+    volumes = [
+        build.ctrl(
+            "mriordan", "attach", "ec2:appliance-volume", f"vol-{index:04x}",
+            device="aws:519204773311/ap-southeast-2", source_ip="198.51.100.203",
+            source="cloudtrail_mgmt", when=build.at(minutes=10, seconds=index),
+        )
+        for index in range(40)
+    ]
+    telemetry = build.telemetry(ctrls=volumes + _authority_changes(5))
+
+    aws001 = _rule(telemetry, "AWS-001")
+    for column in ("target_actor", "role_ref"):
+        field = _field(aws001, column)
+        assert field.population.applicable_rows == 5
+        assert field.fraction == 1.0
+        assert field.population.raw_fraction == pytest.approx(5 / 45)
+    assert not aws001.sparse_fields
+    assert not aws001.unpopulated_fields
 
 
 def test_is_grant_reads_the_verb_class_and_the_binding_resource_and_nothing_else() -> None:

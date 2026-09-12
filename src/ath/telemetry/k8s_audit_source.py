@@ -50,6 +50,7 @@ from typing import Any
 
 import pandas as pd
 
+from ath.control_vocab import RBAC_BINDING_RESOURCES
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
@@ -75,7 +76,6 @@ SOURCE_NAME = "k8s_audit"
 # ("RequestReceived", "ResponseStarted") are the same event logged again, earlier.
 _COMPLETE_STAGE = "ResponseComplete"
 
-_RBAC_RESOURCES: frozenset[str] = frozenset({"rolebindings", "clusterrolebindings"})
 # ``kubectl exec`` reaches the apiserver as a protocol-upgrade request. Older clients
 # POSTed it (audit verb ``create``); the audit layer also names ``connect``; and every
 # real apiserver log examined for Milestone 14 -- Kubernetes CI on 1.37, K8NTEXT on
@@ -389,7 +389,7 @@ def _normalise_control_record(
     resource = str(object_ref.get("resource") or "")
     subresource = str(object_ref.get("subresource") or "")
 
-    if resource in _RBAC_RESOURCES and not subresource and verb == "create":
+    if resource in RBAC_BINDING_RESOURCES and not subresource and verb == "create":
         resource_type = resource
         target_actor, role_ref = _rbac_grant_fields(item)
     elif resource == "pods" and subresource == "exec" and verb in _EXEC_VERBS:

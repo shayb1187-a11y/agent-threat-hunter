@@ -63,6 +63,13 @@ INVENTED_EVENT_NAMES = (
     "DeleteWorkbookRow", "CreateApplianceFleet", "DescribeApplianceFleets",
     "AttachAppliancePolicy", "DeleteApplianceFleet", "ListLedgerAliases",
     "GetVoiceConnectorStatus", "DescribeApplianceAddresses", "ListWorkbookRepositories",
+    # M18-5: the identity-service calls that separate "changed an authority" from
+    # "mentioned an identity". Added to this tuple, not a second one, so the same
+    # programmatic disjointness check covers them.
+    "ListWidgetUserGrants", "GetLedgerUserSummary", "DescribeLedgerUserGrants",
+    "AttachQuokkaPolicy", "DetachQuokkaPolicy", "UpdateLedgerLoginProfile",
+    "IssueAccessKey", "DeleteLedgerUser", "AttachApplianceVolume",
+    "AuthorizeApplianceFleetIngress",
 )
 
 
@@ -442,6 +449,120 @@ def test_non_identity_services_assert_no_beneficiary() -> None:
     assert row["target_actor"] == ""
     assert row["role_ref"] == ""
     assert row["resource_name"] == "fleet-7"
+
+
+# ======================================================================================
+# M18-5: target_actor means "the identity whose authority this action changed"
+# ======================================================================================
+#
+# The conventions above used to be read on *every* row of the identity service, which is
+# not the same question. IAM's reads name a user in the same `requestParameters` its
+# grants do, so a `ListAttachedUserPolicies` call filled `target_actor` with the user it
+# was asking about -- and, because the canonical `user` column is `target_actor or
+# actor`, filed the caller's reconnaissance under the person being enumerated. 11,388
+# rows of the flaws.cloud trail carried the field on that basis, almost all of them
+# reads (M18-4).
+#
+# Identities and account here appear in no other fixture, and every event name is in
+# INVENTED_EVENT_NAMES, which the disjointness test above checks against both corpora.
+
+
+def _identity_row(event_name: str, params: dict, *, source: str = "iam.amazonaws.com",
+                  actor: str = "gannet") -> dict:
+    """One normalised control row for a call on ``source``, made by ``actor``."""
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    row, issue = _normalise_control_record(
+        _record(eventSource=source, eventName=event_name, requestParameters=params,
+                recipientAccountId="900000000077",
+                userIdentity={"type": "IAMUser", "userName": actor,
+                              "accountId": "900000000077"}),
+        "invented.json", 0,
+    )
+    assert issue is None
+    return row
+
+
+@pytest.mark.parametrize("event_name,params", [
+    ("ListWidgetUserGrants", {"userName": "shrike"}),
+    ("GetLedgerUserSummary", {"userName": "shrike"}),
+    ("DescribeLedgerUserGrants",
+     {"userName": "shrike", "policyArn": "arn:aws:iam::900000000077:policy/ledger-rw"}),
+])
+def test_a_read_about_an_identity_is_attributed_to_the_caller(event_name, params) -> None:
+    """Asking what a user has does not change what that user has.
+
+    Fails the moment the beneficiary conventions are read on the identity *service*
+    rather than on the rows that changed an authority: target_actor would be "shrike",
+    and `user` -- which every consumer groups by -- would file gannet's enumeration of
+    shrike under shrike.
+    """
+    row = _identity_row(event_name, params)
+
+    assert row["actor"] == "gannet"
+    assert row["target_actor"] == ""
+    assert row["role_ref"] == ""
+    assert row["user"] == row["actor"] == "gannet"
+
+
+@pytest.mark.parametrize("verb_class_name,event_name,params,target,role", [
+    ("grant", "AttachQuokkaPolicy",
+     {"userName": "pipit", "policyArn": "arn:aws:iam::900000000077:policy/quokka-rw"},
+     "pipit", "arn:aws:iam::900000000077:policy/quokka-rw"),
+    ("revoke", "DetachQuokkaPolicy",
+     {"userName": "avocet", "policyArn": "arn:aws:iam::900000000077:policy/quokka-rw"},
+     "avocet", "arn:aws:iam::900000000077:policy/quokka-rw"),
+    ("modify", "UpdateLedgerLoginProfile", {"userName": "godwit"}, "godwit", ""),
+    # A create that names nobody: the access-key family targets the caller.
+    ("create", "IssueAccessKey", {}, "gannet", ""),
+    ("delete", "DeleteLedgerUser", {"userName": "bittern"}, "bittern", ""),
+])
+def test_every_class_of_authority_change_names_the_identity_it_changed(
+    verb_class_name, event_name, params, target, role
+) -> None:
+    """Five verb classes, one column: whose authority moved.
+
+    A revoke, a modify and a delete are not grants, and grading or filling these columns
+    on grant-shaped rows alone would leave all three silently empty -- an escalation
+    chain that could not see a permission being taken away or a login profile being
+    reset. Fails if the predicate narrows back to GRANT, and fails if the access-key
+    self-targeting rule is lost (the create case has no userName at all).
+    """
+    from ath.control_vocab import verb_class
+
+    row = _identity_row(event_name, params)
+
+    assert verb_class(row["verb"]) == verb_class_name
+    assert row["target_actor"] == target
+    assert row["role_ref"] == role
+    # The canonical `user` names the identity the action is about, not the caller.
+    assert row["user"] == target
+
+
+@pytest.mark.parametrize("event_name,params", [
+    # `userName` on an EC2 call is whatever the caller put in a tag or a filter; it is
+    # never the identity a volume attachment changed the authority of, because a volume
+    # attachment changes no identity's authority.
+    ("AttachApplianceVolume", {"userName": "sandpiper", "instanceId": "i-0ab7"}),
+    ("AuthorizeApplianceFleetIngress",
+     {"userName": "sandpiper", "roleName": "fleet-runtime"}),
+])
+def test_a_grant_shaped_verb_outside_identity_management_names_no_identity(
+    event_name, params
+) -> None:
+    """Grant-shaped is not the same question as changed-an-identity.
+
+    42 of the 132 grant-shaped rows on flaws.cloud attach a storage volume to an
+    instance. Fails if the predicate is written on the verb class alone -- these rows
+    would claim an identity whose authority nothing changed, from parameters that mean
+    something else entirely.
+    """
+    row = _identity_row(event_name, params, source="ec2.amazonaws.com")
+
+    assert row["resource_type"].startswith("ec2:")
+    assert row["target_actor"] == ""
+    assert row["role_ref"] == ""
+    assert row["user"] == row["actor"] == "gannet"
 
 
 # ======================================================================================

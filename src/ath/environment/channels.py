@@ -49,11 +49,10 @@ from typing import Any
 
 import pandas as pd
 
-from ath.behavior.control_plane import is_grant
-
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
 from ath.channels import TelemetryChannel
+from ath.control_vocab import changes_authority
 from ath.schema import (
     EVENT_CONTROL,
     EVENT_LOGON,
@@ -381,12 +380,14 @@ def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tupl
 # a rule does. The natural home is therefore ath.schema, and the piece of it that needs
 # no other module does live there (REMOTE_LOGON_TYPES, beside LOGON_TYPE_NAMES).
 #
-# The predicates themselves cannot. Deciding whether a control row is grant-shaped needs
-# ath.behavior.control_plane.is_grant, and the dependency direction runs
-# schema -> telemetry -> behavior -> environment: ath.schema importing ath.behavior would
-# invert it. So the table is declared here, in the module that performs the population
-# measurement and is already allowed to import ath.behavior -- one declaration,
-# immediately above its only consumer.
+# The predicates themselves cannot. Deciding whether a control row changed an identity's
+# authority needs ath.control_vocab.changes_authority, and ath.schema may import nothing
+# of the sort without inverting the dependency direction
+# schema -> telemetry -> behavior -> environment. So the table is declared here, in the
+# module that performs the population measurement -- one declaration, immediately above
+# its only consumer -- and reads the same leaf vocabulary the *adapters* read when they
+# populate those columns. That shared predicate is the point: a column filled on one set
+# of rows and graded over another is a measurement of nothing.
 #
 # What it may never be is a property of a detector. A rule that chose its own denominator
 # could make itself look usable by narrowing the rows it is judged on, which is precisely
@@ -419,18 +420,27 @@ other obvious choice and is unusable -- pandas' string concatenation silently dr
 which would collide every pair into one."""
 
 
-def _grant_shaped(df: pd.DataFrame) -> pd.Series:
-    """Control rows that move a permission to an identity.
+def _authority_changing(df: pd.DataFrame) -> pd.Series:
+    """Control rows that changed some identity's authority or credentials.
 
-    Decided by :func:`ath.behavior.control_plane.is_grant` -- the single definition --
-    but evaluated once per distinct ``(verb, resource_type)`` pair rather than once per
-    row: a real trail carries 1.9M rows and a few hundred distinct pairs.
+    Decided by :func:`ath.control_vocab.changes_authority` -- the same single definition
+    the adapters use to *fill* ``target_actor`` and ``role_ref`` -- but evaluated once
+    per distinct ``(verb, resource_type)`` pair rather than once per row: a real trail
+    carries 1.9M rows and a few hundred distinct pairs.
+
+    Not ``is_grant``, which this used to be. Grant-shaped is the wrong denominator in
+    both directions: 42 of the 132 grant-shaped rows on flaws.cloud attach a *storage
+    volume* to an instance and name no identity at all, so the field was graded over
+    rows it could never have carried a value on; and a ``detach`` or a login-profile
+    update changes an authority without being a grant, so rows that must carry the field
+    were excluded from the grading entirely.
     """
     verbs = df["verb"].astype("string").fillna("")
     resources = df["resource_type"].astype("string").fillna("")
     keys = (verbs + _PAIR_SEPARATOR + resources).astype("string")
     decisions = {
-        key: is_grant(*key.split(_PAIR_SEPARATOR, 1)) for key in keys.dropna().unique()
+        key: changes_authority(*key.split(_PAIR_SEPARATOR, 1))
+        for key in keys.dropna().unique()
     }
     return keys.map(decisions).fillna(False).astype(bool)
 
@@ -459,12 +469,15 @@ def _logon_from_elsewhere(df: pd.DataFrame) -> pd.Series:
 
 FIELD_APPLICABILITY: dict[tuple[str, str], FieldApplicability] = {
     (EVENT_CONTROL, "target_actor"): FieldApplicability(
-        applies_to=_grant_shaped,
-        reason="only a grant-shaped action names a beneficiary",
+        applies_to=_authority_changing,
+        reason="only an action that changes an identity's authority names that identity",
     ),
     (EVENT_CONTROL, "role_ref"): FieldApplicability(
-        applies_to=_grant_shaped,
-        reason="only a grant-shaped action names the role or policy it confers",
+        applies_to=_authority_changing,
+        reason=(
+            "only an action that changes an identity's authority names the role or "
+            "policy it moved"
+        ),
     ),
     (EVENT_LOGON, "failure_reason"): FieldApplicability(
         applies_to=_failed_logon,

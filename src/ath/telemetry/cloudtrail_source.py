@@ -101,6 +101,7 @@ from typing import Any
 
 import pandas as pd
 
+from ath.control_vocab import changes_authority
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
@@ -311,14 +312,22 @@ def resource_type_for(event_source: str, event_name: str) -> tuple[str, str, str
 _TARGET_FIELDS: tuple[str, ...] = ("userName", "roleName", "groupName")
 _ROLE_FIELDS: tuple[str, ...] = ("policyArn", "policyName", "roleArn", "instanceProfileName")
 
-# The identity service, whose `requestParameters` those conventions hold for. Read as a
-# service, not as a set of call names: every call IAM has ever shipped names its
+# Which rows those conventions may be read on:
+# :func:`ath.control_vocab.changes_authority` -- the identity service (or a Kubernetes
+# RBAC binding, which CloudTrail never produces) acted on with a verb that changes
+# something. Not the service alone, which is what this used to test: IAM's reads name a
+# user in exactly the same parameters as its grants do, so reading them on every IAM row
+# made `ListAttachedUserPolicies` report the user it was *asking about* as the identity
+# whose authority the call changed -- and, through `user = target_actor or actor`,
+# attributed the caller's reconnaissance to the person being enumerated (11,388 rows of
+# the flaws.cloud trail, M18-4). The predicate is still read as a service and a verb
+# class rather than as a set of call names: every call IAM has ever shipped names its
 # beneficiary the same way, including the ones that do not exist yet.
-_IDENTITY_SERVICE = "iam"
 
 # The family whose calls target the caller when they name no one else: creating an access
 # key with no `userName` creates one for yourself. A family-level rule, because it is
-# true of every call on that family rather than of one call's name.
+# true of every call on that family rather than of one call's name. A create on
+# `iam:access-key` is inside `changes_authority`, so this rule still applies where it did.
 _SELF_TARGETING_FAMILY = "access-key"
 
 
@@ -739,18 +748,18 @@ def _normalise_control_record(
 
     event_source = str(record.get("eventSource") or "")
     verb, resource_type, family = resource_type_for(event_source, event_name)
-    service = _service(event_source)
 
     params = record.get("requestParameters") or {}
     params = params if isinstance(params, dict) else {}
 
-    # The beneficiary of a grant, as distinct from the caller -- read from the identity
-    # service's own parameter conventions. An access-key call that names no user creates
-    # a key for the caller, so the beneficiary is the actor themself, not "no one", which
+    # The identity whose authority this action changed, as distinct from the caller --
+    # read from the identity service's own parameter conventions, and only on the rows
+    # that changed an authority at all. An access-key call that names no user creates a
+    # key for the caller, so the beneficiary is the actor themself, not "no one", which
     # is what lets it chain to a prior grant.
     target_actor = ""
     role_ref = ""
-    if service == _IDENTITY_SERVICE:
+    if changes_authority(verb, resource_type):
         target_actor = _first_present(params, _TARGET_FIELDS)
         role_ref = _first_present(params, _ROLE_FIELDS)
         if not target_actor and family == _SELF_TARGETING_FAMILY:
