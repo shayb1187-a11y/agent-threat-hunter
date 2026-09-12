@@ -29,9 +29,9 @@ against; they can show a fix has not rotted, and nothing more.
 | R5 | flaws.cloud CloudTrail | real AWS account | regression | yes (M15-2) |
 | R6 | Synthetic incident benchmark | synthetic | regression | yes |
 | **H1** | **DEDALE D07** (benign, week 1) | emulated-testbed | **held out** | **no — never fetched** |
-| **H2** | **Kubernetes `conformance-kind` job** | real kube-apiserver, `kind` provisioner | **held out** | **no** |
+| **H2** | **Kubernetes `gci-gce-ingress` workload** (re-scoped, §4.2) | real kube-apiserver, GCE provisioner | **held out** | **no** |
 | **H3** | **splunk/attack_data AWS techniques** | emulated attacks in a real AWS account | **held out** | **no** |
-| **H4** | **COMISET LAB** (conditional) | emulated, Universidad Pontificia Comillas | **held out** | **no** |
+| **H4** | **COMISET LAB** | emulated, Universidad Pontificia Comillas; Elastic/HELK export (§4.8) | **held out** | **no** |
 | **S1** | **DEDALE D18** (mid-APT) | emulated-testbed | **sealed** | **no — opened last, after all remediation** |
 
 Labels stay confined to `ath.evaluation`; adapters never see them. Nothing derived from a
@@ -46,13 +46,16 @@ administrative workflows, same semantics*. It is a **temporal/host holdout, not
 environment diversity** — same domain, same generator, same Sysmon config — and is
 labelled that way throughout.
 
-**H2 — Kubernetes `conformance-kind`.** The K8S-001 fix reads the grantor's standing and
+**H2 — Kubernetes, a second workload.** The K8S-001 fix reads the grantor's standing and
 stays silent when a `system:masters` member grants `cluster-admin`. Every one of the 55
-false positives it was designed against came from a GCE-provisioned cluster. `kind`
-bootstraps through a different path with different `system:*` identities, so if the fix
-happened to encode "GCE's bootstrap pattern" rather than "the grantor already outranks the
-grantee", this is where it breaks. Same publisher and project as R3 — **a different
-provisioner and workload, not a different organisation**.
+false positives it was designed against came from a GCE-provisioned cluster, so the
+intended test was *a different provisioner's identity model* — originally planned as a
+`kind` job.
+
+**That test proved impossible and the hypothesis was re-scoped before the run; see §4.2.**
+No non-GCE Kubernetes job publishes an apiserver audit log, so what H2 actually measures
+is a different *workload* on the same provisioner. The identity-model question is recorded
+in §5.1 as untestable on public data rather than quietly answered by a weaker experiment.
 
 **H3 — splunk/attack_data AWS.** Every cloud number ATH has is a false-positive number.
 flaws.cloud carries no per-event labels, so `AWS-001`/`AWS-002` have **never been measured
@@ -61,13 +64,20 @@ techniques, in a different account with a different API mix. They measure **true
 only** — there is no benign background, so no false-positive rate can be computed from
 them, and none will be quoted.
 
-**H4 — COMISET LAB (conditional).** Fields are `Process_name`, `CommandLine`,
-`process_parent_name` — not ECS. It tests whether the Windows fixes depend on security
-semantics or on Winlogbeat's field naming. Held back until H1–H3 report, so that if those
-expose defects it can serve as an untouched cross-schema check *after* remediation.
+**H4 — COMISET LAB.** A different organisation's Windows telemetry in a non-ECS
+representation. It tests whether the Windows fixes depend on security semantics or on
+Winlogbeat's field naming. Held back until H1–H3 reported, so that it stayed available as
+an untouched cross-schema check.
 
-**S1 — DEDALE D18, sealed.** Opened once, last, after every remediation in this milestone.
-Its only job is to answer the overfitting question about M16 itself.
+Two plan corrections found during acquisition are detailed in §4.8: the schema is the
+Elastic/HELK `logs-endpoint-winevent-*` layout rather than the flat `Process_name` columns
+the M14 notes describe, and the archive is a single 159.7 GB zip member that can only be
+read as one sequential pass.
+
+**S1 — DEDALE D18, sealed.** Opened once, last, after every other result was frozen and
+committed. No remediation was performed in M16, so in the event it answers the overfitting
+question against the same implementation every other holdout met — which is stronger, not
+weaker: nothing at all was fitted between the freeze and this run.
 
 ### Rejected, with reasons
 
