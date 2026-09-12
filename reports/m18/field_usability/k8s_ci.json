@@ -1,0 +1,611 @@
+{
+  "corpus": "k8s_ci",
+  "rows": {
+    "process": 0,
+    "network": 0,
+    "logon": 0,
+    "control": 7951
+  },
+  "events": 7951,
+  "channels": {
+    "process_execution": "absent_in_data",
+    "process_command_line": "absent_in_data",
+    "process_lineage": "absent_in_data",
+    "handle_access": "absent_by_schema",
+    "network_flow": "absent_in_data",
+    "network_inbound": "absent_in_data",
+    "network_url": "absent_in_data",
+    "dns_query": "absent_by_schema",
+    "authentication": "absent_in_data",
+    "auth_source_attribution": "absent_in_data",
+    "file_events": "absent_by_schema",
+    "registry": "absent_by_schema",
+    "script_block": "absent_by_schema",
+    "email": "absent_by_schema",
+    "cloud_control_plane": "absent_in_data",
+    "cloud_management_activity": "absent_in_data",
+    "container_audit": "available"
+  },
+  "rules": [
+    {
+      "rule_id": "ATH-001",
+      "title": "Office application spawned a script interpreter",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-002",
+      "title": "Encoded PowerShell command execution",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-003",
+      "title": "Script interpreter connected to an external host",
+      "declared_tables": {
+        "network": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "network_flow",
+        "network_url",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-004",
+      "title": "Possible LSASS credential access",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-005",
+      "title": "Failed logon burst followed by successful authentication",
+      "declared_tables": {
+        "logon": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "auth_source_attribution",
+        "authentication"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-006",
+      "title": "Account authenticated from a host where it has no session",
+      "declared_tables": {
+        "logon": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "auth_source_attribution",
+        "authentication"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (logon); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-007",
+      "title": "Remote service execution (PsExec-style)",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-008",
+      "title": "Bulk data staged into an archive",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-009",
+      "title": "Macro-enabled document opened via email client",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-010",
+      "title": "Sequence of discovery commands from one parent process",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-011",
+      "title": "Windows recovery mechanisms destroyed",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-012",
+      "title": "Security product disabled or reconfigured",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-001",
+      "title": "IAM policy grant followed by access-key creation for the same identity",
+      "declared_tables": {
+        "control": 7951
+      },
+      "eligible_rows": 7951,
+      "verdict": "unusable",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 7951,
+          "populated": 1989,
+          "fraction": 0.25015721,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 7951,
+          "populated": 1988,
+          "fraction": 0.25003144,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "role_ref",
+        "target_actor"
+      ],
+      "findings": 0,
+      "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
+    },
+    {
+      "rule_id": "AWS-002",
+      "title": "CloudTrail logging disabled or trail deleted",
+      "declared_tables": {
+        "control": 7951
+      },
+      "eligible_rows": 7951,
+      "verdict": "unusable",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 7951,
+          "populated": 7950,
+          "fraction": 0.99987423,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "depends on absent telemetry (cloud_management_activity); this rule will run and find nothing regardless of what occurred"
+    },
+    {
+      "rule_id": "K8S-001",
+      "title": "RBAC binding grants a maximally-privileged role",
+      "declared_tables": {
+        "control": 7951
+      },
+      "eligible_rows": 7951,
+      "verdict": "degraded",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "actor_groups",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 7951,
+          "populated": 7950,
+          "fraction": 0.99987423,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 7951,
+          "populated": 1989,
+          "fraction": 0.25015721,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 7951,
+          "populated": 1988,
+          "fraction": 0.25003144,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "role_ref",
+        "target_actor"
+      ],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): role_ref 1989 of 7951 control rows (25.02%, required); target_actor 1988 of 7951 control rows (25.00%, required) -- the rule still fires on its remaining fields"
+    },
+    {
+      "rule_id": "K8S-002",
+      "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
+      "declared_tables": {
+        "control": 7951
+      },
+      "eligible_rows": 7951,
+      "verdict": "degraded",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 7951,
+          "populated": 7950,
+          "fraction": 0.99987423,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_namespace",
+          "rows": 7951,
+          "populated": 6667,
+          "fraction": 0.83851088,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 7951,
+          "populated": 1989,
+          "fraction": 0.25015721,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 7951,
+          "populated": 1988,
+          "fraction": 0.25003144,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 7951,
+          "populated": 7951,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "role_ref",
+        "target_actor"
+      ],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): role_ref 1989 of 7951 control rows (25.02%, required); target_actor 1988 of 7951 control rows (25.00%, required) -- the rule still fires on its remaining fields"
+    }
+  ],
+  "total_findings": 0,
+  "verdict_counts": {
+    "not_eligible": 12,
+    "unusable": 2,
+    "degraded": 2
+  },
+  "before_counts": {
+    "unsupported": 14,
+    "supported": 2
+  },
+  "hunt_seconds": 0.1,
+  "load_seconds": 15.1,
+  "source": {
+    "kind": "k8s",
+    "path": "data\\external\\k8s_ci\\raw"
+  }
+}

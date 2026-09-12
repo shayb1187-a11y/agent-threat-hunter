@@ -1,0 +1,512 @@
+{
+  "corpus": "attack_data_aws",
+  "rows": {
+    "process": 0,
+    "network": 0,
+    "logon": 2,
+    "control": 0
+  },
+  "events": 2,
+  "channels": {
+    "process_execution": "absent_in_data",
+    "process_command_line": "absent_in_data",
+    "process_lineage": "absent_in_data",
+    "handle_access": "absent_by_schema",
+    "network_flow": "absent_in_data",
+    "network_inbound": "absent_in_data",
+    "network_url": "absent_in_data",
+    "dns_query": "absent_by_schema",
+    "authentication": "available",
+    "auth_source_attribution": "available",
+    "file_events": "absent_by_schema",
+    "registry": "absent_by_schema",
+    "script_block": "absent_by_schema",
+    "email": "absent_by_schema",
+    "cloud_control_plane": "available",
+    "cloud_management_activity": "absent_in_data",
+    "container_audit": "absent_in_data"
+  },
+  "rules": [
+    {
+      "rule_id": "ATH-001",
+      "title": "Office application spawned a script interpreter",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-002",
+      "title": "Encoded PowerShell command execution",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-003",
+      "title": "Script interpreter connected to an external host",
+      "declared_tables": {
+        "network": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "network_flow",
+        "network_url",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (network); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-004",
+      "title": "Possible LSASS credential access",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-005",
+      "title": "Failed logon burst followed by successful authentication",
+      "declared_tables": {
+        "logon": 2
+      },
+      "eligible_rows": 2,
+      "verdict": "degraded",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "failure_reason",
+          "rows": 2,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 2,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 2,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "failure_reason",
+        "logon_type",
+        "source_device"
+      ],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): failure_reason 0 of 2 logon rows (0.00%, optional); logon_type 0 of 2 logon rows (0.00%, optional); source_device 0 of 2 logon rows (0.00%, optional) -- the rule still fires on its remaining fields"
+    },
+    {
+      "rule_id": "ATH-006",
+      "title": "Account authenticated from a host where it has no session",
+      "declared_tables": {
+        "logon": 2
+      },
+      "eligible_rows": 2,
+      "verdict": "unusable",
+      "verdict_before": "supported",
+      "runnable": false,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 2,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 2,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 2,
+          "populated": 2,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "logon_type",
+        "source_device"
+      ],
+      "sparse_fields": [
+        "logon_type",
+        "source_device"
+      ],
+      "findings": 0,
+      "detail": "required field(s) effectively unpopulated: logon_type 0 of 2 logon rows (0.00%, required); source_device 0 of 2 logon rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+    },
+    {
+      "rule_id": "ATH-007",
+      "title": "Remote service execution (PsExec-style)",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-008",
+      "title": "Bulk data staged into an archive",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-009",
+      "title": "Macro-enabled document opened via email client",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-010",
+      "title": "Sequence of discovery commands from one parent process",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_execution",
+        "process_lineage"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-011",
+      "title": "Windows recovery mechanisms destroyed",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "ATH-012",
+      "title": "Security product disabled or reconfigured",
+      "declared_tables": {
+        "process": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "process_command_line",
+        "process_execution"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (process); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-001",
+      "title": "IAM policy grant followed by access-key creation for the same identity",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-002",
+      "title": "CloudTrail logging disabled or trail deleted",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-001",
+      "title": "RBAC binding grants a maximally-privileged role",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-002",
+      "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    }
+  ],
+  "total_findings": 0,
+  "verdict_counts": {
+    "not_eligible": 14,
+    "degraded": 1,
+    "unusable": 1
+  },
+  "before_counts": {
+    "unsupported": 14,
+    "supported": 2
+  },
+  "hunt_seconds": 0.0,
+  "load_seconds": 0.0,
+  "source": {
+    "kind": "cloudtrail",
+    "path": "data\\external\\attack_data_aws\\raw"
+  }
+}

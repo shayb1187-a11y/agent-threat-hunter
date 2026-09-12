@@ -1,0 +1,954 @@
+{
+  "corpus": "comiset",
+  "rows": {
+    "process": 15095,
+    "network": 589477,
+    "logon": 6063,
+    "control": 0
+  },
+  "events": 610635,
+  "channels": {
+    "process_execution": "available",
+    "process_command_line": "available",
+    "process_lineage": "available",
+    "handle_access": "absent_by_schema",
+    "network_flow": "available",
+    "network_inbound": "absent_in_data",
+    "network_url": "absent_in_data",
+    "dns_query": "absent_by_schema",
+    "authentication": "available",
+    "auth_source_attribution": "partial",
+    "file_events": "absent_by_schema",
+    "registry": "absent_by_schema",
+    "script_block": "absent_by_schema",
+    "email": "absent_by_schema",
+    "cloud_control_plane": "absent_in_data",
+    "cloud_management_activity": "absent_in_data",
+    "container_audit": "absent_in_data"
+  },
+  "rules": [
+    {
+      "rule_id": "ATH-001",
+      "title": "Office application spawned a script interpreter",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-002",
+      "title": "Encoded PowerShell command execution",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 3,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-003",
+      "title": "Script interpreter connected to an external host",
+      "declared_tables": {
+        "network": 589477
+      },
+      "eligible_rows": 589477,
+      "verdict": "unusable",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "network_url"
+      ],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "network",
+          "column": "device",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "direction",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "process_id",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "process_name",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "protocol",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "required": false
+        },
+        {
+          "table": "network",
+          "column": "remote_ip",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "remote_port",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "remote_url",
+          "rows": 589477,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": false
+        },
+        {
+          "table": "network",
+          "column": "timestamp",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "user",
+          "rows": 589477,
+          "populated": 589471,
+          "fraction": 0.99998982,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "direction",
+        "remote_port"
+      ],
+      "sparse_fields": [
+        "direction",
+        "protocol",
+        "remote_port",
+        "remote_url"
+      ],
+      "findings": 0,
+      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 network rows (0.00%, required); remote_port 1 of 589477 network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+    },
+    {
+      "rule_id": "ATH-004",
+      "title": "Possible LSASS credential access",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-005",
+      "title": "Failed logon burst followed by successful authentication",
+      "declared_tables": {
+        "logon": 6063
+      },
+      "eligible_rows": 6063,
+      "verdict": "degraded",
+      "verdict_before": "degraded",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [
+        "auth_source_attribution"
+      ],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "failure_reason",
+          "rows": 6063,
+          "populated": 54,
+          "fraction": 0.00890648,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 6063,
+          "populated": 339,
+          "fraction": 0.05591291,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 6063,
+          "populated": 514,
+          "fraction": 0.08477651,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "failure_reason",
+        "source_device",
+        "source_ip"
+      ],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): failure_reason 54 of 6063 logon rows (0.89%, optional); source_device 339 of 6063 logon rows (5.59%, optional); source_ip 514 of 6063 logon rows (8.48%, required) -- the rule still fires on its remaining fields"
+    },
+    {
+      "rule_id": "ATH-006",
+      "title": "Account authenticated from a host where it has no session",
+      "declared_tables": {
+        "logon": 6063
+      },
+      "eligible_rows": 6063,
+      "verdict": "degraded",
+      "verdict_before": "degraded",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [
+        "auth_source_attribution"
+      ],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 6063,
+          "populated": 339,
+          "fraction": 0.05591291,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 6063,
+          "populated": 514,
+          "fraction": 0.08477651,
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "source_device",
+        "source_ip"
+      ],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): source_device 339 of 6063 logon rows (5.59%, required); source_ip 514 of 6063 logon rows (8.48%, optional) -- the rule still fires on its remaining fields"
+    },
+    {
+      "rule_id": "ATH-007",
+      "title": "Remote service execution (PsExec-style)",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 6 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-008",
+      "title": "Bulk data staged into an archive",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-009",
+      "title": "Macro-enabled document opened via email client",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-010",
+      "title": "Sequence of discovery commands from one parent process",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_id",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 1,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-011",
+      "title": "Windows recovery mechanisms destroyed",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-012",
+      "title": "Security product disabled or reconfigured",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 1,
+      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "AWS-001",
+      "title": "IAM policy grant followed by access-key creation for the same identity",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-002",
+      "title": "CloudTrail logging disabled or trail deleted",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-001",
+      "title": "RBAC binding grants a maximally-privileged role",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-002",
+      "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    }
+  ],
+  "total_findings": 5,
+  "verdict_counts": {
+    "usable": 9,
+    "unusable": 1,
+    "degraded": 2,
+    "not_eligible": 4
+  },
+  "before_counts": {
+    "supported": 9,
+    "unsupported": 5,
+    "degraded": 2
+  },
+  "hunt_seconds": 2.6,
+  "load_seconds": 0.5,
+  "source": {
+    "kind": "canonical_parquet",
+    "path": "reports\\m17\\canonical"
+  }
+}

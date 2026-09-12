@@ -43,20 +43,6 @@ from ath.hunting.base import all_detectors  # noqa: E402
 from ath.netaddr import is_public_ip  # noqa: E402
 from ath.telemetry.loader import Telemetry  # noqa: E402
 
-# Which canonical table each endpoint rule actually consumes. The rules declare
-# `fields_used` but not `channels` (only the cloud/Kubernetes rules do), so eligibility
-# for an endpoint rule cannot be read off the detector and is stated here instead. That
-# gap is itself reported.
-RULE_TABLES: dict[str, tuple[str, ...]] = {
-    "ATH-001": ("process",), "ATH-002": ("process",), "ATH-003": ("network",),
-    "ATH-004": ("process",), "ATH-005": ("logon",), "ATH-006": ("logon",),
-    "ATH-007": ("process", "logon"), "ATH-008": ("process",), "ATH-009": ("process",),
-    "ATH-010": ("process",), "ATH-011": ("process",), "ATH-012": ("process",),
-    "AWS-001": ("control",), "AWS-002": ("control",),
-    "K8S-001": ("control",), "K8S-002": ("control",),
-}
-
-
 def load_canonical(directory: Path) -> Telemetry:
     def read(name: str) -> pd.DataFrame:
         path = directory / f"comiset_{name}.parquet"
@@ -68,12 +54,25 @@ def load_canonical(directory: Path) -> Telemetry:
     )
 
 
-def why_zero(rule_id: str, telemetry: Telemetry, findings: int) -> str:
+def rule_tables(detector) -> tuple[str, ...]:
+    """The canonical tables a rule reads, read off the rule itself.
+
+    This used to be a hard-coded rule-id-to-table map in this script, because a
+    detector declared no such thing (defect M17-5). It does now -- and the map it
+    replaces was already wrong: it credited ATH-007 with the logon table, which
+    ATH-007 never reads, so the rule's "eligible events" counted 6,063 logon rows it
+    cannot see. A table map that lives outside the rules drifts from them silently;
+    this cannot.
+    """
+    return tuple(sorted(detector.tables))
+
+
+def why_zero(detector, telemetry: Telemetry, findings: int) -> str:
     """Attribute a zero to a cause rather than letting it read as success."""
     if findings:
         return "n/a -- rule produced findings"
-    tables = RULE_TABLES.get(rule_id, ())
-    sizes = {t: len(telemetry.table(t if t != "process" else "process")) for t in tables}
+    tables = rule_tables(detector)
+    sizes = {t: len(telemetry.table(t)) for t in tables}
     if not tables:
         return "unknown -- rule's input table is not declared"
     if all(size == 0 for size in sizes.values()):
@@ -91,7 +90,7 @@ def detection_report(telemetry: Telemetry) -> dict:
     for detector in all_detectors():
         rule_id = detector.rule_id
         found = by_rule.get(rule_id, [])
-        tables = RULE_TABLES.get(rule_id, ())
+        tables = rule_tables(detector)
         eligible = sum(len(telemetry.table(t)) for t in tables) if tables else 0
         rows.append({
             "rule_id": rule_id,
@@ -100,7 +99,7 @@ def detection_report(telemetry: Telemetry) -> dict:
             "findings": len(found),
             "severity": dict(Counter(f.severity.value for f in found)),
             "declares_channels": sorted(c.value for c in detector.channels),
-            "zero_attribution": why_zero(rule_id, telemetry, len(found)),
+            "zero_attribution": why_zero(detector, telemetry, len(found)),
             "examples": [
                 {
                     "device": f.device, "user": f.user, "severity": f.severity.value,

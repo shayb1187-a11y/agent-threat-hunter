@@ -39,14 +39,6 @@ MAPPED = {
     ("Microsoft-Windows-Sysmon/Operational", "3"),
     ("Security", "4624"), ("Security", "4625"),
 }
-RULE_TABLES = {
-    "ATH-001": ("process",), "ATH-002": ("process",), "ATH-003": ("network",),
-    "ATH-004": ("process",), "ATH-005": ("logon",), "ATH-006": ("logon",),
-    "ATH-007": ("process", "logon"), "ATH-008": ("process",), "ATH-009": ("process",),
-    "ATH-010": ("process",), "ATH-011": ("process",), "ATH-012": ("process",),
-    "AWS-001": ("control",), "AWS-002": ("control",),
-    "K8S-001": ("control",), "K8S-002": ("control",),
-}
 
 
 def main() -> int:
@@ -90,7 +82,9 @@ def main() -> int:
 
     eligibility = []
     for detector in all_detectors():
-        tables = RULE_TABLES.get(detector.rule_id, ())
+        # Read off the rule, not off a copy of a table map: the copy that used to
+        # live here credited ATH-007 with the logon table it never reads.
+        tables = tuple(sorted(detector.tables))
         eligible = sum(sizes[t] for t in tables)
         eligibility.append({
             "rule_id": detector.rule_id,
