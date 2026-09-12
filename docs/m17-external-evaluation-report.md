@@ -91,11 +91,19 @@ This is materially weaker than the M16 conclusion implied, and weaker than DEDAL
 | **ATH-003** | 589,477 | 0 | — | **required fields lost in ingestion (M17-2)** |
 | ATH-001, 004, 008, 009, 011 | 15,095 | 0 | — | eligible and silent |
 | ATH-005, ATH-006 | 6,063 | 0 | — | eligible and silent |
-| ATH-007 | 21,158 | 0 | — | eligible and silent |
+| ATH-007 | 15,095 ¹ | 0 | — | eligible and silent |
 | AWS-001/002, K8S-001/002 | 0 | 0 | — | not eligible — control table empty |
 
 ATH-003's zero is the important one. It is **not** "clean data": the rule needs ports and
 direction and received neither.
+
+¹ **Corrected after publication.** This row originally read 21,158, from a rule-to-table
+map that lived in the evaluation script rather than on the rules, and credited ATH-007
+with the logon table it never reads. ATH-007 consumes process telemetry only, so its
+eligible count is 15,095. M18-1 removed the script-side map entirely and made each rule
+declare its own `tables`, which is what surfaced the error -- a table map maintained
+outside the rules drifts from them silently, which is the same class of defect as M17-2
+measuring rows instead of fields.
 
 **Are the five findings coherent?** Yes. Decoded evidence:
 
