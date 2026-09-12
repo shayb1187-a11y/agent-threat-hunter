@@ -52,7 +52,7 @@ import pandas as pd
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
 from ath.channels import TelemetryChannel
-from ath.control_vocab import changes_authority
+from ath.control_vocab import is_identity_grant
 from ath.schema import (
     EVENT_CONTROL,
     EVENT_LOGON,
@@ -380,8 +380,8 @@ def _count_populated(telemetry: Telemetry, event_type: str, column: str) -> tupl
 # a rule does. The natural home is therefore ath.schema, and the piece of it that needs
 # no other module does live there (REMOTE_LOGON_TYPES, beside LOGON_TYPE_NAMES).
 #
-# The predicates themselves cannot. Deciding whether a control row changed an identity's
-# authority needs ath.control_vocab.changes_authority, and ath.schema may import nothing
+# The predicates themselves cannot. Deciding whether a control row granted authority to
+# an identity needs ath.control_vocab.is_identity_grant, and ath.schema may import nothing
 # of the sort without inverting the dependency direction
 # schema -> telemetry -> behavior -> environment. So the table is declared here, in the
 # module that performs the population measurement -- one declaration, immediately above
@@ -420,26 +420,42 @@ other obvious choice and is unusable -- pandas' string concatenation silently dr
 which would collide every pair into one."""
 
 
-def _authority_changing(df: pd.DataFrame) -> pd.Series:
-    """Control rows that changed some identity's authority or credentials.
+def _identity_grants(df: pd.DataFrame) -> pd.Series:
+    """Control rows on which the source model *guarantees* a beneficiary and a role.
 
-    Decided by :func:`ath.control_vocab.changes_authority` -- the same single definition
-    the adapters use to *fill* ``target_actor`` and ``role_ref`` -- but evaluated once
-    per distinct ``(verb, resource_type)`` pair rather than once per row: a real trail
-    carries 1.9M rows and a few hundred distinct pairs.
+    Decided by :func:`ath.control_vocab.is_identity_grant`, evaluated once per distinct
+    ``(verb, resource_type)`` pair rather than once per row: a real trail carries 1.9M
+    rows and a few hundred distinct pairs.
 
-    Not ``is_grant``, which this used to be. Grant-shaped is the wrong denominator in
-    both directions: 42 of the 132 grant-shaped rows on flaws.cloud attach a *storage
-    volume* to an instance and name no identity at all, so the field was graded over
-    rows it could never have carried a value on; and a ``detach`` or a login-profile
-    update changes an authority without being a grant, so rows that must carry the field
-    were excluded from the grading entirely.
+    A denominator is a claim about what must exist, and only a guarantee can support one.
+    Every call by which the identity service moves a permission names the principal it
+    moves it to and what was moved; every RBAC binding creation names its subjects and
+    its ``roleRef``. An empty column on such a row is therefore a loss, and grading it is
+    fair.
+
+    Neither of the two wider predicates can be that denominator:
+
+    * ``is_grant`` alone admits attaching a storage volume to an instance -- 42 of the
+      132 grant-shaped rows on flaws.cloud -- which names no identity at all.
+    * ``changes_authority``, which this was between M18-5 and M18-6, admits every create
+      and delete of a policy object. On the attack_data_aws capture that is 146 of the
+      146 rows in the denominator (116 policy deletes, 20 credential-report generates, 10
+      policy creates) and not one of them can name a principal, because a policy is not a
+      principal. AWS-001 was reported UNUSABLE there on a corpus that contains no
+      evidence either way -- the same false report of blindness M18-4 removed, arriving
+      one predicate later.
+
+    The rows this excludes are still *filled* by the adapters, whose fill condition
+    remains ``changes_authority``: a ``DeleteUser`` still records the user it deleted.
+    What the excluded rows never do again is grade a rule. Their emptiness is not
+    inferred from this measurement either -- the adapter counts it directly, with a
+    reason, on :attr:`ath.telemetry.source.SourceLoadResult.field_gaps`.
     """
     verbs = df["verb"].astype("string").fillna("")
     resources = df["resource_type"].astype("string").fillna("")
     keys = (verbs + _PAIR_SEPARATOR + resources).astype("string")
     decisions = {
-        key: changes_authority(*key.split(_PAIR_SEPARATOR, 1))
+        key: is_identity_grant(*key.split(_PAIR_SEPARATOR, 1))
         for key in keys.dropna().unique()
     }
     return keys.map(decisions).fillna(False).astype(bool)
@@ -469,14 +485,19 @@ def _logon_from_elsewhere(df: pd.DataFrame) -> pd.Series:
 
 FIELD_APPLICABILITY: dict[tuple[str, str], FieldApplicability] = {
     (EVENT_CONTROL, "target_actor"): FieldApplicability(
-        applies_to=_authority_changing,
-        reason="only an action that changes an identity's authority names that identity",
+        applies_to=_identity_grants,
+        reason=(
+            "the source model guarantees a beneficiary/conferred role only on an "
+            "identity grant; other authority changes may name one and are filled when "
+            "they do"
+        ),
     ),
     (EVENT_CONTROL, "role_ref"): FieldApplicability(
-        applies_to=_authority_changing,
+        applies_to=_identity_grants,
         reason=(
-            "only an action that changes an identity's authority names the role or "
-            "policy it moved"
+            "the source model guarantees a beneficiary/conferred role only on an "
+            "identity grant; other authority changes may name one and are filled when "
+            "they do"
         ),
     ),
     (EVENT_LOGON, "failure_reason"): FieldApplicability(

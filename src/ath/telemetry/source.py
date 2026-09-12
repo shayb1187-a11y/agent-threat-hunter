@@ -139,6 +139,27 @@ class SourceLoadResult:
     number stays honest either way.
     """
 
+    field_gaps: dict[str, int] = field(default_factory=dict)
+    """Rows the source *kept* whose field it could not fill, counted by reason.
+
+    The third kind of loss, and the one nothing here could express before. A row that
+    could not be normalised at all is a :class:`NormalizationIssue`; a row with no
+    canonical home is counted in :attr:`unmapped`; a row that is fully represented except
+    that one column it would normally derive came back empty was, until now, visible only
+    as a dip in a population fraction -- and a fraction cannot tell the two causes of an
+    empty field apart. Either the adapter dropped a value the record carried, which is
+    blindness, or the record never carried one (a policy object names no principal; a
+    denied request carries no parameters at all), which is not. The adapter is the only
+    place that knows which, because it is the only place that still has the raw record.
+
+    Keyed by ``"<table>.<column>: <reason>"`` -- a stable string, so two runs of the same
+    corpus produce comparable keys and a ledger can diff them -- and counted rather than
+    listed per row: 3,066 rows of the flaws.cloud trail say the same thing.
+
+    These rows are **kept**. Nothing here is added to :attr:`rows_dropped`, and a gap must
+    never be recorded instead of a row.
+    """
+
     @property
     def rows_kept(self) -> int:
         return sum(len(df) for df in self.tables.values())
@@ -160,6 +181,12 @@ class SourceLoadResult:
             f"{self.rows_kept} row(s) normalised, {self.rows_dropped} dropped "
             f"(of {self.rows_read} read)"
         )
+        if self.field_gaps:
+            total = sum(self.field_gaps.values())
+            text += (
+                f"; {total} field gap(s) on kept rows "
+                f"({len(self.field_gaps)} reason(s))"
+            )
         if not self.admitted_files:
             return text
         rejected = self.rejected_files

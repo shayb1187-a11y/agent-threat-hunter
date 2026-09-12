@@ -36,6 +36,7 @@ from ath.control_vocab import (
     VERB_CLASSES,
     changes_authority,
     is_grant,
+    is_identity_grant,
     service_of,
     verb_class,
 )
@@ -56,6 +57,7 @@ __all__ = [
     "VERB_CLASS_NAMES",
     "changes_authority",
     "is_grant",
+    "is_identity_grant",
     "service_of",
     "verb_class",
 ]

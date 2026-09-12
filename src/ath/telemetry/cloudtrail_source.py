@@ -101,7 +101,7 @@ from typing import Any
 
 import pandas as pd
 
-from ath.control_vocab import changes_authority
+from ath.control_vocab import changes_authority, is_identity_grant
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
@@ -310,7 +310,18 @@ def resource_type_for(event_source: str, event_name: str) -> tuple[str, str, str
 # the first present of each is what makes "what was granted" a single column rather than
 # a per-call decision.
 _TARGET_FIELDS: tuple[str, ...] = ("userName", "roleName", "groupName")
-_ROLE_FIELDS: tuple[str, ...] = ("policyArn", "policyName", "roleArn", "instanceProfileName")
+_ROLE_FIELDS: tuple[str, ...] = (
+    "policyArn", "policyName", "roleArn", "instanceProfileName", "groupName",
+)
+
+# `groupName` appears in both tuples, last in this one and last-but-one in the other, and
+# that asymmetry is the whole convention for group membership. `AddUserToGroup` names a
+# `userName` and a `groupName`: the user is who gained authority, the group is what
+# conferred it, so the most-specific-identity-first order picks the user as the target and
+# the group falls through to here as the role. `AttachGroupPolicy` names a `groupName` and
+# a `policyArn`: no user is named, so the group *is* the beneficiary, and the policy ARN
+# -- earlier in this tuple -- is what was conferred. One ordering, both shapes, no call
+# name anywhere.
 
 # Which rows those conventions may be read on:
 # :func:`ath.control_vocab.changes_authority` -- the identity service (or a Kubernetes
@@ -323,6 +334,14 @@ _ROLE_FIELDS: tuple[str, ...] = ("policyArn", "policyName", "roleArn", "instance
 # the flaws.cloud trail, M18-4). The predicate is still read as a service and a verb
 # class rather than as a set of call names: every call IAM has ever shipped names its
 # beneficiary the same way, including the ones that do not exist yet.
+#
+# Which rows those conventions are *graded* on is a narrower set than this, and on
+# purpose: `ath.control_vocab.is_identity_grant`, the rows where the source model
+# guarantees a beneficiary exists. `DeletePolicy` changes an authority and names no
+# principal, because a policy is not a principal -- so the adapter keeps reading the
+# convention there (it costs nothing and a `DeleteUser` does name its user) while the
+# measurement stops holding an empty column against anyone. Where the convention is read
+# and finds nothing, `_count_field_gaps` records why.
 
 # The family whose calls target the caller when they name no one else: creating an access
 # key with no `userName` creates one for yourself. A family-level rule, because it is
@@ -370,6 +389,7 @@ class CloudTrailSource(TelemetrySource):
         control_rows: list[tuple[Any, ...]] = []
         issues: list[NormalizationIssue] = []
         admissions: list[FileAdmission] = []
+        field_gaps: dict[str, int] = {}
         rows_read = 0
 
         for file_name, parsed, records in _iter_payloads(files):
@@ -394,7 +414,9 @@ class CloudTrailSource(TelemetrySource):
                     # Everything that is not an authentication decision is management
                     # activity, and is represented rather than refused. What it *was* is
                     # read off the name's shape, not looked up.
-                    row, issue = _normalise_control_record(record, file_name, index)
+                    row, issue = _normalise_control_record(
+                        record, file_name, index, field_gaps,
+                    )
                     target = control_rows
                     columns = _CONTROL_ORDER
 
@@ -432,7 +454,7 @@ class CloudTrailSource(TelemetrySource):
             logger.warning("CloudTrail import: %s", refusal)
         return SourceLoadResult(
             tables=tables, issues=issues, rows_read=rows_read,
-            admitted_files=tuple(admissions),
+            admitted_files=tuple(admissions), field_gaps=field_gaps,
         )
 
 
@@ -692,13 +714,25 @@ def _normalise_auth_record(
 
 
 def _normalise_control_record(
-    record: Any, file_name: str, index: int
+    record: Any, file_name: str, index: int,
+    gaps: dict[str, int] | None = None,
 ) -> tuple[dict[str, Any] | None, NormalizationIssue | None]:
     """Turn one CloudTrail management-API record into a canonical control row.
 
     Any record that is not an authentication decision arrives here -- there is no
     dispatch table to miss, and the only records refused are the ones that could not be
     used by anything: not an object, no name, no time, no caller.
+
+    Args:
+        record: One raw CloudTrail record.
+        file_name: The file it came from, for the issue reference.
+        index: Its position in that file, for the issue reference.
+        gaps: A counter to record *kept* rows whose beneficiary or role could not be
+            filled, keyed by ``"<table>.<column>: <reason>"``. Optional because a caller
+            may not care; when it is passed, the reason distinguishes "the record carried
+            no parameters at all" from "it carried parameters and named nobody", which is
+            a distinction a population fraction cannot make. See
+            :attr:`ath.telemetry.source.SourceLoadResult.field_gaps`.
 
     Returns:
         ``(row, issue)``. Both can be present at once, and that combination is the point:
@@ -770,6 +804,14 @@ def _normalise_control_record(
     account = str(record.get("recipientAccountId") or identity.get("accountId") or "unknown")
     region = str(record.get("awsRegion") or "unknown")
     verdict = _verdict(record)
+    decision = "denied" if verdict == "failure" else "allowed"
+
+    # Why a column came back empty, counted here because here is the last place that
+    # knows: downstream sees the canonical row and cannot tell a value this adapter
+    # dropped from one the record never carried.
+    if gaps is not None:
+        _count_field_gaps(gaps, verb, resource_type, params, decision,
+                          target_actor, role_ref)
 
     # Reported *with* the row, never instead of it: the row is the representation, the
     # issue is the measurement of how far the naming convention holds.
@@ -798,9 +840,63 @@ def _normalise_control_record(
         "resource_namespace": "",  # not a cloud concept
         "target_actor": target_actor,
         "role_ref": role_ref,
-        "decision": "denied" if verdict == "failure" else "allowed",
+        "decision": decision,
         "source_ip": _shared(str(record.get("sourceIPAddress") or "")),
     }, unparsed_name
+
+
+# The two reasons a kept row's beneficiary column can come back empty, as the reasons
+# themselves rather than as one number. Written out here, once, so that two runs of the
+# same corpus produce the same keys and a ledger can subtract them.
+_NO_PARAMETERS = "request carried no parameters (decision={decision})"
+_NO_VALUE_NAMED = "parameters present but named no {noun}"
+_NOT_GUARANTEED = (
+    "control.target_actor: not guaranteed on this action (filled when derivable)"
+)
+
+
+def _count_field_gaps(
+    gaps: dict[str, int], verb: str, resource_type: str, params: dict[str, Any],
+    decision: str, target_actor: str, role_ref: str,
+) -> None:
+    """Record why a kept control row carries no beneficiary and no conferred role.
+
+    Two populations, counted apart because only one of them is a claim about this
+    adapter:
+
+    * an *identity grant* (:func:`ath.control_vocab.is_identity_grant`) with an empty
+      column is a gap in the strong sense -- the source model guarantees the value exists
+      on such a row, so either the record was incomplete (a denied request carries no
+      ``requestParameters`` at all: 2,751 of the 2,763 denied authority-changes on
+      flaws.cloud) or this adapter failed to read a value that was there. The reason
+      distinguishes the two, which is the only way a reader can tell them apart: they are
+      identical as a population fraction.
+    * an authority change that is *not* an identity grant -- a policy created or deleted,
+      a credential report generated -- with no target is not a gap in that sense: the
+      object it acted on is a policy or a report, and a policy names no principal. It is
+      counted anyway, under its own reason, because "146 rows of this capture changed an
+      authority and named nobody" is worth keeping visible; it is outside every
+      applicability denominator and moves no verdict.
+
+    Counts rows, never replaces them: the row is already built by the time this runs, and
+    nothing counted here reaches ``rows_dropped``.
+    """
+    if is_identity_grant(verb, resource_type):
+        for column, value, noun in (
+            ("target_actor", target_actor, "beneficiary"),
+            ("role_ref", role_ref, "role"),
+        ):
+            if value:
+                continue
+            reason = (
+                _NO_VALUE_NAMED.format(noun=noun) if params
+                else _NO_PARAMETERS.format(decision=decision)
+            )
+            key = f"control.{column}: {reason}"
+            gaps[key] = gaps.get(key, 0) + 1
+        return
+    if not target_actor and changes_authority(verb, resource_type):
+        gaps[_NOT_GUARANTEED] = gaps.get(_NOT_GUARANTEED, 0) + 1
 
 
 def _first_present(params: dict[str, Any], fields: tuple[str, ...]) -> str:

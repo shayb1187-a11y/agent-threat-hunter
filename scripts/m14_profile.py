@@ -123,6 +123,10 @@ def main() -> int:
             "files_rejected": [a.to_dict() for a in result.rejected_files],
             "drop_classes": issue_classes(result),
             "unmapped_classes": dict(sorted(result.unmapped.items(), key=lambda kv: -kv[1])[:25]),
+            # Rows that were *kept* with a field the adapter could not fill, and why.
+            # Beside the drop classes rather than inside them: these rows are in the
+            # tables, and a reader who added the two would double-count them.
+            "field_gaps": dict(sorted(result.field_gaps.items(), key=lambda kv: -kv[1])),
             "load_seconds": round(load_seconds, 1),
         },
         "profile_full": profile_telemetry(telemetry).to_dict(),
@@ -151,6 +155,10 @@ def main() -> int:
           + "".join(f"\n    rejected {r['path']}: {r['reason']} "
                     f"({r['line_or_record_count']} record(s) not read)"
                     for r in e0["files_rejected"]))
+    if e0["field_gaps"]:
+        print(f"  field gaps on kept rows {sum(e0['field_gaps'].values()):,}"
+              + "".join(f"\n    {count:,} {key}"
+                        for key, count in e0["field_gaps"].items()))
     print(f"  findings {pf['detection']['findings']} {pf['detection']['by_rule']}  "
           f"per day {pf['detection']['findings_per_day']}")
     print(f"  triage {pf['triage']['dispositions']}  after triage {pf['triage']['findings_after_triage']}")

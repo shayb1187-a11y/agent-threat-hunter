@@ -141,15 +141,26 @@ CONTROL_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     # rule, not two exceptions. A read *about* an identity (ListAttachedUserPolicies)
     # names that identity in exactly the parameters a grant does while changing nothing
     # about it, so filling the column there would attribute the caller's reconnaissance
-    # to the person being enumerated. Which rows qualify is
-    # `ath.control_vocab.changes_authority`, read by the adapters that populate these
-    # columns and by the measurement that grades them, so the schema's definition and
-    # its denominator can never drift apart.
+    # to the person being enumerated. Which rows may carry it is
+    # `ath.control_vocab.changes_authority`, read by every adapter that populates the
+    # column.
+    #
+    # Which rows *must* carry it is a narrower question and has its own predicate,
+    # `ath.control_vocab.is_identity_grant`: the rows where the source model guarantees a
+    # beneficiary exists. The two are deliberately different, because an authority change
+    # can act on an object that is not a principal -- `CreatePolicy` and `DeletePolicy`
+    # change authority and name nobody, and grading the column over them reports a
+    # blindness that the corpus says nothing about. Where a row may carry the column and
+    # does not, the adapter counts the gap with a reason
+    # (`SourceLoadResult.field_gaps`) rather than leaving it to be inferred from a
+    # population fraction, which cannot tell "the value was dropped" from "there was
+    # never a value".
     "target_actor",
     "role_ref",             # the specific role/policy the action conferred or removed,
-                            # e.g. "cluster-admin" or a policy ARN. Empty on the same
-                            # rows `target_actor` is, and on authority changes that name
-                            # no role (AddUserToGroup, CreateAccessKey).
+                            # e.g. "cluster-admin", a policy ARN, or -- when a user is
+                            # put into a group -- the group that conferred it. Empty on
+                            # the same rows `target_actor` is, and on authority changes
+                            # that name no role (CreateAccessKey).
     "decision",             # "allowed" / "denied"
     "source_ip",            # caller's address
 )

@@ -277,3 +277,46 @@ def is_grant(verb: str, resource_type: str) -> bool:
         verb.strip().lower() == "create"
         and resource_type.strip().lower() in RBAC_BINDING_RESOURCES
     )
+
+
+def is_identity_grant(verb: str, resource_type: str) -> bool:
+    """Whether a control row is a grant *of authority to an identity*.
+
+    The narrower of the two grant predicates, and the one the canonical schema's
+    ``target_actor``/``role_ref`` columns are *measured* over: it is the set of rows on
+    which the source model **guarantees** that a beneficiary and a conferred role exist.
+    Every call by which AWS' identity service moves a permission names the principal it
+    moves it to (``userName``/``roleName``/``groupName``) and what was moved; every
+    Kubernetes RBAC binding creation names its subjects and its ``roleRef``. If such a
+    row reaches the canonical table with the columns empty, something was lost, and that
+    is what makes this set a fair denominator.
+
+    Wider predicates cannot be. :func:`is_grant` alone admits attaching a storage volume
+    to an instance, which names no identity at all. :func:`changes_authority` admits
+    ``CreatePolicy`` and ``DeletePolicy`` -- real changes to authority whose subject is a
+    *policy object*, which names no principal: 146 rows of the attack_data_aws capture
+    are exactly that, and grading a beneficiary column over them reports a rule as blind
+    on rows where there was never a beneficiary to record.
+
+    What sits outside this set is still *filled* when the record happens to name it: the
+    adapters' fill condition remains :func:`changes_authority`, so a ``DeleteUser`` still
+    records the user it deleted. Measured and filled are different questions -- the first
+    asks "must a value exist here", the second "does one exist here" -- and an adapter
+    reports the rows where the answer to the second is no as counted gaps with reasons
+    (``SourceLoadResult.field_gaps``), so that the fill side is not judged by inference
+    from a population fraction.
+
+    Args:
+        verb: The canonical control-row verb.
+        resource_type: The canonical resource type the row acted on.
+
+    Returns:
+        True when the row grants authority to an identity: grant-shaped
+        (:func:`is_grant`) *and* acting on an identity service or an RBAC binding.
+    """
+    if not is_grant(verb, resource_type):
+        return False
+    return (
+        service_of(resource_type) in IDENTITY_SERVICES
+        or resource_type.strip().lower() in RBAC_BINDING_RESOURCES
+    )

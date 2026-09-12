@@ -497,6 +497,109 @@ def test_the_predicate_names_no_resource_family() -> None:
 
 
 # --------------------------------------------------------------------------------------
+# is_identity_grant: the rows the source model *guarantees* a beneficiary on (M18-6)
+#
+# `changes_authority` answers "may this row name an identity", which is the right
+# question for *filling* the column and the wrong one for grading it. A policy is not a
+# principal: `CreatePolicy` and `DeletePolicy` change an authority and can name nobody,
+# and on the attack_data_aws capture all 146 authority-change rows are of exactly that
+# kind -- so grading the column over them reported AWS-001 as blind on a corpus that
+# contains no evidence either way.
+# --------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("verb,resource_type", [
+    # A permission moving to a principal, AWS-style: a grant-class verb on the identity
+    # service. Two verbs, because a predicate that read only `attach` would pass with
+    # the grant *class* dropped.
+    ("attach", "iam:quokka-policy"),
+    ("add", "iam:ledger-group"),
+    ("associate", "iam:ledger-user"),
+    ("ATTACH", " IAM:Quokka-Policy "),
+    # ...and Kubernetes-style: granting is creating a binding object.
+    ("create", "rolebindings"),
+    ("create", "clusterrolebindings"),
+])
+def test_an_identity_grant_guarantees_a_beneficiary(verb, resource_type) -> None:
+    """Fails if either clause is dropped: AWS grants or Kubernetes grants stop counting.
+
+    With the verb clause gone the AWS rows leave the denominator and the column is graded
+    over bindings alone; with the binding clause gone every Kubernetes grant leaves it,
+    and K8S-001 is graded over nothing at all.
+    """
+    from ath.control_vocab import is_identity_grant
+
+    assert is_identity_grant(verb, resource_type)
+
+
+@pytest.mark.parametrize("verb,resource_type", [
+    # Grant-shaped, but the thing granted is not authority over an identity.
+    ("attach", "ec2:appliance-volume"),
+    ("authorize", "ec2:appliance-fleet-ingress"),
+    # On the identity service, but the subject is a policy object or a report, which
+    # names no principal. These are the 146 rows of the attack_data_aws capture.
+    ("delete", "iam:quokka-policy"),
+    ("create", "iam:quokka-policy"),
+    ("generate", "iam:ledger-report"),
+    # Creating a credential for yourself names no beneficiary in the record; the adapter
+    # supplies the caller by convention, which is a fill rule and not a guarantee.
+    ("create", "iam:access-key"),
+    # Changes an authority without being a grant. Filled when the record names the
+    # subject -- and outside the denominator, because a revoke of a policy from nobody
+    # in particular is a real shape too.
+    ("detach", "iam:quokka-policy"),
+    ("remove", "iam:ledger-group"),
+    ("update", "iam:ledger-login-profile"),
+    # `put` is a create-class verb in this vocabulary ("creates or replaces the named
+    # resource"), so a PutUserPolicy-shaped row is outside the guaranteed set. Stated
+    # here rather than left untested: the alternative is a family list, which is the
+    # allowlist defect M18-3 removed.
+    ("put", "iam:quokka-policy"),
+    # Reads, on the identity service and on a binding.
+    ("list", "iam:quokka-policy"),
+    ("get", "iam"),
+    ("watch", "rolebindings"),
+    # A binding deleted, not created: `is_grant`'s literal-token clause is about the
+    # audit verb Kubernetes logs for a grant.
+    ("delete", "rolebindings"),
+    ("", ""),
+])
+def test_what_guarantees_no_beneficiary(verb, resource_type) -> None:
+    """The near-misses, each of which a looser denominator would grade a rule on.
+
+    Fails if the denominator widens back to ``changes_authority`` (policy creates,
+    deletes and login-profile updates return), to ``is_grant`` (a storage volume
+    attachment returns), or to the identity service alone (every IAM read returns).
+    """
+    from ath.control_vocab import is_identity_grant
+
+    assert not is_identity_grant(verb, resource_type)
+
+
+def test_the_guarantee_is_narrower_than_the_fill_condition() -> None:
+    """Every guaranteed row may be filled; not every fillable row is guaranteed.
+
+    The two predicates have one job each and the relation between them is the invariant:
+    an adapter fills on ``changes_authority`` and a measurement grades on
+    ``is_identity_grant``. Fails if the two are ever made the same function again, in
+    either direction -- which is how either a rule gets graded on rows that could not
+    carry a value, or a real loss stops being filled at all.
+    """
+    from ath.control_vocab import changes_authority, is_identity_grant
+
+    pairs = _IDENTITY_GRANT_SHAPES + _OTHER_AUTHORITY_CHANGE_SHAPES + (
+        ("list", "iam:quokka-policy"), ("attach", "ec2:appliance-volume"),
+    )
+    for verb, resource_type in pairs:
+        if is_identity_grant(verb, resource_type):
+            assert changes_authority(verb, resource_type), (verb, resource_type)
+    assert any(
+        changes_authority(v, r) and not is_identity_grant(v, r)
+        for v, r in _OTHER_AUTHORITY_CHANGE_SHAPES
+    ), "the fill condition must stay wider than the guarantee"
+
+
+# --------------------------------------------------------------------------------------
 # The applicability denominator that follows from it
 # --------------------------------------------------------------------------------------
 
@@ -519,23 +622,19 @@ def _identity_reads(count: int) -> list[dict]:
     ]
 
 
-def _authority_changes(count: int, *, target: str = "wpaulsen",
-                       role: str = "cluster-admin") -> list[dict]:
-    """Rows that change an identity's authority, one per changing verb class.
+def _control_rows(shapes: tuple[tuple[str, str], ...], count: int, *,
+                  target: str = "wpaulsen", role: str = "cluster-admin",
+                  minutes: int = 90) -> list[dict]:
+    """``count`` control rows cycling through ``shapes``, each carrying ``target``/``role``.
 
-    Deliberately not all grants: a revoke, a delete and a modify carry the same two
-    columns for the same reason, and a denominator built on grant-shape alone grades
-    none of them.
+    One builder for both populations below, so that the only difference between "the rows
+    a beneficiary is guaranteed on" and "the rows it is not" is the ``(verb,
+    resource_type)`` pairs -- which is exactly the thing under test.
     """
-    shapes = (
-        ("attach", "iam:quokka-policy"), ("detach", "iam:quokka-policy"),
-        ("update", "iam:ledger-login-profile"), ("delete", "iam:ledger-user"),
-        ("create", "rolebindings"),
-    )
     rows = []
     for index in range(count):
         verb, resource_type = shapes[index % len(shapes)]
-        binding = resource_type == "rolebindings"
+        binding = resource_type in ("rolebindings", "clusterrolebindings")
         rows.append(build.ctrl(
             "mriordan", verb, resource_type, f"{resource_type.split(':')[-1]}-{index}",
             target_actor=target, role_ref=role,
@@ -543,22 +642,52 @@ def _authority_changes(count: int, *, target: str = "wpaulsen",
             device="k8s:mercury" if binding else "aws:519204773311/ap-southeast-2",
             source_ip="198.51.100.203",
             source="k8s_audit" if binding else "cloudtrail_mgmt",
-            when=build.at(minutes=90, seconds=index),
+            when=build.at(minutes=minutes, seconds=index),
             actor_groups="system:authenticated",
         ))
     return rows
 
 
+# The rows the source model *guarantees* a beneficiary and a conferred role on: a
+# permission moving to a principal, expressed the two ways the two platforms express it.
+_IDENTITY_GRANT_SHAPES = (
+    ("attach", "iam:quokka-policy"),
+    ("add", "iam:ledger-group"),
+    ("create", "rolebindings"),
+    ("create", "clusterrolebindings"),
+)
+
+# Rows that change an authority without acting on a principal, or without being a grant.
+# Every one of them may carry a beneficiary and is filled when it does; none of them
+# guarantees one, and a denominator that includes them grades a rule on rows where there
+# was nothing to record.
+_OTHER_AUTHORITY_CHANGE_SHAPES = (
+    ("delete", "iam:quokka-policy"),
+    ("create", "iam:quokka-policy"),
+    ("generate", "iam:ledger-report"),
+)
+
+
+def _identity_grants(count: int, **kwargs) -> list[dict]:
+    """Grant-shaped rows on the identity service and on both RBAC binding kinds."""
+    return _control_rows(_IDENTITY_GRANT_SHAPES, count, **kwargs)
+
+
+def _authority_changes(count: int, **kwargs) -> list[dict]:
+    """Authority changes whose subject is a policy object or a report, not a principal."""
+    return _control_rows(_OTHER_AUTHORITY_CHANGE_SHAPES, count, **kwargs)
+
+
 def test_identity_reads_are_not_in_the_denominator_of_an_authority_field() -> None:
-    """1,000 IAM reads + 20 authority changes that carry their target.
+    """1,000 IAM reads + 20 identity grants that carry their target.
 
     The reads name a user in the raw record and carry nothing in the canonical row, so
-    they cannot dilute a column they could never have filled. Fails if applicability is
-    still decided by ``is_grant``: the reads stay out either way, but the detach, the
-    login-profile update and the user deletion fall out of the denominator too, and the
-    field would be graded over 8 of the 20 rows that must carry it.
+    they cannot dilute a column they could never have filled. Fails if applicability
+    returns to the whole identity service (the denominator becomes 1,020 and AWS-001
+    reads UNUSABLE at 2%), and fails if the RBAC binding clause is dropped (half of these
+    rows leave the denominator).
     """
-    telemetry = build.telemetry(ctrls=_identity_reads(1_000) + _authority_changes(20))
+    telemetry = build.telemetry(ctrls=_identity_reads(1_000) + _identity_grants(20))
 
     aws001 = _rule(telemetry, "AWS-001")
     for column in ("target_actor", "role_ref"):
@@ -571,13 +700,13 @@ def test_identity_reads_are_not_in_the_denominator_of_an_authority_field() -> No
     assert aws001.verdict is not RuleVerdict.DEGRADED, aws001.detail
 
 
-def test_authority_changes_with_no_target_are_still_blindness() -> None:
+def test_identity_grants_with_no_target_are_still_blindness() -> None:
     """The same shape with the target emptied on all 20.
 
     Applicability narrows the denominator; it must never excuse the numerator. Fails if
     "no populated applicable row" is read as "nothing to measure".
     """
-    changes = [dict(row, target_actor="") for row in _authority_changes(20)]
+    changes = [dict(row, target_actor="") for row in _identity_grants(20)]
     telemetry = build.telemetry(ctrls=_identity_reads(1_000) + changes)
 
     aws001 = _rule(telemetry, "AWS-001")
@@ -592,8 +721,9 @@ def test_a_volume_attachment_is_grant_shaped_and_names_no_identity() -> None:
 
     This is the half of the flaws.cloud AWS-001 reading that was measurement error --
     42 of its 132 grant-shaped rows attach a storage volume to an instance. Fails if the
-    denominator is ``is_grant``: 5 of 45 is 11%, under DEGRADED_BELOW, and AWS-001 reads
-    DEGRADED on a corpus where every authority change in it names its subject.
+    identity clause is dropped from the denominator: 5 of 45 is 11%, under
+    DEGRADED_BELOW, and AWS-001 reads DEGRADED on a corpus where every grant in it names
+    its subject.
     """
     volumes = [
         build.ctrl(
@@ -603,7 +733,7 @@ def test_a_volume_attachment_is_grant_shaped_and_names_no_identity() -> None:
         )
         for index in range(40)
     ]
-    telemetry = build.telemetry(ctrls=volumes + _authority_changes(5))
+    telemetry = build.telemetry(ctrls=volumes + _identity_grants(5))
 
     aws001 = _rule(telemetry, "AWS-001")
     for column in ("target_actor", "role_ref"):
@@ -613,6 +743,92 @@ def test_a_volume_attachment_is_grant_shaped_and_names_no_identity() -> None:
         assert field.population.raw_fraction == pytest.approx(5 / 45)
     assert not aws001.sparse_fields
     assert not aws001.unpopulated_fields
+
+
+def _attack_capture_shape() -> list[dict]:
+    """The attack_data_aws control table in miniature: authority changes, no principals.
+
+    116 policy deletes, 10 policy creates and 20 credential-report generates are that
+    capture's entire authority-change population (146 rows), and not one of them names a
+    beneficiary -- a policy object has no principal, and a credential report is about the
+    account. Scaled down here to 100/10/3 and stripped of both columns, which is what the
+    adapter produces from those records.
+    """
+    return (
+        _control_rows((("delete", "iam:quokka-policy"),), 100, target="", role="")
+        + _control_rows((("create", "iam:quokka-policy"),), 10, target="", role="",
+                        minutes=120)
+        + _control_rows((("generate", "iam:ledger-report"),), 3, target="", role="",
+                        minutes=150)
+    )
+
+
+def test_a_capture_of_policy_changes_says_nothing_about_beneficiaries() -> None:
+    """113 authority changes whose subject is a policy or a report: nobody is blind.
+
+    This is the attack_data_aws reading M18-5 produced and M18-6 corrects: every row
+    changes an authority, so every row was in the denominator, none of them could name a
+    principal, and AWS-001 was reported UNUSABLE on a corpus that contains no grant at
+    all. The honest reading is that the question does not arise here -- and the rows are
+    not thereby hidden: the adapter counts them as an informational gap, which the
+    adapter-side test asserts.
+
+    Fails if the denominator widens back to ``changes_authority`` (UNUSABLE, naming
+    target_actor), and fails if a zero-applicable field were silently dropped from the
+    report rather than named as not applicable.
+    """
+    telemetry = build.telemetry(ctrls=_attack_capture_shape())
+
+    aws001 = _rule(telemetry, "AWS-001")
+    assert aws001.verdict is RuleVerdict.USABLE, aws001.detail
+    assert set(aws001.not_applicable_fields) == {"target_actor", "role_ref"}
+    assert not aws001.unpopulated_fields
+    assert "not applicable in this data" in aws001.detail
+    for column in ("target_actor", "role_ref"):
+        field = _field(aws001, column)
+        assert field.applicable is False
+        assert field.population.applicable_rows == 0
+        assert field.population.rows == 113
+        assert "identity grant" in field.population.applicability_reason
+
+
+def test_one_grant_in_the_same_capture_creates_the_denominator() -> None:
+    """The same 113 rows plus 5 identity grants that carry their beneficiary.
+
+    The capture stops being silent the moment it contains a row the model guarantees an
+    answer on, and the denominator is those 5 rows and nothing else -- not the 118. Fails
+    if the policy changes are counted in (5 of 118 is 4.2%, under DEGRADED_BELOW, and
+    AWS-001 reads DEGRADED while every grant in the data names its subject).
+    """
+    telemetry = build.telemetry(ctrls=_attack_capture_shape() + _identity_grants(5))
+
+    aws001 = _rule(telemetry, "AWS-001")
+    assert aws001.verdict is RuleVerdict.USABLE, aws001.detail
+    for column in ("target_actor", "role_ref"):
+        field = _field(aws001, column)
+        assert field.applicable
+        assert field.population.applicable_rows == 5
+        assert field.fraction == 1.0
+        assert field.population.raw_fraction == pytest.approx(5 / 118)
+
+
+def test_the_same_grants_without_a_beneficiary_are_blindness() -> None:
+    """The same 118 rows with the 5 grants' beneficiary emptied.
+
+    The paired test for the one above, and the reason the denominator can be narrowed at
+    all: narrowing may never excuse an empty numerator. Fails if a denominator of 5 with
+    0 populated were read as "nothing to measure".
+    """
+    grants = [dict(row, target_actor="") for row in _identity_grants(5)]
+    telemetry = build.telemetry(ctrls=_attack_capture_shape() + grants)
+
+    aws001 = _rule(telemetry, "AWS-001")
+    assert aws001.verdict is RuleVerdict.UNUSABLE
+    assert "target_actor" in aws001.unpopulated_fields
+    assert "target_actor" in aws001.detail
+    field = _field(aws001, "target_actor")
+    assert field.population.applicable_rows == 5
+    assert field.fraction == 0.0
 
 
 def test_is_grant_reads_the_verb_class_and_the_binding_resource_and_nothing_else() -> None:

@@ -70,6 +70,10 @@ INVENTED_EVENT_NAMES = (
     "AttachQuokkaPolicy", "DetachQuokkaPolicy", "UpdateLedgerLoginProfile",
     "IssueAccessKey", "DeleteLedgerUser", "AttachApplianceVolume",
     "AuthorizeApplianceFleetIngress",
+    # M18-6: the rows where an empty beneficiary is a gap, and the rows where it is not.
+    "DeleteQuokkaPolicy", "CreateQuokkaPolicy", "GenerateQuokkaReport",
+    "AddQuokkaUserToLedgerGroup", "AttachLedgerGroupPolicy",
+    "AddLedgerRoleToApplianceProfile",
 )
 
 
@@ -380,9 +384,17 @@ def test_alarming_calls_are_represented_and_deliberately_undetected(tmp_path) ->
         ("AttachGroupPolicy",
          {"groupName": "ledger-admins", "policyArn": "arn:aws:iam::900000000001:policy/ledger-rw"},
          "ledger-admins", "arn:aws:iam::900000000001:policy/ledger-rw"),
-        # userName wins over groupName: the beneficiary is the identity, not the container.
+        # userName wins over groupName: the beneficiary is the identity, not the
+        # container -- and the container is then what conferred the authority, so the
+        # group falls through to `role_ref` (M18-6). One ordering serves both shapes:
+        # the row above names no user, so there the group *is* the beneficiary.
         ("AddUserToGroup", {"userName": "quokka", "groupName": "ledger-admins"},
-         "quokka", ""),
+         "quokka", "ledger-admins"),
+        # A role handed over inside an instance profile: the profile is the vehicle, and
+        # it is what `role_ref` records when no policy is named.
+        ("AddRoleToInstanceProfile",
+         {"roleName": "ledger-operator", "instanceProfileName": "ledger-fleet"},
+         "ledger-operator", "ledger-fleet"),
         # An inline policy has a name, not an ARN -- the same column, the next field down.
         ("PutRolePolicy", {"roleName": "ledger-operator", "policyName": "ledger-inline"},
          "ledger-operator", "ledger-inline"),
@@ -394,8 +406,10 @@ def test_beneficiary_and_role_are_read_by_convention(
 ) -> None:
     """Fails if beneficiary extraction regresses to a per-call-name table.
 
-    None of these five calls is named anywhere in the adapter, and four of them were not
-    mapped at all before this change.
+    None of these six calls is named anywhere in the adapter, and four of them were not
+    mapped at all before M18-3. The last three exercise `_ROLE_FIELDS` end to end: a
+    policy ARN, an instance profile and a group are three different answers to "what
+    conferred this", read from one ordered tuple rather than from the call's name.
     """
     from ath.telemetry.cloudtrail_source import _normalise_control_record
 
@@ -757,3 +771,204 @@ def test_kubernetes_audit_verbs_share_the_table() -> None:
     assert verb_class("watch") == verb_class("list") == verb_class("get") == "read"
     assert verb_class("patch") == verb_class("update") == "modify"
     assert verb_class("exec") == "execute"
+
+
+# ======================================================================================
+# M18-6: the adapter reports what it could not fill, and why
+# ======================================================================================
+#
+# An empty `target_actor` has two causes and a population fraction reports them
+# identically: either the adapter dropped a value the record carried, which is this
+# project's blindness, or the record never carried one -- a denied request has no
+# `requestParameters` at all, and a policy object names no principal. Only the adapter
+# still holds the raw record when the column comes back empty, so only the adapter can
+# say which. It counts them, with the reason, on `SourceLoadResult.field_gaps`.
+
+
+def _gaps(records: list) -> dict:
+    """The field gaps one or more records produce, with every row asserted kept."""
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    counter: dict = {}
+    for index, record in enumerate(records):
+        row, _ = _normalise_control_record(record, "invented.json", index, counter)
+        assert row is not None, "a gap must never be counted instead of a row"
+    return counter
+
+
+_GRANT = dict(
+    eventSource="iam.amazonaws.com", eventName="AttachQuokkaPolicy",
+    userIdentity={"type": "IAMUser", "userName": "gannet", "accountId": "900000000077"},
+)
+_NOT_GUARANTEED_KEY = (
+    "control.target_actor: not guaranteed on this action (filled when derivable)"
+)
+
+
+def test_a_denied_grant_with_no_parameters_is_a_counted_gap() -> None:
+    """AccessDenied on a grant: CloudTrail logs no requestParameters at all.
+
+    2,751 of the 2,763 denied authority-changes on flaws.cloud are this shape, and until
+    now the only trace of them downstream was a low population fraction that read exactly
+    like an adapter which had stopped parsing parameters.
+
+    Fails if the gap is not counted (the reason disappears and the fraction is all that
+    is left), if the decision is dropped from the reason (allowed and denied become one
+    number, and "the request was refused before it named anyone" stops being visible), or
+    if a gap is counted instead of a row -- the helper asserts the row is kept.
+    """
+    gaps = _gaps([_record(**_GRANT, requestParameters=None,
+                          errorCode="AccessDenied", eventID="invented-gap-1")])
+
+    assert gaps == {
+        "control.target_actor: request carried no parameters (decision=denied)": 1,
+        "control.role_ref: request carried no parameters (decision=denied)": 1,
+    }
+
+
+def test_an_allowed_grant_with_no_parameters_is_a_different_gap() -> None:
+    """The same shape, allowed: 315 of the 479 allowed authority-changes on flaws.cloud.
+
+    A denied request that named nobody is the API refusing before it read anything; an
+    *allowed* one that named nobody is a record this project should look at. Fails if the
+    two are counted under one key.
+    """
+    gaps = _gaps([_record(**_GRANT, requestParameters={}, eventID="invented-gap-2")])
+
+    assert gaps == {
+        "control.target_actor: request carried no parameters (decision=allowed)": 1,
+        "control.role_ref: request carried no parameters (decision=allowed)": 1,
+    }
+
+
+def test_a_grant_whose_parameters_name_nobody_is_a_third_gap() -> None:
+    """Parameters present, and none of them is a beneficiary or a role.
+
+    This is the one that would be a defect in this adapter rather than in the record, so
+    it must not be collapsed into the two above. Fails if "no parameters" and "parameters
+    that named nobody" share a reason -- at which point a conventions bug would read as
+    an incomplete trail.
+    """
+    gaps = _gaps([_record(**_GRANT, eventID="invented-gap-3",
+                          requestParameters={"tagKeys": ["owner"], "maxItems": 100})])
+
+    assert gaps == {
+        "control.target_actor: parameters present but named no beneficiary": 1,
+        "control.role_ref: parameters present but named no role": 1,
+    }
+
+
+def test_a_grant_that_names_its_beneficiary_is_no_gap_at_all() -> None:
+    """The control: a complete grant counts nothing.
+
+    Fails if the gap counter fires on rows that carry the columns, which would turn the
+    ledger's most useful number into a row count.
+    """
+    gaps = _gaps([_record(
+        **_GRANT, eventID="invented-gap-4",
+        requestParameters={"userName": "shrike",
+                           "policyArn": "arn:aws:iam::900000000077:policy/q"},
+    )])
+
+    assert gaps == {}
+
+
+@pytest.mark.parametrize("event_name,params", [
+    ("DeleteQuokkaPolicy", {"policyArn": "arn:aws:iam::900000000077:policy/quokka-rw"}),
+    ("CreateQuokkaPolicy", {"policyName": "quokka-rw", "path": "/"}),
+    ("GenerateQuokkaReport", {}),
+])
+def test_an_authority_change_that_names_no_principal_is_informational_only(
+    event_name, params
+) -> None:
+    """A policy created or deleted, a report generated: 146 rows of attack_data_aws.
+
+    These change an authority and act on an object that is not a principal, so an empty
+    beneficiary is not a gap in the strong sense and no denominator contains them. They
+    are counted anyway, under their own reason, because "this capture changed authority
+    146 times and named nobody" is worth seeing -- it is how a reader knows AWS-001's
+    "not applicable" is a fact about the corpus and not a rule excusing itself.
+
+    Fails if these are counted as grant gaps (the two populations merge and the
+    flaws.cloud decomposition stops meaning anything), and fails if they are counted not
+    at all (the M18-5 observation disappears from every artifact).
+    """
+    gaps = _gaps([_record(eventSource="iam.amazonaws.com", eventName=event_name,
+                          requestParameters=params, eventID="invented-gap-5",
+                          userIdentity={"type": "IAMUser", "userName": "gannet"})])
+
+    assert gaps == {_NOT_GUARANTEED_KEY: 1}
+
+
+def test_a_read_about_an_identity_counts_no_gap() -> None:
+    """Reads are outside both populations: nothing was changed, so nothing is missing.
+
+    Fails if the informational counter is keyed on the identity *service* rather than on
+    an authority change -- at which point 11,388 flaws.cloud reads would be reported as
+    fields this project failed to fill.
+    """
+    assert _gaps([_record(eventSource="iam.amazonaws.com",
+                          eventName="DescribeLedgerUserGrants", eventID="invented-gap-6",
+                          requestParameters={"userName": "shrike"})]) == {}
+
+
+def test_gaps_reach_the_load_result_without_touching_the_drop_count(tmp_path) -> None:
+    """A whole load: the gaps are on the result, the rows are in the table, none dropped.
+
+    Fails if a gap is ever added to `rows_dropped` (kept rows would be reported as lost,
+    which is the over-counting M18-3 flagged), if the counter is not threaded from the
+    record loop to the result (every artifact reports an empty dict), or if the summary
+    line stops mentioning them.
+    """
+    result = _load(tmp_path, [
+        _record(**_GRANT, requestParameters=None, errorCode="AccessDenied",
+                eventID="invented-gap-7"),
+        _record(eventSource="iam.amazonaws.com", eventName="DeleteQuokkaPolicy",
+                requestParameters={"policyArn": "arn:aws:iam::900000000077:policy/q"},
+                eventID="invented-gap-8"),
+    ])
+
+    assert len(result.tables[EVENT_CONTROL]) == 2
+    assert result.rows_kept == 2
+    assert result.rows_dropped == 0
+    assert result.field_gaps == {
+        "control.target_actor: request carried no parameters (decision=denied)": 1,
+        "control.role_ref: request carried no parameters (decision=denied)": 1,
+        _NOT_GUARANTEED_KEY: 1,
+    }
+    assert "3 field gap(s) on kept rows" in result.summary()
+    assert "0 dropped" in result.summary()
+
+
+def test_group_membership_records_the_group_as_what_conferred_the_authority(tmp_path) -> None:
+    """AddUserToGroup-shaped: the user is the beneficiary, the group is the role.
+
+    Reads the same two ordered tuples as every other call, and the order is the whole
+    convention: `userName` outranks `groupName` as a beneficiary, `groupName` is last
+    among the roles. Fails if `groupName` is dropped from the role tuple (putting a user
+    into an administrators group records *what* they were given as nothing), and fails if
+    it is promoted above `policyArn` (attaching a policy to a group would record the
+    group as both the target and the thing conferred).
+    """
+    rows = {
+        row["source_ref"].split(";")[0]: (row["target_actor"], row["role_ref"])
+        for _, row in _load(tmp_path, [
+            _record(eventSource="iam.amazonaws.com", eventName="AddQuokkaUserToLedgerGroup",
+                    eventID="invented-role-1",
+                    requestParameters={"userName": "shrike", "groupName": "ledger-admins"}),
+            _record(eventSource="iam.amazonaws.com", eventName="AttachLedgerGroupPolicy",
+                    eventID="invented-role-2",
+                    requestParameters={"groupName": "ledger-admins",
+                                       "policyArn": "arn:aws:iam::900000000077:policy/q"}),
+            _record(eventSource="iam.amazonaws.com",
+                    eventName="AddLedgerRoleToApplianceProfile", eventID="invented-role-3",
+                    requestParameters={"roleName": "ledger-operator",
+                                       "instanceProfileName": "appliance-fleet"}),
+        ]).tables[EVENT_CONTROL].iterrows()
+    }
+
+    assert rows["eventID=invented-role-1"] == ("shrike", "ledger-admins")
+    assert rows["eventID=invented-role-2"] == (
+        "ledger-admins", "arn:aws:iam::900000000077:policy/q",
+    )
+    assert rows["eventID=invented-role-3"] == ("ledger-operator", "appliance-fleet")

@@ -144,6 +144,12 @@ def ledger(result: SourceLoadResult) -> dict:
         # that was kept. Stated rather than quietly netted off.
         "rows_dropped_reported": result.rows_dropped,
         "rows_dropped_excluding_kept_rows": result.rows_dropped - issues["name_has_no_verb"],
+        # Stage 6: rows that were kept, and a column on them that could not be filled.
+        # The stage the ledger had no line for: a population fraction below reports the
+        # same number whether the adapter dropped a value the record carried or the
+        # record never carried one, and only the adapter can tell those apart.
+        "field_gaps": dict(sorted(result.field_gaps.items(), key=lambda kv: -kv[1])),
+        "field_gaps_total": sum(result.field_gaps.values()),
     }
 
 
@@ -400,6 +406,7 @@ def main() -> int:
     print(f"  rows kept            {led['rows_kept']:,} "
           f"(before: {before_ingest.get('rows_kept')})  {led['rows_by_table']}")
     print(f"  issues               {led['issues_by_class']}")
+    print(f"  field gaps           {led['field_gaps_total']:,} {led['field_gaps']}")
     print(f"  control population   {shape.get('population')}")
     print(f"  verb classes         {shape.get('verb_classes')}")
     print(f"  findings             {record['after']['findings_by_rule']} "

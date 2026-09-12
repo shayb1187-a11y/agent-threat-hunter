@@ -797,6 +797,24 @@ def cmd_engineer(args: argparse.Namespace, settings: Settings) -> int:
 # ======================================================================================
 
 
+def _print_field_gaps(result: SourceLoadResult) -> None:
+    """Print the fields an adapter could not fill on rows it kept, with the reason.
+
+    A different statement from the two above it, and the one an import could not make
+    before: these rows are in the tables, complete but for one column, and until the
+    adapter said why that column is empty the only evidence of it downstream was a
+    population fraction -- which cannot separate a value this project dropped from one
+    the record never carried. Printed with the reasons rather than as a total, because
+    the reasons are the whole content.
+    """
+    if not result.field_gaps:
+        return
+    total = sum(result.field_gaps.values())
+    print(f"\n  {total} field gap(s) on rows that were kept:")
+    for key, count in sorted(result.field_gaps.items(), key=lambda kv: -kv[1]):
+        print(f"    {count:>8,}  {key}")
+
+
 def _print_admission(result: SourceLoadResult) -> None:
     """Print which candidate files the adapter vouched for, and which it refused.
 
@@ -838,6 +856,7 @@ def cmd_import_defender(args: argparse.Namespace, settings: Settings) -> int:
     for event_type in ("process", "network", "logon"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
+    _print_field_gaps(result)
 
     if result.issues:
         print(f"\n{_c(f'{len(result.issues)} row(s) dropped during normalization:', 'HIGH')}")
@@ -873,6 +892,7 @@ def cmd_import_cloudtrail(args: argparse.Namespace, settings: Settings) -> int:
     for event_type in ("process", "network", "logon", "control"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
+    _print_field_gaps(result)
 
     if result.issues:
         # Headed "unmapped", not "dropped": most of these are events the canonical
@@ -908,6 +928,7 @@ def cmd_import_k8s_audit(args: argparse.Namespace, settings: Settings) -> int:
     for event_type in ("process", "network", "logon", "control"):
         df = result.tables.get(event_type)
         print(f"  {event_type:<8} {len(df) if df is not None else 0:>5} row(s)")
+    _print_field_gaps(result)
 
     if result.issues:
         print(f"\n{_c(f'{len(result.issues)} record(s) not mapped:', 'MEDIUM')}")
