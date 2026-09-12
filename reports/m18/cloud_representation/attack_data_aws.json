@@ -1,0 +1,345 @@
+{
+  "corpus": "attack_data_aws",
+  "directory": "data\\external\\attack_data_aws\\raw",
+  "before": {
+    "ingestion": {
+      "rows_read": 2349,
+      "rows_kept": 2,
+      "rows_dropped": 2347,
+      "kept_fraction": 0.0009,
+      "kept_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 0
+      },
+      "load_seconds": 0.0,
+      "top_drop_classes": [
+        {
+          "event_type": "control",
+          "field": "eventName",
+          "reason": "DescribeLoadBalancers",
+          "rows": 128
+        },
+        {
+          "event_type": "control",
+          "field": "eventName",
+          "reason": "DeletePolicy",
+          "rows": 116
+        },
+        {
+          "event_type": "control",
+          "field": "eventName",
+          "reason": "DescribeClusters",
+          "rows": 90
+        },
+        {
+          "event_type": "control",
+          "field": "eventName",
+          "reason": "DescribeParameters",
+          "rows": 64
+        },
+        {
+          "event_type": "control",
+          "field": "eventName",
+          "reason": "DescribeDBInstances",
+          "rows": 64
+        }
+      ]
+    },
+    "detection": {
+      "findings": 0,
+      "by_rule": {},
+      "by_severity": {},
+      "findings_per_day": 0.0,
+      "findings_per_host_day": 0.0
+    },
+    "correlation": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "source": "reports\\m16\\attack_data_aws.json",
+    "usability": {
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 2347
+      },
+      "rules": {
+        "ATH-005": {
+          "eligible_rows": 2,
+          "verdict": "degraded",
+          "findings": 0,
+          "sparse_fields": [
+            "failure_reason",
+            "logon_type",
+            "source_device"
+          ],
+          "unpopulated_fields": []
+        },
+        "ATH-006": {
+          "eligible_rows": 2,
+          "verdict": "unusable",
+          "findings": 0,
+          "sparse_fields": [
+            "logon_type",
+            "source_device"
+          ],
+          "unpopulated_fields": [
+            "logon_type",
+            "source_device"
+          ]
+        },
+        "AWS-001": {
+          "eligible_rows": 2347,
+          "verdict": "unusable",
+          "findings": 0,
+          "sparse_fields": [
+            "role_ref",
+            "target_actor"
+          ],
+          "unpopulated_fields": [
+            "target_actor"
+          ]
+        },
+        "AWS-002": {
+          "eligible_rows": 2347,
+          "verdict": "degraded",
+          "findings": 0,
+          "sparse_fields": [
+            "resource_name"
+          ],
+          "unpopulated_fields": []
+        },
+        "K8S-001": {
+          "eligible_rows": 2347,
+          "verdict": "unusable",
+          "findings": 0,
+          "sparse_fields": [
+            "actor_groups",
+            "resource_name",
+            "role_ref",
+            "target_actor"
+          ],
+          "unpopulated_fields": [
+            "actor_groups",
+            "target_actor"
+          ]
+        },
+        "K8S-002": {
+          "eligible_rows": 2347,
+          "verdict": "unusable",
+          "findings": 0,
+          "sparse_fields": [
+            "resource_name",
+            "resource_namespace",
+            "role_ref",
+            "target_actor"
+          ],
+          "unpopulated_fields": [
+            "resource_namespace",
+            "target_actor"
+          ]
+        }
+      }
+    },
+    "usability_source": "<local-checkout>\\agentic-threat-hunter\\reports\\m18\\field_usability\\attack_data_aws.json"
+  },
+  "after": {
+    "ledger": {
+      "files_listed": 5,
+      "files_admitted": 5,
+      "files_rejected": [],
+      "records_in_rejected_files": 0,
+      "records_in_admitted_files": 2349,
+      "recognised_authentication": 2,
+      "recognised_management": 2347,
+      "recognised_neither": 0,
+      "refused_for_its_name": 0,
+      "rows_by_table": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 2347
+      },
+      "rows_kept": 2349,
+      "issues_by_class": {},
+      "quarantined": 0,
+      "names_with_no_verb_token": 0,
+      "rows_dropped_reported": 0,
+      "rows_dropped_excluding_kept_rows": 0
+    },
+    "control_table": {
+      "rows": 2347,
+      "population": {
+        "verb": 1.0,
+        "resource_type": 1.0,
+        "actor": 1.0,
+        "decision": 1.0,
+        "target_actor": 0.0,
+        "role_ref": 0.0524,
+        "resource_name": 0.0524
+      },
+      "distinct_verbs": 6,
+      "verb_classes": {
+        "read": 2201,
+        "delete": 116,
+        "create": 30
+      },
+      "top_verbs": {
+        "describe": 1570,
+        "list": 497,
+        "get": 134,
+        "delete": 116,
+        "generate": 20,
+        "create": 10
+      },
+      "distinct_resource_types": 109,
+      "top_resource_types": {
+        "iam:policy": 128,
+        "elasticloadbalancing:load-balancer": 128,
+        "ssm:parameter": 64,
+        "redshift:cluster": 64,
+        "rds:db-instance": 64,
+        "rds:db-cluster": 64,
+        "config:configuration-recorder-status": 64,
+        "config:configuration-recorder": 64,
+        "cloudtrail:trail": 64,
+        "ssm:instance-information": 32,
+        "redshift:cluster-parameter-group": 32,
+        "redshift:reserved-node": 32,
+        "rds:db-parameter-group": 32,
+        "rds:db-snapshot": 32,
+        "ec2:route-table": 32,
+        "elasticloadbalancing:target-group": 32,
+        "ec2:security-group": 32,
+        "ec2:flow-log": 32,
+        "ec2:instance": 32,
+        "ecr:repository": 32,
+        "ec2:vpc-peering-connection": 32,
+        "ec2:vpc": 32,
+        "ec2:subnet": 32,
+        "ec2:volume": 32,
+        "dms:replication-instance": 32
+      }
+    },
+    "rules": [
+      {
+        "rule_id": "ATH-005",
+        "eligible_rows": 2,
+        "verdict": "degraded",
+        "verdict_before": "supported",
+        "findings": 0,
+        "sparse_fields": [
+          "failure_reason",
+          "logon_type",
+          "source_device"
+        ],
+        "unpopulated_fields": []
+      },
+      {
+        "rule_id": "ATH-006",
+        "eligible_rows": 2,
+        "verdict": "unusable",
+        "verdict_before": "supported",
+        "findings": 0,
+        "sparse_fields": [
+          "logon_type",
+          "source_device"
+        ],
+        "unpopulated_fields": [
+          "logon_type",
+          "source_device"
+        ]
+      },
+      {
+        "rule_id": "AWS-001",
+        "eligible_rows": 2347,
+        "verdict": "unusable",
+        "verdict_before": "supported",
+        "findings": 0,
+        "sparse_fields": [
+          "role_ref",
+          "target_actor"
+        ],
+        "unpopulated_fields": [
+          "target_actor"
+        ]
+      },
+      {
+        "rule_id": "AWS-002",
+        "eligible_rows": 2347,
+        "verdict": "degraded",
+        "verdict_before": "supported",
+        "findings": 0,
+        "sparse_fields": [
+          "resource_name"
+        ],
+        "unpopulated_fields": []
+      },
+      {
+        "rule_id": "K8S-001",
+        "eligible_rows": 2347,
+        "verdict": "unusable",
+        "verdict_before": "unsupported",
+        "findings": 0,
+        "sparse_fields": [
+          "actor_groups",
+          "resource_name",
+          "role_ref",
+          "target_actor"
+        ],
+        "unpopulated_fields": [
+          "actor_groups",
+          "target_actor"
+        ]
+      },
+      {
+        "rule_id": "K8S-002",
+        "eligible_rows": 2347,
+        "verdict": "unusable",
+        "verdict_before": "unsupported",
+        "findings": 0,
+        "sparse_fields": [
+          "resource_name",
+          "resource_namespace",
+          "role_ref",
+          "target_actor"
+        ],
+        "unpopulated_fields": [
+          "resource_namespace",
+          "target_actor"
+        ]
+      }
+    ],
+    "findings_by_rule": {},
+    "findings_total": 0,
+    "cases": {
+      "cases": 0,
+      "singleton_cases": 0,
+      "links": 0,
+      "cases_per_day": 0.0
+    },
+    "triage": {
+      "dispositions": {},
+      "findings_after_triage": 0,
+      "triage_load_reduction": 0.0
+    },
+    "findings": [],
+    "raw_records_scope": {
+      "rules_with_a_changed_count": [],
+      "event_ids_requested": 0,
+      "cap": 50
+    },
+    "raw_records": {}
+  },
+  "cost": {
+    "load_seconds": 1.0,
+    "measure_seconds": 0.0,
+    "peak_bytes": 93786112,
+    "peak_gb": 0.087
+  }
+}

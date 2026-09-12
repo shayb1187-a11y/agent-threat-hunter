@@ -4,9 +4,9 @@
     "process": 0,
     "network": 0,
     "logon": 2,
-    "control": 0
+    "control": 2347
   },
-  "events": 2,
+  "events": 2349,
   "channels": {
     "process_execution": "absent_in_data",
     "process_command_line": "absent_in_data",
@@ -23,7 +23,7 @@
     "script_block": "absent_by_schema",
     "email": "absent_by_schema",
     "cloud_control_plane": "available",
-    "cloud_management_activity": "absent_in_data",
+    "cloud_management_activity": "available",
     "container_audit": "absent_in_data"
   },
   "rules": [
@@ -416,95 +416,334 @@
       "rule_id": "AWS-001",
       "title": "IAM policy grant followed by access-key creation for the same identity",
       "declared_tables": {
-        "control": 0
+        "control": 2347
       },
-      "eligible_rows": 0,
-      "verdict": "not_eligible",
-      "verdict_before": "unsupported",
+      "eligible_rows": 2347,
+      "verdict": "unusable",
+      "verdict_before": "supported",
       "runnable": false,
-      "missing_channels": [
-        "cloud_management_activity"
-      ],
+      "missing_channels": [],
       "degraded_channels": [],
-      "fields": [],
-      "unpopulated_fields": [],
-      "sparse_fields": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 2347,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "target_actor"
+      ],
+      "sparse_fields": [
+        "role_ref",
+        "target_actor"
+      ],
       "findings": 0,
-      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+      "detail": "required field(s) effectively unpopulated: target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "AWS-002",
       "title": "CloudTrail logging disabled or trail deleted",
       "declared_tables": {
-        "control": 0
+        "control": 2347
       },
-      "eligible_rows": 0,
-      "verdict": "not_eligible",
-      "verdict_before": "unsupported",
-      "runnable": false,
-      "missing_channels": [
-        "cloud_management_activity"
-      ],
+      "eligible_rows": 2347,
+      "verdict": "degraded",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
       "degraded_channels": [],
-      "fields": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
       "unpopulated_fields": [],
-      "sparse_fields": [],
+      "sparse_fields": [
+        "resource_name"
+      ],
       "findings": 0,
-      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+      "detail": "reads sparsely populated field(s): resource_name 123 of 2347 control rows (5.24%, required) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "K8S-001",
       "title": "RBAC binding grants a maximally-privileged role",
       "declared_tables": {
-        "control": 0
+        "control": 2347
       },
-      "eligible_rows": 0,
-      "verdict": "not_eligible",
+      "eligible_rows": 2347,
+      "verdict": "unusable",
       "verdict_before": "unsupported",
       "runnable": false,
       "missing_channels": [
         "container_audit"
       ],
       "degraded_channels": [],
-      "fields": [],
-      "unpopulated_fields": [],
-      "sparse_fields": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "actor_groups",
+          "rows": 2347,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 2347,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "actor_groups",
+        "target_actor"
+      ],
+      "sparse_fields": [
+        "actor_groups",
+        "resource_name",
+        "role_ref",
+        "target_actor"
+      ],
       "findings": 0,
-      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 2347 control rows (0.00%, required); target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "K8S-002",
       "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
       "declared_tables": {
-        "control": 0
+        "control": 2347
       },
-      "eligible_rows": 0,
-      "verdict": "not_eligible",
+      "eligible_rows": 2347,
+      "verdict": "unusable",
       "verdict_before": "unsupported",
       "runnable": false,
       "missing_channels": [
         "container_audit"
       ],
       "degraded_channels": [],
-      "fields": [],
-      "unpopulated_fields": [],
-      "sparse_fields": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_name",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_namespace",
+          "rows": 2347,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 2347,
+          "populated": 123,
+          "fraction": 0.05240733,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 2347,
+          "populated": 0,
+          "fraction": 0.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 2347,
+          "populated": 2347,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "resource_namespace",
+        "target_actor"
+      ],
+      "sparse_fields": [
+        "resource_name",
+        "resource_namespace",
+        "role_ref",
+        "target_actor"
+      ],
       "findings": 0,
-      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+      "detail": "required field(s) effectively unpopulated: resource_namespace 0 of 2347 control rows (0.00%, required); target_actor 0 of 2347 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     }
   ],
   "total_findings": 0,
   "verdict_counts": {
-    "not_eligible": 14,
-    "degraded": 1,
-    "unusable": 1
+    "not_eligible": 10,
+    "degraded": 2,
+    "unusable": 4
   },
   "before_counts": {
-    "unsupported": 14,
-    "supported": 2
+    "unsupported": 12,
+    "supported": 4
   },
   "hunt_seconds": 0.0,
-  "load_seconds": 0.0,
+  "load_seconds": 1.2,
   "source": {
     "kind": "cloudtrail",
     "path": "data\\external\\attack_data_aws\\raw"

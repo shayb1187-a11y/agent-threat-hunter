@@ -4,9 +4,9 @@
     "process": 0,
     "network": 0,
     "logon": 79424,
-    "control": 96
+    "control": 1857154
   },
-  "events": 79520,
+  "events": 1936578,
   "channels": {
     "process_execution": "absent_in_data",
     "process_command_line": "absent_in_data",
@@ -416,9 +416,81 @@
       "rule_id": "AWS-001",
       "title": "IAM policy grant followed by access-key creation for the same identity",
       "declared_tables": {
-        "control": 96
+        "control": 1857154
       },
-      "eligible_rows": 96,
+      "eligible_rows": 1857154,
+      "verdict": "unusable",
+      "verdict_before": "supported",
+      "runnable": false,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "control",
+          "column": "actor",
+          "rows": 1857154,
+          "populated": 1857154,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "resource_type",
+          "rows": 1857154,
+          "populated": 1857154,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "role_ref",
+          "rows": 1857154,
+          "populated": 32742,
+          "fraction": 0.0176302,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "target_actor",
+          "rows": 1857154,
+          "populated": 11388,
+          "fraction": 0.00613196,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "timestamp",
+          "rows": 1857154,
+          "populated": 1857154,
+          "fraction": 1.0,
+          "required": true
+        },
+        {
+          "table": "control",
+          "column": "verb",
+          "rows": 1857154,
+          "populated": 1857154,
+          "fraction": 1.0,
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "target_actor"
+      ],
+      "sparse_fields": [
+        "role_ref",
+        "target_actor"
+      ],
+      "findings": 0,
+      "detail": "required field(s) effectively unpopulated: target_actor 11388 of 1857154 control rows (0.61%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+    },
+    {
+      "rule_id": "AWS-002",
+      "title": "CloudTrail logging disabled or trail deleted",
+      "declared_tables": {
+        "control": 1857154
+      },
+      "eligible_rows": 1857154,
       "verdict": "degraded",
       "verdict_before": "supported",
       "runnable": true,
@@ -428,125 +500,58 @@
         {
           "table": "control",
           "column": "actor",
-          "rows": 96,
-          "populated": 96,
-          "fraction": 1.0,
-          "required": true
-        },
-        {
-          "table": "control",
-          "column": "resource_type",
-          "rows": 96,
-          "populated": 96,
-          "fraction": 1.0,
-          "required": true
-        },
-        {
-          "table": "control",
-          "column": "role_ref",
-          "rows": 96,
-          "populated": 13,
-          "fraction": 0.13541667,
-          "required": true
-        },
-        {
-          "table": "control",
-          "column": "target_actor",
-          "rows": 96,
-          "populated": 66,
-          "fraction": 0.6875,
-          "required": true
-        },
-        {
-          "table": "control",
-          "column": "timestamp",
-          "rows": 96,
-          "populated": 96,
-          "fraction": 1.0,
-          "required": true
-        },
-        {
-          "table": "control",
-          "column": "verb",
-          "rows": 96,
-          "populated": 96,
-          "fraction": 1.0,
-          "required": true
-        }
-      ],
-      "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref"
-      ],
-      "findings": 0,
-      "detail": "reads sparsely populated field(s): role_ref 13 of 96 control rows (13.54%, required) -- the rule still fires on its remaining fields"
-    },
-    {
-      "rule_id": "AWS-002",
-      "title": "CloudTrail logging disabled or trail deleted",
-      "declared_tables": {
-        "control": 96
-      },
-      "eligible_rows": 96,
-      "verdict": "usable",
-      "verdict_before": "supported",
-      "runnable": true,
-      "missing_channels": [],
-      "degraded_channels": [],
-      "fields": [
-        {
-          "table": "control",
-          "column": "actor",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "resource_name",
-          "rows": 96,
-          "populated": 67,
-          "fraction": 0.69791667,
+          "rows": 1857154,
+          "populated": 44778,
+          "fraction": 0.02411109,
           "required": true
         },
         {
           "table": "control",
           "column": "resource_type",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "timestamp",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "verb",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [],
+      "sparse_fields": [
+        "resource_name"
+      ],
       "findings": 3,
-      "detail": "every declared field is populated on the 5 measured column(s) of its input table(s)"
+      "detail": "reads sparsely populated field(s): resource_name 44778 of 1857154 control rows (2.41%, required) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "K8S-001",
       "title": "RBAC binding grants a maximally-privileged role",
       "declared_tables": {
-        "control": 96
+        "control": 1857154
       },
-      "eligible_rows": 96,
+      "eligible_rows": 1857154,
       "verdict": "unusable",
       "verdict_before": "unsupported",
       "runnable": false,
@@ -558,15 +563,15 @@
         {
           "table": "control",
           "column": "actor",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "actor_groups",
-          "rows": 96,
+          "rows": 1857154,
           "populated": 0,
           "fraction": 0.0,
           "required": true
@@ -574,69 +579,72 @@
         {
           "table": "control",
           "column": "resource_name",
-          "rows": 96,
-          "populated": 67,
-          "fraction": 0.69791667,
+          "rows": 1857154,
+          "populated": 44778,
+          "fraction": 0.02411109,
           "required": true
         },
         {
           "table": "control",
           "column": "resource_type",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "role_ref",
-          "rows": 96,
-          "populated": 13,
-          "fraction": 0.13541667,
+          "rows": 1857154,
+          "populated": 32742,
+          "fraction": 0.0176302,
           "required": true
         },
         {
           "table": "control",
           "column": "target_actor",
-          "rows": 96,
-          "populated": 66,
-          "fraction": 0.6875,
+          "rows": 1857154,
+          "populated": 11388,
+          "fraction": 0.00613196,
           "required": true
         },
         {
           "table": "control",
           "column": "timestamp",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "verb",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         }
       ],
       "unpopulated_fields": [
-        "actor_groups"
+        "actor_groups",
+        "target_actor"
       ],
       "sparse_fields": [
         "actor_groups",
-        "role_ref"
+        "resource_name",
+        "role_ref",
+        "target_actor"
       ],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 96 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 1857154 control rows (0.00%, required); target_actor 11388 of 1857154 control rows (0.61%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     },
     {
       "rule_id": "K8S-002",
       "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
       "declared_tables": {
-        "control": 96
+        "control": 1857154
       },
-      "eligible_rows": 96,
+      "eligible_rows": 1857154,
       "verdict": "unusable",
       "verdict_before": "unsupported",
       "runnable": false,
@@ -648,23 +656,23 @@
         {
           "table": "control",
           "column": "actor",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "resource_name",
-          "rows": 96,
-          "populated": 67,
-          "fraction": 0.69791667,
+          "rows": 1857154,
+          "populated": 44778,
+          "fraction": 0.02411109,
           "required": true
         },
         {
           "table": "control",
           "column": "resource_namespace",
-          "rows": 96,
+          "rows": 1857154,
           "populated": 0,
           "fraction": 0.0,
           "required": true
@@ -672,68 +680,70 @@
         {
           "table": "control",
           "column": "resource_type",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "role_ref",
-          "rows": 96,
-          "populated": 13,
-          "fraction": 0.13541667,
+          "rows": 1857154,
+          "populated": 32742,
+          "fraction": 0.0176302,
           "required": true
         },
         {
           "table": "control",
           "column": "target_actor",
-          "rows": 96,
-          "populated": 66,
-          "fraction": 0.6875,
+          "rows": 1857154,
+          "populated": 11388,
+          "fraction": 0.00613196,
           "required": true
         },
         {
           "table": "control",
           "column": "timestamp",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         },
         {
           "table": "control",
           "column": "verb",
-          "rows": 96,
-          "populated": 96,
+          "rows": 1857154,
+          "populated": 1857154,
           "fraction": 1.0,
           "required": true
         }
       ],
       "unpopulated_fields": [
-        "resource_namespace"
+        "resource_namespace",
+        "target_actor"
       ],
       "sparse_fields": [
+        "resource_name",
         "resource_namespace",
-        "role_ref"
+        "role_ref",
+        "target_actor"
       ],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: resource_namespace 0 of 96 control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
+      "detail": "required field(s) effectively unpopulated: resource_namespace 0 of 1857154 control rows (0.00%, required); target_actor 11388 of 1857154 control rows (0.61%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data"
     }
   ],
   "total_findings": 39,
   "verdict_counts": {
     "not_eligible": 10,
     "degraded": 2,
-    "unusable": 3,
-    "usable": 1
+    "unusable": 4
   },
   "before_counts": {
     "unsupported": 12,
     "supported": 4
   },
-  "hunt_seconds": 1.3,
-  "load_seconds": 52.7,
+  "hunt_seconds": 8.1,
+  "load_seconds": 1947.7,
   "source": {
     "kind": "cloudtrail",
     "path": "data\\external\\flaws_cloud\\raw"
