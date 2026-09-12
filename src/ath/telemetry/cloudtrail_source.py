@@ -91,7 +91,7 @@ from ath.telemetry.admission import (
     SNIFF_RECORDS,
     admit_parsed,
 )
-from ath.telemetry.normalize import coerce_and_validate
+from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -244,13 +244,20 @@ class CloudTrailSource(TelemetrySource):
         for position, row in enumerate(control_rows, start=1):
             row["event_id"] = f"cloudtrail-control-{position:06d}"
 
-        logons = pd.DataFrame(logon_rows, columns=list(TABLE_COLUMNS[EVENT_LOGON]))
-        controls = pd.DataFrame(control_rows, columns=list(TABLE_COLUMNS[EVENT_CONTROL]))
+        logons, quarantined_logons = coerce_validate_and_quarantine(
+            pd.DataFrame(logon_rows, columns=list(TABLE_COLUMNS[EVENT_LOGON])), EVENT_LOGON,
+        )
+        controls, quarantined_controls = coerce_validate_and_quarantine(
+            pd.DataFrame(control_rows, columns=list(TABLE_COLUMNS[EVENT_CONTROL])),
+            EVENT_CONTROL,
+        )
+        issues.extend(quarantined_logons)
+        issues.extend(quarantined_controls)
         tables = {
             EVENT_PROCESS: _empty(EVENT_PROCESS),
             EVENT_NETWORK: _empty(EVENT_NETWORK),
-            EVENT_LOGON: coerce_and_validate(logons, EVENT_LOGON),
-            EVENT_CONTROL: coerce_and_validate(controls, EVENT_CONTROL),
+            EVENT_LOGON: logons,
+            EVENT_CONTROL: controls,
         }
 
         rejected = [a for a in admissions if not a.admitted]

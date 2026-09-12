@@ -1,0 +1,148 @@
+{
+  "corpus": "comiset",
+  "findings_before": {
+    "total": 5,
+    "by_rule": {
+      "ATH-002": 3,
+      "ATH-010": 1,
+      "ATH-012": 1
+    }
+  },
+  "rows": {
+    "rows_read": 610635,
+    "rows_kept": 610634,
+    "rows_dropped": 1
+  },
+  "admission": {
+    "listed": 2,
+    "admitted": 1,
+    "rejected": 1,
+    "records_never_read": 513,
+    "rejections": [
+      {
+        "path": "comiset_seen.json",
+        "decision": "rejected",
+        "reason": "file does not parse in any shape this source accepts: line 1 is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        "shape": "",
+        "line_or_record_count": 513
+      }
+    ],
+    "admitted_files": [
+      {
+        "path": "comiset_slice_head.jsonl",
+        "decision": "admitted",
+        "reason": "recognised as Elastic-exported Windows events (one JSON record per line): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 20
+      }
+    ],
+    "measured_on": {
+      "note": "a small mirror of the real directory; admission reads only the first records of a file, so the decision is the same one the full directory produces",
+      "mirror_of": "data\\external\\comiset\\slice",
+      "mirror": "<local-temp>\\ath_m18_mini_comiset",
+      "files": [
+        "comiset_seen.json (whole, 14255 bytes)",
+        "comiset_slice_head.jsonl (first 5000 lines of comiset_slice.jsonl)"
+      ],
+      "rows_read": 5000,
+      "rows_kept": 5000
+    }
+  },
+  "source": {
+    "kind": "canonical_parquet",
+    "path": "reports\\m17\\canonical"
+  },
+  "findings_before_equal_after_by_construction": false,
+  "quarantine": {
+    "total_quarantined": 1,
+    "floor": "2000-01-01T00:00:00+00:00",
+    "by_table": {
+      "process": {
+        "rows_after": 15095,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2022-11-16T08:23:25.034000+00:00",
+        "latest": "2022-11-19T20:26:11.831000+00:00"
+      },
+      "network": {
+        "rows_after": 589476,
+        "quarantined": 1,
+        "by_reason": {
+          "earlier than the floor 2000-01-01T00:00:00+00:00": 1
+        },
+        "examples": [
+          {
+            "event_type": "network",
+            "reason": "timestamp quarantined: earlier than the floor 2000-01-01T00:00:00+00:00 (value Timestamp('1990-12-18 16:48:25.255000+0000', tz='UTC'))",
+            "raw_reference": "comiset_slice.jsonl:TestHELKDataWindowsSysmon000001",
+            "field": "timestamp"
+          }
+        ],
+        "earliest": "2022-11-16T10:59:01.927000+00:00",
+        "latest": "2022-11-19T20:32:07.948000+00:00"
+      },
+      "logon": {
+        "rows_after": 6063,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2022-11-16T08:17:10.766000+00:00",
+        "latest": "2022-11-25T22:56:31.774000+00:00"
+      },
+      "control": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      }
+    }
+  },
+  "far_from_median": {
+    "process": {
+      "rows": 15095,
+      "median": "2022-11-17T23:06:55.095000064+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 3.502
+    },
+    "network": {
+      "rows": 589476,
+      "median": "2022-11-17T17:35:47.526000128+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 3.398
+    },
+    "logon": {
+      "rows": 6063,
+      "median": "2022-11-19T17:36:14.508999936+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 9.611
+    },
+    "control": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    }
+  },
+  "findings": {
+    "total": 5,
+    "by_rule": {
+      "ATH-002": 3,
+      "ATH-010": 1,
+      "ATH-012": 1
+    }
+  },
+  "rows_by_table": {
+    "process": 15095,
+    "network": 589476,
+    "logon": 6063,
+    "control": 0
+  },
+  "seconds": 25.5
+}

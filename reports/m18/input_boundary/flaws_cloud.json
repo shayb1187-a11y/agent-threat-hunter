@@ -1,0 +1,244 @@
+{
+  "corpus": "flaws_cloud",
+  "rows": {
+    "rows_read": 1939207,
+    "rows_kept": 79520,
+    "rows_dropped": 1859687
+  },
+  "admission": {
+    "listed": 20,
+    "admitted": 20,
+    "rejected": 0,
+    "records_never_read": 0,
+    "rejections": [],
+    "admitted_files": [
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail00.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail01.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail02.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail03.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail04.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail05.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail06.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail07.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail08.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail09.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail10.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail11.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail12.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail13.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail14.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail15.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail16.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail17.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail18.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 100000
+      },
+      {
+        "path": "flaws_cloudtrail_logs.tar:flaws_cloudtrail_logs/flaws_cloudtrail19.json.gz",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (a top-level 'Records' array): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "a top-level 'Records' array",
+        "line_or_record_count": 39207
+      }
+    ]
+  },
+  "source": {
+    "kind": "cloudtrail",
+    "path": "data\\external\\flaws_cloud\\raw"
+  },
+  "findings_before_equal_after_by_construction": true,
+  "quarantine": {
+    "total_quarantined": 0,
+    "floor": "2000-01-01T00:00:00+00:00",
+    "by_table": {
+      "process": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "network": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "logon": {
+        "rows_after": 79424,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2017-02-18T19:20:48+00:00",
+        "latest": "2020-10-07T20:57:09+00:00"
+      },
+      "control": {
+        "rows_after": 96,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2017-02-12T20:58:27+00:00",
+        "latest": "2020-09-16T01:33:23+00:00"
+      }
+    }
+  },
+  "far_from_median": {
+    "process": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "network": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "logon": {
+      "rows": 79424,
+      "median": "2018-11-29T12:05:11.500000+00:00",
+      "beyond_30d": 76472,
+      "fraction": 0.962832,
+      "span_days": 1327.067
+    },
+    "control": {
+      "rows": 96,
+      "median": "2019-02-24T00:48:35+00:00",
+      "beyond_30d": 88,
+      "fraction": 0.916667,
+      "span_days": 1311.191
+    }
+  },
+  "findings": {
+    "total": 39,
+    "by_rule": {
+      "ATH-005": 36,
+      "AWS-002": 3
+    }
+  },
+  "rows_by_table": {
+    "process": 0,
+    "network": 0,
+    "logon": 79424,
+    "control": 96
+  },
+  "seconds": 172.3
+}

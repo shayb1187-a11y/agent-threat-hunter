@@ -1,0 +1,130 @@
+{
+  "corpus": "synthetic",
+  "findings_before": {
+    "total": 15,
+    "by_rule": {
+      "ATH-001": 1,
+      "ATH-002": 2,
+      "ATH-003": 3,
+      "ATH-004": 1,
+      "ATH-005": 1,
+      "ATH-006": 1,
+      "ATH-007": 1,
+      "ATH-008": 1,
+      "ATH-009": 1,
+      "ATH-010": 1,
+      "ATH-011": 1,
+      "ATH-012": 1
+    }
+  },
+  "rows": {
+    "rows_read": 1093,
+    "rows_kept": 1093,
+    "rows_dropped": 0
+  },
+  "admission": {
+    "listed": 0,
+    "admitted": 0,
+    "rejected": 0,
+    "rejections": [],
+    "records_never_read": 0,
+    "note": "source reads no directory, or admission not applicable"
+  },
+  "source": {
+    "kind": "canonical_csv",
+    "path": "data\\raw"
+  },
+  "findings_before_equal_after_by_construction": true,
+  "quarantine": {
+    "total_quarantined": 0,
+    "floor": "2000-01-01T00:00:00+00:00",
+    "by_table": {
+      "process": {
+        "rows_after": 437,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2026-08-17T08:00:37+00:00",
+        "latest": "2026-08-17T11:59:54+00:00"
+      },
+      "network": {
+        "rows_after": 389,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2026-08-17T08:00:01+00:00",
+        "latest": "2026-08-17T11:59:03+00:00"
+      },
+      "logon": {
+        "rows_after": 267,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2026-08-17T08:00:22+00:00",
+        "latest": "2026-08-17T11:59:53+00:00"
+      },
+      "control": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      }
+    }
+  },
+  "far_from_median": {
+    "process": {
+      "rows": 437,
+      "median": "2026-08-17T09:58:00+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.166
+    },
+    "network": {
+      "rows": 389,
+      "median": "2026-08-17T10:09:28+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.166
+    },
+    "logon": {
+      "rows": 267,
+      "median": "2026-08-17T09:44:15+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.166
+    },
+    "control": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    }
+  },
+  "findings": {
+    "total": 15,
+    "by_rule": {
+      "ATH-001": 1,
+      "ATH-002": 2,
+      "ATH-003": 3,
+      "ATH-004": 1,
+      "ATH-005": 1,
+      "ATH-006": 1,
+      "ATH-007": 1,
+      "ATH-008": 1,
+      "ATH-009": 1,
+      "ATH-010": 1,
+      "ATH-011": 1,
+      "ATH-012": 1
+    }
+  },
+  "rows_by_table": {
+    "process": 437,
+    "network": 389,
+    "logon": 267,
+    "control": 0
+  },
+  "seconds": 0.3
+}

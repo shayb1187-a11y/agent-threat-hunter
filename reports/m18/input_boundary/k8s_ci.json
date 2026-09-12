@@ -1,0 +1,108 @@
+{
+  "corpus": "k8s_ci",
+  "rows": {
+    "rows_read": 267979,
+    "rows_kept": 7951,
+    "rows_dropped": 260028
+  },
+  "admission": {
+    "listed": 1,
+    "admitted": 1,
+    "rejected": 0,
+    "records_never_read": 0,
+    "rejections": [],
+    "admitted_files": [
+      {
+        "path": "kube-apiserver-audit.2065053743543488512.log",
+        "decision": "admitted",
+        "reason": "recognised as Kubernetes apiserver audit events (one JSON Event per line): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "one JSON Event per line",
+        "line_or_record_count": 289503
+      }
+    ]
+  },
+  "source": {
+    "kind": "k8s",
+    "path": "data\\external\\k8s_ci\\raw"
+  },
+  "findings_before_equal_after_by_construction": true,
+  "quarantine": {
+    "total_quarantined": 0,
+    "floor": "2000-01-01T00:00:00+00:00",
+    "by_table": {
+      "process": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "network": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "logon": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "control": {
+        "rows_after": 7951,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2026-06-11T12:53:54.703589+00:00",
+        "latest": "2026-06-11T13:32:10.520697+00:00"
+      }
+    }
+  },
+  "far_from_median": {
+    "process": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "network": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "logon": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "control": {
+      "rows": 7951,
+      "median": "2026-06-11T13:14:33.835896064+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.027
+    }
+  },
+  "findings": {
+    "total": 0,
+    "by_rule": {}
+  },
+  "rows_by_table": {
+    "process": 0,
+    "network": 0,
+    "logon": 0,
+    "control": 7951
+  },
+  "seconds": 41.9
+}

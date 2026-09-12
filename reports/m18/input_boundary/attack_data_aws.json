@@ -1,0 +1,136 @@
+{
+  "corpus": "attack_data_aws",
+  "rows": {
+    "rows_read": 2349,
+    "rows_kept": 2,
+    "rows_dropped": 2347
+  },
+  "admission": {
+    "listed": 5,
+    "admitted": 5,
+    "rejected": 0,
+    "records_never_read": 0,
+    "rejections": [],
+    "admitted_files": [
+      {
+        "path": "T1078.004__aws_login_sfa__cloudtrail.json",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (one JSON record per line): 2 of the first 2 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 2
+      },
+      {
+        "path": "T1098__aws_iam_delete_policy__aws_iam_delete_policy.json",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (one JSON record per line): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 116
+      },
+      {
+        "path": "T1526__aws_security_scanner__aws_security_scanner.json",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (one JSON record per line): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 1071
+      },
+      {
+        "path": "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (one JSON record per line): 20 of the first 20 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 1150
+      },
+      {
+        "path": "T1580__aws_iam_assume_role_policy_brute_force__aws_iam_assume_role_policy_brute_force.json",
+        "decision": "admitted",
+        "reason": "recognised as AWS CloudTrail records (one JSON record per line): 10 of the first 10 record(s) carry the identifying fields",
+        "shape": "one JSON record per line",
+        "line_or_record_count": 10
+      }
+    ]
+  },
+  "source": {
+    "kind": "cloudtrail",
+    "path": "data\\external\\attack_data_aws\\raw"
+  },
+  "findings_before_equal_after_by_construction": true,
+  "quarantine": {
+    "total_quarantined": 0,
+    "floor": "2000-01-01T00:00:00+00:00",
+    "by_table": {
+      "process": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "network": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      },
+      "logon": {
+        "rows_after": 2,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": "2022-10-04T20:12:11+00:00",
+        "latest": "2022-10-04T20:12:11+00:00"
+      },
+      "control": {
+        "rows_after": 0,
+        "quarantined": 0,
+        "by_reason": {},
+        "examples": [],
+        "earliest": null,
+        "latest": null
+      }
+    }
+  },
+  "far_from_median": {
+    "process": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "network": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "logon": {
+      "rows": 2,
+      "median": "2022-10-04T20:12:11+00:00",
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    },
+    "control": {
+      "rows": 0,
+      "median": null,
+      "beyond_30d": 0,
+      "fraction": 0.0,
+      "span_days": 0.0
+    }
+  },
+  "findings": {
+    "total": 0,
+    "by_rule": {}
+  },
+  "rows_by_table": {
+    "process": 0,
+    "network": 0,
+    "logon": 2,
+    "control": 0
+  },
+  "seconds": 0.1
+}

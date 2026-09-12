@@ -46,7 +46,7 @@ from ath.schema import (
     TABLE_COLUMNS,
 )
 from ath.telemetry.admission import FileAdmission, admit_lines
-from ath.telemetry.normalize import coerce_and_validate
+from ath.telemetry.normalize import coerce_validate_and_quarantine
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 from ath.telemetry.winlogbeat_source import LOGON_FAILURE_REASONS
 
@@ -210,13 +210,14 @@ class ElasticWinEventSource(TelemetrySource):
                     continue
                 rows[table].append(row)
 
-        tables = {
-            event_type: coerce_and_validate(
+        tables: dict[str, pd.DataFrame] = {}
+        for event_type in rows:
+            table, quarantined = coerce_validate_and_quarantine(
                 pd.DataFrame(rows[event_type], columns=list(TABLE_COLUMNS[event_type])),
                 event_type,
             )
-            for event_type in rows
-        }
+            tables[event_type] = table
+            issues.extend(quarantined)
         rejected = [a for a in admissions if not a.admitted]
         logger.info(
             "%s: %d file(s) admitted, %d rejected; %d record(s) read, %d kept, "

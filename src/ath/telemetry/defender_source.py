@@ -49,7 +49,7 @@ from ath.telemetry.admission import (
     REJECTED,
     FileAdmission,
 )
-from ath.telemetry.normalize import coerce_and_validate
+from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -247,7 +247,9 @@ class DefenderExportSource(TelemetrySource):
             rows_read += len(raw)
             df, table_issues = _normalize_table(raw, event_type, path.name)
             issues.extend(table_issues)
-            tables[event_type] = coerce_and_validate(df, event_type)
+            table, quarantined = coerce_validate_and_quarantine(df, event_type)
+            issues.extend(quarantined)
+            tables[event_type] = table
             logger.info(
                 "%s: %d/%d row(s) normalised from %s", event_type, len(df), len(raw), path.name
             )

@@ -74,7 +74,7 @@ from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
 )
 from ath.telemetry.admission import FileAdmission, admit_lines
-from ath.telemetry.normalize import coerce_and_validate
+from ath.telemetry.normalize import coerce_and_validate, coerce_validate_and_quarantine
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult, TelemetrySource
 
 logger = get_logger(__name__)
@@ -252,20 +252,21 @@ class WinlogbeatSource(TelemetrySource):
             for position, row in enumerate(rows, start=1):
                 row["event_id"] = f"wlb-{prefix}-{position:07d}"
 
-        tables = {
-            EVENT_PROCESS: coerce_and_validate(
-                pd.DataFrame(process_rows, columns=list(TABLE_COLUMNS[EVENT_PROCESS])), EVENT_PROCESS,
-            ),
-            EVENT_NETWORK: coerce_and_validate(
-                pd.DataFrame(network_rows, columns=list(TABLE_COLUMNS[EVENT_NETWORK])), EVENT_NETWORK,
-            ),
-            EVENT_LOGON: coerce_and_validate(
-                pd.DataFrame(logon_rows, columns=list(TABLE_COLUMNS[EVENT_LOGON])), EVENT_LOGON,
-            ),
+        tables: dict[str, pd.DataFrame] = {
             EVENT_CONTROL: coerce_and_validate(
                 pd.DataFrame(columns=list(TABLE_COLUMNS[EVENT_CONTROL])), EVENT_CONTROL,
             ),
         }
+        for event_type, built in (
+            (EVENT_PROCESS, process_rows),
+            (EVENT_NETWORK, network_rows),
+            (EVENT_LOGON, logon_rows),
+        ):
+            table, quarantined = coerce_validate_and_quarantine(
+                pd.DataFrame(built, columns=list(TABLE_COLUMNS[event_type])), event_type,
+            )
+            tables[event_type] = table
+            issues.extend(quarantined)
         rejected = [a for a in admissions if not a.admitted]
         logger.info(
             "Winlogbeat import: %d file(s) admitted, %d rejected; %d line(s) read, "
