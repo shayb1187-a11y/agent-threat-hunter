@@ -554,12 +554,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.02621838,
+          "fraction": 0.4,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 85,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -567,12 +567,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.05490438,
+          "fraction": 0.4,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 178,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names that identity",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -610,7 +610,7 @@
       "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): role_ref 85 of 3242 applicable control rows (2.62%; 0.00% of all 1857154, required); target_actor 178 of 3242 applicable control rows (5.49%; 0.01% of all 1857154, required) -- the rule still fires on its remaining fields"
+      "detail": "reads sparsely populated field(s): role_ref 22 of 55 applicable control rows (40.00%; 0.00% of all 1857154, required); target_actor 22 of 55 applicable control rows (40.00%; 0.01% of all 1857154, required) -- the rule still fires on its remaining fields"
     },
     {
       "rule_id": "AWS-002",
@@ -642,11 +642,11 @@
           "table": "control",
           "column": "resource_name",
           "rows": 1857154,
-          "populated": 1461,
-          "fraction": 0.00078669,
-          "raw_fraction": 0.00078669,
+          "populated": 150281,
+          "fraction": 0.08092005,
+          "raw_fraction": 0.08092005,
           "applicable_rows": 1857154,
-          "applicable_populated": 1461,
+          "applicable_populated": 150281,
           "applicable": true,
           "applicability_reason": "",
           "required": false
@@ -698,7 +698,7 @@
       ],
       "not_applicable_fields": [],
       "findings": 3,
-      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s); evidence detail reduced: resource_name 1461 of 1857154 applicable control rows (0.08%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s); evidence detail reduced: resource_name 150281 of 1857154 applicable control rows (8.09%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "K8S-001",
@@ -745,11 +745,11 @@
           "table": "control",
           "column": "resource_name",
           "rows": 1857154,
-          "populated": 1461,
-          "fraction": 0.00078669,
-          "raw_fraction": 0.00078669,
+          "populated": 150281,
+          "fraction": 0.08092005,
+          "raw_fraction": 0.08092005,
           "applicable_rows": 1857154,
-          "applicable_populated": 1461,
+          "applicable_populated": 150281,
           "applicable": true,
           "applicability_reason": "",
           "required": false
@@ -772,12 +772,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.02621838,
+          "fraction": 0.4,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 85,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -785,12 +785,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.05490438,
+          "fraction": 0.4,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 178,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names that identity",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -833,7 +833,7 @@
       ],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 1857154 applicable control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: resource_name 1461 of 1857154 applicable control rows (0.08%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
+      "detail": "required field(s) effectively unpopulated: actor_groups 0 of 1857154 applicable control rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: resource_name 150281 of 1857154 applicable control rows (8.09%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     },
     {
       "rule_id": "K8S-002",
@@ -867,11 +867,11 @@
           "table": "control",
           "column": "resource_name",
           "rows": 1857154,
-          "populated": 1461,
-          "fraction": 0.00078669,
-          "raw_fraction": 0.00078669,
+          "populated": 150281,
+          "fraction": 0.08092005,
+          "raw_fraction": 0.08092005,
           "applicable_rows": 1857154,
-          "applicable_populated": 1461,
+          "applicable_populated": 150281,
           "applicable": true,
           "applicability_reason": "",
           "required": false
@@ -907,12 +907,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.02621838,
+          "fraction": 0.4,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 85,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names the role or policy it moved",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -920,12 +920,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.05490438,
+          "fraction": 0.4,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 3242,
-          "applicable_populated": 178,
+          "applicable_rows": 55,
+          "applicable_populated": 22,
           "applicable": true,
-          "applicability_reason": "only an action that changes an identity's authority names that identity",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -966,7 +966,7 @@
       ],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "depends on absent telemetry (container_audit); this rule will run and find nothing regardless of what occurred; evidence detail reduced: resource_name 1461 of 1857154 applicable control rows (0.08%, optional); resource_namespace 0 of 1857154 applicable control rows (0.00%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
+      "detail": "depends on absent telemetry (container_audit); this rule will run and find nothing regardless of what occurred; evidence detail reduced: resource_name 150281 of 1857154 applicable control rows (8.09%, optional); resource_namespace 0 of 1857154 applicable control rows (0.00%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
     }
   ],
   "total_findings": 39,
@@ -980,8 +980,8 @@
     "unsupported": 12,
     "supported": 4
   },
-  "hunt_seconds": 2.2,
-  "load_seconds": 52.7,
+  "hunt_seconds": 2.3,
+  "load_seconds": 58.1,
   "source": {
     "kind": "cloudtrail",
     "path": "data\\external\\flaws_cloud\\raw"

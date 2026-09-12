@@ -1336,7 +1336,7 @@
     "degraded": 2
   },
   "hunt_seconds": 2.6,
-  "load_seconds": 0.6,
+  "load_seconds": 0.5,
   "source": {
     "kind": "canonical_parquet",
     "path": "reports\\m17\\canonical"

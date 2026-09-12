@@ -71,13 +71,9 @@
       "rules": {
         "ATH-005": {
           "eligible_rows": 2,
-          "verdict": "degraded",
+          "verdict": "usable",
           "findings": 0,
-          "sparse_fields": [
-            "failure_reason",
-            "logon_type",
-            "source_device"
-          ],
+          "sparse_fields": [],
           "unpopulated_fields": []
         },
         "ATH-006": {
@@ -98,7 +94,6 @@
           "verdict": "unusable",
           "findings": 0,
           "sparse_fields": [
-            "role_ref",
             "target_actor"
           ],
           "unpopulated_fields": [
@@ -107,11 +102,9 @@
         },
         "AWS-002": {
           "eligible_rows": 2347,
-          "verdict": "degraded",
+          "verdict": "usable",
           "findings": 0,
-          "sparse_fields": [
-            "resource_name"
-          ],
+          "sparse_fields": [],
           "unpopulated_fields": []
         },
         "K8S-001": {
@@ -120,8 +113,6 @@
           "findings": 0,
           "sparse_fields": [
             "actor_groups",
-            "resource_name",
-            "role_ref",
             "target_actor"
           ],
           "unpopulated_fields": [
@@ -134,19 +125,15 @@
           "verdict": "unusable",
           "findings": 0,
           "sparse_fields": [
-            "resource_name",
-            "resource_namespace",
-            "role_ref",
             "target_actor"
           ],
           "unpopulated_fields": [
-            "resource_namespace",
             "target_actor"
           ]
         }
       }
     },
-    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_1186900_attack_data_aws.json"
+    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_1df2bd9_attack_data_aws.json"
   },
   "after": {
     "ledger": {
@@ -170,7 +157,11 @@
       "quarantined": 0,
       "names_with_no_verb_token": 0,
       "rows_dropped_reported": 0,
-      "rows_dropped_excluding_kept_rows": 0
+      "rows_dropped_excluding_kept_rows": 0,
+      "field_gaps": {
+        "control.target_actor: not guaranteed on this action (filled when derivable)": 146
+      },
+      "field_gaps_total": 146
     },
     "control_table": {
       "rows": 2347,
@@ -254,15 +245,11 @@
       {
         "rule_id": "AWS-001",
         "eligible_rows": 2347,
-        "verdict": "unusable",
+        "verdict": "usable",
         "verdict_before": "supported",
         "findings": 0,
-        "sparse_fields": [
-          "target_actor"
-        ],
-        "unpopulated_fields": [
-          "target_actor"
-        ]
+        "sparse_fields": [],
+        "unpopulated_fields": []
       },
       {
         "rule_id": "AWS-002",
@@ -280,12 +267,10 @@
         "verdict_before": "unsupported",
         "findings": 0,
         "sparse_fields": [
-          "actor_groups",
-          "target_actor"
+          "actor_groups"
         ],
         "unpopulated_fields": [
-          "actor_groups",
-          "target_actor"
+          "actor_groups"
         ]
       },
       {
@@ -294,12 +279,8 @@
         "verdict": "unusable",
         "verdict_before": "unsupported",
         "findings": 0,
-        "sparse_fields": [
-          "target_actor"
-        ],
-        "unpopulated_fields": [
-          "target_actor"
-        ]
+        "sparse_fields": [],
+        "unpopulated_fields": []
       }
     ],
     "findings_by_rule": {},
@@ -326,7 +307,7 @@
   "cost": {
     "load_seconds": 0.1,
     "measure_seconds": 0.0,
-    "peak_bytes": 93011968,
+    "peak_bytes": 93372416,
     "peak_gb": 0.087
   }
 }

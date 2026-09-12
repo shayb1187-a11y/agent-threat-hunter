@@ -799,7 +799,11 @@ def _normalise_control_record(
         if not target_actor and family == _SELF_TARGETING_FAMILY:
             target_actor = actor
 
-    resource_name = target_actor or str(params.get("name") or "") or role_ref
+    # The subject of the call: what it acted on or read. Derived from the request's own
+    # parameters by one convention for every service, and only then falling back to the
+    # identity columns -- which describe the *beneficiary*, a different thing that
+    # happens to be the subject on a grant.
+    resource_name = _resource_name(params) or target_actor or role_ref
 
     account = str(record.get("recipientAccountId") or identity.get("accountId") or "unknown")
     region = str(record.get("awsRegion") or "unknown")
@@ -843,6 +847,63 @@ def _normalise_control_record(
         "decision": decision,
         "source_ip": _shared(str(record.get("sourceIPAddress") or "")),
     }, unparsed_name
+
+
+# The key shapes that name the subject of a call, in the order they are preferred.
+#
+# A cloud API request names what it acts on in its parameters, and across services it
+# does so with one of four key shapes: a bare `name`, a `<something>Name`, a
+# `<something>Arn`, or a `<something>Id`. The order is by how readable the value is to a
+# person, because that is what this column is for -- a finding says "stopped logging on
+# trail X" and X has to be worth reading. A name identifies the resource the way its
+# owner refers to it; an ARN identifies it unambiguously but carries an account and a
+# path around a name that was already there; an id (`i-0a1b2c3d`) identifies it
+# unambiguously and says nothing at all.
+#
+# Deriving it by convention rather than per call is the same decision the verb parser
+# and the beneficiary conventions rest on: there are tens of thousands of AWS API names
+# and four key shapes. Between M18-5 and M18-6 this column was `target_actor or
+# params["name"] or role_ref`, which asked a question about *identity* on every row of
+# every service and answered it for 0.08% of the flaws.cloud trail -- an S3 GetObject
+# names its bucket and its key, and the column recorded neither.
+_RESOURCE_NAME_SUFFIXES: tuple[str, ...] = ("name", "arn", "id")
+
+
+def _resource_name(params: dict[str, Any]) -> str:
+    """The subject of a call, read from its request parameters by convention.
+
+    The rule, in full:
+
+    1. the exact key ``name``, if it holds a non-empty string;
+    2. otherwise the first non-empty string value under a key ending in ``Name``;
+    3. otherwise the first under a key ending in ``Arn``;
+    4. otherwise the first under a key ending in ``Id``;
+    5. otherwise nothing, and the caller falls back to the identity columns.
+
+    Suffixes match case-insensitively (``bucketName``, ``trailARN``), and within a tier
+    the keys are taken in sorted order so that a request naming two of them produces the
+    same answer on every run and on every machine -- a column that changed value with
+    dictionary insertion order would be unusable as evidence.
+
+    Only scalar strings are eligible. ``instancesSet``, ``filterSet`` and their peers hold
+    a dict or a list, and stringifying one would fill the column with a fragment of JSON
+    that names nothing.
+
+    No service and no API name appears here, by construction: the function sees
+    parameters and nothing else, so a service AWS ships next year is described by the
+    same four shapes.
+    """
+    exact = params.get("name")
+    if isinstance(exact, str) and exact:
+        return exact
+    keys = sorted(params)
+    for suffix in _RESOURCE_NAME_SUFFIXES:
+        for key in keys:
+            if key.lower().endswith(suffix):
+                value = params[key]
+                if isinstance(value, str) and value:
+                    return value
+    return ""
 
 
 # The two reasons a kept row's beneficiary column can come back empty, as the reasons

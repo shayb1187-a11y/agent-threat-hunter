@@ -74,6 +74,8 @@ INVENTED_EVENT_NAMES = (
     "DeleteQuokkaPolicy", "CreateQuokkaPolicy", "GenerateQuokkaReport",
     "AddQuokkaUserToLedgerGroup", "AttachLedgerGroupPolicy",
     "AddLedgerRoleToApplianceProfile",
+    "StopQuokkaLogging", "GetLedgerCatalogAcl", "InvokeApplianceRoutine",
+    "DescribeQuokkaVolumes", "RegisterLedgerAlias", "CreateApplianceSnapshot",
 )
 
 
@@ -972,3 +974,163 @@ def test_group_membership_records_the_group_as_what_conferred_the_authority(tmp_
         "ledger-admins", "arn:aws:iam::900000000077:policy/q",
     )
     assert rows["eventID=invented-role-3"] == ("ledger-operator", "appliance-fleet")
+
+
+# ======================================================================================
+# M18-6: resource_name is the subject of the call, by one convention for every service
+# ======================================================================================
+#
+# It was `target_actor or params["name"] or role_ref`, which asks a question about
+# *identity* on every row of every service: on flaws.cloud it answered for 0.08% of
+# 1.86M rows, and an S3 read of an object recorded neither its bucket nor its key. A
+# request names what it acts on in its parameters, in one of four key shapes, and the
+# tiers below are those shapes in order of how readable the value is to a person.
+#
+# Every parameter key here is invented -- `quokkaName`, `ledgerArn`, `applianceId` and
+# their relatives appear in neither corpus (the H3 capture's 35 distinct keys are
+# `filterSet`, `policyArn`, `policyName`, `limit`, `path` and 30 more `*Set` keys) -- so
+# what passes is the suffix rule and not a key this was fitted to. The two exceptions are
+# the bare `name` key, which is tier 1 by definition and cannot be renamed, and one
+# `functionName`/`roleArn` pair kept because that shape is real and the tier order
+# between them is the decision under test.
+
+
+def _subject(params: dict, event_name: str = "CreateApplianceSnapshot",
+             source: str = "panorama.amazonaws.com") -> str:
+    """The `resource_name` one record produces, with no identity fields to fall back on."""
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    row, _ = _normalise_control_record(
+        _record(eventSource=source, eventName=event_name, requestParameters=params),
+        "invented.json", 0,
+    )
+    return row["resource_name"]
+
+
+@pytest.mark.parametrize("params,expected,tier", [
+    # Tier 1: the exact key, which outranks everything including an ARN.
+    ({"name": "quokka-nightly", "ledgerArn": "arn:aws:ledger:eu-north-1:9:l/7"},
+     "quokka-nightly", "name"),
+    # Tier 2: a suffixed name. Two services, two keys, neither of them `name`.
+    ({"quokkaName": "quokka-nightly", "retentionDays": 7}, "quokka-nightly", "Name"),
+    ({"applianceFleetName": "fleet-7"}, "fleet-7", "Name"),
+    # Tier 2 outranks tier 3: the readable name wins over the ARN beside it.
+    ({"functionName": "ledger-rollup",
+      "roleArn": "arn:aws:iam::900000000077:role/ledger-exec"},
+     "ledger-rollup", "Name over Arn"),
+    # Tier 3: an ARN is the answer when nothing carries a name.
+    ({"ledgerArn": "arn:aws:ledger:eu-north-1:900000000077:ledger/7", "versionCount": 3},
+     "arn:aws:ledger:eu-north-1:900000000077:ledger/7", "Arn"),
+    # Tier 4: an opaque id, which names nothing to a reader but identifies the row's
+    # subject exactly -- better than an empty column, worse than either tier above.
+    ({"applianceId": "ap-0f3c9a1b", "force": True}, "ap-0f3c9a1b", "Id"),
+    # Case-insensitive suffix matching: real trails carry `trailARN`, `instanceID`.
+    ({"quokkaARN": "arn:aws:quokka:eu-north-1:900000000077:q/3"},
+     "arn:aws:quokka:eu-north-1:900000000077:q/3", "ARN"),
+    # Within a tier, sorted key order -- so two names produce the same answer on every
+    # run, whatever order the JSON parser happened to build the dict in.
+    ({"zoneName": "eu-north-1a", "applianceName": "fleet-7"}, "fleet-7", "sorted"),
+    # Nothing eligible: every value is a set or a number. This is the H3 capture's whole
+    # shape (`filterSet`, `instancesSet`, `limit`), and it is why that corpus cannot
+    # populate this column however the tiers are ordered.
+    ({"instancesSet": {"items": [{"instanceId": "i-0a1b"}]}, "filterSet": {},
+      "maxResults": 50}, "", "set-valued"),
+    # A scalar that is not a string: a number under a name-shaped key names nothing.
+    ({"versionId": 4}, "", "non-string"),
+    # No parameters at all -- 1,693 of the 2,347 H3 records, and every denied request.
+    ({}, "", "empty"),
+])
+def test_resource_name_reads_the_subject_by_tier(params, expected, tier) -> None:
+    """One case per tier, on invented keys and a service that holds no identities.
+
+    Fails if a tier is dropped (an ARN-only or id-only call goes back to empty), if the
+    order is changed (the `functionName`/`roleArn` row and the `name`/`ledgerArn` row
+    both flip), if the suffix match becomes case-sensitive (`quokkaARN` empties), if
+    within-tier order stops being sorted (the two-name row becomes insertion-dependent),
+    or if non-string values are stringified (`instancesSet` fills the column with a
+    fragment of JSON and `versionId` with a number).
+    """
+    assert _subject(params) == expected, tier
+
+
+@pytest.mark.parametrize("event_name,source", [
+    ("StopQuokkaLogging", "cloudtrail.amazonaws.com"),
+    ("GetLedgerCatalogAcl", "s3.amazonaws.com"),
+    ("InvokeApplianceRoutine", "lambda.amazonaws.com"),
+    ("DescribeQuokkaVolumes", "ec2.amazonaws.com"),
+    ("RegisterLedgerAlias", "kms.amazonaws.com"),
+])
+def test_the_convention_is_the_same_one_on_every_service(event_name, source) -> None:
+    """Five services, five verb classes, one rule -- reads included.
+
+    The column is derived before any question about identity is asked, so a `Describe`
+    and a `Get` name their subject exactly as a `Stop` does. Fails if the derivation is
+    ever conditioned on a service, a verb or a verb class -- the shape that made this
+    column an identity question and left 99.9% of a real trail with an empty subject.
+    """
+    assert _subject({"quokkaName": "subject-1"}, event_name, source) == "subject-1"
+
+
+def test_the_identity_columns_are_the_fallback_and_not_the_rule() -> None:
+    """A grant names its beneficiary in `userName`, which is also a tier-2 key.
+
+    The order matters in only one direction: the parameters are read first, so a call
+    that names a subject records the subject. Where the parameters name no subject at
+    all, `target_actor` and then `role_ref` still answer -- a grant's subject is who it
+    was granted to.
+
+    Fails if the fallbacks are dropped (a grant loses its subject entirely), and fails if
+    they are restored to the front (`target_actor or ...`, the M18-5 shape, which on a
+    non-identity service means the column is empty whenever the row is not about an
+    identity -- 99.9% of a trail).
+    """
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    granted, _ = _normalise_control_record(
+        _record(eventSource="iam.amazonaws.com", eventName="AttachQuokkaPolicy",
+                requestParameters={"userName": "shrike",
+                                   "policyArn": "arn:aws:iam::900000000077:policy/q"}),
+        "invented.json", 0,
+    )
+    # userName is a tier-2 key, so the parameters answer before the fallback is reached
+    # -- and the answer is the same identity either way.
+    assert granted["resource_name"] == "shrike"
+
+    keyed, _ = _normalise_control_record(
+        _record(eventSource="iam.amazonaws.com", eventName="IssueAccessKey",
+                requestParameters={},
+                userIdentity={"type": "IAMUser", "userName": "marlin"}),
+        "invented.json", 1,
+    )
+    # No parameters at all: the access-key convention supplies the caller as the target,
+    # and the subject of "issue a key for yourself" is yourself.
+    assert keyed["target_actor"] == "marlin"
+    assert keyed["resource_name"] == "marlin"
+
+    conferred, _ = _normalise_control_record(
+        _record(eventSource="iam.amazonaws.com", eventName="AttachQuokkaPolicy",
+                requestParameters={"policyArn": "arn:aws:iam::900000000077:policy/q"}),
+        "invented.json", 2,
+    )
+    # An ARN is tier 3, so this one never reaches the role_ref fallback either -- the
+    # fallback exists for the row that carries a role and no parameters this rule can
+    # read, and the assertion that matters is that the subject is never empty when
+    # *something* on the row names it.
+    assert conferred["resource_name"] == "arn:aws:iam::900000000077:policy/q"
+
+
+def test_the_subject_convention_names_no_service_and_no_call() -> None:
+    """A per-service rule would be the allowlist defect M18-3 removed, one column over.
+
+    `_resource_name` may read parameter keys and nothing else. Fails the moment a service
+    token or an API name is written into it -- which is what a "just special-case STS"
+    fix would look like.
+    """
+    import inspect
+
+    from ath.telemetry.cloudtrail_source import _resource_name
+
+    source = inspect.getsource(_resource_name)
+    body = source.split('"""', 2)[-1]
+    for token in ("iam", "s3", "ec2", "sts", "lambda", "cloudtrail", "Assume", "Bucket"):
+        assert token not in body, f"_resource_name names {token!r}"

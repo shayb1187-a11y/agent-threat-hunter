@@ -72,18 +72,14 @@
         "process": 0,
         "network": 0,
         "logon": 79424,
-        "control": 96
+        "control": 1857154
       },
       "rules": {
         "ATH-005": {
           "eligible_rows": 79424,
-          "verdict": "degraded",
+          "verdict": "usable",
           "findings": 36,
-          "sparse_fields": [
-            "failure_reason",
-            "logon_type",
-            "source_device"
-          ],
+          "sparse_fields": [],
           "unpopulated_fields": []
         },
         "ATH-006": {
@@ -100,48 +96,48 @@
           ]
         },
         "AWS-001": {
-          "eligible_rows": 96,
+          "eligible_rows": 1857154,
           "verdict": "degraded",
           "findings": 0,
           "sparse_fields": [
-            "role_ref"
+            "role_ref",
+            "target_actor"
           ],
           "unpopulated_fields": []
         },
         "AWS-002": {
-          "eligible_rows": 96,
+          "eligible_rows": 1857154,
           "verdict": "usable",
           "findings": 3,
           "sparse_fields": [],
           "unpopulated_fields": []
         },
         "K8S-001": {
-          "eligible_rows": 96,
+          "eligible_rows": 1857154,
           "verdict": "unusable",
           "findings": 0,
           "sparse_fields": [
             "actor_groups",
-            "role_ref"
+            "role_ref",
+            "target_actor"
           ],
           "unpopulated_fields": [
             "actor_groups"
           ]
         },
         "K8S-002": {
-          "eligible_rows": 96,
+          "eligible_rows": 1857154,
           "verdict": "unusable",
           "findings": 0,
           "sparse_fields": [
-            "resource_namespace",
-            "role_ref"
+            "role_ref",
+            "target_actor"
           ],
-          "unpopulated_fields": [
-            "resource_namespace"
-          ]
+          "unpopulated_fields": []
         }
       }
     },
-    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_dba8501_flaws_cloud.json"
+    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_1df2bd9_flaws_cloud.json"
   },
   "after": {
     "ledger": {
@@ -167,7 +163,13 @@
       "quarantined": 0,
       "names_with_no_verb_token": 0,
       "rows_dropped_reported": 2629,
-      "rows_dropped_excluding_kept_rows": 2629
+      "rows_dropped_excluding_kept_rows": 2629,
+      "field_gaps": {
+        "control.target_actor: not guaranteed on this action (filled when derivable)": 3031,
+        "control.target_actor: request carried no parameters (decision=denied)": 33,
+        "control.role_ref: request carried no parameters (decision=denied)": 33
+      },
+      "field_gaps_total": 3097
     },
     "control_table": {
       "rows": 1857154,
@@ -178,7 +180,7 @@
         "decision": 1.0,
         "target_actor": 0.0001,
         "role_ref": 0.0,
-        "resource_name": 0.0008
+        "resource_name": 0.0809
       },
       "distinct_verbs": 51,
       "verb_classes": {
@@ -7501,9 +7503,9 @@
     "raw_records": {}
   },
   "cost": {
-    "load_seconds": 52.1,
-    "measure_seconds": 12.7,
-    "peak_bytes": 2448523264,
-    "peak_gb": 2.28
+    "load_seconds": 58.1,
+    "measure_seconds": 12.9,
+    "peak_bytes": 2517987328,
+    "peak_gb": 2.345
   }
 }

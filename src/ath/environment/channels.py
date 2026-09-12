@@ -518,8 +518,12 @@ FIELD_APPLICABILITY: dict[tuple[str, str], FieldApplicability] = {
 Deliberately short. A column belongs here only when the canonical schema says a value on
 the excluded rows would be wrong -- never when a dataset merely happens not to populate
 it. That distinction is the whole difference between this table and an excuse:
-``resource_name`` is empty on 97.6% of the flaws.cloud trail because the adapter often
-cannot recover it, which is a real gap in representation and stays measured as one.
+``resource_name`` is empty on 91.9% of the flaws.cloud trail -- 1.32M of those rows are
+``RunInstances`` calls that name their subject only inside a nested structure, and 159K
+carry no request parameters at all -- which is a real gap in representation and stays
+measured as one. It is a *smaller* gap than the 99.9% M18-5 reported, because M18-6
+derives the column from the request's own parameters instead of from the identity
+columns; what it is not is excused.
 """
 
 
