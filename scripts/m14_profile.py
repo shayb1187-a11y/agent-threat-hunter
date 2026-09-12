@@ -45,6 +45,9 @@ def load(kind: str, directory: Path, cluster: str) -> SourceLoadResult:
     if kind == "winlogbeat":
         from ath.telemetry.winlogbeat_source import WinlogbeatSource
         return WinlogbeatSource(directory).load()
+    if kind == "elastic_winevent":
+        from ath.telemetry.elastic_winevent_source import ElasticWinEventSource
+        return ElasticWinEventSource(directory).load()
     raise SystemExit(f"unknown source kind {kind!r}")
 
 
@@ -87,7 +90,10 @@ def prefix(telemetry: Telemetry, fraction: float) -> Telemetry:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("kind", choices=("cloudtrail", "k8s", "defender", "winlogbeat"))
+    parser.add_argument(
+        "kind",
+        choices=("cloudtrail", "k8s", "defender", "winlogbeat", "elastic_winevent"),
+    )
     parser.add_argument("directory", type=Path)
     parser.add_argument("dataset", help="Manifest key; names the output file.")
     parser.add_argument("--cluster", default="external")

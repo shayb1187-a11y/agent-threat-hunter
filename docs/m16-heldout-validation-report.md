@@ -332,6 +332,50 @@ or ATH-012 finding — but neither was it *exercised*: a benign DEDALE weekday s
 contains no backup, shadow-copy or security-tool administration. Those three rules remain
 unmeasured against real benign Windows telemetry, which is a coverage gap, not a pass.
 
+### 4.8 H4 — COMISET LAB: pre-registration and disclosure
+
+**Disclosure first.** H1b and H3 had numeric predictions committed to git before they ran.
+H4 does not. Its hypothesis was committed in §2 before the corpus was fetched — *do the
+Windows fixes depend on security semantics, or on Winlogbeat's field naming?* — but by
+the time I wrote a falsifier the profile was already running. The qualitative hypothesis
+is pre-registered; a numeric one is not, and the result below is weaker evidence for it.
+
+**Falsifier:** any ATH-004 finding on benign COMISET process events would show the M15-1
+fix is tied to the ECS representation rather than to argv[0] semantics, since this corpus
+reaches the rule through a completely different adapter and field map.
+
+**Two corrections to the plan, both discovered during acquisition.**
+
+1. The M14 candidate notes describe COMISET as flat `Process_name`/`CommandLine`/
+   `process_parent_name` columns. It is not. It is an Elasticsearch export in the
+   **HELK/OTRF `logs-endpoint-winevent-*` layout** — `process_name`, `process_parent_name`,
+   `user_account`, `dst_ip_addr`, `hash_sha256`, wrapped in a `_source` envelope. That is
+   the same layout OTRF Security-Datasets publish, which is why the adapter is written
+   against the schema and not against this corpus.
+2. The archive is **one zip member, 159.7 GB uncompressed**. It cannot be extracted and
+   cannot be seeked; one sequential decompressing pass is the only access pattern. A
+   **time-ordered prefix of 20,000,000 records was declared as the bound before the slice
+   was taken**, and the per-channel totals of everything *seen* are recorded alongside it
+   so representability is computed against the corpus rather than against the slice.
+
+**What the slice contains** (`data/external/comiset/slice/comiset_seen.json`):
+
+| Class | Seen | Kept |
+| --- | --- | --- |
+| `sysmon/12` registry | 13,355,348 | — (no canonical home) |
+| `sysmon/10` process access | 4,476,856 | — (no canonical home) |
+| `sysmon/3` network | 589,477 | **589,477** |
+| `sysmon/11` file create | 517,273 | — |
+| `sysmon/1` process create | 15,095 | **15,095** |
+| `security/4624` logon success | 6,009 | **6,009** |
+| `security/4625` logon failure | 54 | **54** |
+| **Total** | **20,000,000** | **610,635 (3.05%)** |
+
+Worth noting independently of any finding: this is **the first real Windows corpus that
+populates ATH's network table**. DEDALE's Sysmon 3 channel was empty in every hour
+fetched, so `ATH-003` and the network specialist have never run on real endpoint data
+until now.
+
 ## 5. Conclusion
 
-*Written last — pending H4 (COMISET) and the sealed D18 run.*
+*Written last — pending the H4 result and the sealed D18 run.*
