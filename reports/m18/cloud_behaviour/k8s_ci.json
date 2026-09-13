@@ -1,0 +1,806 @@
+{
+  "corpus": "k8s_ci",
+  "source": {
+    "kind": "k8s",
+    "directory": "data\\external\\k8s_ci\\raw"
+  },
+  "windows_minutes": [
+    10,
+    60
+  ],
+  "candidate_thresholds": {
+    "read_services": [
+      5,
+      10,
+      20
+    ],
+    "denied_calls": [
+      10,
+      25,
+      50,
+      100
+    ],
+    "failed_identity_authority_changes": [
+      3,
+      5,
+      10
+    ],
+    "identity_delete_revoke_changes": [
+      1,
+      3,
+      5
+    ]
+  },
+  "statistics": {
+    "read_services": {
+      "rows": "A read-class call, whatever the platform did with it.",
+      "counts": "service"
+    },
+    "read_resource_types": {
+      "rows": "A read-class call, whatever the platform did with it.",
+      "counts": "resource_type"
+    },
+    "denied_calls": {
+      "rows": "The platform refused this for want of authority. Not \"an error occurred\".",
+      "counts": "count"
+    },
+    "denied_resource_types": {
+      "rows": "The platform refused this for want of authority. Not \"an error occurred\".",
+      "counts": "resource_type"
+    },
+    "failed_identity_authority_changes": {
+      "rows": "An authority change the platform rejected for a reason other than authorization.",
+      "counts": "count"
+    },
+    "identity_delete_revoke_changes": {
+      "rows": "An authority change that took something away: delete- or revoke-class.",
+      "counts": "count"
+    }
+  },
+  "pooled": {
+    "actor_count": 3,
+    "decision_distribution": {
+      "after": {
+        "allowed": 7928,
+        "denied": 0,
+        "failed": 23
+      },
+      "before": {
+        "allowed": 7928,
+        "denied": 23
+      },
+      "rows": 7951
+    },
+    "distribution": {
+      "10": {
+        "read_services": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "read_resource_types": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "denied_calls": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "denied_resource_types": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "failed_identity_authority_changes": {
+          "actors": 3,
+          "p50": 1.0,
+          "p90": 6.6000000000000005,
+          "p99": 7.859999999999999,
+          "max": 8.0
+        },
+        "identity_delete_revoke_changes": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        }
+      },
+      "60": {
+        "read_services": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "read_resource_types": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "denied_calls": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "denied_resource_types": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        },
+        "failed_identity_authority_changes": {
+          "actors": 3,
+          "p50": 2.0,
+          "p90": 17.200000000000003,
+          "p99": 20.62,
+          "max": 21.0
+        },
+        "identity_delete_revoke_changes": {
+          "actors": 3,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0,
+          "max": 0.0
+        }
+      }
+    },
+    "thresholds": {
+      "10": {
+        "read_services": {
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "20": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "denied_calls": {
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "25": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "50": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "100": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "failed_identity_authority_changes": {
+          "3": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "system:addon-manager"
+            ]
+          },
+          "5": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "system:addon-manager"
+            ]
+          },
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "identity_delete_revoke_changes": {
+          "1": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "3": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        }
+      },
+      "60": {
+        "read_services": {
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "20": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "denied_calls": {
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "25": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "50": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "100": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "failed_identity_authority_changes": {
+          "3": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "system:addon-manager"
+            ]
+          },
+          "5": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "system:addon-manager"
+            ]
+          },
+          "10": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "system:addon-manager"
+            ]
+          }
+        },
+        "identity_delete_revoke_changes": {
+          "1": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "3": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        }
+      }
+    },
+    "top_actors": {
+      "10": {
+        "read_services": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "read_resource_types": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_calls": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_resource_types": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "failed_identity_authority_changes": [
+          {
+            "actor": "system:addon-manager",
+            "value": 8,
+            "total": 21,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "kubecfg",
+            "value": 1,
+            "total": 2,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "identity_delete_revoke_changes": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ]
+      },
+      "60": {
+        "read_services": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "read_resource_types": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_calls": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_resource_types": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "failed_identity_authority_changes": [
+          {
+            "actor": "system:addon-manager",
+            "value": 21,
+            "total": 21,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "kubecfg",
+            "value": 2,
+            "total": 2,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ],
+        "identity_delete_revoke_changes": [
+          {
+            "actor": "kubecfg",
+            "value": 0,
+            "total": 0,
+            "rows": 7853,
+            "span_hours": 0.556,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:addon-manager",
+            "value": 0,
+            "total": 0,
+            "rows": 41,
+            "span_hours": 0.635,
+            "identity_types": {},
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "system:apiserver",
+            "value": 0,
+            "total": 0,
+            "rows": 57,
+            "span_hours": 0.001,
+            "identity_types": {},
+            "denied_error_codes": {}
+          }
+        ]
+      }
+    },
+    "actors": [
+      {
+        "actor": "kubecfg",
+        "rows": 7853,
+        "first": "2026-06-11 12:56:10.057362+00:00",
+        "last": "2026-06-11 13:29:33.010644+00:00",
+        "span_hours": 0.556,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 7851,
+          "denied": 0,
+          "failed": 2
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 2,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 1,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 2,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "system:addon-manager",
+        "rows": 41,
+        "first": "2026-06-11 12:54:03.869464+00:00",
+        "last": "2026-06-11 13:32:10.520697+00:00",
+        "span_hours": 0.635,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 20,
+          "denied": 0,
+          "failed": 21
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 21,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 8,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 21,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "system:apiserver",
+        "rows": 57,
+        "first": "2026-06-11 12:53:54.703589+00:00",
+        "last": "2026-06-11 12:53:56.914147+00:00",
+        "span_hours": 0.001,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 57,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      }
+    ]
+  },
+  "cost": {
+    "load_seconds": 13.3,
+    "raw_pass_seconds": 0.0,
+    "measure_seconds": 0.1,
+    "control_rows": 7951
+  }
+}

@@ -1,0 +1,4201 @@
+{
+  "corpus": "flaws_cloud",
+  "source": {
+    "kind": "cloudtrail",
+    "directory": "data\\external\\flaws_cloud\\raw"
+  },
+  "windows_minutes": [
+    10,
+    60
+  ],
+  "candidate_thresholds": {
+    "read_services": [
+      5,
+      10,
+      20
+    ],
+    "denied_calls": [
+      10,
+      25,
+      50,
+      100
+    ],
+    "failed_identity_authority_changes": [
+      3,
+      5,
+      10
+    ],
+    "identity_delete_revoke_changes": [
+      1,
+      3,
+      5
+    ]
+  },
+  "statistics": {
+    "read_services": {
+      "rows": "A read-class call, whatever the platform did with it.",
+      "counts": "service"
+    },
+    "read_resource_types": {
+      "rows": "A read-class call, whatever the platform did with it.",
+      "counts": "resource_type"
+    },
+    "denied_calls": {
+      "rows": "The platform refused this for want of authority. Not \"an error occurred\".",
+      "counts": "count"
+    },
+    "denied_resource_types": {
+      "rows": "The platform refused this for want of authority. Not \"an error occurred\".",
+      "counts": "resource_type"
+    },
+    "failed_identity_authority_changes": {
+      "rows": "An authority change the platform rejected for a reason other than authorization.",
+      "counts": "count"
+    },
+    "identity_delete_revoke_changes": {
+      "rows": "An authority change that took something away: delete- or revoke-class.",
+      "counts": "count"
+    }
+  },
+  "pooled": {
+    "actor_count": 55,
+    "decision_distribution": {
+      "after": {
+        "allowed": 368084,
+        "denied": 455794,
+        "failed": 1033276
+      },
+      "before": {
+        "allowed": 368084,
+        "denied": 1489070
+      },
+      "rows": 1857154
+    },
+    "distribution": {
+      "10": {
+        "read_services": {
+          "actors": 55,
+          "p50": 1.0,
+          "p90": 11.800000000000004,
+          "p99": 125.56000000000003,
+          "max": 145.0
+        },
+        "read_resource_types": {
+          "actors": 55,
+          "p50": 1.0,
+          "p90": 44.00000000000001,
+          "p99": 726.1600000000001,
+          "max": 805.0
+        },
+        "denied_calls": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 1.6000000000000014,
+          "p99": 2417.0600000000004,
+          "max": 2639.0
+        },
+        "denied_resource_types": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 1.0,
+          "p99": 664.58,
+          "max": 704.0
+        },
+        "failed_identity_authority_changes": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 2.9200000000000017,
+          "max": 4.0
+        },
+        "identity_delete_revoke_changes": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 1.2000000000000028,
+          "p99": 9.140000000000008,
+          "max": 14.0
+        }
+      },
+      "60": {
+        "read_services": {
+          "actors": 55,
+          "p50": 1.0,
+          "p90": 11.800000000000004,
+          "p99": 129.56000000000003,
+          "max": 149.0
+        },
+        "read_resource_types": {
+          "actors": 55,
+          "p50": 1.0,
+          "p90": 46.6,
+          "p99": 783.7800000000002,
+          "max": 915.0
+        },
+        "denied_calls": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 2.0,
+          "p99": 5953.4800000000005,
+          "max": 6028.0
+        },
+        "denied_resource_types": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 1.0,
+          "p99": 715.5400000000002,
+          "max": 796.0
+        },
+        "failed_identity_authority_changes": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 2.9200000000000017,
+          "max": 4.0
+        },
+        "identity_delete_revoke_changes": {
+          "actors": 55,
+          "p50": 0.0,
+          "p90": 1.2000000000000028,
+          "p99": 11.140000000000008,
+          "max": 16.0
+        }
+      }
+    },
+    "thresholds": {
+      "10": {
+        "read_services": {
+          "5": {
+            "actors": 9,
+            "actor_days": 335,
+            "actors_named": [
+              "4032461535040776536",
+              "AWSConfig-Describe",
+              "Level6",
+              "arn:aws:iam::811596193553:root",
+              "backup",
+              "cloudsploit_scan",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "10": {
+            "actors": 7,
+            "actor_days": 179,
+            "actors_named": [
+              "4032461535040776536",
+              "Level6",
+              "backup",
+              "cloudsploit_scan",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "20": {
+            "actors": 4,
+            "actor_days": 89,
+            "actors_named": [
+              "4032461535040776536",
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          }
+        },
+        "denied_calls": {
+          "10": {
+            "actors": 4,
+            "actor_days": 306,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "25": {
+            "actors": 3,
+            "actor_days": 203,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          },
+          "50": {
+            "actors": 3,
+            "actor_days": 162,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          },
+          "100": {
+            "actors": 3,
+            "actor_days": 134,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          }
+        },
+        "failed_identity_authority_changes": {
+          "3": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "AWSOrganizations"
+            ]
+          },
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "identity_delete_revoke_changes": {
+          "1": {
+            "actors": 6,
+            "actor_days": 25,
+            "actors_named": [
+              "Level6",
+              "arn:aws:iam::811596193553:root",
+              "backup",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "piper"
+            ]
+          },
+          "3": {
+            "actors": 2,
+            "actor_days": 8,
+            "actors_named": [
+              "arn:aws:iam::811596193553:root",
+              "flaws"
+            ]
+          },
+          "5": {
+            "actors": 2,
+            "actor_days": 4,
+            "actors_named": [
+              "arn:aws:iam::811596193553:root",
+              "flaws"
+            ]
+          }
+        }
+      },
+      "60": {
+        "read_services": {
+          "5": {
+            "actors": 9,
+            "actor_days": 496,
+            "actors_named": [
+              "4032461535040776536",
+              "AWSConfig-Describe",
+              "Level6",
+              "arn:aws:iam::811596193553:root",
+              "backup",
+              "cloudsploit_scan",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "10": {
+            "actors": 8,
+            "actor_days": 207,
+            "actors_named": [
+              "4032461535040776536",
+              "Level6",
+              "arn:aws:iam::811596193553:root",
+              "backup",
+              "cloudsploit_scan",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "20": {
+            "actors": 4,
+            "actor_days": 110,
+            "actors_named": [
+              "4032461535040776536",
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          }
+        },
+        "denied_calls": {
+          "10": {
+            "actors": 4,
+            "actor_days": 377,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "25": {
+            "actors": 4,
+            "actor_days": 228,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a",
+              "secmonkey"
+            ]
+          },
+          "50": {
+            "actors": 3,
+            "actor_days": 174,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          },
+          "100": {
+            "actors": 3,
+            "actor_days": 144,
+            "actors_named": [
+              "Level6",
+              "backup",
+              "i-aa2d3b42e5c6e801a"
+            ]
+          }
+        },
+        "failed_identity_authority_changes": {
+          "3": {
+            "actors": 1,
+            "actor_days": 1,
+            "actors_named": [
+              "AWSOrganizations"
+            ]
+          },
+          "5": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          },
+          "10": {
+            "actors": 0,
+            "actor_days": 0,
+            "actors_named": []
+          }
+        },
+        "identity_delete_revoke_changes": {
+          "1": {
+            "actors": 6,
+            "actor_days": 25,
+            "actors_named": [
+              "Level6",
+              "arn:aws:iam::811596193553:root",
+              "backup",
+              "flaws",
+              "i-aa2d3b42e5c6e801a",
+              "piper"
+            ]
+          },
+          "3": {
+            "actors": 3,
+            "actor_days": 11,
+            "actors_named": [
+              "arn:aws:iam::811596193553:root",
+              "flaws",
+              "piper"
+            ]
+          },
+          "5": {
+            "actors": 2,
+            "actor_days": 4,
+            "actors_named": [
+              "arn:aws:iam::811596193553:root",
+              "flaws"
+            ]
+          }
+        }
+      }
+    },
+    "top_actors": {
+      "10": {
+        "read_services": [
+          {
+            "actor": "backup",
+            "value": 145,
+            "total": 158,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 109,
+            "total": 136,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 108,
+            "total": 120,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "4032461535040776536",
+            "value": 26,
+            "total": 29,
+            "rows": 744,
+            "span_hours": 0.186,
+            "identity_types": {
+              "AssumedRole": 744
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudsploit_scan",
+            "value": 13,
+            "total": 13,
+            "rows": 568,
+            "span_hours": 0.061,
+            "identity_types": {
+              "AssumedRole": 568
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "secmonkey",
+            "value": 13,
+            "total": 13,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "flaws",
+            "value": 10,
+            "total": 23,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 9,
+            "total": 22,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "AWSConfig-Describe",
+            "value": 8,
+            "total": 8,
+            "rows": 349,
+            "span_hours": 10.002,
+            "identity_types": {
+              "AssumedRole": 349
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 4,
+            "total": 4,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "read_resource_types": [
+          {
+            "actor": "backup",
+            "value": 805,
+            "total": 1039,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 659,
+            "total": 915,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 653,
+            "total": 800,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "4032461535040776536",
+            "value": 59,
+            "total": 64,
+            "rows": 744,
+            "span_hours": 0.186,
+            "identity_types": {
+              "AssumedRole": 744
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "secmonkey",
+            "value": 47,
+            "total": 47,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "AWSConfig-Describe",
+            "value": 46,
+            "total": 46,
+            "rows": 349,
+            "span_hours": 10.002,
+            "identity_types": {
+              "AssumedRole": 349
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 41,
+            "total": 128,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudsploit_scan",
+            "value": 33,
+            "total": 33,
+            "rows": 568,
+            "span_hours": 0.061,
+            "identity_types": {
+              "AssumedRole": 568
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "flaws",
+            "value": 27,
+            "total": 113,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudaux",
+            "value": 26,
+            "total": 26,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          }
+        ],
+        "denied_calls": [
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 2639,
+            "total": 18546,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "backup",
+            "value": 2228,
+            "total": 230456,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 2056,
+            "total": 206734,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "secmonkey",
+            "value": 17,
+            "total": 45,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "cloudaux",
+            "value": 9,
+            "total": 9,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          },
+          {
+            "actor": "level6",
+            "value": 2,
+            "total": 2,
+            "rows": 2,
+            "span_hours": 0.081,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "Level5",
+            "value": 1,
+            "total": 2,
+            "rows": 39,
+            "span_hours": 76.518,
+            "identity_types": {
+              "IAMUser": 39
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_resource_types": [
+          {
+            "actor": "backup",
+            "value": 704,
+            "total": 924,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 631,
+            "total": 767,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 269,
+            "total": 462,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "secmonkey",
+            "value": 2,
+            "total": 2,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "Level5",
+            "value": 1,
+            "total": 2,
+            "rows": 39,
+            "span_hours": 76.518,
+            "identity_types": {
+              "IAMUser": 39
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "cloudaux",
+            "value": 1,
+            "total": 1,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          },
+          {
+            "actor": "level6",
+            "value": 1,
+            "total": 1,
+            "rows": 2,
+            "span_hours": 0.081,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "failed_identity_authority_changes": [
+          {
+            "actor": "AWSOrganizations",
+            "value": 4,
+            "total": 4,
+            "rows": 9,
+            "span_hours": 5787.406,
+            "identity_types": {
+              "AssumedRole": 9
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "flaws",
+            "value": 2,
+            "total": 3,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 1,
+            "total": 5,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1481569499149913260",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1896552662459074759",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "2132267588865880227",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "2352101252950219676",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "identity_delete_revoke_changes": [
+          {
+            "actor": "flaws",
+            "value": 14,
+            "total": 36,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 5,
+            "total": 33,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "Level6",
+            "value": 2,
+            "total": 5,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "backup",
+            "value": 2,
+            "total": 6,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 2,
+            "total": 2,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "piper",
+            "value": 2,
+            "total": 3,
+            "rows": 142,
+            "span_hours": 10114.894,
+            "identity_types": {
+              "IAMUser": 142
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1481569499149913260",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          }
+        ]
+      },
+      "60": {
+        "read_services": [
+          {
+            "actor": "backup",
+            "value": 149,
+            "total": 158,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 113,
+            "total": 120,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 111,
+            "total": 136,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "4032461535040776536",
+            "value": 29,
+            "total": 29,
+            "rows": 744,
+            "span_hours": 0.186,
+            "identity_types": {
+              "AssumedRole": 744
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudsploit_scan",
+            "value": 13,
+            "total": 13,
+            "rows": 568,
+            "span_hours": 0.061,
+            "identity_types": {
+              "AssumedRole": 568
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "secmonkey",
+            "value": 13,
+            "total": 13,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 10,
+            "total": 22,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "flaws",
+            "value": 10,
+            "total": 23,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "AWSConfig-Describe",
+            "value": 8,
+            "total": 8,
+            "rows": 349,
+            "span_hours": 10.002,
+            "identity_types": {
+              "AssumedRole": 349
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 4,
+            "total": 4,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "read_resource_types": [
+          {
+            "actor": "backup",
+            "value": 915,
+            "total": 1039,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 672,
+            "total": 800,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 664,
+            "total": 915,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "4032461535040776536",
+            "value": 64,
+            "total": 64,
+            "rows": 744,
+            "span_hours": 0.186,
+            "identity_types": {
+              "AssumedRole": 744
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 58,
+            "total": 128,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "secmonkey",
+            "value": 47,
+            "total": 47,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "AWSConfig-Describe",
+            "value": 46,
+            "total": 46,
+            "rows": 349,
+            "span_hours": 10.002,
+            "identity_types": {
+              "AssumedRole": 349
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudsploit_scan",
+            "value": 33,
+            "total": 33,
+            "rows": 568,
+            "span_hours": 0.061,
+            "identity_types": {
+              "AssumedRole": 568
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "flaws",
+            "value": 33,
+            "total": 113,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "cloudaux",
+            "value": 26,
+            "total": 26,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          }
+        ],
+        "denied_calls": [
+          {
+            "actor": "backup",
+            "value": 6028,
+            "total": 230456,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 5890,
+            "total": 206734,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 3358,
+            "total": 18546,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "secmonkey",
+            "value": 45,
+            "total": 45,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "cloudaux",
+            "value": 9,
+            "total": 9,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          },
+          {
+            "actor": "Level5",
+            "value": 2,
+            "total": 2,
+            "rows": 39,
+            "span_hours": 76.518,
+            "identity_types": {
+              "IAMUser": 39
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "level6",
+            "value": 2,
+            "total": 2,
+            "rows": 2,
+            "span_hours": 0.081,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "denied_resource_types": [
+          {
+            "actor": "backup",
+            "value": 796,
+            "total": 924,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 647,
+            "total": 767,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "Level6",
+            "value": 276,
+            "total": 462,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "Level5",
+            "value": 2,
+            "total": 2,
+            "rows": 39,
+            "span_hours": 76.518,
+            "identity_types": {
+              "IAMUser": 39
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "secmonkey",
+            "value": 2,
+            "total": 2,
+            "rows": 12354,
+            "span_hours": 16.807,
+            "identity_types": {
+              "AssumedRole": 12354
+            },
+            "denied_error_codes": {
+              "AccessDenied": 45
+            }
+          },
+          {
+            "actor": "cloudaux",
+            "value": 1,
+            "total": 1,
+            "rows": 3993,
+            "span_hours": 16.805,
+            "identity_types": {
+              "AssumedRole": 3993
+            },
+            "denied_error_codes": {
+              "AccessDenied": 9
+            }
+          },
+          {
+            "actor": "level6",
+            "value": 1,
+            "total": 1,
+            "rows": 2,
+            "span_hours": 0.081,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {
+              "AccessDenied": 2
+            }
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "failed_identity_authority_changes": [
+          {
+            "actor": "AWSOrganizations",
+            "value": 4,
+            "total": 4,
+            "rows": 9,
+            "span_hours": 5787.406,
+            "identity_types": {
+              "AssumedRole": 9
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "flaws",
+            "value": 2,
+            "total": 3,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 1,
+            "total": 5,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1481569499149913260",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1896552662459074759",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "2132267588865880227",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "2352101252950219676",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          }
+        ],
+        "identity_delete_revoke_changes": [
+          {
+            "actor": "flaws",
+            "value": 16,
+            "total": 36,
+            "rows": 3346,
+            "span_hours": 26755.66,
+            "identity_types": {
+              "Root": 3346
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "arn:aws:iam::811596193553:root",
+            "value": 7,
+            "total": 33,
+            "rows": 7530,
+            "span_hours": 5202.892,
+            "identity_types": {
+              "Root": 7530
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "piper",
+            "value": 3,
+            "total": 3,
+            "rows": 142,
+            "span_hours": 10114.894,
+            "identity_types": {
+              "IAMUser": 142
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "Level6",
+            "value": 2,
+            "total": 5,
+            "rows": 903928,
+            "span_hours": 31647.659,
+            "identity_types": {
+              "IAMUser": 899736,
+              "AssumedRole": 4192
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 167782,
+              "AccessDenied": 38321,
+              "AccessDeniedException": 421,
+              "ForbiddenException": 208,
+              "Client.AuthFailure": 2
+            }
+          },
+          {
+            "actor": "backup",
+            "value": 2,
+            "total": 6,
+            "rows": 904084,
+            "span_hours": 31991.805,
+            "identity_types": {
+              "IAMUser": 904084
+            },
+            "denied_error_codes": {
+              "Client.UnauthorizedOperation": 181087,
+              "AccessDenied": 48492,
+              "AccessDeniedException": 649,
+              "ForbiddenException": 223,
+              "Client.AuthFailure": 5
+            }
+          },
+          {
+            "actor": "i-aa2d3b42e5c6e801a",
+            "value": 2,
+            "total": 2,
+            "rows": 19769,
+            "span_hours": 31598.537,
+            "identity_types": {
+              "AssumedRole": 19769
+            },
+            "denied_error_codes": {
+              "AccessDenied": 15502,
+              "Client.UnauthorizedOperation": 2891,
+              "ForbiddenException": 95,
+              "AccessDeniedException": 57,
+              "Client.AuthFailure": 1
+            }
+          },
+          {
+            "actor": "0518908990474675889",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1198382831893135263",
+            "value": 0,
+            "total": 0,
+            "rows": 1,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 1
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1229551211742381686",
+            "value": 0,
+            "total": 0,
+            "rows": 35,
+            "span_hours": 0.021,
+            "identity_types": {
+              "AssumedRole": 35
+            },
+            "denied_error_codes": {}
+          },
+          {
+            "actor": "1481569499149913260",
+            "value": 0,
+            "total": 0,
+            "rows": 2,
+            "span_hours": 0.0,
+            "identity_types": {
+              "AssumedRole": 2
+            },
+            "denied_error_codes": {}
+          }
+        ]
+      }
+    },
+    "actors": [
+      {
+        "actor": "0518908990474675889",
+        "rows": 1,
+        "first": "2018-08-05 22:08:20+00:00",
+        "last": "2018-08-05 22:08:20+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "1198382831893135263",
+        "rows": 1,
+        "first": "2018-08-06 16:31:52+00:00",
+        "last": "2018-08-06 16:31:52+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "1229551211742381686",
+        "rows": 35,
+        "first": "2018-08-06 16:08:23+00:00",
+        "last": "2018-08-06 16:09:37+00:00",
+        "span_hours": 0.021,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 34,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 4,
+          "read_resource_types": 4,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 4,
+            "read_resource_types": 4,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 4,
+            "read_resource_types": 4,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "1481569499149913260",
+        "rows": 2,
+        "first": "2018-08-06 17:29:59+00:00",
+        "last": "2018-08-06 17:29:59+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 2,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "1896552662459074759",
+        "rows": 1,
+        "first": "2018-08-05 16:59:57+00:00",
+        "last": "2018-08-05 16:59:57+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "2132267588865880227",
+        "rows": 2,
+        "first": "2018-08-06 16:06:07+00:00",
+        "last": "2018-08-06 16:06:07+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 2,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "2352101252950219676",
+        "rows": 1,
+        "first": "2018-09-18 16:54:00+00:00",
+        "last": "2018-09-18 16:54:00+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "2957684065263186990",
+        "rows": 1,
+        "first": "2018-08-06 16:29:36+00:00",
+        "last": "2018-08-06 16:29:36+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "3228812059035775998",
+        "rows": 1,
+        "first": "2018-08-06 17:25:54+00:00",
+        "last": "2018-08-06 17:25:54+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "3423657697480834564",
+        "rows": 2,
+        "first": "2018-08-05 19:14:31+00:00",
+        "last": "2018-08-05 19:14:32+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 2,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "4032461535040776536",
+        "rows": 744,
+        "first": "2018-08-05 17:00:50+00:00",
+        "last": "2018-08-05 17:11:58+00:00",
+        "span_hours": 0.186,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 741,
+          "denied": 0,
+          "failed": 3
+        },
+        "totals": {
+          "read_services": 29,
+          "read_resource_types": 64,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 26,
+            "read_resource_types": 59,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 29,
+            "read_resource_types": 64,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "4115412295494258651",
+        "rows": 18,
+        "first": "2018-08-06 16:06:25+00:00",
+        "last": "2018-08-06 16:07:48+00:00",
+        "span_hours": 0.023,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 17,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 3,
+          "read_resource_types": 3,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 3,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 3,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "4180687345654446179",
+        "rows": 2,
+        "first": "2018-08-05 19:15:18+00:00",
+        "last": "2018-08-05 19:15:19+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 2,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 2,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "4282604218721080713",
+        "rows": 1,
+        "first": "2018-10-02 16:46:34+00:00",
+        "last": "2018-10-02 16:46:34+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "5456111205804991766",
+        "rows": 1,
+        "first": "2018-08-05 19:14:11+00:00",
+        "last": "2018-08-05 19:14:11+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "6300620333989293410",
+        "rows": 1,
+        "first": "2018-08-06 17:26:49+00:00",
+        "last": "2018-08-06 17:26:49+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "6723584414747222415",
+        "rows": 1,
+        "first": "2018-08-06 16:20:21+00:00",
+        "last": "2018-08-06 16:20:21+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "6964842677283343441",
+        "rows": 1,
+        "first": "2018-08-05 22:07:55+00:00",
+        "last": "2018-08-05 22:07:55+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "7079073649880780146",
+        "rows": 3,
+        "first": "2018-08-05 22:09:05+00:00",
+        "last": "2018-08-05 22:09:10+00:00",
+        "span_hours": 0.001,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 2,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 3,
+          "read_resource_types": 3,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 3,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 3,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "7610788180441480834",
+        "rows": 1,
+        "first": "2018-08-06 16:31:23+00:00",
+        "last": "2018-08-06 16:31:23+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "7853701554816508637",
+        "rows": 5,
+        "first": "2018-08-06 17:30:32+00:00",
+        "last": "2018-08-06 17:30:33+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 4,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 3,
+          "read_resource_types": 5,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 3,
+            "read_resource_types": 5,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 3,
+            "read_resource_types": 5,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "7904477741690638837",
+        "rows": 1,
+        "first": "2018-08-06 16:29:58+00:00",
+        "last": "2018-08-06 16:29:58+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "8405421938682392426",
+        "rows": 1,
+        "first": "2018-10-02 16:46:09+00:00",
+        "last": "2018-10-02 16:46:09+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "8545373857657773227",
+        "rows": 3,
+        "first": "2018-08-05 19:17:19+00:00",
+        "last": "2018-08-05 19:17:22+00:00",
+        "span_hours": 0.001,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 2,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 3,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 3,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "8741268665290826886",
+        "rows": 1,
+        "first": "2018-08-05 17:35:34+00:00",
+        "last": "2018-08-05 17:35:34+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "9118969073247530542",
+        "rows": 1,
+        "first": "2018-08-06 16:32:19+00:00",
+        "last": "2018-08-06 16:32:19+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "9443307416876921716",
+        "rows": 1,
+        "first": "2018-08-05 17:36:11+00:00",
+        "last": "2018-08-05 17:36:11+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "9581631001393597768",
+        "rows": 1,
+        "first": "2018-08-05 16:58:10+00:00",
+        "last": "2018-08-05 16:58:10+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "9654723669612188222",
+        "rows": 1,
+        "first": "2018-08-05 19:13:26+00:00",
+        "last": "2018-08-05 19:13:26+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "9867330855417002656",
+        "rows": 1,
+        "first": "2018-08-06 17:28:26+00:00",
+        "last": "2018-08-06 17:28:26+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSConfig",
+        "rows": 6,
+        "first": "2019-07-12 14:58:44+00:00",
+        "last": "2019-07-12 15:10:14+00:00",
+        "span_hours": 0.192,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 4,
+          "denied": 0,
+          "failed": 2
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSConfig-BucketConfigCheck",
+        "rows": 3,
+        "first": "2017-05-29 16:35:27+00:00",
+        "last": "2017-05-29 23:04:28+00:00",
+        "span_hours": 6.484,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 3,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSConfig-ConfigRuleValidation",
+        "rows": 2,
+        "first": "2019-07-12 14:58:44+00:00",
+        "last": "2019-07-12 14:58:44+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 2
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSConfig-Describe",
+        "rows": 349,
+        "first": "2017-05-29 16:35:29+00:00",
+        "last": "2017-05-30 02:35:37+00:00",
+        "span_hours": 10.002,
+        "days_active": 2,
+        "decisions": {
+          "allowed": 245,
+          "denied": 0,
+          "failed": 104
+        },
+        "totals": {
+          "read_services": 8,
+          "read_resource_types": 46,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 8,
+            "read_resource_types": 46,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 8,
+            "read_resource_types": 46,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSFirewallManager",
+        "rows": 15,
+        "first": "2019-10-10 20:08:10+00:00",
+        "last": "2019-11-06 22:17:56+00:00",
+        "span_hours": 650.163,
+        "days_active": 4,
+        "decisions": {
+          "allowed": 15,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSOrganizations",
+        "rows": 9,
+        "first": "2019-02-11 16:43:23+00:00",
+        "last": "2019-10-10 20:07:45+00:00",
+        "span_hours": 5787.406,
+        "days_active": 3,
+        "decisions": {
+          "allowed": 5,
+          "denied": 0,
+          "failed": 4
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 4,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 4,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 4,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "AWSServiceRoleForSupport",
+        "rows": 114,
+        "first": "2019-08-21 08:05:34+00:00",
+        "last": "2019-09-30 09:24:39+00:00",
+        "span_hours": 961.318,
+        "days_active": 3,
+        "decisions": {
+          "allowed": 114,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 2,
+          "read_resource_types": 5,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 2,
+            "read_resource_types": 5,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 2,
+            "read_resource_types": 5,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "CloudTrail",
+        "rows": 30,
+        "first": "2019-02-11 16:43:33+00:00",
+        "last": "2019-02-11 16:43:38+00:00",
+        "span_hours": 0.001,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 14,
+          "denied": 0,
+          "failed": 16
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "HIDDEN_DUE_TO_SECURITY_REASONS",
+        "rows": 14,
+        "first": "2017-05-17 23:23:34+00:00",
+        "last": "2018-10-25 21:33:22+00:00",
+        "span_hours": 12622.163,
+        "days_active": 6,
+        "decisions": {
+          "allowed": 0,
+          "denied": 0,
+          "failed": 14
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "Level5",
+        "rows": 39,
+        "first": "2017-02-19 23:38:17+00:00",
+        "last": "2017-02-23 04:09:21+00:00",
+        "span_hours": 76.518,
+        "days_active": 3,
+        "decisions": {
+          "allowed": 36,
+          "denied": 2,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 5,
+          "read_resource_types": 14,
+          "denied_calls": 2,
+          "denied_resource_types": 2,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 3,
+            "read_resource_types": 6,
+            "denied_calls": 1,
+            "denied_resource_types": 1,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 3,
+            "read_resource_types": 12,
+            "denied_calls": 2,
+            "denied_resource_types": 2,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "Level6",
+        "rows": 903928,
+        "first": "2017-02-26 23:13:33+00:00",
+        "last": "2020-10-07 14:53:06+00:00",
+        "span_hours": 31647.659,
+        "days_active": 1172,
+        "decisions": {
+          "allowed": 167074,
+          "denied": 206734,
+          "failed": 530120
+        },
+        "totals": {
+          "read_services": 136,
+          "read_resource_types": 915,
+          "denied_calls": 206734,
+          "denied_resource_types": 462,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 5
+        },
+        "windows": {
+          "10": {
+            "read_services": 109,
+            "read_resource_types": 659,
+            "denied_calls": 2056,
+            "denied_resource_types": 269,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          },
+          "60": {
+            "read_services": 111,
+            "read_resource_types": 664,
+            "denied_calls": 5890,
+            "denied_resource_types": 276,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          }
+        }
+      },
+      {
+        "actor": "arn:aws:iam::811596193553:root",
+        "rows": 7530,
+        "first": "2017-02-12 19:57:06+00:00",
+        "last": "2017-09-17 14:50:38+00:00",
+        "span_hours": 5202.892,
+        "days_active": 39,
+        "decisions": {
+          "allowed": 6874,
+          "denied": 0,
+          "failed": 656
+        },
+        "totals": {
+          "read_services": 22,
+          "read_resource_types": 128,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 5,
+          "identity_delete_revoke_changes": 33
+        },
+        "windows": {
+          "10": {
+            "read_services": 9,
+            "read_resource_types": 41,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 1,
+            "identity_delete_revoke_changes": 5
+          },
+          "60": {
+            "read_services": 10,
+            "read_resource_types": 58,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 1,
+            "identity_delete_revoke_changes": 7
+          }
+        }
+      },
+      {
+        "actor": "audit",
+        "rows": 1,
+        "first": "2017-06-29 14:18:00+00:00",
+        "last": "2017-06-29 14:18:00+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "backup",
+        "rows": 904084,
+        "first": "2017-02-12 21:15:12+00:00",
+        "last": "2020-10-07 21:03:30+00:00",
+        "span_hours": 31991.805,
+        "days_active": 1220,
+        "decisions": {
+          "allowed": 173262,
+          "denied": 230456,
+          "failed": 500366
+        },
+        "totals": {
+          "read_services": 158,
+          "read_resource_types": 1039,
+          "denied_calls": 230456,
+          "denied_resource_types": 924,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 6
+        },
+        "windows": {
+          "10": {
+            "read_services": 145,
+            "read_resource_types": 805,
+            "denied_calls": 2228,
+            "denied_resource_types": 704,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          },
+          "60": {
+            "read_services": 149,
+            "read_resource_types": 915,
+            "denied_calls": 6028,
+            "denied_resource_types": 796,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          }
+        }
+      },
+      {
+        "actor": "botocore-session-aed6ad4c04",
+        "rows": 1,
+        "first": "2020-10-07 20:27:01+00:00",
+        "last": "2020-10-07 20:27:01+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 1,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "cloudaux",
+        "rows": 3993,
+        "first": "2017-05-26 22:27:07+00:00",
+        "last": "2017-05-27 15:15:26+00:00",
+        "span_hours": 16.805,
+        "days_active": 2,
+        "decisions": {
+          "allowed": 2732,
+          "denied": 9,
+          "failed": 1252
+        },
+        "totals": {
+          "read_services": 4,
+          "read_resource_types": 26,
+          "denied_calls": 9,
+          "denied_resource_types": 1,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 4,
+            "read_resource_types": 26,
+            "denied_calls": 9,
+            "denied_resource_types": 1,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 4,
+            "read_resource_types": 26,
+            "denied_calls": 9,
+            "denied_resource_types": 1,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "cloudsploit_scan",
+        "rows": 568,
+        "first": "2017-05-26 18:27:02+00:00",
+        "last": "2017-05-26 18:30:41+00:00",
+        "span_hours": 0.061,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 566,
+          "denied": 0,
+          "failed": 2
+        },
+        "totals": {
+          "read_services": 13,
+          "read_resource_types": 33,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 13,
+            "read_resource_types": 33,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 13,
+            "read_resource_types": 33,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "configLambdaExecution",
+        "rows": 6,
+        "first": "2019-07-12 14:59:12+00:00",
+        "last": "2019-07-12 14:59:12+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 6,
+          "denied": 0,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 1,
+          "read_resource_types": 1,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 1,
+            "read_resource_types": 1,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "flaws",
+        "rows": 3346,
+        "first": "2017-09-18 22:53:01+00:00",
+        "last": "2020-10-07 18:32:38+00:00",
+        "span_hours": 26755.66,
+        "days_active": 28,
+        "decisions": {
+          "allowed": 3011,
+          "denied": 0,
+          "failed": 335
+        },
+        "totals": {
+          "read_services": 23,
+          "read_resource_types": 113,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 3,
+          "identity_delete_revoke_changes": 36
+        },
+        "windows": {
+          "10": {
+            "read_services": 10,
+            "read_resource_types": 27,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 2,
+            "identity_delete_revoke_changes": 14
+          },
+          "60": {
+            "read_services": 10,
+            "read_resource_types": 33,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 2,
+            "identity_delete_revoke_changes": 16
+          }
+        }
+      },
+      {
+        "actor": "i-aa2d3b42e5c6e801a",
+        "rows": 19769,
+        "first": "2017-02-28 02:24:57+00:00",
+        "last": "2020-10-06 16:57:12+00:00",
+        "span_hours": 31598.537,
+        "days_active": 492,
+        "decisions": {
+          "allowed": 862,
+          "denied": 18546,
+          "failed": 361
+        },
+        "totals": {
+          "read_services": 120,
+          "read_resource_types": 800,
+          "denied_calls": 18546,
+          "denied_resource_types": 767,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 2
+        },
+        "windows": {
+          "10": {
+            "read_services": 108,
+            "read_resource_types": 653,
+            "denied_calls": 2639,
+            "denied_resource_types": 631,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          },
+          "60": {
+            "read_services": 113,
+            "read_resource_types": 672,
+            "denied_calls": 3358,
+            "denied_resource_types": 647,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          }
+        }
+      },
+      {
+        "actor": "level5",
+        "rows": 10,
+        "first": "2017-02-19 21:00:45+00:00",
+        "last": "2017-02-23 04:09:48+00:00",
+        "span_hours": 79.151,
+        "days_active": 5,
+        "decisions": {
+          "allowed": 9,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "level6",
+        "rows": 2,
+        "first": "2017-02-19 20:52:08+00:00",
+        "last": "2017-02-19 20:56:59+00:00",
+        "span_hours": 0.081,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 0,
+          "denied": 2,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 2,
+          "denied_resource_types": 1,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 2,
+            "denied_resource_types": 1,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 2,
+            "denied_resource_types": 1,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "level6-ec1335a148b902503664e2d162fcdaa98c224ea5",
+        "rows": 3,
+        "first": "2017-02-19 20:14:24+00:00",
+        "last": "2017-02-19 20:14:24+00:00",
+        "span_hours": 0.0,
+        "days_active": 1,
+        "decisions": {
+          "allowed": 2,
+          "denied": 0,
+          "failed": 1
+        },
+        "totals": {
+          "read_services": 0,
+          "read_resource_types": 0,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 0,
+            "read_resource_types": 0,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      },
+      {
+        "actor": "piper",
+        "rows": 142,
+        "first": "2017-05-16 03:50:59+00:00",
+        "last": "2018-07-11 14:44:37+00:00",
+        "span_hours": 10114.894,
+        "days_active": 8,
+        "decisions": {
+          "allowed": 121,
+          "denied": 0,
+          "failed": 21
+        },
+        "totals": {
+          "read_services": 6,
+          "read_resource_types": 30,
+          "denied_calls": 0,
+          "denied_resource_types": 0,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 3
+        },
+        "windows": {
+          "10": {
+            "read_services": 3,
+            "read_resource_types": 17,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 2
+          },
+          "60": {
+            "read_services": 4,
+            "read_resource_types": 23,
+            "denied_calls": 0,
+            "denied_resource_types": 0,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 3
+          }
+        }
+      },
+      {
+        "actor": "secmonkey",
+        "rows": 12354,
+        "first": "2017-05-26 22:26:49+00:00",
+        "last": "2017-05-27 15:15:15+00:00",
+        "span_hours": 16.807,
+        "days_active": 2,
+        "decisions": {
+          "allowed": 12309,
+          "denied": 45,
+          "failed": 0
+        },
+        "totals": {
+          "read_services": 13,
+          "read_resource_types": 47,
+          "denied_calls": 45,
+          "denied_resource_types": 2,
+          "failed_identity_authority_changes": 0,
+          "identity_delete_revoke_changes": 0
+        },
+        "windows": {
+          "10": {
+            "read_services": 13,
+            "read_resource_types": 47,
+            "denied_calls": 17,
+            "denied_resource_types": 2,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          },
+          "60": {
+            "read_services": 13,
+            "read_resource_types": 47,
+            "denied_calls": 45,
+            "denied_resource_types": 2,
+            "failed_identity_authority_changes": 0,
+            "identity_delete_revoke_changes": 0
+          }
+        }
+      }
+    ]
+  },
+  "raw": {
+    "error_code_histogram": {
+      "Client.RequestLimitExceeded": 779330,
+      "Client.UnauthorizedOperation": 351760,
+      "AccessDenied": 102373,
+      "Client.Unsupported": 101226,
+      "Server.InsufficientInstanceCapacity": 59323,
+      "Client.InstanceLimitExceeded": 43272,
+      "NoSuchBucket": 29170,
+      "Client.InvalidParameterValue": 4200,
+      "Client.InvalidSnapshot.NotFound": 3278,
+      "Client.DryRunOperation": 2028,
+      "NoSuchEntityException": 1692,
+      "IllegalLocationConstraintException": 1486,
+      "AccessDeniedException": 1127,
+      "NotFoundException": 876,
+      "ResourceNotFoundException": 862,
+      "ValidationException": 685,
+      "Client.InvalidUserID.Malformed": 550,
+      "ForbiddenException": 526,
+      "NoSuchTagSet": 437,
+      "NoSuchCORSConfiguration": 433,
+      "NoSuchLifecycleConfiguration": 409,
+      "ReplicationConfigurationNotFoundError": 404,
+      "CredentialReportNotPresentException": 246,
+      "ServerSideEncryptionConfigurationNotFoundError": 244,
+      "Server.InternalError": 228
+    },
+    "decision_cross_tab": {
+      "allowed->allowed": 368084,
+      "denied->failed": 1033276,
+      "denied->denied": 455794
+    }
+  },
+  "cost": {
+    "load_seconds": 60.3,
+    "raw_pass_seconds": 39.9,
+    "measure_seconds": 12.7,
+    "control_rows": 1857154
+  }
+}
