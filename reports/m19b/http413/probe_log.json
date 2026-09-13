@@ -1,0 +1,253 @@
+{
+  "generated_at": "2026-09-13T21:53:23.747079+00:00",
+  "endpoint": "https://api.anthropic.com/v1/messages",
+  "model": "claude-opus-5",
+  "anthropic_version": "2023-06-01",
+  "max_tokens": 1,
+  "largest_accepted_bytes": 33000000,
+  "smallest_rejected_bytes": 34000000,
+  "accepted_means": "the body was accepted by the transport and answered by the API -- 200, or 400 because the prompt exceeded the context window. Only 413 counts as a size rejection.",
+  "relative_gap": 0.030303030303030304,
+  "unit_test": {
+    "multibyte_filler_bytes": 102000140,
+    "multibyte_filler_chars": 17000000,
+    "multibyte_status": 413,
+    "smallest_ascii_rejection_bytes": 34000140
+  },
+  "attempts": [
+    {
+      "request_bytes": 1000140,
+      "system_bytes": 1000000,
+      "system_chars": 1000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "prompt is too long: 1000059 tokens > 1000000 maximum"
+        },
+        "request_id": "req_011Cf2BQpeN2Lu29JVq6XnKD"
+      },
+      "seconds": 0.81
+    },
+    {
+      "request_bytes": 2000140,
+      "system_bytes": 2000000,
+      "system_chars": 2000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "prompt is too long: 2000059 tokens > 1000000 maximum"
+        },
+        "request_id": "req_011Cf2BQszmjPqJ8aQP5zWgP"
+      },
+      "seconds": 1.13
+    },
+    {
+      "request_bytes": 4000140,
+      "system_bytes": 4000000,
+      "system_chars": 4000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "prompt is too long: 4000059 tokens > 1000000 maximum"
+        },
+        "request_id": "req_011Cf2BQxmWu3DtLcyKExAcf"
+      },
+      "seconds": 0.86
+    },
+    {
+      "request_bytes": 8000140,
+      "system_bytes": 8000000,
+      "system_chars": 8000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "prompt is too long: 8000059 tokens > 1000000 maximum"
+        },
+        "request_id": "req_011Cf2BR3dDFBYn77qynNSom"
+      },
+      "seconds": 1.88
+    },
+    {
+      "request_bytes": 16000140,
+      "system_bytes": 16000000,
+      "system_chars": 16000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "prompt is too long: 16000059 tokens > 1000000 maximum"
+        },
+        "request_id": "req_011Cf2BRCewN1mTXrkAcrFgM"
+      },
+      "seconds": 4.65
+    },
+    {
+      "request_bytes": 32000140,
+      "system_bytes": 32000000,
+      "system_chars": 32000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "too many total text bytes: 32000002 > 32000000"
+        },
+        "request_id": "req_011Cf2BRYY28h6Auh6uFdxTB"
+      },
+      "seconds": 6.16
+    },
+    {
+      "request_bytes": 64000140,
+      "system_bytes": 64000000,
+      "system_chars": 64000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 6.78
+    },
+    {
+      "request_bytes": 48000140,
+      "system_bytes": 48000000,
+      "system_chars": 48000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 3.46
+    },
+    {
+      "request_bytes": 40000140,
+      "system_bytes": 40000000,
+      "system_chars": 40000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 3.05
+    },
+    {
+      "request_bytes": 36000140,
+      "system_bytes": 36000000,
+      "system_chars": 36000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 3.77
+    },
+    {
+      "request_bytes": 34000140,
+      "system_bytes": 34000000,
+      "system_chars": 34000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 2.73
+    },
+    {
+      "request_bytes": 33000140,
+      "system_bytes": 33000000,
+      "system_chars": 33000000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "too many total text bytes: 33000002 > 32000000"
+        },
+        "request_id": "req_011Cf2BTbMVX5eq5qsbXHuj9"
+      },
+      "seconds": 4.03
+    },
+    {
+      "request_bytes": 2140,
+      "system_bytes": 2000,
+      "system_chars": 2000,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 200,
+      "stop_reason": "max_tokens",
+      "usage": {
+        "input_tokens": 2009,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "seconds": 1.22
+    },
+    {
+      "request_bytes": 102000140,
+      "system_bytes": 34000000,
+      "system_chars": 17000000,
+      "filler": "\u00e9",
+      "bytes_per_filler_char": 2,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 9.65
+    }
+  ]
+}

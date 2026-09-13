@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-09-13T21:55:25.291393+00:00",
+  "endpoint": "https://api.anthropic.com/v1/messages",
+  "model": "claude-opus-5",
+  "attempts": [
+    {
+      "request_bytes": 33554431,
+      "system_bytes": 33554291,
+      "system_chars": 33554291,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "too many total text bytes: 33554293 > 32000000"
+        },
+        "request_id": "req_011Cf2Bc5goCXuKyDayBou4a"
+      },
+      "seconds": 4.2
+    },
+    {
+      "request_bytes": 33554432,
+      "system_bytes": 33554292,
+      "system_chars": 33554292,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 400,
+      "error": {
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "message": "too many total text bytes: 33554294 > 32000000"
+        },
+        "request_id": "req_011Cf2BcPVcXHvH4gzC2bpeF"
+      },
+      "seconds": 11.59
+    },
+    {
+      "request_bytes": 33554433,
+      "system_bytes": 33554293,
+      "system_chars": 33554293,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 2.21
+    },
+    {
+      "request_bytes": 33554434,
+      "system_bytes": 33554294,
+      "system_chars": 33554294,
+      "filler": "A",
+      "bytes_per_filler_char": 1,
+      "status": 413,
+      "error": {
+        "error": {
+          "type": "request_too_large",
+          "message": "Request exceeds the maximum size"
+        }
+      },
+      "seconds": 3.28
+    }
+  ]
+}
