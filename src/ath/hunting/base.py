@@ -16,6 +16,7 @@ cannot be dropped later.
 
 from __future__ import annotations
 
+import dataclasses
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -239,9 +240,63 @@ class Detector(ABC):
         """Return findings for this rule. Must not read ground truth."""
 
     def run(self, telemetry: Telemetry) -> list[Finding]:
-        """Execute the rule and return findings sorted chronologically."""
-        findings = self.detect(telemetry)
+        """Execute the rule on the telemetry its declaration entitles it to see.
+
+        The restriction is the point, not the sorting. A rule that declares
+        ``channels`` is telling the coverage model which telemetry it depends on, and
+        that statement is only worth printing if the rule cannot then cite something
+        else anyway. Until M18b-1 the two were connected by a check *after* the fact
+        (``findings_respect_declared_channels``), which reports a violation once it has
+        already been produced -- and a fixture that happens not to contain the offending
+        shape reports nothing at all. Here the rule is handed a table it cannot violate:
+        ``detect`` never sees the rows in the first place.
+        """
+        findings = self.detect(self.scoped_telemetry(telemetry))
         return sorted(findings, key=lambda f: f.first_seen)
+
+    def scoped_telemetry(self, telemetry: Telemetry) -> Telemetry:
+        """``telemetry`` with the control table cut down to this rule's channels.
+
+        Only the control table, because it is the only one whose channel is not
+        derivable from the row's own columns: a CloudTrail management row and a
+        Kubernetes audit row fill exactly the same columns and are told apart by
+        ``source`` alone (see :func:`ath.environment.channels.channel_of_control_row`).
+        The process, network and logon tables are handed over untouched -- their
+        channels are evidenced by the columns a row carries, so restricting them would
+        mean deciding that a row with an empty ``remote_url`` is not a network row.
+
+        A rule with no explicit ``channels`` is unaffected, which is every one of the
+        ten Windows rules: their channels are inferred from ``fields_used``, and
+        inferring a scope from column names is exactly the ambiguity this attribute
+        exists to avoid.
+
+        Costs one boolean mask per run, built from the handful of distinct ``source``
+        values rather than per row, and returns ``telemetry`` itself whenever nothing
+        would be dropped -- so the common case copies no frame at all.
+        """
+        # Imported here, not at module scope: `ath.environment.coverage` imports this
+        # module for `Detector`, and importing the package from here at import time
+        # closes that loop. One function-level import is cheaper than splitting the
+        # catalogue to break a cycle that exists only in the import graph.
+        from ath.environment.channels import channel_of_control_row
+
+        if not self.channels:
+            return telemetry
+        controls = telemetry.controls
+        if controls.empty:
+            return telemetry
+
+        sources = controls["source"].astype("string").fillna("")
+        admitted = {
+            value: channel_of_control_row(value) in self.channels
+            for value in sources.unique().tolist()
+        }
+        if all(admitted.values()):
+            return telemetry
+        mask = sources.map(admitted).astype(bool).to_numpy()
+        return dataclasses.replace(
+            telemetry, controls=controls.loc[mask].reset_index(drop=True),
+        )
 
     # -- helper used by every rule to build findings consistently ---------------
 

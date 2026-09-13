@@ -27,16 +27,24 @@ declares.** The tests below each fail on their own:
   so a future catalogue entry that separates them some other way fails here rather than
   being silently unseen by a function whose signature takes only a source.
 
-What this table deliberately does not contain
+What this table contains that M18-9's did not
 ----------------------------------------------
 A Kubernetes authorization-denial burst. AWS-004's predicate is ``decision == "denied"``
 with no platform scope, and the Kubernetes adapter does emit ``denied`` (401/403), so
-twenty-five refused Kubernetes calls in a window would make AWS-004 cite
-``container_audit`` rows while declaring ``cloud_management_activity`` -- the same defect
-AWS-006 had, in a rule M18-9 was not scoped to change. That exposure is *recorded, not
-fixed*, in ``docs/m18-representation-and-cloud-detection-report.md``. It is written down
-here rather than left to be discovered, because a test whose fixture avoids a known
-failure without saying so is worse than no test.
+twenty-five refused Kubernetes calls in a window make AWS-004 cite ``container_audit``
+rows while declaring ``cloud_management_activity`` -- the same defect AWS-006 had, in a
+rule M18-9 was not scoped to change. M18-9 recorded that exposure in
+``docs/m18-representation-and-cloud-detection-report.md`` and left the fixture without
+it, which is the honest version of a fixture that avoids a known failure.
+
+M18b-1 closes it, and not in AWS-004: ``Detector.run`` now hands ``detect`` a control
+table restricted to the rule's declared channels, so the predicate's width stops being
+load-bearing. The burst below is therefore in the fixture, and
+:func:`test_no_registered_rule_cites_a_row_outside_its_declared_channels` fails without
+that change -- demonstrated, not asserted: with ``src/ath/hunting/base.py`` restored to
+e8551e0 the run reports five violations, every one a ``container_audit`` row cited by
+AWS-004 while it declares ``cloud_management_activity``. Five and not thirty because a
+finding carries a bounded sample of its rows; the burst it fired on is all thirty.
 
 Vocabulary is invented (``bandicoot``-numbered services, marsupial identities) for the
 reason ``tests/test_cloud_behaviour_rules.py`` gives at length: fixtures that borrow the
@@ -60,7 +68,7 @@ from ath.environment.channels import (
 )
 from ath.environment.coverage import findings_respect_declared_channels
 from ath.hunting import HuntConfig, run_hunt
-from ath.hunting.base import all_detectors
+from ath.hunting.base import Detector, all_detectors
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_PROCESS
 
 from _builders import at, ctrl, telemetry
@@ -79,6 +87,13 @@ CLOUD_SCRIPT = "kowari_script"
 K8S_ADMIN = "bettong_admin"
 K8S_SUBJECT = "antechinus_agent"
 K8S_AUTOMATION = "planigale_manager"
+K8S_SCANNER = "potoroo_probe"
+
+# The Kubernetes resource kinds the denial burst below is refused on. Five of them,
+# because a burst on one resource is a broken client and a burst across the kinds an
+# attacker enumerates is the behaviour AWS-004 describes -- and because the count is
+# what makes the burst recognisable as the same *shape* the cloud rule was priced on.
+K8S_DENIED_RESOURCES = ("secrets", "pods", "configmaps", "serviceaccounts", "nodes")
 
 
 # ======================================================================================
@@ -264,6 +279,18 @@ def mixed_control_rows() -> list[dict]:
                f"family-{index % 7}-01", 40.0 + index * 0.1, decision="denied")
         for index in range(30)
     ]
+    # -- The same shape on Kubernetes, which no rule in this project declares.
+    # Thirty refusals by one service account across five resource kinds inside three
+    # minutes: above AWS-004's threshold of 25 in 10 minutes in every respect except
+    # the platform. Nothing here should produce a finding -- AWS-004 declares
+    # `cloud_management_activity` and these are `container_audit` rows -- and before
+    # `Detector.run` scoped the table, all thirty were cited by it.
+    rows += [
+        _k8s(K8S_SCANNER, "get",
+             K8S_DENIED_RESOURCES[index % len(K8S_DENIED_RESOURCES)],
+             f"marsupial-object-{index:02d}", 45.0 + index * 0.1, decision="denied")
+        for index in range(30)
+    ]
     return rows
 
 
@@ -351,3 +378,105 @@ def test_a_cited_row_that_is_not_in_the_telemetry_is_a_violation() -> None:
     violations = findings_respect_declared_channels(findings, empty, all_detectors())
     assert violations
     assert {v.reason for v in violations} == {"cited row is not in the telemetry"}
+
+
+# ======================================================================================
+# The invariant by construction: what a rule is *handed*, not what it produced
+# ======================================================================================
+
+
+class _Probe(Detector):
+    """A detector that detects nothing and records the control table it was given.
+
+    Not registered: :func:`ath.hunting.base.register` is global and a test rule in it
+    would appear in every corpus run and every coverage report.
+    """
+
+    rule_id = "PROBE-001"
+    title = "records its input"
+    description = "test double"
+    tables = frozenset({EVENT_CONTROL})
+
+    def __init__(self, channels: frozenset, config=None) -> None:
+        super().__init__(config)
+        self.channels = channels
+        self.seen: list[str] = []
+
+    def detect(self, telemetry) -> list:
+        self.seen = telemetry.controls["source"].tolist()
+        return []
+
+
+def test_a_rule_with_declared_channels_is_handed_only_rows_of_those_channels() -> None:
+    """``detect`` never sees a foreign row, so it cannot cite one however it is written.
+
+    Failure mode: ``Detector.run`` stops scoping (or scopes the wrong table) and every
+    control-plane rule is back to being trusted to filter by platform itself -- which is
+    the assumption AWS-004 broke, silently, for as long as no fixture held the shape.
+    """
+    mixed = telemetry(ctrls=mixed_control_rows())
+    all_sources = mixed.controls["source"].tolist()
+    assert set(all_sources) == {CLOUD_SOURCE, K8S_SOURCE}
+
+    for channel, expected_source in (
+        (TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY, CLOUD_SOURCE),
+        (TelemetryChannel.CONTAINER_AUDIT, K8S_SOURCE),
+    ):
+        probe = _Probe(frozenset({channel}))
+        probe.run(mixed)
+        assert set(probe.seen) == {expected_source}
+        assert len(probe.seen) == all_sources.count(expected_source)
+        # ...and the caller's telemetry is untouched by having been scoped.
+        assert mixed.controls["source"].tolist() == all_sources
+
+
+def test_a_rule_declaring_both_channels_is_handed_both() -> None:
+    """Scoping is a filter, not a partition: declaring both keeps every row.
+
+    Failure mode: the mask is built from the first declared channel only, and a future
+    hybrid rule silently loses half its input.
+    """
+    mixed = telemetry(ctrls=mixed_control_rows())
+    probe = _Probe(frozenset({
+        TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY, TelemetryChannel.CONTAINER_AUDIT,
+    }))
+    probe.run(mixed)
+    assert probe.seen == mixed.controls["source"].tolist()
+
+
+def test_a_rule_without_declared_channels_is_handed_the_whole_table() -> None:
+    """The ten Windows rules infer their channels from ``fields_used`` and are unaffected.
+
+    Failure mode: an empty ``channels`` set is read as "declares nothing, so is entitled
+    to nothing", and every rule that does not set the attribute goes blind.
+    """
+    mixed = telemetry(ctrls=mixed_control_rows())
+    probe = _Probe(frozenset())
+    probe.run(mixed)
+    assert probe.seen == mixed.controls["source"].tolist()
+
+    unscoped = [d for d in all_detectors() if not d.channels]
+    assert unscoped, "no rule infers its channels any more; this test is vacuous"
+    for detector in unscoped:
+        assert detector.scoped_telemetry(mixed) is mixed
+
+
+def test_every_registered_rule_is_scoped_before_detect() -> None:
+    """The property over the whole rule set, on the row the scoping is derived from.
+
+    Failure mode: a new control-plane rule declares a channel the catalogue does not
+    map, every source falls outside it, and the rule is handed an empty table -- or the
+    reverse, a rule whose declaration is never applied because the mask defaulted open.
+    """
+    mixed = telemetry(ctrls=mixed_control_rows())
+    scoped_rules = [d for d in all_detectors() if d.channels]
+    assert scoped_rules
+
+    for detector in scoped_rules:
+        controls = detector.scoped_telemetry(mixed).controls
+        assert not controls.empty, detector.rule_id
+        outside = [
+            source for source in controls["source"].unique().tolist()
+            if channel_of_control_row(source) not in detector.channels
+        ]
+        assert not outside, f"{detector.rule_id} was handed {outside}"
