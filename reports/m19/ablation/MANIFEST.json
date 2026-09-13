@@ -1,0 +1,1032 @@
+{
+  "generated_at": "2026-09-13T03:24:56.035812+00:00",
+  "head": "ffc31d5",
+  "seed": 19,
+  "selection_rule": "attack_data_aws and comiset: every case the corpus produces. synthetic:<incident>: the single case ath.evaluation.incidents.run_incident investigates for that incident (most malicious overlap; most findings for the benign scenario). flaws_cloud: up to 5 cases per leading rule -- the rule of the case's highest-severity, earliest finding -- drawn with one random.Random(19) consumed in ascending rule order over each stratum's case ids sorted ascending; then up to 5 cases per rule that fires on the corpus but leads no case, from the same generator in ascending rule order; plus every case containing a finding from a rule that predates M18-8 (any rule outside ['AWS-003', 'AWS-004', 'AWS-005', 'AWS-006']).",
+  "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
+  "corpora": {
+    "attack_data_aws": {
+      "telemetry_hash": "852972e029a4e5ce0451c6465b8a4e91b65ea613f07e3795a626939132fa5192",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 2347
+      },
+      "findings": 33,
+      "findings_by_rule": {
+        "AWS-003": 1,
+        "AWS-004": 2,
+        "AWS-005": 27,
+        "AWS-006": 3
+      },
+      "cases": 2,
+      "cases_selected": 2,
+      "selection": "every case this corpus produced",
+      "selection_detail": {},
+      "load_seconds": 0.1,
+      "pipeline_seconds": 0.1,
+      "evidence_ids_selected": 37,
+      "finding_ids_selected": 3
+    },
+    "comiset": {
+      "telemetry_hash": "73b0a0eeada82f3026eefa57a3dc5349a33e45cb70b15dba9ba416c7a0d02ee6",
+      "rows": {
+        "process": 15095,
+        "network": 589476,
+        "logon": 6063,
+        "control": 0
+      },
+      "findings": 5,
+      "findings_by_rule": {
+        "ATH-002": 3,
+        "ATH-010": 1,
+        "ATH-012": 1
+      },
+      "cases": 2,
+      "cases_selected": 2,
+      "selection": "every case this corpus produced",
+      "selection_detail": {},
+      "load_seconds": 0.5,
+      "pipeline_seconds": 13.6,
+      "evidence_ids_selected": 3,
+      "finding_ids_selected": 3
+    },
+    "synthetic:INC-001": {
+      "telemetry_hash": "d6e61884e3bb3116fc53d20f0fbb91ab8e536650497026dc30fca7007b50950b",
+      "rows": {
+        "process": 456,
+        "network": 389,
+        "logon": 267,
+        "control": 0
+      },
+      "findings": 13,
+      "findings_by_rule": {
+        "ATH-001": 1,
+        "ATH-002": 2,
+        "ATH-003": 3,
+        "ATH-004": 1,
+        "ATH-005": 1,
+        "ATH-006": 1,
+        "ATH-007": 1,
+        "ATH-008": 1,
+        "ATH-009": 1,
+        "ATH-010": 1
+      },
+      "cases": 1,
+      "cases_selected": 1,
+      "selection": "the case run_incident investigates for this incident",
+      "selection_detail": {
+        "cases_in_corpus": 1
+      },
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.2,
+      "evidence_ids_selected": 31,
+      "finding_ids_selected": 11
+    },
+    "synthetic:INC-002": {
+      "telemetry_hash": "781834ed6d40ddc2097f55ab3b448b4378177f688cb5f9e6f37adaff9915ebec",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 15,
+        "control": 0
+      },
+      "findings": 1,
+      "findings_by_rule": {
+        "ATH-005": 1
+      },
+      "cases": 1,
+      "cases_selected": 1,
+      "selection": "the case run_incident investigates for this incident",
+      "selection_detail": {
+        "cases_in_corpus": 1
+      },
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.0,
+      "evidence_ids_selected": 13,
+      "finding_ids_selected": 1
+    },
+    "synthetic:INC-005": {
+      "telemetry_hash": "92b3dbe586ffaf95af0a4fdb0aaa3fa6657afdd65c0a3b53498d7b4503846d65",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 4
+      },
+      "findings": 2,
+      "findings_by_rule": {
+        "K8S-001": 1,
+        "K8S-002": 1
+      },
+      "cases": 1,
+      "cases_selected": 1,
+      "selection": "the case run_incident investigates for this incident",
+      "selection_detail": {
+        "cases_in_corpus": 1
+      },
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.0,
+      "evidence_ids_selected": 2,
+      "finding_ids_selected": 2
+    },
+    "synthetic:INC-004": {
+      "telemetry_hash": "46ad228dbc8eaff1e4f9d4cf9903ed556f51be41ab022be21ec93215ae91c483",
+      "rows": {
+        "process": 454,
+        "network": 381,
+        "logon": 252,
+        "control": 0
+      },
+      "findings": 4,
+      "findings_by_rule": {
+        "ATH-002": 1,
+        "ATH-003": 1,
+        "ATH-011": 1,
+        "ATH-012": 1
+      },
+      "cases": 1,
+      "cases_selected": 1,
+      "selection": "the case run_incident investigates for this incident",
+      "selection_detail": {
+        "cases_in_corpus": 1
+      },
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.2,
+      "evidence_ids_selected": 6,
+      "finding_ids_selected": 2
+    },
+    "synthetic:INC-003": {
+      "telemetry_hash": "d6ff6f4f8174dd16dd1bc03abc8afab1b3550f850219667131e960a9dfd8fc9d",
+      "rows": {
+        "process": 448,
+        "network": 381,
+        "logon": 252,
+        "control": 0
+      },
+      "findings": 2,
+      "findings_by_rule": {
+        "ATH-002": 1,
+        "ATH-003": 1
+      },
+      "cases": 0,
+      "cases_selected": 0,
+      "selection": "no case was raised for this incident",
+      "selection_detail": {},
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.2,
+      "evidence_ids_selected": 0,
+      "finding_ids_selected": 0
+    },
+    "flaws_cloud": {
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 79424,
+        "control": 1857154
+      },
+      "findings": 1476,
+      "findings_by_rule": {
+        "ATH-005": 36,
+        "AWS-002": 3,
+        "AWS-003": 278,
+        "AWS-004": 1142,
+        "AWS-005": 17
+      },
+      "cases": 281,
+      "cases_selected": 14,
+      "selection": "",
+      "selection_detail": {
+        "seed": 19,
+        "per_rule": 5,
+        "strata_by_leading_rule": {
+          "ATH-005": {
+            "cases_in_stratum": 1,
+            "sampled": [
+              "CASE-005"
+            ]
+          },
+          "AWS-002": {
+            "cases_in_stratum": 3,
+            "sampled": [
+              "CASE-066",
+              "CASE-067",
+              "CASE-118"
+            ]
+          },
+          "AWS-003": {
+            "cases_in_stratum": 129,
+            "sampled": [
+              "CASE-018",
+              "CASE-050",
+              "CASE-143",
+              "CASE-205",
+              "CASE-219"
+            ]
+          },
+          "AWS-004": {
+            "cases_in_stratum": 148,
+            "sampled": [
+              "CASE-065",
+              "CASE-077",
+              "CASE-113",
+              "CASE-122",
+              "CASE-256"
+            ]
+          }
+        },
+        "strata_by_rule_present_but_never_leading": {},
+        "cases_containing_rule": {
+          "ATH-005": 1,
+          "AWS-002": 3,
+          "AWS-003": 194,
+          "AWS-004": 267
+        },
+        "pre_m18_cases": [
+          "CASE-005",
+          "CASE-066",
+          "CASE-067",
+          "CASE-118"
+        ]
+      },
+      "load_seconds": 59.4,
+      "pipeline_seconds": 38.9,
+      "evidence_ids_selected": 269,
+      "finding_ids_selected": 20
+    }
+  },
+  "cases": [
+    {
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-002337",
+        "AWS-004:cloudtrail-control-002337"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-000914",
+        "cloudtrail-control-000918",
+        "cloudtrail-control-000942",
+        "cloudtrail-control-000945",
+        "cloudtrail-control-001108",
+        "cloudtrail-control-001115",
+        "cloudtrail-control-001156",
+        "cloudtrail-control-001160",
+        "cloudtrail-control-001161",
+        "cloudtrail-control-001162",
+        "cloudtrail-control-001165",
+        "cloudtrail-control-001166",
+        "cloudtrail-control-001167",
+        "cloudtrail-control-001168",
+        "cloudtrail-control-001170",
+        "cloudtrail-control-001171",
+        "cloudtrail-control-001181",
+        "cloudtrail-control-001182",
+        "cloudtrail-control-002072",
+        "cloudtrail-control-002074",
+        "cloudtrail-control-002121",
+        "cloudtrail-control-002173",
+        "cloudtrail-control-002189",
+        "cloudtrail-control-002231",
+        "cloudtrail-control-002247",
+        "cloudtrail-control-002261",
+        "cloudtrail-control-002281",
+        "cloudtrail-control-002282",
+        "cloudtrail-control-002283",
+        "cloudtrail-control-002284",
+        "cloudtrail-control-002326",
+        "cloudtrail-control-002337"
+      ],
+      "telemetry_hash": "852972e029a4e5ce0451c6465b8a4e91b65ea613f07e3795a626939132fa5192",
+      "selection": "every case this corpus produced",
+      "labels": {
+        "captures": [
+          "T1526__aws_security_scanner__aws_security_scanner.json",
+          "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json"
+        ],
+        "labelled_technique": ""
+      }
+    },
+    {
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-001224"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-001204",
+        "cloudtrail-control-001219",
+        "cloudtrail-control-001220",
+        "cloudtrail-control-001222",
+        "cloudtrail-control-001224"
+      ],
+      "telemetry_hash": "852972e029a4e5ce0451c6465b8a4e91b65ea613f07e3795a626939132fa5192",
+      "selection": "every case this corpus produced",
+      "labels": {
+        "captures": [
+          "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json"
+        ],
+        "labelled_technique": "T1580"
+      }
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-002"
+      ],
+      "leading_rule": "ATH-002",
+      "finding_ids": [
+        "ATH-002:comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353",
+        "ATH-002:comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+      ],
+      "evidence_ids": [
+        "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353",
+        "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+      ],
+      "telemetry_hash": "73b0a0eeada82f3026eefa57a3dc5349a33e45cb70b15dba9ba416c7a0d02ee6",
+      "selection": "every case this corpus produced",
+      "labels": {}
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "rule_ids": [
+        "ATH-012"
+      ],
+      "leading_rule": "ATH-012",
+      "finding_ids": [
+        "ATH-012:comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+      ],
+      "evidence_ids": [
+        "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+      ],
+      "telemetry_hash": "73b0a0eeada82f3026eefa57a3dc5349a33e45cb70b15dba9ba416c7a0d02ee6",
+      "selection": "every case this corpus produced",
+      "labels": {}
+    },
+    {
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-001",
+        "ATH-002",
+        "ATH-003",
+        "ATH-004",
+        "ATH-005",
+        "ATH-006",
+        "ATH-007",
+        "ATH-008",
+        "ATH-009",
+        "ATH-010"
+      ],
+      "leading_rule": "ATH-004",
+      "finding_ids": [
+        "ATH-001:evt-000357",
+        "ATH-002:evt-000357",
+        "ATH-003:evt-000358",
+        "ATH-003:evt-000481",
+        "ATH-004:evt-000381",
+        "ATH-005:evt-000419",
+        "ATH-006:evt-000457",
+        "ATH-007:evt-000461",
+        "ATH-008:evt-000469",
+        "ATH-009:evt-000355",
+        "ATH-010:evt-000367"
+      ],
+      "evidence_ids": [
+        "evt-000355",
+        "evt-000357",
+        "evt-000358",
+        "evt-000362",
+        "evt-000367",
+        "evt-000370",
+        "evt-000374",
+        "evt-000380",
+        "evt-000381",
+        "evt-000399",
+        "evt-000419",
+        "evt-000421",
+        "evt-000422",
+        "evt-000425",
+        "evt-000427",
+        "evt-000429",
+        "evt-000431",
+        "evt-000432",
+        "evt-000433",
+        "evt-000437",
+        "evt-000438",
+        "evt-000439",
+        "evt-000440",
+        "evt-000442",
+        "evt-000444",
+        "evt-000454",
+        "evt-000457",
+        "evt-000461",
+        "evt-000469",
+        "evt-000481",
+        "evt-000486"
+      ],
+      "telemetry_hash": "d6e61884e3bb3116fc53d20f0fbb91ab8e536650497026dc30fca7007b50950b",
+      "selection": "the case run_incident investigates for this incident",
+      "labels": {
+        "incident_id": "INC-001"
+      }
+    },
+    {
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:cloudtrail-logon-000002"
+      ],
+      "evidence_ids": [
+        "cloudtrail-logon-000002",
+        "cloudtrail-logon-000003",
+        "cloudtrail-logon-000004",
+        "cloudtrail-logon-000005",
+        "cloudtrail-logon-000006",
+        "cloudtrail-logon-000007",
+        "cloudtrail-logon-000008",
+        "cloudtrail-logon-000009",
+        "cloudtrail-logon-000010",
+        "cloudtrail-logon-000011",
+        "cloudtrail-logon-000012",
+        "cloudtrail-logon-000013",
+        "cloudtrail-logon-000014"
+      ],
+      "telemetry_hash": "781834ed6d40ddc2097f55ab3b448b4378177f688cb5f9e6f37adaff9915ebec",
+      "selection": "the case run_incident investigates for this incident",
+      "labels": {
+        "incident_id": "INC-002"
+      }
+    },
+    {
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "K8S-001",
+        "K8S-002"
+      ],
+      "leading_rule": "K8S-002",
+      "finding_ids": [
+        "K8S-001:k8s-control-000003",
+        "K8S-002:k8s-control-000003"
+      ],
+      "evidence_ids": [
+        "k8s-control-000003",
+        "k8s-control-000004"
+      ],
+      "telemetry_hash": "92b3dbe586ffaf95af0a4fdb0aaa3fa6657afdd65c0a3b53498d7b4503846d65",
+      "selection": "the case run_incident investigates for this incident",
+      "labels": {
+        "incident_id": "INC-005"
+      }
+    },
+    {
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-011",
+        "ATH-012"
+      ],
+      "leading_rule": "ATH-012",
+      "finding_ids": [
+        "ATH-011:evt-000922",
+        "ATH-012:evt-000901"
+      ],
+      "evidence_ids": [
+        "evt-000901",
+        "evt-000905",
+        "evt-000909",
+        "evt-000922",
+        "evt-000925",
+        "evt-000927"
+      ],
+      "telemetry_hash": "46ad228dbc8eaff1e4f9d4cf9903ed556f51be41ab022be21ec93215ae91c483",
+      "selection": "the case run_incident investigates for this incident",
+      "labels": {
+        "incident_id": "INC-004"
+      }
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "rule_ids": [
+        "ATH-005"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:cloudtrail-logon-002652"
+      ],
+      "evidence_ids": [
+        "cloudtrail-logon-002652",
+        "cloudtrail-logon-002653",
+        "cloudtrail-logon-002654",
+        "cloudtrail-logon-002655",
+        "cloudtrail-logon-002656",
+        "cloudtrail-logon-002657",
+        "cloudtrail-logon-002658",
+        "cloudtrail-logon-002659",
+        "cloudtrail-logon-002660",
+        "cloudtrail-logon-002661",
+        "cloudtrail-logon-002662",
+        "cloudtrail-logon-002663",
+        "cloudtrail-logon-002664",
+        "cloudtrail-logon-002665",
+        "cloudtrail-logon-002666",
+        "cloudtrail-logon-002667",
+        "cloudtrail-logon-002668",
+        "cloudtrail-logon-002669",
+        "cloudtrail-logon-002670",
+        "cloudtrail-logon-002671",
+        "cloudtrail-logon-002672",
+        "cloudtrail-logon-002673",
+        "cloudtrail-logon-002674",
+        "cloudtrail-logon-002675",
+        "cloudtrail-logon-002676",
+        "cloudtrail-logon-002683",
+        "cloudtrail-logon-002685",
+        "cloudtrail-logon-002689",
+        "cloudtrail-logon-002696",
+        "cloudtrail-logon-002698",
+        "cloudtrail-logon-002700",
+        "cloudtrail-logon-002709",
+        "cloudtrail-logon-002713",
+        "cloudtrail-logon-002727",
+        "cloudtrail-logon-002730",
+        "cloudtrail-logon-002734",
+        "cloudtrail-logon-002738",
+        "cloudtrail-logon-002739",
+        "cloudtrail-logon-002746",
+        "cloudtrail-logon-002749",
+        "cloudtrail-logon-002754",
+        "cloudtrail-logon-002760",
+        "cloudtrail-logon-002763",
+        "cloudtrail-logon-002764",
+        "cloudtrail-logon-002772",
+        "cloudtrail-logon-002778",
+        "cloudtrail-logon-002779",
+        "cloudtrail-logon-002786",
+        "cloudtrail-logon-002791",
+        "cloudtrail-logon-002809",
+        "cloudtrail-logon-002811",
+        "cloudtrail-logon-002815",
+        "cloudtrail-logon-002820",
+        "cloudtrail-logon-002822"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by ATH-005",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "rule_ids": [
+        "AWS-003"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-110341"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-110341",
+        "cloudtrail-control-110344",
+        "cloudtrail-control-110347",
+        "cloudtrail-control-110350",
+        "cloudtrail-control-110351",
+        "cloudtrail-control-110352",
+        "cloudtrail-control-110353",
+        "cloudtrail-control-110355",
+        "cloudtrail-control-110356",
+        "cloudtrail-control-110357"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-003",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-189268",
+        "AWS-004:cloudtrail-control-189271"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-189268",
+        "cloudtrail-control-189271",
+        "cloudtrail-control-189274",
+        "cloudtrail-control-189276",
+        "cloudtrail-control-189278",
+        "cloudtrail-control-189279",
+        "cloudtrail-control-189280",
+        "cloudtrail-control-189281",
+        "cloudtrail-control-189286",
+        "cloudtrail-control-189287",
+        "cloudtrail-control-189290",
+        "cloudtrail-control-189291",
+        "cloudtrail-control-189292",
+        "cloudtrail-control-189293",
+        "cloudtrail-control-189294",
+        "cloudtrail-control-189300",
+        "cloudtrail-control-189301",
+        "cloudtrail-control-189302",
+        "cloudtrail-control-189303",
+        "cloudtrail-control-189304",
+        "cloudtrail-control-189305",
+        "cloudtrail-control-189312",
+        "cloudtrail-control-189320",
+        "cloudtrail-control-189322",
+        "cloudtrail-control-189323",
+        "cloudtrail-control-189330",
+        "cloudtrail-control-189336",
+        "cloudtrail-control-189350",
+        "cloudtrail-control-189352",
+        "cloudtrail-control-189358",
+        "cloudtrail-control-189359",
+        "cloudtrail-control-189368",
+        "cloudtrail-control-189370",
+        "cloudtrail-control-189378"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-003",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-224294",
+        "AWS-004:cloudtrail-control-224294"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-224294",
+        "cloudtrail-control-224300",
+        "cloudtrail-control-224346",
+        "cloudtrail-control-224351",
+        "cloudtrail-control-224356",
+        "cloudtrail-control-224384",
+        "cloudtrail-control-224412",
+        "cloudtrail-control-224446",
+        "cloudtrail-control-224468",
+        "cloudtrail-control-224469",
+        "cloudtrail-control-224532",
+        "cloudtrail-control-224570",
+        "cloudtrail-control-224571",
+        "cloudtrail-control-224660",
+        "cloudtrail-control-224696",
+        "cloudtrail-control-224922",
+        "cloudtrail-control-225017",
+        "cloudtrail-control-225128",
+        "cloudtrail-control-225208",
+        "cloudtrail-control-225228",
+        "cloudtrail-control-225236",
+        "cloudtrail-control-225366",
+        "cloudtrail-control-225510",
+        "cloudtrail-control-225648",
+        "cloudtrail-control-225649",
+        "cloudtrail-control-225650",
+        "cloudtrail-control-225651",
+        "cloudtrail-control-225652",
+        "cloudtrail-control-225659"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-004",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "rule_ids": [
+        "AWS-002"
+      ],
+      "leading_rule": "AWS-002",
+      "finding_ids": [
+        "AWS-002:cloudtrail-control-226796"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-226796"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-002",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "rule_ids": [
+        "AWS-002"
+      ],
+      "leading_rule": "AWS-002",
+      "finding_ids": [
+        "AWS-002:cloudtrail-control-226797"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-226797"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-002",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-238972"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-238972",
+        "cloudtrail-control-238973",
+        "cloudtrail-control-238974",
+        "cloudtrail-control-238975",
+        "cloudtrail-control-238977",
+        "cloudtrail-control-238978",
+        "cloudtrail-control-238979",
+        "cloudtrail-control-238980",
+        "cloudtrail-control-238981",
+        "cloudtrail-control-238982",
+        "cloudtrail-control-238983",
+        "cloudtrail-control-238984",
+        "cloudtrail-control-238986",
+        "cloudtrail-control-238987",
+        "cloudtrail-control-239755"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-004",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-113",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-323923"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-323923",
+        "cloudtrail-control-323928",
+        "cloudtrail-control-323933",
+        "cloudtrail-control-323942",
+        "cloudtrail-control-323974"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-004",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "rule_ids": [
+        "AWS-002"
+      ],
+      "leading_rule": "AWS-002",
+      "finding_ids": [
+        "AWS-002:cloudtrail-control-1576322"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1576322"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-002",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-1649380"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1649380",
+        "cloudtrail-control-1649381",
+        "cloudtrail-control-1649382",
+        "cloudtrail-control-1649383",
+        "cloudtrail-control-1649386",
+        "cloudtrail-control-1649387",
+        "cloudtrail-control-1649388",
+        "cloudtrail-control-1649390",
+        "cloudtrail-control-1649391",
+        "cloudtrail-control-1649392",
+        "cloudtrail-control-1649393",
+        "cloudtrail-control-1649394",
+        "cloudtrail-control-1649395"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-004",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-143",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1678048",
+        "AWS-004:cloudtrail-control-1678074"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1678048",
+        "cloudtrail-control-1678050",
+        "cloudtrail-control-1678058",
+        "cloudtrail-control-1678059",
+        "cloudtrail-control-1678063",
+        "cloudtrail-control-1678064",
+        "cloudtrail-control-1678068",
+        "cloudtrail-control-1678070",
+        "cloudtrail-control-1678072",
+        "cloudtrail-control-1678074",
+        "cloudtrail-control-1678075",
+        "cloudtrail-control-1678076",
+        "cloudtrail-control-1678077",
+        "cloudtrail-control-1678078",
+        "cloudtrail-control-1678079",
+        "cloudtrail-control-1678080",
+        "cloudtrail-control-1678081",
+        "cloudtrail-control-1678082",
+        "cloudtrail-control-1678083",
+        "cloudtrail-control-1678084",
+        "cloudtrail-control-1678085",
+        "cloudtrail-control-1678086",
+        "cloudtrail-control-1678087",
+        "cloudtrail-control-1678088",
+        "cloudtrail-control-1678089",
+        "cloudtrail-control-1678090",
+        "cloudtrail-control-1678091",
+        "cloudtrail-control-1678092",
+        "cloudtrail-control-1678093",
+        "cloudtrail-control-1678097",
+        "cloudtrail-control-1678099"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-003",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1760284",
+        "AWS-004:cloudtrail-control-1760664"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1760284",
+        "cloudtrail-control-1760328",
+        "cloudtrail-control-1760344",
+        "cloudtrail-control-1760376",
+        "cloudtrail-control-1760408",
+        "cloudtrail-control-1760425",
+        "cloudtrail-control-1760518",
+        "cloudtrail-control-1760534",
+        "cloudtrail-control-1760582",
+        "cloudtrail-control-1760662",
+        "cloudtrail-control-1760663",
+        "cloudtrail-control-1760664",
+        "cloudtrail-control-1760670",
+        "cloudtrail-control-1760671",
+        "cloudtrail-control-1760846"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-003",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-219",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1776510",
+        "AWS-004:cloudtrail-control-1776510"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1776510",
+        "cloudtrail-control-1776511",
+        "cloudtrail-control-1776513",
+        "cloudtrail-control-1776514",
+        "cloudtrail-control-1776515",
+        "cloudtrail-control-1776516",
+        "cloudtrail-control-1776517",
+        "cloudtrail-control-1776518",
+        "cloudtrail-control-1776519",
+        "cloudtrail-control-1776520",
+        "cloudtrail-control-1776521",
+        "cloudtrail-control-1776522",
+        "cloudtrail-control-1776523",
+        "cloudtrail-control-1776524",
+        "cloudtrail-control-1776525",
+        "cloudtrail-control-1776526",
+        "cloudtrail-control-1776527",
+        "cloudtrail-control-1776528",
+        "cloudtrail-control-1776529",
+        "cloudtrail-control-1776530",
+        "cloudtrail-control-1776531",
+        "cloudtrail-control-1776532",
+        "cloudtrail-control-1776545",
+        "cloudtrail-control-1776552",
+        "cloudtrail-control-1776556",
+        "cloudtrail-control-1776571",
+        "cloudtrail-control-1776597",
+        "cloudtrail-control-1776608"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-003",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1817072",
+        "AWS-004:cloudtrail-control-1817217"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1817072",
+        "cloudtrail-control-1817082",
+        "cloudtrail-control-1817085",
+        "cloudtrail-control-1817088",
+        "cloudtrail-control-1817159",
+        "cloudtrail-control-1817175",
+        "cloudtrail-control-1817217",
+        "cloudtrail-control-1817246",
+        "cloudtrail-control-1817317",
+        "cloudtrail-control-1817318",
+        "cloudtrail-control-1817321",
+        "cloudtrail-control-1817322",
+        "cloudtrail-control-1817323",
+        "cloudtrail-control-1817324",
+        "cloudtrail-control-1817351",
+        "cloudtrail-control-1817352",
+        "cloudtrail-control-1817356",
+        "cloudtrail-control-1817358",
+        "cloudtrail-control-1817359",
+        "cloudtrail-control-1817361",
+        "cloudtrail-control-1817365",
+        "cloudtrail-control-1817368",
+        "cloudtrail-control-1817369",
+        "cloudtrail-control-1817371",
+        "cloudtrail-control-1817372",
+        "cloudtrail-control-1817373",
+        "cloudtrail-control-1817374",
+        "cloudtrail-control-1817375",
+        "cloudtrail-control-1817376",
+        "cloudtrail-control-1817377",
+        "cloudtrail-control-1817378",
+        "cloudtrail-control-1817466"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample: up to 5 cases led by AWS-004",
+      "labels": {}
+    }
+  ]
+}
