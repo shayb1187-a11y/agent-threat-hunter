@@ -1,0 +1,5948 @@
+{
+  "generated_at": "2026-09-13T23:00:08.473225+00:00",
+  "head": "cf4d1e2",
+  "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
+  "run_health": {
+    "B": {
+      "rows": 30,
+      "degraded": 6,
+      "by_kind": {
+        "http_413_request_too_large": 6
+      }
+    },
+    "C": {
+      "rows": 30,
+      "degraded": 17,
+      "by_kind": {
+        "http_400_request_rejected": 17
+      }
+    },
+    "note": "MEASURED: 17 of arm C's 30 rows degraded on HTTP 400, a status M19 never saw. The status text the client records is generic, so the cause was established by one independent probe of the endpoint after the run -- a 16-token request, no row re-run -- which returned 'invalid_request_error: Your credit balance is too low to access the Anthropic API'. The failures are ordered in time rather than by case: everything the run attempted after flaws_cloud repeat 1 failed, and nothing before it did. VERIFIED: the account's credit was exhausted mid-run. This is a property of the account on the day, not of arm C, of the crew architecture, or of any case. The rows are kept exactly as they came out and are never re-run; every arm C figure is therefore reported twice -- over all three repeats, and over the repeats whose model answered -- and the arm C half of questions (c), (d) and (e) is INCONCLUSIVE at three repeats per case."
+  },
+  "selection": [
+    {
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "stratum": "B_degraded"
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "stratum": "B_degraded"
+    },
+    {
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "stratum": "C_planner_choice"
+    },
+    {
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "stratum": "agreed_easy"
+    },
+    {
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "stratum": "agreed_easy"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "stratum": "agreed_easy"
+    }
+  ],
+  "decision_rule": {
+    "threshold_unsupported_claims": 4.4091,
+    "second_condition": ">= 1 HYPOTHESIS citing evidence arm A's accepted claims did not cite",
+    "arm_A_reference": "reports/m19/ablation/arm_A.json (the M19 row per case)",
+    "verification": {
+      "reproduced": true,
+      "rows_checked": 20,
+      "threshold": 4.4091,
+      "note": "the scorer was run on M19's committed arm_B and arm_C rows for these ten cases and reproduced GRADING.json's vii_decision_rule.per_case fields exactly. M19's numbers are read, never recomputed into the report."
+    }
+  },
+  "m19_identity_of_arm_A": {
+    "compared": 10,
+    "identical": true,
+    "differences": [],
+    "note": "wall seconds and wall-clock timestamps are excluded; every claim, tool call, plan-log line, budget and score is included"
+  },
+  "per_case": [
+    {
+      "case": "synthetic:INC-004/CASE-001",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "stratum": "B_unique",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 2,
+        "inferences": 3,
+        "hypotheses": 0,
+        "tool_calls": 6,
+        "tokens": null,
+        "wall_seconds": 0.014,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 6,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 8,
+            "inferences": 3,
+            "hypotheses": 3,
+            "tool_calls": 8,
+            "tokens": 7214,
+            "wall_seconds": 44.405,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 8,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": true,
+            "hyp_cites_evidence_A_claims_did_not": true
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 8,
+              "tokens": 6948,
+              "wall_seconds": 41.461,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 8,
+              "tokens": 7278,
+              "wall_seconds": 46.623,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 8,
+              "tokens": 6970,
+              "wall_seconds": 41.013,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 3,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 3,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 3,
+            "new_evidence_found": 3,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 6948,
+              "median": 6970,
+              "max": 7278,
+              "values": [
+                6948,
+                7278,
+                6970
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 41.013,
+              "median": 41.461,
+              "max": 46.623,
+              "values": [
+                41.461,
+                46.623,
+                41.013
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 6,
+            "facts": 2
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 2,
+            "inferences": 5,
+            "hypotheses": 4,
+            "tool_calls": 6,
+            "tokens": 2101,
+            "wall_seconds": 18.181,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 6,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 6,
+              "hypotheses": 3,
+              "tool_calls": 6,
+              "tokens": 2073,
+              "wall_seconds": 16.936,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 6,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 5,
+              "hypotheses": 4,
+              "tool_calls": 6,
+              "tokens": 2127,
+              "wall_seconds": 17.076,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 6,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 6,
+              "hypotheses": 3,
+              "tool_calls": 6,
+              "tokens": 2217,
+              "wall_seconds": 18.689,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 6,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 4,
+              "values": [
+                3,
+                4,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 5,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                5,
+                6
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 4,
+              "values": [
+                3,
+                4,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 2073,
+              "median": 2127,
+              "max": 2217,
+              "values": [
+                2073,
+                2127,
+                2217
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 16.936,
+              "median": 17.076,
+              "max": 18.689,
+              "values": [
+                16.936,
+                17.076,
+                18.689
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 6,
+            "facts": 2
+          }
+        }
+      }
+    },
+    {
+      "case": "flaws_cloud/CASE-018",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "stratum": "B_unique",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 10,
+        "inferences": 3,
+        "hypotheses": 0,
+        "tool_calls": 3,
+        "tokens": null,
+        "wall_seconds": 0.168,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 3,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 6,
+            "inferences": 3,
+            "hypotheses": 3,
+            "tool_calls": 7,
+            "tokens": 159768,
+            "wall_seconds": 54.525,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 7,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": true,
+            "hyp_cites_evidence_A_claims_did_not": true
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 7,
+              "tokens": 159919,
+              "wall_seconds": 69.255,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 2,
+              "hypotheses": 4,
+              "tool_calls": 7,
+              "tokens": 159753,
+              "wall_seconds": 52.925,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 7,
+              "tokens": 158852,
+              "wall_seconds": 43.579,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 3,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 3,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 3,
+            "new_evidence_found": 3,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 4,
+              "values": [
+                2,
+                4,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 4,
+              "values": [
+                4,
+                2,
+                3
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 4,
+              "values": [
+                2,
+                4,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 158852,
+              "median": 159753,
+              "max": 159919,
+              "values": [
+                159919,
+                159753,
+                158852
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 43.579,
+              "median": 52.925,
+              "max": 69.255,
+              "values": [
+                69.255,
+                52.925,
+                43.579
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 10
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 10,
+            "inferences": 6,
+            "hypotheses": 3,
+            "tool_calls": 3,
+            "tokens": 3566,
+            "wall_seconds": 28.298,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 3,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 10,
+              "inferences": 7,
+              "hypotheses": 2,
+              "tool_calls": 3,
+              "tokens": 3797,
+              "wall_seconds": 30.224,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 10,
+              "inferences": 3,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.7,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 10,
+              "inferences": 3,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.635,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 2,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 2
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 1,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 1,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 10,
+              "median": 10,
+              "max": 10,
+              "values": [
+                10,
+                10,
+                10
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 7,
+              "values": [
+                7,
+                3,
+                3
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 2,
+              "values": [
+                2,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tokens": {
+              "n": 1,
+              "min": 3797,
+              "median": 3797,
+              "max": 3797,
+              "values": [
+                3797,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.635,
+              "median": 0.7,
+              "max": 30.224,
+              "values": [
+                30.224,
+                0.7,
+                0.635
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 10
+          }
+        }
+      }
+    },
+    {
+      "case": "flaws_cloud/CASE-050",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "stratum": "B_unique",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 40,
+        "inferences": 4,
+        "hypotheses": 0,
+        "tool_calls": 5,
+        "tokens": null,
+        "wall_seconds": 0.398,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 5,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 7,
+            "inferences": 4,
+            "hypotheses": 2,
+            "tool_calls": 8,
+            "tokens": 161524,
+            "wall_seconds": 58.293,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 8,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": true,
+            "hyp_cites_evidence_A_claims_did_not": true
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 8,
+              "tokens": 160480,
+              "wall_seconds": 39.974,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 8,
+              "tokens": 161536,
+              "wall_seconds": 55.468,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 8,
+              "tokens": 161213,
+              "wall_seconds": 51.822,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 3,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 3,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 3,
+            "new_evidence_found": 3,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 4,
+              "values": [
+                4,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 160480,
+              "median": 161213,
+              "max": 161536,
+              "values": [
+                160480,
+                161536,
+                161213
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 39.974,
+              "median": 51.822,
+              "max": 55.468,
+              "values": [
+                39.974,
+                55.468,
+                51.822
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 5,
+            "facts": 40
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 40,
+            "inferences": 8,
+            "hypotheses": 2,
+            "tool_calls": 5,
+            "tokens": 7318,
+            "wall_seconds": 44.417,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 5,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 40,
+              "inferences": 8,
+              "hypotheses": 2,
+              "tool_calls": 5,
+              "tokens": 6652,
+              "wall_seconds": 35.546,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 40,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 5,
+              "tokens": null,
+              "wall_seconds": 0.965,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 40,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 5,
+              "tokens": null,
+              "wall_seconds": 0.873,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 2,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 2
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 1,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 1,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 40,
+              "median": 40,
+              "max": 40,
+              "values": [
+                40,
+                40,
+                40
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 8,
+              "values": [
+                8,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 2,
+              "values": [
+                2,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "tokens": {
+              "n": 1,
+              "min": 6652,
+              "median": 6652,
+              "max": 6652,
+              "values": [
+                6652,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.873,
+              "median": 0.965,
+              "max": 35.546,
+              "values": [
+                35.546,
+                0.965,
+                0.873
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 5,
+            "facts": 40
+          }
+        }
+      }
+    },
+    {
+      "case": "flaws_cloud/CASE-065",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "stratum": "B_unique",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 33,
+        "inferences": 4,
+        "hypotheses": 0,
+        "tool_calls": 5,
+        "tokens": null,
+        "wall_seconds": 0.466,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 5,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 7,
+            "inferences": 3,
+            "hypotheses": 3,
+            "tool_calls": 8,
+            "tokens": 77865,
+            "wall_seconds": 54.544,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 8,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": true,
+            "hyp_cites_evidence_A_claims_did_not": true
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 8,
+              "tokens": 77726,
+              "wall_seconds": 53.267,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 8,
+              "tokens": 77789,
+              "wall_seconds": 51.543,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 7,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 8,
+              "tokens": 77946,
+              "wall_seconds": 53.059,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": true,
+              "hyp_cites_evidence_A_claims_did_not": true,
+              "hyp_cites_evidence_A_never_touched": true,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 3,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 3,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 3,
+            "new_evidence_found": 3,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 3,
+              "values": [
+                2,
+                3,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 4,
+              "values": [
+                4,
+                3,
+                3
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 3,
+              "values": [
+                2,
+                3,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 77726,
+              "median": 77789,
+              "max": 77946,
+              "values": [
+                77726,
+                77789,
+                77946
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 51.543,
+              "median": 53.059,
+              "max": 53.267,
+              "values": [
+                53.267,
+                51.543,
+                53.059
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 5,
+            "facts": 33
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 33,
+            "inferences": 8,
+            "hypotheses": 2,
+            "tool_calls": 5,
+            "tokens": 6393,
+            "wall_seconds": 39.863,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 5,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 33,
+              "inferences": 10,
+              "hypotheses": 0,
+              "tool_calls": 5,
+              "tokens": 6476,
+              "wall_seconds": 38.611,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 33,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 5,
+              "tokens": null,
+              "wall_seconds": 0.73,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 33,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 5,
+              "tokens": null,
+              "wall_seconds": 0.789,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 5,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 2,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 2
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 1,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": true
+            },
+            "hypotheses": {
+              "n": 1,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 33,
+              "median": 33,
+              "max": 33,
+              "values": [
+                33,
+                33,
+                33
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 10,
+              "values": [
+                10,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "tokens": {
+              "n": 1,
+              "min": 6476,
+              "median": 6476,
+              "max": 6476,
+              "values": [
+                6476,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.73,
+              "median": 0.789,
+              "max": 38.611,
+              "values": [
+                38.611,
+                0.73,
+                0.789
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 5,
+            "facts": 33
+          }
+        }
+      }
+    },
+    {
+      "case": "comiset/CASE-001",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "stratum": "B_degraded",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 6,
+        "inferences": 5,
+        "hypotheses": 0,
+        "tool_calls": 8,
+        "tokens": null,
+        "wall_seconds": 0.267,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 8,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 8,
+            "inferences": 0,
+            "hypotheses": 0,
+            "tool_calls": 8,
+            "tokens": 2992,
+            "wall_seconds": 28.939,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": true,
+            "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 8,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": 3183,
+              "wall_seconds": 28.469,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": 3431,
+              "wall_seconds": 31.058,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 8,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": 3394,
+              "wall_seconds": 33.352,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 8,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 3,
+            "of": 3,
+            "by_kind": {
+              "http_413_request_too_large": 3
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate"
+            ]
+          },
+          "undegraded": {
+            "repeats": 0,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": null,
+              "tool_calls_served": null,
+              "facts": null,
+              "hypotheses": null
+            },
+            "hypotheses": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": []
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 3183,
+              "median": 3394,
+              "max": 3431,
+              "values": [
+                3183,
+                3431,
+                3394
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 28.469,
+              "median": 31.058,
+              "max": 33.352,
+              "values": [
+                28.469,
+                31.058,
+                33.352
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 8,
+            "facts": 6
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 6,
+            "inferences": 9,
+            "hypotheses": 2,
+            "tool_calls": 8,
+            "tokens": 3850,
+            "wall_seconds": 25.331,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 8,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 5,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": null,
+              "wall_seconds": 0.85,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 8,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 5,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": null,
+              "wall_seconds": 0.982,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 8,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 5,
+              "hypotheses": 0,
+              "tool_calls": 8,
+              "tokens": null,
+              "wall_seconds": 0.711,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 8,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 3,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 3
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 0,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": null,
+              "tool_calls_served": null,
+              "facts": null,
+              "hypotheses": null
+            },
+            "hypotheses": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": []
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "tokens": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": [
+                null,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.711,
+              "median": 0.85,
+              "max": 0.982,
+              "values": [
+                0.85,
+                0.982,
+                0.711
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 8,
+            "facts": 6
+          }
+        }
+      }
+    },
+    {
+      "case": "comiset/CASE-002",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "stratum": "B_degraded",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 2,
+        "inferences": 2,
+        "hypotheses": 0,
+        "tool_calls": 3,
+        "tokens": null,
+        "wall_seconds": 0.14,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 3,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 6,
+            "inferences": 0,
+            "hypotheses": 0,
+            "tool_calls": 6,
+            "tokens": 3389,
+            "wall_seconds": 34.272,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": true,
+            "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 6,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 6,
+              "tokens": 3279,
+              "wall_seconds": 30.625,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 6,
+              "tokens": 3152,
+              "wall_seconds": 30.456,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 0,
+              "hypotheses": 0,
+              "tool_calls": 6,
+              "tokens": 3283,
+              "wall_seconds": 31.732,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 3,
+            "of": 3,
+            "by_kind": {
+              "http_413_request_too_large": 3
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate"
+            ]
+          },
+          "undegraded": {
+            "repeats": 0,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": null,
+              "tool_calls_served": null,
+              "facts": null,
+              "hypotheses": null
+            },
+            "hypotheses": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": []
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 3152,
+              "median": 3279,
+              "max": 3283,
+              "values": [
+                3279,
+                3152,
+                3283
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 30.456,
+              "median": 30.625,
+              "max": 31.732,
+              "values": [
+                30.625,
+                30.456,
+                31.732
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 2,
+            "inferences": 4,
+            "hypotheses": 4,
+            "tool_calls": 3,
+            "tokens": 2774,
+            "wall_seconds": 24.322,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 3,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.536,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.58,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.594,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 3,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 3
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 0,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": null,
+              "tool_calls_served": null,
+              "facts": null,
+              "hypotheses": null
+            },
+            "hypotheses": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": []
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tokens": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": [
+                null,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.536,
+              "median": 0.58,
+              "max": 0.594,
+              "values": [
+                0.536,
+                0.58,
+                0.594
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        }
+      }
+    },
+    {
+      "case": "synthetic:INC-001/CASE-001",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "stratum": "C_planner_choice",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 2,
+        "rejected_claims": 0,
+        "facts": 20,
+        "inferences": 28,
+        "hypotheses": 2,
+        "tool_calls": 43,
+        "tokens": null,
+        "wall_seconds": 0.071,
+        "planner_multi_candidate_steps": 3,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 43,
+        "specialists_run": 4,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 19,
+            "inferences": 5,
+            "hypotheses": 1,
+            "tool_calls": 19,
+            "tokens": 13953,
+            "wall_seconds": 75.487,
+            "planner_multi_candidate_steps": 8,
+            "planner_chosen_by_model": 8,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 8 of 8 step(s) that had more than one candidate",
+            "tool_calls_served": 19,
+            "specialists_run": 1,
+            "status": "step_limit",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 19,
+              "inferences": 5,
+              "hypotheses": 1,
+              "tool_calls": 19,
+              "tokens": 13140,
+              "wall_seconds": 66.45,
+              "planner_multi_candidate_steps": 8,
+              "planner_chosen_by_model": 8,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 8 of 8 step(s) that had more than one candidate",
+              "tool_calls_served": 19,
+              "specialists_run": 1,
+              "status": "step_limit",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 19,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 19,
+              "tokens": 13127,
+              "wall_seconds": 64.233,
+              "planner_multi_candidate_steps": 8,
+              "planner_chosen_by_model": 8,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 8 of 8 step(s) that had more than one candidate",
+              "tool_calls_served": 19,
+              "specialists_run": 1,
+              "status": "step_limit",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 19,
+              "inferences": 6,
+              "hypotheses": 0,
+              "tool_calls": 19,
+              "tokens": 13434,
+              "wall_seconds": 68.561,
+              "planner_multi_candidate_steps": 8,
+              "planner_chosen_by_model": 8,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 8 of 8 step(s) that had more than one candidate",
+              "tool_calls_served": 19,
+              "specialists_run": 1,
+              "status": "step_limit",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 1,
+              "max": 2,
+              "values": [
+                1,
+                2,
+                0
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 19,
+              "median": 19,
+              "max": 19,
+              "values": [
+                19,
+                19,
+                19
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 5,
+              "max": 6,
+              "values": [
+                5,
+                4,
+                6
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 1,
+              "max": 2,
+              "values": [
+                1,
+                2,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 19,
+              "median": 19,
+              "max": 19,
+              "values": [
+                19,
+                19,
+                19
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 13127,
+              "median": 13140,
+              "max": 13434,
+              "values": [
+                13140,
+                13127,
+                13434
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 64.233,
+              "median": 66.45,
+              "max": 68.561,
+              "values": [
+                66.45,
+                64.233,
+                68.561
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 8,
+              "median": 8,
+              "max": 8,
+              "values": [
+                8,
+                8,
+                8
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 43,
+            "facts": 20
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 2,
+            "rejected_claims": 0,
+            "facts": 20,
+            "inferences": 29,
+            "hypotheses": 4,
+            "tool_calls": 43,
+            "tokens": 10086,
+            "wall_seconds": 45.481,
+            "planner_multi_candidate_steps": 3,
+            "planner_chosen_by_model": 3,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 3 of 3 step(s) that had more than one candidate",
+            "tool_calls_served": 40,
+            "specialists_run": 4,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 2,
+              "rejected_claims": 0,
+              "facts": 20,
+              "inferences": 29,
+              "hypotheses": 4,
+              "tool_calls": 43,
+              "tokens": 10145,
+              "wall_seconds": 45.515,
+              "planner_multi_candidate_steps": 3,
+              "planner_chosen_by_model": 3,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 3 of 3 step(s) that had more than one candidate",
+              "tool_calls_served": 40,
+              "specialists_run": 4,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 2,
+              "rejected_claims": 0,
+              "facts": 20,
+              "inferences": 28,
+              "hypotheses": 5,
+              "tool_calls": 43,
+              "tokens": 10491,
+              "wall_seconds": 51.207,
+              "planner_multi_candidate_steps": 3,
+              "planner_chosen_by_model": 3,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 3 of 3 step(s) that had more than one candidate",
+              "tool_calls_served": 40,
+              "specialists_run": 4,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 2,
+              "rejected_claims": 0,
+              "facts": 20,
+              "inferences": 30,
+              "hypotheses": 3,
+              "tool_calls": 43,
+              "tokens": 9632,
+              "wall_seconds": 39.712,
+              "planner_multi_candidate_steps": 3,
+              "planner_chosen_by_model": 3,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 3 of 3 step(s) that had more than one candidate",
+              "tool_calls_served": 40,
+              "specialists_run": 4,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 4,
+              "max": 5,
+              "values": [
+                4,
+                5,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 20,
+              "median": 20,
+              "max": 20,
+              "values": [
+                20,
+                20,
+                20
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 28,
+              "median": 29,
+              "max": 30,
+              "values": [
+                29,
+                28,
+                30
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 4,
+              "max": 5,
+              "values": [
+                4,
+                5,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 43,
+              "median": 43,
+              "max": 43,
+              "values": [
+                43,
+                43,
+                43
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 9632,
+              "median": 10145,
+              "max": 10491,
+              "values": [
+                10145,
+                10491,
+                9632
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 39.712,
+              "median": 45.515,
+              "max": 51.207,
+              "values": [
+                45.515,
+                51.207,
+                39.712
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 43,
+            "facts": 20
+          }
+        }
+      }
+    },
+    {
+      "case": "attack_data_aws/CASE-002",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "stratum": "agreed_easy",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 5,
+        "inferences": 2,
+        "hypotheses": 0,
+        "tool_calls": 2,
+        "tokens": null,
+        "wall_seconds": 0.014,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 2,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 4,
+            "inferences": 3,
+            "hypotheses": 3,
+            "tool_calls": 6,
+            "tokens": 5455,
+            "wall_seconds": 37.672,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 6,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 4,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 6,
+              "tokens": 6134,
+              "wall_seconds": 45.007,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 4,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 6,
+              "tokens": 5581,
+              "wall_seconds": 39.136,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 4,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 6,
+              "tokens": 5715,
+              "wall_seconds": 41.978,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 6,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 4,
+              "values": [
+                4,
+                4,
+                4
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 4,
+              "values": [
+                4,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 5581,
+              "median": 5715,
+              "max": 6134,
+              "values": [
+                6134,
+                5581,
+                5715
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 39.136,
+              "median": 41.978,
+              "max": 45.007,
+              "values": [
+                45.007,
+                39.136,
+                41.978
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 2,
+            "facts": 5
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 5,
+            "inferences": 5,
+            "hypotheses": 3,
+            "tool_calls": 2,
+            "tokens": 2371,
+            "wall_seconds": 19.746,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 2,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 5,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 2,
+              "tokens": null,
+              "wall_seconds": 0.455,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 2,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 5,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 2,
+              "tokens": null,
+              "wall_seconds": 0.452,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 2,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 5,
+              "inferences": 2,
+              "hypotheses": 0,
+              "tool_calls": 2,
+              "tokens": null,
+              "wall_seconds": 0.489,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 2,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 3,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 3
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 0,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": null,
+              "tool_calls_served": null,
+              "facts": null,
+              "hypotheses": null
+            },
+            "hypotheses": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": []
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "tokens": {
+              "n": 0,
+              "min": null,
+              "median": null,
+              "max": null,
+              "values": [
+                null,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.452,
+              "median": 0.455,
+              "max": 0.489,
+              "values": [
+                0.455,
+                0.452,
+                0.489
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 2,
+            "facts": 5
+          }
+        }
+      }
+    },
+    {
+      "case": "synthetic:INC-002/CASE-001",
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "stratum": "agreed_easy",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 2,
+        "inferences": 4,
+        "hypotheses": 0,
+        "tool_calls": 3,
+        "tokens": null,
+        "wall_seconds": 0.002,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 3,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 6,
+            "inferences": 6,
+            "hypotheses": 0,
+            "tool_calls": 7,
+            "tokens": 7455,
+            "wall_seconds": 47.071,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 7,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 5,
+              "hypotheses": 1,
+              "tool_calls": 7,
+              "tokens": 7179,
+              "wall_seconds": 42.499,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 7,
+              "tokens": 6911,
+              "wall_seconds": 39.791,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 7,
+              "tokens": 6827,
+              "wall_seconds": 38.99,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 1,
+              "median": 2,
+              "max": 2,
+              "values": [
+                1,
+                2,
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 5,
+              "values": [
+                5,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 1,
+              "median": 2,
+              "max": 2,
+              "values": [
+                1,
+                2,
+                2
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 6827,
+              "median": 6911,
+              "max": 7179,
+              "values": [
+                7179,
+                6911,
+                6827
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 38.99,
+              "median": 39.791,
+              "max": 42.499,
+              "values": [
+                42.499,
+                39.791,
+                38.99
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 2,
+            "inferences": 8,
+            "hypotheses": 2,
+            "tool_calls": 3,
+            "tokens": 3441,
+            "wall_seconds": 24.045,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 3,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 7,
+              "hypotheses": 3,
+              "tool_calls": 3,
+              "tokens": 3586,
+              "wall_seconds": 24.498,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 7,
+              "hypotheses": 3,
+              "tool_calls": 3,
+              "tokens": 3831,
+              "wall_seconds": 28.697,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 7,
+              "hypotheses": 3,
+              "tool_calls": 3,
+              "tokens": 3449,
+              "wall_seconds": 21.663,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 3449,
+              "median": 3586,
+              "max": 3831,
+              "values": [
+                3586,
+                3831,
+                3449
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 21.663,
+              "median": 24.498,
+              "max": 28.697,
+              "values": [
+                24.498,
+                28.697,
+                21.663
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        }
+      }
+    },
+    {
+      "case": "flaws_cloud/CASE-005",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "stratum": "agreed_easy",
+      "arm_A_m19b": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "unsupported_claims": 0,
+        "rejected_claims": 0,
+        "facts": 2,
+        "inferences": 4,
+        "hypotheses": 0,
+        "tool_calls": 3,
+        "tokens": null,
+        "wall_seconds": 0.342,
+        "planner_multi_candidate_steps": 0,
+        "planner_chosen_by_model": 0,
+        "degraded": false,
+        "llm_status": "deterministic mode (no model requested)",
+        "tool_calls_served": 3,
+        "specialists_run": 2,
+        "status": "complete"
+      },
+      "arms": {
+        "B": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 6,
+            "inferences": 4,
+            "hypotheses": 2,
+            "tool_calls": 7,
+            "tokens": 68096,
+            "wall_seconds": 41.688,
+            "planner_multi_candidate_steps": 5,
+            "planner_chosen_by_model": 5,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+            "tool_calls_served": 7,
+            "specialists_run": 1,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 4,
+              "hypotheses": 2,
+              "tool_calls": 7,
+              "tokens": 68197,
+              "wall_seconds": 42.61,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 7,
+              "tokens": 68056,
+              "wall_seconds": 39.709,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 6,
+              "inferences": 3,
+              "hypotheses": 3,
+              "tool_calls": 7,
+              "tokens": 68166,
+              "wall_seconds": 40.528,
+              "planner_multi_candidate_steps": 5,
+              "planner_chosen_by_model": 5,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; the planner chose 5 of 5 step(s) that had more than one candidate",
+              "tool_calls_served": 7,
+              "specialists_run": 1,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 0,
+            "of": 3,
+            "by_kind": {},
+            "statuses": []
+          },
+          "undegraded": {
+            "repeats": 3,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": false,
+              "facts": false,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 3,
+              "values": [
+                2,
+                3,
+                3
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 6,
+              "median": 6,
+              "max": 6,
+              "values": [
+                6,
+                6,
+                6
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 4,
+              "values": [
+                4,
+                3,
+                3
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 2,
+              "median": 3,
+              "max": 3,
+              "values": [
+                2,
+                3,
+                3
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 7,
+              "median": 7,
+              "max": 7,
+              "values": [
+                7,
+                7,
+                7
+              ]
+            },
+            "tokens": {
+              "n": 3,
+              "min": 68056,
+              "median": 68166,
+              "max": 68197,
+              "values": [
+                68197,
+                68056,
+                68166
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 39.709,
+              "median": 40.528,
+              "max": 42.61,
+              "values": [
+                42.61,
+                39.709,
+                40.528
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 5,
+              "median": 5,
+              "max": 5,
+              "values": [
+                5,
+                5,
+                5
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": false,
+            "facts": false
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        },
+        "C": {
+          "m19_primary": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts": 2,
+            "inferences": 7,
+            "hypotheses": 3,
+            "tool_calls": 3,
+            "tokens": 122684,
+            "wall_seconds": 22.594,
+            "planner_multi_candidate_steps": 0,
+            "planner_chosen_by_model": 0,
+            "degraded": false,
+            "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+            "tool_calls_served": 3,
+            "specialists_run": 2,
+            "status": "complete",
+            "meets_rule": false,
+            "hyp_cites_evidence_A_claims_did_not": false
+          },
+          "repeats": [
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 8,
+              "hypotheses": 2,
+              "tool_calls": 3,
+              "tokens": 122938,
+              "wall_seconds": 26.826,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": false,
+              "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 1
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.772,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 2
+            },
+            {
+              "evidence_correctness": 1.0,
+              "evidence_coverage": 1.0,
+              "unsupported_claims": 0,
+              "rejected_claims": 0,
+              "facts": 2,
+              "inferences": 4,
+              "hypotheses": 0,
+              "tool_calls": 3,
+              "tokens": null,
+              "wall_seconds": 0.789,
+              "planner_multi_candidate_steps": 0,
+              "planner_chosen_by_model": 0,
+              "degraded": true,
+              "llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked",
+              "tool_calls_served": 3,
+              "specialists_run": 2,
+              "status": "complete",
+              "meets_rule": false,
+              "hyp_cites_evidence_A_claims_did_not": false,
+              "hyp_cites_evidence_A_never_touched": false,
+              "repeat": 3
+            }
+          ],
+          "decision_rule_pass_frequency": {
+            "passed": 0,
+            "of": 3
+          },
+          "new_evidence_frequency": {
+            "found": 0,
+            "of": 3
+          },
+          "degradation_frequency": {
+            "degraded": 2,
+            "of": 3,
+            "by_kind": {
+              "http_400_request_rejected": 2
+            },
+            "statuses": [
+              "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked"
+            ]
+          },
+          "undegraded": {
+            "repeats": 1,
+            "of": 3,
+            "decision_rule_passed": 0,
+            "new_evidence_found": 0,
+            "identical_to_A": {
+              "evidence_coverage": true,
+              "tool_calls_served": true,
+              "facts": true,
+              "hypotheses": false
+            },
+            "hypotheses": {
+              "n": 1,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2
+              ]
+            }
+          },
+          "spread": {
+            "evidence_correctness": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "evidence_coverage": {
+              "n": 3,
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "values": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            "unsupported_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "rejected_claims": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "facts": {
+              "n": 3,
+              "min": 2,
+              "median": 2,
+              "max": 2,
+              "values": [
+                2,
+                2,
+                2
+              ]
+            },
+            "inferences": {
+              "n": 3,
+              "min": 4,
+              "median": 4,
+              "max": 8,
+              "values": [
+                8,
+                4,
+                4
+              ]
+            },
+            "hypotheses": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 2,
+              "values": [
+                2,
+                0,
+                0
+              ]
+            },
+            "tool_calls": {
+              "n": 3,
+              "min": 3,
+              "median": 3,
+              "max": 3,
+              "values": [
+                3,
+                3,
+                3
+              ]
+            },
+            "tokens": {
+              "n": 1,
+              "min": 122938,
+              "median": 122938,
+              "max": 122938,
+              "values": [
+                122938,
+                null,
+                null
+              ]
+            },
+            "wall_seconds": {
+              "n": 3,
+              "min": 0.772,
+              "median": 0.789,
+              "max": 26.826,
+              "values": [
+                26.826,
+                0.772,
+                0.789
+              ]
+            },
+            "planner_multi_candidate_steps": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            },
+            "planner_chosen_by_model": {
+              "n": 3,
+              "min": 0,
+              "median": 0,
+              "max": 0,
+              "values": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "identical_to_A": {
+            "evidence_coverage": true,
+            "tool_calls_served": true,
+            "facts": true
+          },
+          "A_values": {
+            "evidence_coverage": 1.0,
+            "tool_calls_served": 3,
+            "facts": 2
+          }
+        }
+      }
+    }
+  ],
+  "totals": {
+    "B": {
+      "repeats": 3,
+      "rows": 30,
+      "per_repeat": [
+        {
+          "repeat": 1,
+          "tokens": 506185,
+          "wall_seconds": 459.6,
+          "degraded": 2
+        },
+        {
+          "repeat": 2,
+          "tokens": 506614,
+          "wall_seconds": 450.9,
+          "degraded": 2
+        },
+        {
+          "repeat": 3,
+          "tokens": 505800,
+          "wall_seconds": 444.6,
+          "degraded": 2
+        }
+      ]
+    },
+    "C": {
+      "repeats": 3,
+      "rows": 30,
+      "per_repeat": [
+        {
+          "repeat": 1,
+          "tokens": 155667,
+          "wall_seconds": 220.0,
+          "degraded": 3
+        },
+        {
+          "repeat": 2,
+          "tokens": 16449,
+          "wall_seconds": 102.2,
+          "degraded": 7
+        },
+        {
+          "repeat": 3,
+          "tokens": 15298,
+          "wall_seconds": 84.9,
+          "degraded": 7
+        }
+      ]
+    },
+    "A_m19b": {
+      "repeats": 1,
+      "rows": 10,
+      "per_repeat": [
+        {
+          "repeat": 1,
+          "tokens": 0,
+          "wall_seconds": 1.9,
+          "degraded": 0
+        }
+      ]
+    },
+    "m19_primary": {
+      "A": {
+        "tokens": 0,
+        "wall_seconds": 1.9
+      },
+      "B": {
+        "tokens": 507711,
+        "wall_seconds": 476.9
+      },
+      "C": {
+        "tokens": 164584,
+        "wall_seconds": 292.3
+      }
+    }
+  },
+  "note": "repeat values are reported beside M19's primary value and are never averaged into it"
+}

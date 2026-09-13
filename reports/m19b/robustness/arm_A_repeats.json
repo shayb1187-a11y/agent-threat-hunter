@@ -1,0 +1,509 @@
+{
+  "generated_at": "2026-09-13T22:01:55.577186+00:00",
+  "head": "cf4d1e2",
+  "arm": {
+    "name": "A_deterministic",
+    "model": null,
+    "use_llm_planner": false,
+    "use_llm_synthesis": false,
+    "max_steps": 8,
+    "tool_call_cap": null,
+    "generalist": false,
+    "requires_model": false,
+    "implemented": true
+  },
+  "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
+  "manifest_head": "ffc31d5",
+  "selection": [
+    {
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "stratum": "B_unique"
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "stratum": "B_degraded"
+    },
+    {
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "stratum": "B_degraded"
+    },
+    {
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "stratum": "C_planner_choice"
+    },
+    {
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "stratum": "agreed_easy"
+    },
+    {
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "stratum": "agreed_easy"
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "stratum": "agreed_easy"
+    }
+  ],
+  "repeats": 1,
+  "timing": {
+    "synthetic:INC-001": {
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.2,
+      "arm_seconds_all_repeats": 0.1,
+      "cases": 1
+    },
+    "synthetic:INC-002": {
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.0,
+      "arm_seconds_all_repeats": 0.0,
+      "cases": 1
+    },
+    "synthetic:INC-004": {
+      "load_seconds": 0.0,
+      "pipeline_seconds": 0.2,
+      "arm_seconds_all_repeats": 0.0,
+      "cases": 1
+    },
+    "flaws_cloud": {
+      "load_seconds": 200.5,
+      "pipeline_seconds": 135.6,
+      "arm_seconds_all_repeats": 75.7,
+      "cases": 4
+    },
+    "comiset": {
+      "load_seconds": 1.4,
+      "pipeline_seconds": 55.4,
+      "arm_seconds_all_repeats": 25.0,
+      "cases": 2
+    },
+    "attack_data_aws": {
+      "load_seconds": 0.3,
+      "pipeline_seconds": 0.5,
+      "arm_seconds_all_repeats": 0.1,
+      "cases": 1
+    }
+  },
+  "m19_note": "these rows are reported beside M19's and are never averaged into them",
+  "note": "metrics only -- the full investigation state of each row lives in arm_{letter}_rep{n}.json, which is what the scorer reads. This file is the index across repeats.",
+  "rows": [
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "stratum": "C_planner_choice",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.071,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 2,
+      "rejected_claims": 0,
+      "facts": 20,
+      "inferences": 28,
+      "hypotheses": 2,
+      "steps": 4,
+      "status": "complete",
+      "tool_calls": 43,
+      "distinct_tools": 6,
+      "specialists_run": 4,
+      "planner_multi_candidate_steps": 3,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 1,
+        "planner-not-consulted": 3
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 43,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "stratum": "agreed_easy",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.002,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 2,
+      "inferences": 4,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 3,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 3,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "stratum": "B_unique",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.014,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 2,
+      "inferences": 3,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 6,
+      "distinct_tools": 3,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 6,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "stratum": "B_unique",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.168,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 10,
+      "inferences": 3,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 3,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 3,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "stratum": "B_unique",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.398,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 40,
+      "inferences": 4,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 5,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 5,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "stratum": "B_unique",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.466,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 33,
+      "inferences": 4,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 5,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 5,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "stratum": "agreed_easy",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.342,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 2,
+      "inferences": 4,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 3,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 3,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "stratum": "B_degraded",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.267,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 6,
+      "inferences": 5,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 8,
+      "distinct_tools": 3,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "stratum": "B_degraded",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.14,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 2,
+      "inferences": 2,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 3,
+      "distinct_tools": 3,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 3,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    },
+    {
+      "repeat": 1,
+      "arm": "A_deterministic",
+      "labelled_arm": "A_deterministic",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "stratum": "agreed_easy",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "wall_seconds": 0.014,
+      "tokens": null,
+      "evidence_correctness": 1.0,
+      "evidence_coverage": 1.0,
+      "unsupported_claims": 0,
+      "rejected_claims": 0,
+      "facts": 5,
+      "inferences": 2,
+      "hypotheses": 0,
+      "steps": 2,
+      "status": "complete",
+      "tool_calls": 2,
+      "distinct_tools": 2,
+      "specialists_run": 2,
+      "planner_multi_candidate_steps": 0,
+      "planner_chosen_by_model": 0,
+      "planner_fallbacks": {},
+      "planner_decisions": {
+        "only-eligible": 2
+      },
+      "unparseable_responses": 0,
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 2,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      }
+    }
+  ],
+  "m19_identity": {
+    "compared": 10,
+    "identical": true,
+    "differences": [],
+    "note": "wall seconds and wall-clock timestamps are excluded; every claim, tool call, plan-log line, budget and score is included"
+  }
+}
