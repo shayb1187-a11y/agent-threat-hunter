@@ -12,8 +12,8 @@ anything, synthesises on top of the verified claims:
     the same manifest and every claim, every tool call and every score is identical.
 
 ``B_single_llm``
-    One generalist investigator with the whole tool surface, LLM planner and synthesis.
-    **Declared, not implemented** -- see "Arm B" below for why, and for the design.
+    One :class:`~ath.agent.generalist.GeneralistAgent` with the whole tool surface, as a
+    crew of one, with the LLM planner and synthesis on.
 
 ``C_crew_llm``
     The existing specialist crew with ``use_llm_planner`` and ``use_llm_synthesis`` on.
@@ -34,37 +34,40 @@ mechanisms, because the failure has two shapes:
   :class:`~ath.evaluation.incidents.IncidentOutcome` has used since M14; reused rather
   than restated so the two harnesses cannot drift on what "degraded" means.
 
-Arm B: the design, and why it is not implemented here
-------------------------------------------------------
-Arm B is the industry-default shape this project exists to be compared against: **one
-agent, all the tools, a model deciding what to look at.** Expressed against the classes
-that exist today it would be a :class:`~ath.agent.specialists.Specialist` whose
-``should_run`` always passes, whose ``reads_channels`` is empty so it is never declined
-for missing telemetry, and whose ``investigate`` walks the case's entities through the
-whole :class:`~ath.agent.tools.ToolBox` -- process trees for every process the findings
-name, the timeline, the logon history for every account, the network peers for every
-host, the technique lookups -- emitting a FACT per tool result and letting the planner
-and synthesis stages do the rest. Assembled as ``Crew(specialists=(GeneralistAgent
-(tools),))``, it drops straight into ``InvestigationOrchestrator(specialists=[...])``
-with no orchestrator change at all.
+The budgets, and why they are the same for every arm
+-----------------------------------------------------
+M19-1 left arm B declared and unbuilt because its two budgets were unsettled, and an
+agent whose call count is decided by how long anyone was willing to wait measures
+patience rather than design. The architect settled them for M19-2, and both LLM arms run
+under the deterministic arm's own budget:
 
-It is not implemented in this milestone for one reason: it needs a new
-``Specialist`` subclass, and the specification for this work excludes adding one. The
-estimate is ~120 lines, most of it the tool-walking that the four existing specialists
-already contain in domain-shaped pieces, and implementing it badly would be worse than
-not implementing it -- a generalist that calls fewer tools than the crew would lose the
-comparison for a reason that says nothing about single-agent versus crew. Two things
-should be settled before it is written:
+* :data:`STEP_BUDGET` -- ``max_steps = 8``, the same orchestrator budget arm A runs
+  under. Arm B is therefore explicitly a *many-pass* single agent, not a one-shot one.
+* :data:`TOOL_CALL_CAP` -- 40 tool calls per case, enforced by the
+  :class:`~ath.agent.tools.ToolBox` itself. A call beyond the cap returns a structured
+  refusal and is recorded as a refused :class:`~ath.agent.tools.ToolCall`; **nothing
+  raises**, and an arm that hits the cap is not disqualified. The hit is counted, per
+  case, in the row's ``budgets`` block.
 
-1. **Its step budget.** The crew gets one step per specialist; a generalist gets one
-   step total unless it is allowed to loop, and "one agent, one pass" versus "one agent,
-   many passes" are different arms. The ablation should fix which one B is.
-2. **Its tool budget.** The crew's tool calls are bounded by each specialist's own
-   scope. A generalist walking every entity in a 40-finding flaws.cloud case is
-   unbounded, and an arm that runs out of wall clock is not evidence about agent design.
+The caps are identical for every case and are recorded on every row, because a budget
+that is not written down next to the result is indistinguishable from a result. Arm A
+keeps ``tool_call_cap: null`` -- the deterministic crew's calls are bounded by each
+specialist's own scope, and capping the baseline to match a limit invented for the
+generalist would change the thing every other arm is read against.
 
-Until then, :func:`run_arm` raises :class:`NotImplementedError` carrying this note, so
-arm B is visible as a gap in the experiment rather than absent from it.
+Arm B is one :class:`~ath.agent.generalist.GeneralistAgent` assembled as a crew of one
+and handed to ``InvestigationOrchestrator(specialists=[...])``: no orchestrator change,
+no registry entry, and no route by which the agent being measured can be assembled into
+the crew doing the measuring.
+
+Scripted runs
+--------------
+``run_arm(..., scripted=True)`` exists for one purpose: proving the arm's path executes
+end to end while no key exists, driven by :class:`~ath.agent.llm.ScriptedLLM`. Such a row
+is labelled ``*_SCRIPTED`` by :attr:`CaseResult.labelled_arm`, so it can never be
+aggregated into the arm it imitates. **A scripted row says nothing whatever about model
+quality** -- the responses are canned, written by this repository, and chosen to exercise
+code paths.
 """
 
 from __future__ import annotations
@@ -74,8 +77,10 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Sequence
 
 from ath.agent.claims import ClaimVerifier
+from ath.agent.generalist import GeneralistAgent
 from ath.agent.llm import LLMClient, NullLLM, build_llm
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
+from ath.agent.state import InvestigationStatus
 from ath.agent.tools import ToolBox
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
@@ -112,6 +117,10 @@ class ArmConfig:
         config: Orchestrator settings, including which model stages are on.
         requires_model: When true, a client that reports ``available == False`` is a
             refusal rather than a fallback.
+        tool_call_cap: Per-case tool-call budget handed to the ``ToolBox``. ``None`` is
+            uncapped, which is what arm A runs under.
+        generalist: Run one :class:`~ath.agent.generalist.GeneralistAgent` as the whole
+            crew instead of the environment-assembled specialists.
         implemented: False for an arm that is declared but not built; running it raises
             :class:`NotImplementedError` with the design note.
         design_note: Why an unimplemented arm is unimplemented.
@@ -121,6 +130,8 @@ class ArmConfig:
     llm_factory: Callable[[], LLMClient]
     config: InvestigationConfig
     requires_model: bool = False
+    tool_call_cap: int | None = None
+    generalist: bool = False
     implemented: bool = True
     design_note: str = ""
 
@@ -130,36 +141,47 @@ class ArmConfig:
             "use_llm_planner": self.config.use_llm_planner,
             "use_llm_synthesis": self.config.use_llm_synthesis,
             "max_steps": self.config.max_steps,
+            "tool_call_cap": self.tool_call_cap,
+            "generalist": self.generalist,
             "requires_model": self.requires_model,
             "implemented": self.implemented,
         }
 
 
+# The architect's budget ruling for M19-2, recorded verbatim in
+# reports/m19/ablation/PREREGISTERED.md as a dated addendum. Both constants belong to
+# the experiment rather than to this module's opinion: they are named here so that
+# changing an arm's budget is a visible edit to a named constant rather than a
+# parameter drifting.
+STEP_BUDGET = 8
+"""Orchestrator steps per case. The same budget arm A's orchestrator runs under."""
+
+TOOL_CALL_CAP = 40
+"""Tool calls per case for the model arms. A call beyond it is refused, not raised."""
+
+
 def arm_a(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
-    """The deterministic baseline: no model, planner and synthesis off."""
+    """The deterministic baseline: no model, planner and synthesis off, no tool cap."""
     return ArmConfig(
         name=ARM_A,
         llm_factory=llm_factory or NullLLM,
-        config=InvestigationConfig(use_llm_planner=False, use_llm_synthesis=False),
+        config=InvestigationConfig(
+            max_steps=STEP_BUDGET, use_llm_planner=False, use_llm_synthesis=False,
+        ),
     )
 
 
 def arm_b(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
-    """One generalist investigator with every tool. Declared; see the module docstring."""
+    """One generalist investigator with every tool, under the shared budgets."""
     return ArmConfig(
         name=ARM_B,
         llm_factory=llm_factory or build_llm,
-        config=InvestigationConfig(use_llm_planner=True, use_llm_synthesis=True),
-        requires_model=True,
-        implemented=False,
-        design_note=(
-            "Arm B needs a generalist Specialist subclass (always eligible, empty "
-            "reads_channels, investigate() walking the whole ToolBox over the case's "
-            "entities), assembled as a crew of one. That is a new agent class, which "
-            "this milestone excludes, and its step and tool budgets must be fixed "
-            "before it is written or the arm measures exhaustion rather than design. "
-            "See ath.evaluation.ablation.arms.__doc__ for the full note."
+        config=InvestigationConfig(
+            max_steps=STEP_BUDGET, use_llm_planner=True, use_llm_synthesis=True,
         ),
+        requires_model=True,
+        tool_call_cap=TOOL_CALL_CAP,
+        generalist=True,
     )
 
 
@@ -168,8 +190,11 @@ def arm_c(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
     return ArmConfig(
         name=ARM_C,
         llm_factory=llm_factory or build_llm,
-        config=InvestigationConfig(use_llm_planner=True, use_llm_synthesis=True),
+        config=InvestigationConfig(
+            max_steps=STEP_BUDGET, use_llm_planner=True, use_llm_synthesis=True,
+        ),
         requires_model=True,
+        tool_call_cap=TOOL_CALL_CAP,
     )
 
 
@@ -200,6 +225,16 @@ class CaseResult:
     tokens: int | None = None
     labels: dict[str, Any] = field(default_factory=dict)
     label_scores: dict[str, Any] = field(default_factory=dict)
+    budgets: dict[str, Any] = field(default_factory=dict)
+    """The budgets this case ran under, and whether either was hit.
+
+    Recorded per row rather than only in the file header, because a budget that is not
+    written next to the number it produced is indistinguishable from no budget: a reader
+    comparing two arms' tool-call counts has to be able to see, on the row, that one of
+    them was capped and whether the cap bound.
+    """
+    scripted: bool = False
+    """This row was produced by canned responses, not by a model."""
 
     @property
     def labelled_arm(self) -> str:
@@ -207,9 +242,12 @@ class CaseResult:
 
         An arm whose model failed mid-run planned deterministically for part of the
         case. Reporting that row as ``C_crew_llm`` would put a partly-deterministic
-        result in the model arm's mean, which is the precise way an ablation lies.
+        result in the model arm's mean, which is the precise way an ablation lies. A
+        scripted row is worse than partial -- it contains no model output at all -- so it
+        carries its own suffix and can never land in the arm's mean either.
         """
-        return f"{self.arm}_DEGRADED" if self.llm_degraded else self.arm
+        label = f"{self.arm}_SCRIPTED" if self.scripted else self.arm
+        return f"{label}_DEGRADED" if self.llm_degraded else label
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -220,10 +258,12 @@ class CaseResult:
             "manifest_hash": self.manifest_hash,
             "telemetry_hash": self.telemetry_hash,
             "configuration": self.configuration,
+            "scripted": self.scripted,
             "llm_degraded": self.llm_degraded,
             "llm_status": self.llm_status,
             "wall_seconds": round(self.wall_seconds, 3),
             "tokens": self.tokens,
+            "budgets": dict(self.budgets),
             "labels": dict(self.labels),
             "label_scores": dict(self.label_scores),
             "scores": self.scores.to_dict(),
@@ -251,6 +291,7 @@ class CaseResult:
             "telemetry_hash": self.telemetry_hash,
             "configuration": self.configuration,
             "llm_degraded": self.llm_degraded,
+            "budgets": dict(self.budgets),
             "scores": scores,
             "state": state,
             "label_scores": {
@@ -314,6 +355,7 @@ def run_arm(
     findings: Sequence[Finding] | None = None,
     environment: EnvironmentModel | None = None,
     llm: LLMClient | None = None,
+    scripted: bool = False,
 ) -> list[CaseResult]:
     """Run one arm over the manifest entries belonging to this corpus.
 
@@ -333,6 +375,9 @@ def run_arm(
             the union of the given cases' findings.
         environment: The environment model; built from ``telemetry`` when omitted.
         llm: An already-built client, bypassing ``arm.llm_factory``. For tests.
+        scripted: Mark every row as produced by canned responses. Labels the rows
+            ``*_SCRIPTED`` so they cannot be aggregated into the arm they imitate, and
+            is the only way an arm requiring a model may run without one.
 
     Raises:
         NotImplementedError: for a declared-but-unbuilt arm.
@@ -343,7 +388,17 @@ def run_arm(
         raise NotImplementedError(f"{arm.name} is declared, not implemented. {arm.design_note}")
 
     client = llm if llm is not None else arm.llm_factory()
-    if arm.requires_model and not client.available:
+    if scripted and not client.available:
+        # A "scripted" run handed NullLLM would be a deterministic run wearing an LLM
+        # arm's name with a reassuring suffix. The suffix is there to say *which* kind
+        # of not-a-model produced the row, not to license any of them.
+        raise ArmUnavailable(
+            f"{arm.name} was asked for a scripted run but the client "
+            f"{client.name!r} reports available=False. A scripted run must be given a "
+            "scripted client; it is a proof that the arm's path executes, and a "
+            "deterministic run relabelled as one would prove nothing at all."
+        )
+    if arm.requires_model and not client.available and not scripted:
         raise ArmUnavailable(
             f"{arm.name} requires a configured model and none is available "
             f"(client {client.name!r} reports available=False; set ATH_LLM_API_KEY). "
@@ -370,9 +425,16 @@ def run_arm(
     results: list[CaseResult] = []
     for entry in entries:
         case = cases_by_id[entry.case_id]
-        tools = ToolBox(telemetry, all_findings, list(cases))
+        tools = ToolBox(
+            telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap,
+        )
+        # Arm B is a crew of one. Built per case, like the toolbox, because the
+        # generalist carries the walk it has left to do and a shared instance would
+        # arrive at the second case already finished.
+        crew = [GeneralistAgent(tools)] if arm.generalist else None
         orchestrator = InvestigationOrchestrator(
             tools, verifier, llm=client, config=arm.config, environment=environment,
+            specialists=crew,
         )
         started = time.perf_counter()
         state = orchestrator.investigate(case)
@@ -405,6 +467,8 @@ def run_arm(
             tokens=tokens,
             labels=dict(entry.labels),
             label_scores=capture_label_scores(entry.labels, case_scores),
+            budgets=budgets_of(tools, arm, state),
+            scripted=scripted,
         ))
         logger.info(
             "%s %s: %d fact(s), %d inference(s), %d hypothesis(es) in %.2fs",
@@ -412,6 +476,24 @@ def run_arm(
             results[-1].scores.inferences, results[-1].scores.hypotheses, elapsed,
         )
     return results
+
+
+def budgets_of(tools: ToolBox, arm: ArmConfig, state: Any) -> dict[str, Any]:
+    """What this case was allowed, and whether either allowance bound.
+
+    Both budgets are reported whether or not they were reached, and ``budget_hit`` is
+    recorded rather than inferred from the counts: an arm that hit its cap is not
+    disqualified, and hiding the hit would turn a truncated investigation into a
+    cheap-looking one.
+    """
+    return {
+        "max_steps": arm.config.max_steps,
+        "tool_call_cap": arm.tool_call_cap,
+        "tool_calls_served": tools.calls_served,
+        "tool_calls_refused": tools.budget_hits,
+        "tool_budget_hit": bool(tools.budget_hits),
+        "step_budget_hit": state.status is InvestigationStatus.STEP_LIMIT,
+    }
 
 
 def identical(left: Iterable[CaseResult], right: Iterable[CaseResult]) -> list[str]:

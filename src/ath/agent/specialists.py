@@ -61,6 +61,22 @@ logger = get_logger(__name__)
 _PROGRESSION_TACTICS = ("Credential Access", "Lateral Movement", "Collection")
 
 
+def budget_note(tool: str) -> str:
+    """What a specialist records when a tool refused it for want of budget.
+
+    A refusal is not an empty result, and a specialist that reported it as one would
+    publish the project's cardinal error in miniature: "we looked and saw nothing" when
+    the truth is "we were not allowed to look". Every consumer of a tool result in this
+    module therefore checks ``refused`` before reading the payload, and the ones whose
+    empty-result text would otherwise assert absence say this instead.
+    """
+    return (
+        f"The per-case tool budget was exhausted before {tool} could answer, so this "
+        "specialist's conclusions rest on less evidence than the case contains. This is "
+        "a budget limit, not an absence of telemetry."
+    )
+
+
 def channel_sources(state: InvestigationState) -> dict[TelemetryChannel, set[str]]:
     """Map each telemetry channel the case rests on to the rules that contributed it.
 
@@ -318,6 +334,9 @@ class EndpointAgent(Specialist):
             # Recover both from the finding's own evidence when metadata lacks them.
             if pid is None and not identity:
                 events = self.tools.get_events(list(finding.event_ids), agent=self.name)
+                if events.get("refused"):
+                    notes.append(budget_note("get_events"))
+                    continue
                 rows = [e for e in events["events"] if e.get("process_id")]
                 if rows:
                     pid = rows[0].get("process_id")
@@ -341,6 +360,12 @@ class EndpointAgent(Specialist):
             tree = self.tools.process_tree(
                 device, pid, agent=self.name, process_guid=identity,
             )
+            if tree.get("refused"):
+                # No claim of any kind: a refused walk establishes neither lineage nor
+                # its absence, and an INFERENCE that "no lineage was found" would be a
+                # statement about the budget dressed as one about the host.
+                notes.append(budget_note("process_tree"))
+                continue
             if tree["process_guid"]:
                 seen.add(("identity", tree["process_guid"]))
             if tree["ancestry"]:
@@ -494,6 +519,9 @@ class IdentityAgent(Specialist):
 
         for user in state.case.users:
             history = self.tools.user_auth_history(user, agent=self.name)
+            if history.get("refused"):
+                notes.append(budget_note("user_auth_history"))
+                continue
             summary = history.get("summary") or {}
             if not summary:
                 notes.append(f"No authentication telemetry exists for account '{user}'.")
@@ -641,11 +669,23 @@ class NetworkAgent(Specialist):
                 # Shared infrastructure across hosts is a strong pivot: it converts
                 # "two separate incidents" into "one operation".
                 ids: list[str] = []
+                refused = False
                 for device in unique_devices:
                     activity = self.tools.host_network_activity(
                         device, remote_ip=remote_ip, agent=self.name
                     )
+                    if activity.get("refused"):
+                        refused = True
+                        continue
                     ids.extend(activity["event_ids"])
+
+                if refused or not ids:
+                    # The shared-infrastructure FACT cites the connections that prove
+                    # it. Without them there is no claim to make -- and constructing
+                    # one with no evidence is refused by Claim itself, so this branch
+                    # is what keeps a budget refusal from raising inside a specialist.
+                    notes.append(budget_note("host_network_activity"))
+                    continue
 
                 claims.append(Claim(
                     claim_type=ClaimType.FACT,
@@ -669,6 +709,9 @@ class NetworkAgent(Specialist):
 
             for device in unique_devices:
                 beacon = self.tools.analyse_beacon(device, remote_ip, agent=self.name)
+                if beacon.get("refused"):
+                    notes.append(budget_note("analyse_beacon"))
+                    continue
                 if beacon.get("regular"):
                     # The dispersion statistic is MAD/median, so it must be reported
                     # against the MEDIAN interval. Quoting it against the mean produces
@@ -763,6 +806,9 @@ class ControlPlaneAgent(Specialist):
                 continue  # a finding from another domain; nothing to add here
 
             events = self.tools.get_events(list(finding.event_ids), agent=self.name)
+            if events.get("refused"):
+                notes.append(budget_note("get_events"))
+                continue
             rows = sorted(events["events"], key=lambda e: e["timestamp"])
             if not rows:
                 continue
@@ -867,6 +913,9 @@ class AttackMappingAgent(Specialist):
 
         for mapping in sorted(case.mappings, key=lambda m: -m.confidence.rank):
             details = self.tools.lookup_technique(mapping.technique_id, agent=self.name)
+            if details.get("refused"):
+                notes.append(budget_note("lookup_technique"))
+                continue
             if "error" in details:
                 continue
             claim_type = (

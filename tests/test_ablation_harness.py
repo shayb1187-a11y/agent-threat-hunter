@@ -242,13 +242,104 @@ def test_wall_time_is_excluded_from_the_comparison_and_nothing_else_is(
 # --------------------------------------------------------------------------------------
 
 
-def test_arm_b_is_declared_and_refuses_to_pretend_otherwise(manifest, corpus, pipeline) -> None:
-    """Arm B raises with its design note rather than silently not existing."""
-    _findings, cases, environment = pipeline
-    with pytest.raises(NotImplementedError, match="generalist"):
+def test_arm_b_runs_one_generalist_as_the_whole_crew(manifest, corpus, pipeline) -> None:
+    """Arm B is a crew of one, and the crew it replaces does not run beside it.
+
+    Fails if the generalist is added to the assembled crew rather than replacing it --
+    in which case arm B would be "a crew plus a generalist", which is neither arm.
+    """
+    findings, cases, environment = pipeline
+    scripted = ScriptedLLM(responses=['{"claims": []}'] * 8, name="scripted-model")
+
+    results = run_arm(
+        arm_b(), manifest, corpus, cases, findings=findings,
+        environment=environment, llm=scripted,
+    )
+
+    assert results
+    for result in results:
+        assert result.arm == ARM_B
+        assert set(result.state["agents_run"]) == {"generalist"}
+
+
+@pytest.mark.parametrize("builder,cap", [(arm_a, None), (arm_b, 40), (arm_c, 40)])
+def test_every_arm_records_the_budgets_it_ran_under(
+    builder, cap, manifest, corpus, pipeline,
+) -> None:
+    """The caps are the same for every case, and every row says what they were.
+
+    Fails if a budget stops being recorded per case -- a tool-call column without the
+    cap beside it cannot be read, because a small number means "cheap" or "cut off" and
+    the row no longer says which.
+    """
+    findings, cases, environment = pipeline
+    arm = builder()
+    results = run_arm(
+        arm, manifest, corpus, cases, findings=findings, environment=environment,
+        llm=ScriptedLLM(responses=['{"claims": []}'] * 8, name="scripted-model"),
+    )
+    assert results
+    for result in results:
+        assert result.budgets["max_steps"] == 8
+        assert result.budgets["tool_call_cap"] == cap
+        assert result.budgets["tool_calls_refused"] == 0
+        assert result.budgets["tool_budget_hit"] is False
+        assert result.to_dict()["budgets"] == result.budgets
+
+
+def test_a_case_that_hits_the_tool_cap_is_recorded_not_disqualified(
+    manifest, corpus, pipeline,
+) -> None:
+    """A budget hit is data. Fails if hitting the cap raises, or goes unrecorded."""
+    from dataclasses import replace
+
+    findings, cases, environment = pipeline
+    arm = replace(arm_b(), tool_call_cap=1)
+
+    results = run_arm(
+        arm, manifest, corpus, cases, findings=findings, environment=environment,
+        llm=ScriptedLLM(responses=['{"claims": []}'] * 8, name="scripted-model"),
+    )
+
+    assert results
+    for result in results:
+        assert result.budgets["tool_calls_served"] == 1
+        assert result.budgets["tool_budget_hit"] is True
+        assert result.budgets["tool_calls_refused"] > 0
+        assert result.scores.facts >= 0  # the run completed; nothing raised
+
+
+def test_a_scripted_row_is_labelled_scripted_and_never_as_the_arm(
+    manifest, corpus, pipeline,
+) -> None:
+    """Canned responses are not a model, and the label is the only thing that says so.
+
+    Fails if ``scripted`` stops reaching ``labelled_arm``, which would let a run of
+    this repository's own canned text into arm B's mean.
+    """
+    findings, cases, environment = pipeline
+    scripted = ScriptedLLM(responses=['{"claims": []}'] * 8, name="scripted-harness")
+
+    results = run_arm(
+        arm_b(), manifest, corpus, cases, findings=findings,
+        environment=environment, llm=scripted, scripted=True,
+    )
+
+    assert results
+    assert all(r.labelled_arm == f"{ARM_B}_SCRIPTED" for r in results)
+    assert all(r.to_dict()["scripted"] is True for r in results)
+    assert ARM_B not in aggregate(results)["arms"]
+
+
+def test_a_scripted_run_still_refuses_a_client_that_is_not_a_model(
+    manifest, corpus, pipeline,
+) -> None:
+    """``--scripted`` is not a way to relabel a deterministic run."""
+    findings, cases, environment = pipeline
+    with pytest.raises(ArmUnavailable, match="scripted client"):
         run_arm(
-            arm_b(lambda: ScriptedLLM(responses=[])), manifest, corpus, cases,
-            environment=environment,
+            arm_b(), manifest, corpus, cases, findings=findings,
+            environment=environment, llm=NullLLM(), scripted=True,
         )
 
 
@@ -264,12 +355,11 @@ def test_model_arms_refuse_to_run_without_a_key(
     monkeypatch.delenv("ATH_LLM_API_KEY", raising=False)
     _findings, cases, environment = pipeline
     arm = builder()
-    with pytest.raises((ArmUnavailable, NotImplementedError)) as excinfo:
+    with pytest.raises(ArmUnavailable) as excinfo:
         run_arm(arm, manifest, corpus, cases, environment=environment)
     message = str(excinfo.value)
-    assert name in message or "generalist" in message
-    if isinstance(excinfo.value, ArmUnavailable):
-        assert "ATH_LLM_API_KEY" in message
+    assert name in message
+    assert "ATH_LLM_API_KEY" in message
 
 
 def test_arm_c_runs_with_a_scripted_model_and_is_labelled_c(
@@ -572,3 +662,24 @@ def test_null_arm_reports_no_tokens(manifest, corpus, pipeline) -> None:
                       environment=environment)
     assert all(r.tokens is None for r in results)
     assert aggregate(results)["arms"][ARM_A]["overall"]["total"]["tokens"] is None
+
+
+def test_a_resuming_agent_counts_once_not_once_per_step(corpus, pipeline) -> None:
+    """Completeness is specialists run over specialists eligible, not steps over agents.
+
+    Arm B's generalist appears in ``agents_run`` once per step. Counting those would
+    report a completeness of 2.0 on a two-step case -- a ratio above 1.0 is not a worse
+    score, it is a meaningless one. Fails if ``specialists_run`` goes back to counting
+    entries rather than distinct names.
+    """
+    _findings, cases, _environment = pipeline
+    case = cases[0]
+    state = InvestigationState(case=case)
+    state.agents_run = ["generalist", "generalist", "generalist"]
+    state.step = 3
+
+    scores = score_case(state, case, ClaimVerifier(corpus))
+
+    assert scores.specialists_run == 1
+    assert scores.steps == 3
+    assert scores.specialist_completeness == 1.0

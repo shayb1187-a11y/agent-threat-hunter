@@ -57,9 +57,16 @@ class ToolCall:
     result_summary: str
     event_ids: tuple[str, ...] = ()
     called_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    refused: bool = False
+    """The call was refused because the per-case tool budget was spent.
+
+    A refusal is *recorded as a call*, not swallowed: an arm that ran out of budget
+    asked for that data and did not get it, and a cost column that omits the asking
+    would under-report exactly the arm that was too expensive.
+    """
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "tool": self.tool,
             "arguments": self.arguments,
             "agent": self.agent,
@@ -67,19 +74,49 @@ class ToolCall:
             "event_ids": list(self.event_ids),
             "called_at": self.called_at.isoformat(),
         }
+        # Emitted only when true, so a run made under no budget serialises exactly as
+        # it did before budgets existed -- the published arm A rows stay comparable
+        # with the ones this project has already committed.
+        if self.refused:
+            payload["refused"] = True
+        return payload
 
     def __str__(self) -> str:
         args = ", ".join(f"{k}={v!r}" for k, v in self.arguments.items())
-        return f"{self.agent}::{self.tool}({args}) -> {self.result_summary}"
+        prefix = "REFUSED " if self.refused else ""
+        return f"{prefix}{self.agent}::{self.tool}({args}) -> {self.result_summary}"
 
 
 class ToolBox:
     """The read-only tool surface available during an investigation.
 
+    The tool budget
+    ----------------
+    ``tool_call_budget`` caps how many tools one case may actually consume. It exists
+    because an agent that decides for itself what to look at is unbounded by
+    construction: a generalist walking every entity of a forty-finding cloud case will
+    keep asking, and an arm that runs out of wall clock has measured its own exhaustion
+    rather than anything about agent design.
+
+    A spent budget is **data, not an exception**. Every further call returns a structured
+    refusal -- the tool's own empty shape plus ``refused: True`` and a reason -- and is
+    recorded as a :class:`ToolCall` with ``refused=True``. Nothing raises, the
+    investigation continues, and the hit is counted in :attr:`budget_hits`. Callers get a
+    result they already know how to read, which is what keeps a refusal from being
+    mistaken for "the telemetry says nothing" -- the distinction this codebase draws
+    everywhere else between absence and invisibility.
+
+    Refused calls do not consume budget themselves; only calls that returned data do.
+    Otherwise the refusal of the 41st call would spend the budget of the 42nd and the
+    cap would not mean the number it says.
+
     Args:
         telemetry: Source telemetry.
         findings: All findings from the hunt.
         cases: All correlated investigation cases.
+        tool_call_budget: Maximum tool calls that may return data for this case.
+            ``None`` (the default) is unlimited -- the behaviour every caller written
+            before budgets existed keeps.
     """
 
     def __init__(
@@ -87,21 +124,25 @@ class ToolBox:
         telemetry: Telemetry,
         findings: list[Finding],
         cases: list[InvestigationCase],
+        tool_call_budget: int | None = None,
     ) -> None:
         self.telemetry = telemetry
         self._findings = {f.finding_id: f for f in findings}
         self._cases = {c.case_id: c for c in cases}
         self.calls: list[ToolCall] = []
+        self.tool_call_budget = tool_call_budget
+        self.budget_hits = 0
+        """How many calls this toolbox refused for want of budget."""
 
     # -- bookkeeping ----------------------------------------------------------------
 
     def _record(
         self, tool: str, arguments: dict[str, Any], agent: str,
-        summary: str, event_ids: tuple[str, ...] = (),
+        summary: str, event_ids: tuple[str, ...] = (), refused: bool = False,
     ) -> None:
         call = ToolCall(
             tool=tool, arguments=arguments, agent=agent,
-            result_summary=summary, event_ids=event_ids,
+            result_summary=summary, event_ids=event_ids, refused=refused,
         )
         self.calls.append(call)
         logger.debug("tool call: %s", call)
@@ -110,6 +151,27 @@ class ToolBox:
     def call_count(self) -> int:
         return len(self.calls)
 
+    @property
+    def calls_served(self) -> int:
+        """Calls that returned data -- what the budget is actually spent on."""
+        return sum(1 for c in self.calls if not c.refused)
+
+    @property
+    def budget_exhausted(self) -> bool:
+        return (
+            self.tool_call_budget is not None
+            and self.calls_served >= self.tool_call_budget
+        )
+
+    def _refuse(
+        self, tool: str, arguments: dict[str, Any], agent: str, shape: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Record a refused call and return the tool's empty shape, marked as refused."""
+        reason = f"tool budget exhausted ({self.tool_call_budget} calls)"
+        self.budget_hits += 1
+        self._record(tool, arguments, agent, reason, refused=True)
+        return {**shape, "refused": True, "reason": reason}
+
     def calls_by(self, agent: str) -> list[ToolCall]:
         return [c for c in self.calls if c.agent == agent]
 
@@ -117,6 +179,11 @@ class ToolBox:
 
     def get_case(self, case_id: str, agent: str = "orchestrator") -> dict[str, Any]:
         """Return one correlated case, including its timeline and ATT&CK mappings."""
+        if self.budget_exhausted:
+            return self._refuse(
+                "get_case", {"case_id": case_id}, agent,
+                {"error": "not retrieved", "known": []},
+            )
         case = self._cases.get(case_id.upper())
         if case is None:
             self._record("get_case", {"case_id": case_id}, agent, "not found")
@@ -136,6 +203,11 @@ class ToolBox:
         a summary. Unknown ids are reported back explicitly rather than dropped, so an
         agent asking for a non-existent event learns that it does not exist.
         """
+        if self.budget_exhausted:
+            return self._refuse(
+                "get_events", {"event_ids": event_ids[:10]}, agent,
+                {"events": [], "not_found": sorted(set(event_ids))},
+            )
         wanted = set(event_ids)
         rows: list[dict[str, Any]] = []
         for df in (
@@ -211,6 +283,8 @@ class ToolBox:
             "resolution": "not_found", "ambiguous_pid": 0, "candidates": [],
             "ancestry": [], "children": [], "notes": [],
         }
+        if self.budget_exhausted:
+            return self._refuse("process_tree", arguments, agent, result)
         if procs.empty or (pid is None and not process_guid):
             self._record("process_tree", arguments, agent, "no process telemetry")
             return result
@@ -294,6 +368,11 @@ class ToolBox:
         The identity question: where does this account normally operate, and did that
         change?
         """
+        if self.budget_exhausted:
+            return self._refuse(
+                "user_auth_history", {"user": user}, agent,
+                {"user": user, "events": [], "summary": {}},
+            )
         logons = self.telemetry.logons
         rows = logons[logons["user"] == user].sort_values("timestamp")
         if rows.empty:
@@ -335,6 +414,12 @@ class ToolBox:
         self, device: str, remote_ip: str | None = None, agent: str = "network"
     ) -> dict[str, Any]:
         """Outbound connections from a host, optionally filtered to one destination."""
+        if self.budget_exhausted:
+            return self._refuse(
+                "host_network_activity", {"device": device, "remote_ip": remote_ip},
+                agent,
+                {"device": device, "destinations": [], "total": 0, "event_ids": []},
+            )
         net = self.telemetry.network
         rows = net[net["device"] == device]
         if remote_ip:
@@ -411,6 +496,14 @@ class ToolBox:
         The honest limit is unchanged: implants add *jitter* precisely to defeat
         interval analysis, so an irregular result is weak evidence of absence.
         """
+        if self.budget_exhausted:
+            return self._refuse(
+                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
+                {
+                    "regular": False, "samples": 0, "interarrival_count": 0,
+                    "event_ids": [],
+                },
+            )
         net = self.telemetry.network
         rows = net[(net["device"] == device) & (net["remote_ip"] == remote_ip)]
         rows = rows.sort_values("timestamp")
@@ -475,6 +568,12 @@ class ToolBox:
         process_name: str | None = None, limit: int = 25, agent: str = "endpoint",
     ) -> dict[str, Any]:
         """Search process telemetry by host, image name, or command-line substring."""
+        if self.budget_exhausted:
+            return self._refuse(
+                "search_processes",
+                {"device": device, "contains": contains, "process_name": process_name},
+                agent, {"results": [], "count": 0},
+            )
         rows = self.telemetry.processes
         if device:
             rows = rows[rows["device"] == device]
@@ -509,6 +608,11 @@ class ToolBox:
 
     def get_finding(self, finding_id: str, agent: str = "orchestrator") -> dict[str, Any]:
         """Return one detection finding with its evidence and declared caveats."""
+        if self.budget_exhausted:
+            return self._refuse(
+                "get_finding", {"finding_id": finding_id}, agent,
+                {"error": "not retrieved"},
+            )
         finding = self._findings.get(finding_id)
         if finding is None:
             self._record("get_finding", {"finding_id": finding_id}, agent, "not found")
@@ -521,6 +625,15 @@ class ToolBox:
 
     def lookup_technique(self, technique_id: str, agent: str = "attack") -> dict[str, Any]:
         """Look up an ATT&CK technique in the verified catalogue."""
+        if self.budget_exhausted:
+            # The refusal carries ``error`` as well, because that is the key every
+            # caller of this tool already branches on: a budget refusal must travel
+            # the path an unknown technique already travels, not a new one nobody
+            # handles.
+            return self._refuse(
+                "lookup_technique", {"technique_id": technique_id}, agent,
+                {"error": "not retrieved"},
+            )
         try:
             technique = get_technique(technique_id)
         except KeyError:

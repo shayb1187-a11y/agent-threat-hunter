@@ -339,7 +339,12 @@ def score_case(
         techniques_mapped=tuple(sorted(mapped)),
         techniques_asserted_not_mapped=tuple(sorted(asserted - mapped)),
         techniques_mapped_not_asserted=tuple(sorted(mapped - asserted)),
-        specialists_run=len(state.agents_run),
+        # Distinct specialists, not steps. An agent that resumes across steps (arm B's
+        # generalist) appears in ``agents_run`` once per step, and counting those would
+        # report "2 of 1 specialists run" -- a completeness ratio above 1.0, which is not
+        # a weaker score but a meaningless one. Arm A never runs a specialist twice, so
+        # every already-published arm A number is unchanged by this.
+        specialists_run=len(set(state.agents_run)),
         specialists_eligible=len(set(state.agents_run) | set(eligible_never_ran)),
         eligible_never_ran=tuple(sorted(set(eligible_never_ran))),
         steps=state.step,

@@ -124,3 +124,37 @@ Arm A's results are in `arm_A.json` and `scores_A.json`, run twice over the whol
 manifest with identical output. Two of the predictions above are about arm A and can
 therefore be graded immediately; they are graded in `RESULTS.md`, next to the prediction,
 and the predictions themselves are not edited.
+
+---
+
+## Addendum, 2026-09-13 (M19-2): the architect's budget ruling
+
+Nothing above is edited. This addendum records the ruling that settled the two budget
+questions `arms.py` left open in M19-1, and under which arm B was then built. It is
+quoted verbatim:
+
+> both LLM arms get the same step budget as arm A's orchestrator (max_steps = 8); both
+> get a per-case tool-call cap of 40, enforced by the ToolBox (a call beyond the cap
+> returns a structured refusal recorded as a tool call with `refused=True` and never
+> raises); the caps are the same for every case and recorded per case in the results; an
+> arm that hits a cap is not disqualified, but the hit is counted.
+
+Consequences, none of which change a metric defined in §3:
+
+* **Arm B is now implemented** as `ath.agent.generalist.GeneralistAgent`, a crew of one.
+  §1's "Arm B is declared, not implemented" stands as written for the record; it is no
+  longer true as of this addendum.
+* **Arm A keeps no tool cap** (`tool_call_cap: null`). The cap was invented for the
+  generalist, and capping the baseline to match would change the thing every other arm is
+  read against. Arm A's own budget -- `max_steps = 8` -- is unchanged and is now recorded
+  on its rows.
+* **Every row carries a `budgets` block**: `max_steps`, `tool_call_cap`,
+  `tool_calls_served`, `tool_calls_refused`, `tool_budget_hit`, `step_budget_hit`. A
+  tool-call count cannot be read without the cap beside it, because a small number means
+  either "cheap" or "cut off" and the row must say which.
+* **The cap of 40 already binds on one case of the 22.** `synthetic:INC-001` takes 43
+  tool calls in arm A; a crew arm run under the cap serves 40 and refuses 3, ending with
+  `evidence_coverage` 0.968 rather than 1.000. That is the cap doing its job, recorded
+  rather than hidden, and it is a prediction-relevant fact for §4 (iii): **arm C can now
+  score below arm A on coverage for a reason that is a budget rather than a planning
+  failure**, and the `budgets` block is what distinguishes the two.

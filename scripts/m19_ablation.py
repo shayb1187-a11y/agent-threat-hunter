@@ -30,6 +30,16 @@ Usage::
     python scripts/m19_ablation.py build
     python scripts/m19_ablation.py run --arm A --repeat 2
     python scripts/m19_ablation.py score --arm A
+    python scripts/m19_ablation.py run --arm B --scripted   # harness proof, not a result
+
+Scripted runs
+--------------
+``--scripted`` runs an arm that requires a model against
+:class:`~ath.agent.llm.ScriptedLLM` responses written in this file. It exists to prove
+that arm B's and arm C's path executes end to end while no key exists in this
+environment. **A scripted run is not a result about any model.** Its rows are labelled
+``*_SCRIPTED``, they are written under ``reports/m19/ablation/scripted/``, and
+:func:`arm_output_path` refuses to write them next to the real arm files.
 """
 
 from __future__ import annotations
@@ -37,6 +47,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import subprocess
 import sys
 import time
@@ -54,7 +65,7 @@ from m18_cloud_detection import NEW_RULES  # noqa: E402
 from m18_cloud_detection import load_corpus as _cloud_corpus  # noqa: E402
 from pre_schema_parquet import read_canonical_table  # noqa: E402
 
-from ath.agent.llm import NullLLM  # noqa: E402
+from ath.agent.llm import NullLLM, ScriptedLLM  # noqa: E402
 from ath.correlation import correlate  # noqa: E402
 from ath.correlation.chain import InvestigationCase  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
@@ -87,6 +98,17 @@ from ath.triage import assess_findings, set_aside_ids  # noqa: E402
 OUT_DIR = ROOT / "reports" / "m19" / "ablation"
 MANIFEST_PATH = OUT_DIR / "MANIFEST.json"
 
+# Scripted rows live in their own directory, never beside a real arm's results. The
+# separation is enforced by arm_output_path rather than by remembering to pass a flag.
+SCRIPTED_DIR_NAME = "scripted"
+
+SCRIPTED_WARNING = (
+    "SCRIPTED RUN -- the responses in this file were written by this repository, not by "
+    "a model. These rows prove that the arm's planner and synthesis path executes end to "
+    "end; they say nothing whatever about model quality, and they must never be "
+    "aggregated with, or compared against, a real arm's results."
+)
+
 # The sample seed. Fixed, recorded in the manifest, and never re-drawn: a sample that
 # can be re-drawn until it looks convenient is not a sample.
 SEED = 19
@@ -109,6 +131,146 @@ SELECTION_RULE = (
     "plus every case containing a finding from a rule that predates M18-8 (any rule "
     f"outside {sorted(NEW_RULES)})."
 )
+
+
+# --------------------------------------------------------------------------------------
+# The scripted client -- a harness proof, never a result
+# --------------------------------------------------------------------------------------
+
+
+_EVIDENCE_IN_PROMPT = re.compile(r"evidence: ([^)]*)\)")
+
+
+@dataclass
+class ScriptedArmLLM(ScriptedLLM):
+    """:class:`~ath.agent.llm.ScriptedLLM`, answering in the shape the stage asked for.
+
+    The double this project already has consumes a fixed list in order, which is exactly
+    right for a test that drives one path and wrong for a whole-manifest run: the planner
+    and the synthesiser interleave, so a fixed list hands planner JSON to the synthesiser
+    on whichever case runs an extra step. This subclass keeps everything ScriptedLLM does
+    -- recording every (system, prompt) pair so a test can prove no telemetry was sent,
+    parsing the response, and reporting deterministic fake usage -- and only chooses
+    *which* canned answer it is handed, from the system prompt.
+
+    What the canned answers are chosen to exercise, and nothing more:
+
+    * **Planner.** It names the *last* eligible candidate. The deterministic planner
+      takes the first name in its priority order, so a plan log that follows the last
+      candidate proves the model's choice actually steered the run rather than
+      coinciding with the fallback.
+    * **Synthesis.** Three claims: an INFERENCE citing an event id the orchestrator
+      actually showed it (accepted), a HYPOTHESIS citing nothing (accepted -- the one
+      claim type allowed to stand without evidence), and an INFERENCE citing a
+      fabricated id (discarded as out-of-scope before the verifier ever sees it). All
+      three guardrails therefore execute on every scripted case.
+
+    **None of this is a measurement of a model.** The text is written here.
+    """
+
+    name: str = "scripted-harness"
+
+    def complete(self, system: str, prompt: str, max_tokens: int = 1024):
+        self.responses = [self._canned(system, prompt)]
+        self._index = 0
+        return super().complete(system, prompt, max_tokens)
+
+    def _canned(self, system: str, prompt: str) -> str:
+        if system.startswith("You are the synthesis component"):
+            return self._synthesis(prompt)
+        return self._plan(prompt)
+
+    @staticmethod
+    def _plan(prompt: str) -> str:
+        candidates = [
+            line.strip().split(":", 1)[0]
+            for line in prompt.splitlines()
+            if line.startswith("  ") and ":" in line
+        ]
+        if not candidates:
+            return json.dumps({
+                "next_agent": "none",
+                "reason": "the prompt named no candidate; the deterministic order stands",
+            })
+        return json.dumps({
+            "next_agent": candidates[-1],
+            "reason": (
+                "scripted: the last eligible candidate, chosen so the plan log shows "
+                "the planner path was taken rather than the fallback"
+            ),
+        })
+
+    @staticmethod
+    def _synthesis(prompt: str) -> str:
+        shown = [
+            eid.strip()
+            for group in _EVIDENCE_IN_PROMPT.findall(prompt)
+            for eid in group.split(",")
+            if eid.strip()
+        ]
+        claims: list[dict[str, Any]] = []
+        if shown:
+            claims.append({
+                "type": "INFERENCE",
+                "statement": (
+                    "SCRIPTED: two of the verified claims cite the same event, so they "
+                    "describe one activity rather than two."
+                ),
+                "evidence_ids": [shown[0]],
+                "confidence": 0.5,
+            })
+        claims.append({
+            "type": "HYPOTHESIS",
+            "statement": (
+                "SCRIPTED: the activity in this case may continue outside the evidence "
+                "window. Unverified: nothing in the telemetry shows it."
+            ),
+            "evidence_ids": [],
+            "confidence": 0.3,
+        })
+        claims.append({
+            "type": "INFERENCE",
+            "statement": (
+                "SCRIPTED: a claim citing an event id that was never shown to the "
+                "model, so that the out-of-scope guard is exercised on every case."
+            ),
+            "evidence_ids": ["evt-does-not-exist"],
+            "confidence": 0.9,
+        })
+        return json.dumps({"claims": claims})
+
+
+def arm_output_path(out_dir: Path, letter: str, scripted: bool) -> Path:
+    """Where an arm's rows may be written -- scripted rows never beside real ones.
+
+    A directory rule rather than a filename suffix, because the thing that must not
+    happen is a scripted file being read by the aggregator that reads
+    ``arm_*.json``. Enforced here, in one place, instead of at each call site.
+    """
+    directory = out_dir / SCRIPTED_DIR_NAME if scripted else out_dir
+    return directory / f"arm_{letter}.json"
+
+
+def refuse_mislabelled_output(path: Path, results: Sequence[Any]) -> None:
+    """Refuse to write scripted rows outside the scripted directory, or vice versa.
+
+    The check is on the rows, not on the flag that produced them: a row knows whether
+    it came from canned text, and that is the only thing a reader of the file can
+    verify afterwards.
+    """
+    scripted_rows = [r for r in results if getattr(r, "scripted", False)]
+    in_scripted_dir = path.parent.name == SCRIPTED_DIR_NAME
+    if scripted_rows and not in_scripted_dir:
+        raise SystemExit(
+            f"refusing to write {len(scripted_rows)} scripted row(s) to {path}: "
+            "scripted rows are a proof that the harness runs, not a result about a "
+            f"model, and belong under {SCRIPTED_DIR_NAME}/."
+        )
+    if in_scripted_dir and results and not scripted_rows:
+        raise SystemExit(
+            f"refusing to write real arm rows to {path}: the {SCRIPTED_DIR_NAME}/ "
+            "directory is reserved for canned-response runs."
+        )
 
 
 # --------------------------------------------------------------------------------------
@@ -423,6 +585,9 @@ def _read_manifest(out_dir: Path) -> tuple[dict[str, Any], list[CaseManifest], s
 def cmd_run(args: argparse.Namespace) -> int:
     payload, entries, digest = _read_manifest(args.out_dir)
     arm = ARM_BUILDERS[_arm_name(args.arm)]()
+    scripted = bool(getattr(args, "scripted", False))
+    if scripted:
+        print(SCRIPTED_WARNING)
 
     wanted = set(args.corpus) if args.corpus else None
     by_corpus: dict[str, list[CaseManifest]] = defaultdict(list)
@@ -444,9 +609,11 @@ def cmd_run(args: argparse.Namespace) -> int:
                 arm, corpus_entries, bundle.telemetry, bundle.cases,
                 manifest_digest=digest, findings=bundle.findings,
                 environment=bundle.environment,
+                llm=ScriptedArmLLM() if scripted else None,
+                scripted=scripted,
             )
             if bundle.incident is not None:
-                outcome = run_incident(bundle.incident, llm=_arm_llm(arm))
+                outcome = run_incident(bundle.incident, llm=_arm_llm(arm, scripted))
                 labelled = label_scores_from_outcome(outcome)
                 for result in results:
                     result.label_scores = labelled
@@ -476,18 +643,36 @@ def cmd_run(args: argparse.Namespace) -> int:
         ),
     }
 
-    out = args.out_dir / f"arm_{_arm_letter(args.arm)}.json"
+    out = arm_output_path(args.out_dir, _arm_letter(args.arm), scripted)
+    refuse_mislabelled_output(out, runs[0])
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({
+    record: dict[str, Any] = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "head": _head(),
         "arm": arm.to_dict(),
+        "scripted": scripted,
         "manifest_hash": digest,
         "manifest_head": payload.get("head"),
         "reproducibility": reproducibility,
+        "budgets": {
+            "max_steps": arm.config.max_steps,
+            "tool_call_cap": arm.tool_call_cap,
+            "cases_hitting_tool_cap": sum(
+                1 for r in runs[0] if r.budgets.get("tool_budget_hit")
+            ),
+            "cases_hitting_step_budget": sum(
+                1 for r in runs[0] if r.budgets.get("step_budget_hit")
+            ),
+            "tool_calls_refused": sum(
+                int(r.budgets.get("tool_calls_refused", 0)) for r in runs[0]
+            ),
+        },
         "timing": timing,
         "cases": [r.to_dict() for r in runs[0]],
-    }, indent=2, default=str), encoding="utf-8")
+    }
+    if scripted:
+        record["warning"] = SCRIPTED_WARNING
+    out.write_text(json.dumps(record, indent=2, default=str), encoding="utf-8")
     print(f"wrote {out} ({len(runs[0])} case row(s))")
 
     if args.repeat > 1:
@@ -495,7 +680,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             "reproducibility: IDENTICAL" if not differences
             else f"reproducibility: {len(differences)} DIFFERENCE(S): {differences[:5]}"
         )
-    _write_scores(args, runs[0], digest)
+    _write_scores(args, runs[0], digest, scripted=scripted)
     return 0
 
 
@@ -504,9 +689,11 @@ def _families(by_corpus: dict[str, list[CaseManifest]]) -> list[str]:
     return list(dict.fromkeys(name.split(":", 1)[0] for name in by_corpus))
 
 
-def _arm_llm(arm: Any) -> Any:
+def _arm_llm(arm: Any, scripted: bool = False) -> Any:
     """The client an arm's label-based benchmark row must be produced with."""
-    return NullLLM() if not arm.requires_model else arm.llm_factory()
+    if not arm.requires_model:
+        return NullLLM()
+    return ScriptedArmLLM() if scripted else arm.llm_factory()
 
 
 def _arm_name(letter: str) -> str:
@@ -536,21 +723,30 @@ class _Row:
     scores: Any
 
 
-def _write_scores(args: argparse.Namespace, results: Sequence[Any], digest: str) -> None:
+def _write_scores(
+    args: argparse.Namespace, results: Sequence[Any], digest: str,
+    scripted: bool = False,
+) -> None:
     summary = aggregate(results)
-    out = args.out_dir / f"scores_{_arm_letter(args.arm)}.json"
-    out.write_text(json.dumps({
+    directory = args.out_dir / SCRIPTED_DIR_NAME if scripted else args.out_dir
+    directory.mkdir(parents=True, exist_ok=True)
+    out = directory / f"scores_{_arm_letter(args.arm)}.json"
+    payload: dict[str, Any] = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "head": _head(),
         "manifest_hash": digest,
         "summary": summary,
-    }, indent=2, default=str), encoding="utf-8")
+    }
+    if scripted:
+        payload["warning"] = SCRIPTED_WARNING
+    out.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
     print(f"wrote {out}")
     print(json.dumps(summary, indent=2, default=str)[:3000])
 
 
 def cmd_score(args: argparse.Namespace) -> int:
-    source = args.out_dir / f"arm_{_arm_letter(args.arm)}.json"
+    scripted = bool(getattr(args, "scripted", False))
+    source = arm_output_path(args.out_dir, _arm_letter(args.arm), scripted)
     payload = json.loads(source.read_text(encoding="utf-8"))
     rows = [
         _Row(
@@ -562,7 +758,7 @@ def cmd_score(args: argparse.Namespace) -> int:
         )
         for row in payload.get("cases", [])
     ]
-    _write_scores(args, rows, str(payload.get("manifest_hash", "")))
+    _write_scores(args, rows, str(payload.get("manifest_hash", "")), scripted=scripted)
     return 0
 
 
@@ -584,11 +780,19 @@ def main() -> int:
     p_run.add_argument("--repeat", type=int, default=1)
     p_run.add_argument("--corpus", nargs="*", default=[])
     p_run.add_argument("--out-dir", type=Path, default=OUT_DIR)
+    p_run.add_argument(
+        "--scripted", action="store_true",
+        help="Run a model arm against canned ScriptedLLM responses. Proves the path "
+             "executes; says nothing about any model. Rows are labelled *_SCRIPTED and "
+             f"written under {SCRIPTED_DIR_NAME}/.",
+    )
     p_run.set_defaults(func=cmd_run)
 
     p_score = sub.add_parser("score", help="re-aggregate a committed arm result")
     p_score.add_argument("--arm", default="A")
     p_score.add_argument("--out-dir", type=Path, default=OUT_DIR)
+    p_score.add_argument("--scripted", action="store_true",
+                         help=f"read and write under {SCRIPTED_DIR_NAME}/")
     p_score.set_defaults(func=cmd_score)
 
     args = parser.parse_args()
