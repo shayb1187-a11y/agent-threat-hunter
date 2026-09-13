@@ -72,6 +72,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import m19_ablation as m19  # noqa: E402
+from m19b_env import reproduces_grading  # noqa: E402
 
 from ath.evaluation.ablation import (  # noqa: E402
     ARM_BUILDERS,
@@ -179,17 +180,25 @@ def select_entries(entries: Sequence[CaseManifest]) -> list[CaseManifest]:
 # --------------------------------------------------------------------------------------
 
 ASSERTED_FIELDS: tuple[str, ...] = (
-    "arms", "shared_tool_surface", "request", "retry", "prompts", "scoring",
-    "manifest_hash",
+    "arms", "shared_tool_surface", "request", "retry", "prompts", "manifest_hash",
 )
 """What must be byte-equal to M19's freeze.
 
 Everything a model sees, everything a request carries, everything a failure is retried
-under, every arm's model id and budget, the whole tool surface, the code that turns a
-run into numbers, and the inputs. Not the commit -- committing a freeze moves HEAD, and
-M19b is a later commit by construction; both are recorded instead. Not the runtime
-either: the Python version and the platform are recorded because they explain a result,
-and gating on them would refuse every run from a second machine.
+under, every arm's model id and budget, the whole tool surface, and the inputs. Not the
+commit -- committing a freeze moves HEAD, and M19b is a later commit by construction;
+both are recorded instead. Not the runtime either: the Python version and the platform
+are recorded because they explain a result, and gating on them would refuse every run
+from a second machine.
+
+**Not ``scoring`` either, since T6.** It was in this tuple when these repeats ran, and
+the artifact they wrote records it. ``docs/m19b-plan.md``, amended before any T8 run,
+replaced the scoring hash with a stronger requirement once T6 added the necessity
+metrics to ``scoring.py``: the M19 metrics, recomputed by the new code over M19's own
+committed rows, must reproduce ``GRADING.json`` exactly. A hash says the file did not
+change; the reproduction says no published number changed, which is the thing the hash
+was standing in for -- and it is asserted here, in :func:`build_m19b_environment`, with
+the same refusal.
 """
 
 
@@ -248,11 +257,29 @@ def build_m19b_environment(digest: str, manifest_head: str) -> dict[str, Any]:
             "M19b's environment is not M19's:\n  " + "\n  ".join(differences)
             + "\n\nRefusing to freeze. These repeats are only repeats of M19 while the "
             "prompts, the tool surface, the budgets, the model ids, the request "
-            "configuration, the retry policy and the scoring code are the frozen ones."
+            "configuration and the retry policy are the frozen ones."
+        )
+    reproduces, scoring_differences = reproduces_grading()
+    if not reproduces:
+        raise SystemExit(
+            "M19b's scoring code does not reproduce M19's published metrics:\n  "
+            + "\n  ".join(scoring_differences)
+            + "\n\nRefusing to freeze. Since T6 added the necessity metrics, the "
+            "scoring hash cannot match and the plan requires this instead -- and a "
+            "scoring change that moves an M19 number is not a difference to record, it "
+            "is a run to stop."
         )
     live["m19_equality"] = {
         "asserted_fields": list(ASSERTED_FIELDS),
         "byte_equal": True,
+        "scoring": {
+            "asserted_by": (
+                "reproduction, not a hash: T6 added the necessity metrics to "
+                "scoring.py (docs/m19b-plan.md, rule 2 amended before any T8 run)"
+            ),
+            "reproduces_grading": True,
+            "hashes": dict(live.get("scoring") or {}),
+        },
         "m19_environment": str((M19_DIR / ENVIRONMENT_JSON).relative_to(ROOT)).replace("\\", "/"),
         "m19_commit": recorded.get("git", {}).get("commit", ""),
         "m19b_commit": live.get("git", {}).get("commit", ""),

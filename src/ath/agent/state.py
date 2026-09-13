@@ -158,6 +158,17 @@ class InvestigationState:
     """The same count split by call kind (``planner`` / ``synthesis``)."""
     planner_decisions: dict[str, int] = field(default_factory=dict)
     """How each planning step was actually decided. See :data:`PLANNER_DECISIONS`."""
+    llm_requests: list[dict[str, Any]] = field(default_factory=list)
+    """Per-call request measurements, when a measurement hook was attached.
+
+    Empty in production and in every run before M19b: the hook is
+    :attr:`~ath.agent.llm.AnthropicLLM.request_observer`, the ablation harness is the
+    only thing that attaches it, and a state that carries no measurements serialises
+    exactly as it did before this field existed. What it holds is
+    :func:`~ath.agent.llm.request_measurement` over the body the client was about to
+    send, with the provider's reported ``input_tokens`` beside it -- the bytes that went
+    on the wire, from the builder that put them there, which is the only way this project
+    could say what a request that came back 413 actually weighed."""
     llm_errors: list[str] = field(default_factory=list)
     """Model calls that failed. Populated even though the run still completes.
 
@@ -343,6 +354,9 @@ class InvestigationState:
                 "unparseable_responses": self.llm_unparseable_responses,
                 "unparseable_by_kind": dict(sorted(self.llm_unparseable_by_kind.items())),
                 "planner": self.planner_summary,
+                # Emitted only when a measurement hook was attached, so a run made
+                # without one serialises exactly as every already-published row did.
+                **({"requests": list(self.llm_requests)} if self.llm_requests else {}),
             },
             "claims": [c.to_dict() for c in self.claims],
             "rejected_claims": [r.to_dict() for r in self.rejected_claims],
