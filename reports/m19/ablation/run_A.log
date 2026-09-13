@@ -1,0 +1,113 @@
+attack_data_aws: 2 case(s) x 2 run(s) in 0.1s
+comiset: 2 case(s) x 2 run(s) in 19.3s
+synthetic:INC-001: 1 case(s) x 2 run(s) in 0.4s
+synthetic:INC-002: 1 case(s) x 2 run(s) in 0.0s
+synthetic:INC-005: 1 case(s) x 2 run(s) in 0.0s
+synthetic:INC-004: 1 case(s) x 2 run(s) in 0.1s
+flaws_cloud: 14 case(s) x 2 run(s) in 109.7s
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\arm_A.json (22 case row(s))
+reproducibility: IDENTICAL
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\scores_A.json
+{
+  "cases": 22,
+  "arms": {
+    "A_deterministic": {
+      "overall": {
+        "cases": 22,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 1.0,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0909,
+          "facts": 15.2273,
+          "inferences": 4.4091,
+          "hypotheses": 0.0909,
+          "tool_calls": 5.5909,
+          "steps": 2.0909,
+          "wall_seconds": 0.2095
+        },
+        "total": {
+          "facts": 335,
+          "inferences": 97,
+          "hypotheses": 2,
+          "unsupported_claims": 2,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 4885,
+          "cited_event_ids_existing": 4885,
+          "case_evidence_ids": 361,
+          "case_evidence_touched": 361,
+          "tool_calls": 123,
+          "steps": 46,
+          "wall_seconds": 4.609,
+          "facts_inferred_from_pid": 3,
+          "ambiguous_pid_inferences": 0,
+          "tokens": null
+        },
+        "statuses": {
+          "complete": 22
+        },
+        "degraded_runs": 0
+      },
+      "by_corpus": {
+        "attack_data_aws": {
+          "cases": 2,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 22.5,
+            "inferences": 3.0,
+            "hypotheses": 0.0,
+            "tool_calls": 3.5,
+            "steps": 2.0,
+            "wall_seconds": 0.0115
+          },
+          "total": {
+            "facts": 45,
+            "inferences": 6,
+            "hypotheses": 0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts_without_evidence": 0,
+            "cited_event_ids": 37,
+            "cited_event_ids_existing": 37,
+            "case_evidence_ids": 37,
+            "case_evidence_touched": 37,
+            "tool_calls": 7,
+            "steps": 4,
+            "wall_seconds": 0.023,
+            "facts_inferred_from_pid": 0,
+            "ambiguous_pid_inferences": 0,
+            "tokens": null
+          },
+          "statuses": {
+            "complete": 2
+          },
+          "degraded_runs": 0
+        },
+        "comiset": {
+          "cases": 2,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 4.0,
+            "inferences": 3.5,
+            "hypotheses": 0.0,
+            "tool_calls": 5.5,
+            "steps": 2.0,
+            "wall_seconds": 0.0827
+          },
+          "total": {
+            "facts": 8,
+            "inferences": 7,
+            "hypotheses": 0,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts_without_evidence": 0,
