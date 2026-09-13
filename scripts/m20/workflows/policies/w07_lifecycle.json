@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {
+      "ID": "ath-m20-expire-work-objects",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "work/"
+      },
+      "Expiration": {
+        "Days": 7
+      }
+    }
+  ]
+}

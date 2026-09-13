@@ -212,3 +212,33 @@ The `license` and `provenance` values differ in kind from every existing entry: 
 current datasets are all `"license": "UNVERIFIED ..."` third-party fetches. This is the
 first entry the project owns, and the first whose benignity is asserted by the collector
 rather than inferred.
+
+## 8. Corrections found while building the tooling (2026-09-13)
+
+Building `scripts/m20/` against sections 2-5 surfaced these; the tooling encodes the
+resolution stated here, and the earlier sections are left as written so the change is
+visible.
+
+1. **W12's day.** Section 4 says "the offboarding (W12 on day 12)"; section 2 has W12 as
+   policy iteration on day 8 and the day-12 row as W04 session 3 (offboard). Sections 2
+   and 3 govern.
+2. **Day-14 teardown must not stop the trail.** `stop-logging` *is* AWS-002 and would put
+   one CRITICAL into the holdout, falsifying prediction 3 by the plan's own hand. The
+   runbook (`docs/m20-aws-setup.md`) tears down by deleting resources and then the
+   account; the trail is never stopped, and `scripts/m20/workflows/_common.sh` refuses
+   `stop-logging`, `delete-trail`, `update-trail`, `put-event-selectors`.
+3. **W01, W02, W13 are operator-assisted.** `ConsoleLogin` is produced by a browser
+   sign-in, not by any CLI call; the scripts pace the episode and do the bookkeeping.
+4. **Session coverage is checked on logon and control rows.** The four authentication
+   event names land in the logon table, so W01/W02/W03/W13 produce no control rows;
+   `validate_dev.py` reports which table covered each session.
+5. **Quiet days** (7, 13) run W01, W11, W09 (and W10 from day 9) literally; W03's "daily
+   from day 1" is read as excluding them. Either reading is defensible; this is the one
+   encoded.
+6. **W02 is two sessions** (days 3 and 6), the table's count, not "~3".
+7. **Day-1 Root setup is session `SETUP`**, so day-1 Root activity is explained.
+8. **Account id cannot be redacted from delivered file names** (CloudTrail keys carry it);
+   the provenance entry records that fact instead of pretending otherwise.
+9. **Key-timestamp splitting has a bounded edge**: a delivery straddling midnight is
+   assigned by delivery window. Accepted under the sealing invariant; no session is
+   scheduled within an hour of the day-10 boundary.

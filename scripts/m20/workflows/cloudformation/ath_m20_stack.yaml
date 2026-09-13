@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  ATH M20 W08 stack: a small VPC + security group + t3.micro instance, plus the instance
+  role the plan's W08 row implies ("cloudformation, ec2, iam, all classes"). Deliberately
+  minimal and NAT-free -- section 3's cost note puts the whole 14 days at USD 5-15,
+  "dominated by EC2 hours and NAT-free VPC usage if the IaC stack is kept minimal".
+  Created and deleted four times over the collection. The IAM role is created and removed
+  on every run, which is the shape the plan quotes AWS-005's false_positives about:
+  "Infrastructure-as-code runs that delete and recreate identity objects on every apply".
+
+Parameters:
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+    Description: Resolved from the public SSM parameter, so the template needs no hardcoded AMI.
+  VpcCidr:
+    Type: String
+    Default: 10.42.0.0/16
+  SubnetCidr:
+    Type: String
+    Default: 10.42.1.0/24
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: ath-m20-w08-vpc
+        - Key: Project
+          Value: ath-m20
+
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetCidr
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: ath-m20-w08-subnet
+
+  # No internet gateway, no NAT: the instance never needs to reach the internet, and a NAT
+  # gateway would cost more than the rest of the experiment put together.
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ath-m20 W08 stack instance; no ingress, egress within the VPC only
+      VpcId: !Ref Vpc
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: !Ref VpcCidr
+          Description: VPC-local egress only
+      Tags:
+        - Key: Name
+          Value: ath-m20-w08-sg
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ath-m20-w08-instance
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ath-m20-w08-instance-least-privilege
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:UpdateInstanceInformation
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: "*"
+      Tags:
+        - Key: Project
+          Value: ath-m20
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: ath-m20-w08-instance
+      Roles:
+        - !Ref InstanceRole
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.micro
+      SubnetId: !Ref Subnet
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      IamInstanceProfile: !Ref InstanceProfile
+      Tags:
+        - Key: Name
+          Value: ath-m20-w08-instance
+        - Key: Project
+          Value: ath-m20
+
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+  InstanceId:
+    Value: !Ref Instance
+  InstanceRoleArn:
+    Value: !GetAtt InstanceRole.Arn
