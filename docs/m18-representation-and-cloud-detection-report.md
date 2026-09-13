@@ -241,6 +241,11 @@ asserts T1098 Account Manipulation, not T1580. Both readings are defensible and 
 says T1580. Recorded, not reconciled -- adding a T1580 mapping after seeing this number
 would be fitting the ATT&CK layer to five files.
 
+> **Reconciled 2026-09-13** in [aws006-attack-mapping-investigation.md](aws006-attack-mapping-investigation.md):
+> the label is questionable, not the mapping. The capture holds two `CreatePolicy` records
+> duplicated five times each, no `AssumeRole`, no read call; the T1580 tag was inherited from
+> a Splunk detection's directory name. "Both readings are defensible" is withdrawn.
+
 **P2 (PARTIAL)** was a mis-read of an artifact already in the repository: cloudmapper's 37
 denials span 4m44s, not "two hours"; the two hours are the gap between two bursts. Nothing
 about the rule is implicated.
