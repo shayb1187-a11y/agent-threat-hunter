@@ -221,12 +221,15 @@ def test_all_registered_rules_are_discoverable() -> None:
     """ATH-009/010 came from the Milestone 6 engineering loop; ATH-011/012 from M12.
 
     AWS-001/002 and K8S-001/002 (M13) read ath.schema.EVENT_CONTROL rather than the
-    Windows-shaped tables every ATH-0xx rule reads.
+    Windows-shaped tables every ATH-0xx rule reads; AWS-003/004/005/006 (M18-8) read the
+    same table and name no service, API or actor at all, describing behaviour only
+    through verb classes, `decision`, breadth and windows.
     """
     assert registered_rule_ids() == [
         "ATH-001", "ATH-002", "ATH-003", "ATH-004", "ATH-005", "ATH-006",
         "ATH-007", "ATH-008", "ATH-009", "ATH-010", "ATH-011", "ATH-012",
-        "AWS-001", "AWS-002", "K8S-001", "K8S-002",
+        "AWS-001", "AWS-002", "AWS-003", "AWS-004", "AWS-005", "AWS-006",
+        "K8S-001", "K8S-002",
     ]
 
 
@@ -245,7 +248,7 @@ def test_unknown_rule_id_raises() -> None:
 
 def test_hunt_runs_all_rules_without_error(hunt) -> None:
     assert hunt.errors == {}
-    assert len(hunt.rules_run) == 16
+    assert len(hunt.rules_run) == 20
 
 
 def test_every_finding_cites_real_event_ids(hunt, telemetry) -> None:

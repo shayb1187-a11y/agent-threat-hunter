@@ -256,6 +256,21 @@ TECHNIQUES: dict[str, Technique] = {
         _t("T1069", "Permission Groups Discovery", (Tactic.DISCOVERY,), None),
         _t("T1069.002", "Domain Groups", (Tactic.DISCOVERY,), "T1069"),
         _t("T1482", "Domain Trust Discovery", (Tactic.DISCOVERY,), None),
+        # -- Cloud discovery (M18-8, AWS-003 / AWS-004) -------------------------------
+        # Verified against attack.mitre.org on 2026-09-13, per this module's convention
+        # -- fetched, not recalled. Both pages state "Sub-techniques: No sub-techniques"
+        # and list Discovery (TA0007) as their only tactic, so there is no more specific
+        # object to report and no multi-tactic ordering decision to get wrong. Both names
+        # match the strings the coverage watchlist has carried since M18-7, which is now
+        # a checked agreement rather than a coincidence.
+        #
+        # The two are separated by *what* was enumerated, not by how: T1526 is the
+        # account's services, T1580 is the infrastructure inside them. AWS-003 counts how
+        # many distinct services an actor read and never inspects which, so it cannot
+        # decide between them -- see the mapper, where at most one of the pair is
+        # asserted at HIGH.
+        _t("T1526", "Cloud Service Discovery", (Tactic.DISCOVERY,), None),
+        _t("T1580", "Cloud Infrastructure Discovery", (Tactic.DISCOVERY,), None),
         # -- Impact ------------------------------------------------------------------
         # Added for ATH-011. Verified against attack.mitre.org: T1490 sits under Impact,
         # has no sub-techniques, and its description explicitly names vssadmin,

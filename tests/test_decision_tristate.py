@@ -29,7 +29,7 @@ from ath.control_vocab import (
 )
 from ath.environment.channels import FIELD_APPLICABILITY
 from ath.hunting import run_hunt
-from ath.hunting.base import all_detectors
+from ath.hunting.base import all_detectors, get_detector
 from ath.schema import EVENT_CONTROL
 from ath.telemetry.k8s_audit_source import _decision, _normalise_control_record
 
@@ -213,15 +213,30 @@ def test_an_unreadable_status_is_a_failure_not_a_denial() -> None:
 # ======================================================================================
 
 
-def test_no_registered_rule_reads_the_decision_column() -> None:
-    """Whether any detection is even capable of noticing the third value.
+# Exactly the rules that are allowed to read `decision`, and what each reads it *for*.
+# The point of naming them is that the list is short and deliberate: when M18-7 split the
+# column, no rule read it at all, which is what made the split safe to make. M18-8 added
+# four rules whose subject *is* the platform's answer, and each of them depends on the
+# third value existing -- AWS-004 counts authorization refusals and would otherwise be
+# counting a throttled retry loop; AWS-006 counts the rejections that are specifically
+# *not* refusals; AWS-005 refuses to call an attempted removal a removal.
+DECISION_READERS: dict[str, str] = {
+    "AWS-003": "denied fraction grades the burst HIGH or MEDIUM",
+    "AWS-004": "the filter IS `decision == denied`",
+    "AWS-005": "only `allowed` rows count as a removal that happened",
+    "AWS-006": "the filter IS `decision == failed`, the complement of AWS-004's",
+}
+
+
+def test_only_the_declared_rules_read_the_decision_column() -> None:
+    """Which detections are capable of noticing the third value, named one by one.
 
     AWS-002 does *not* read ``decision`` -- it keys on the service prefix and the verb --
-    and neither does any other registered rule, which is why splitting "denied" in two
-    cannot move a finding anywhere. Asserted structurally rather than claimed in prose:
-    fails the moment a rule starts filtering on the column without the tri-state being
-    revisited, which is exactly when "denied means any error" would silently become part
-    of a detection's meaning again.
+    and neither does any Windows rule, which is why splitting "denied" in two could not
+    move a finding anywhere when the split was made. Asserted structurally rather than
+    claimed in prose: fails the moment a rule starts filtering on the column without the
+    tri-state being revisited, which is exactly when "denied means any error" would
+    silently become part of a detection's meaning again.
     """
     readers = [
         detector.rule_id for detector in all_detectors()
@@ -233,7 +248,23 @@ def test_no_registered_rule_reads_the_decision_column() -> None:
         or "decision" in getattr(detector, "fields_used", ())
         or "decision" in getattr(detector, "optional_fields", frozenset())
     ]
-    assert readers == [], f"rules now read `decision`: {readers}"
+    assert sorted(readers) == sorted(DECISION_READERS), (
+        f"rules reading `decision` changed: {sorted(readers)}"
+    )
+
+
+def test_no_decision_reader_treats_failed_as_denied() -> None:
+    """The distinction the tri-state exists for, enforced on the rules that use it.
+
+    Failure mode: a rule written as ``decision != "allowed"``. That is the two-valued
+    column returning by the back door -- and on the background trail it would put one
+    account's throttled retry loop back inside a permission-probe detection.
+    """
+    for rule_id in DECISION_READERS:
+        source = inspect.getsource(type(get_detector(rule_id)))
+        assert '!= "allowed"' not in source and "!= DECISION_ALLOWED" not in source, (
+            f"{rule_id} treats every non-allowed answer alike"
+        )
 
 
 def _trail_tampering(decision: str) -> list[dict]:

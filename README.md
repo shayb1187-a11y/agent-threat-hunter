@@ -63,7 +63,7 @@ agentic-threat-hunter/
 │   │   ├── k8s_audit_source.py  # Kubernetes audit log: RBAC grants + pod exec
 │   │   ├── normalize.py #    shared coerce_and_validate() -- one funnel, every source
 │   │   └── loader.py    #    reads canonical CSVs; merge_telemetry() combines sources
-│   ├── hunting/         # ✅ 16 detection rules, Finding model, hunt engine
+│   ├── hunting/         # ✅ 20 detection rules, Finding model, hunt engine
 │   │   ├── finding.py   #    Finding / Evidence / Severity
 │   │   ├── base.py      #    Detector ABC, HuntConfig thresholds, registry
 │   │   ├── indicators.py#    shared helpers (b64 decode, IP classification)

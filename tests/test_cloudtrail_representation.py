@@ -334,15 +334,22 @@ def test_reconnaissance_burst_is_represented_and_silent(tmp_path) -> None:
     assert run_hunt(_telemetry(result)).findings == []
 
 
-def test_alarming_calls_are_represented_and_deliberately_undetected(tmp_path) -> None:
-    """Detection is out of scope for M18-3, and this test says so on purpose.
+def test_alarming_calls_are_represented_and_only_two_of_four_are_detected(tmp_path) -> None:
+    """Representation came first; detection arrived later, for two of these four.
 
-    Deleting an IAM policy, detaching a user policy, rewriting a role's trust policy and
-    deleting VPC flow logs are all actions an analyst would want to see. Before this
-    change they were not even *visible*: they were refused at the adapter. They are now
-    represented, and they produce no findings -- because no rule was written for them.
-    Adding one is a separate decision with its own false-positive budget, and this test
-    fails loudly if such a rule is added without revisiting this file.
+    M18-3 made these four calls *visible* -- before it they were refused at the adapter
+    -- and detected none of them, on purpose: adding a rule is a separate decision with
+    its own false-positive budget. This test was written to fail loudly when that
+    decision was taken, and M18-8 took it. AWS-005 now reads the two rows that removed
+    an identity's authority (the policy delete and the user-policy detach, which are
+    delete- and revoke-class changes on the identity service, performed by one actor
+    inside one episode, so they are *one* finding and not two).
+
+    The other two stay represented and undetected, and that is not an oversight:
+    rewriting a role's trust policy is a modify-class change, which removes nothing, and
+    deleting flow logs is on a service whose objects are not identities. Neither is
+    within any rule's stated shape. The pin stays here so the next rule that changes
+    this answer has to say so in this file.
     """
     records = [
         _record(eventSource="iam.amazonaws.com", eventName="DeletePolicy", eventID="m-1",
@@ -372,7 +379,16 @@ def test_alarming_calls_are_represented_and_deliberately_undetected(tmp_path) ->
         "eventID=m-4": ("delete", "ec2:flow-log"),
     }
     assert len(controls) == 4
-    assert run_hunt(_telemetry(result)).findings == []
+
+    findings = run_hunt(_telemetry(result)).findings
+    assert [f.rule_id for f in findings] == ["AWS-005"]
+    assert findings[0].metadata["removal_count"] == 2
+    table = result.tables[EVENT_CONTROL]
+    cited = {
+        table.loc[table["event_id"] == e.event_id, "source_ref"].iloc[0].split(";")[0]
+        for e in findings[0].evidence
+    }
+    assert cited == {"eventID=m-1", "eventID=m-2"}
 
 
 # ======================================================================================

@@ -350,6 +350,86 @@ MAPPING_RULES: tuple[MappingRule, ...] = (
         "turned off. Reported at the parent technique because this catalogue does not "
         "carry a verified cloud-log-specific sub-technique.",
     ),
+    # -- AWS-003 : read-class breadth across services (M18-8) ------------------------
+    #
+    # Two techniques, and the pair is the point. T1526 is discovery of the account's
+    # *services*; T1580 is discovery of the *infrastructure* inside them. Which one a
+    # burst was is decided by which services were read -- and AWS-003 counts how many
+    # distinct services there were and never looks at their names, by design (naming a
+    # service is the defect the whole M18 representation work removed). So the rule
+    # cannot separate them, and at most one of the two may be asserted at HIGH.
+    #
+    # HIGH goes to T1526, because the rule's own observation is exactly its definition:
+    # breadth *across services* is what was counted and what T1526 names. T1580 is the
+    # same evidence read one level down -- entirely plausible, and inferred rather than
+    # observed, which is what MEDIUM means here.
+    MappingRule(
+        "AWS-003", "T1526", Confidence.HIGH,
+        "One identity's read-class calls touched many distinct cloud services inside a "
+        "short window, which is the breadth this technique is defined by. What the "
+        "evidence shows is how many services were read and how many of those reads the "
+        "platform refused; what it does not show is intent -- a compliance scanner "
+        "produces the same rows on purpose, every day.",
+    ),
+    MappingRule(
+        "AWS-003", "T1580", Confidence.MEDIUM,
+        "Enumerating an account's services is normally how its infrastructure is "
+        "enumerated, so this behaviour is consistent with infrastructure discovery too. "
+        "MEDIUM and not HIGH because separating the two requires knowing *which* "
+        "services were read, and this rule deliberately counts distinct services "
+        "without inspecting their names -- the infrastructure reading is therefore "
+        "inferred, not observed.",
+    ),
+    # -- AWS-004 : a run of authorization refusals (M18-8) ---------------------------
+    #
+    # Mapped only to T1580, and only at MEDIUM. What the evidence shows is that a
+    # principal was repeatedly told it may not act; probing permissions is a documented
+    # part of infrastructure discovery, and it is equally what a pipeline missing one
+    # permission produces. T1526 is deliberately not asserted: a refusal names a
+    # resource type the caller could not reach, which is not the same observation as
+    # having enumerated the account's services.
+    MappingRule(
+        "AWS-004", "T1580", Confidence.MEDIUM,
+        "One identity accumulated many authorization refusals in a short window, which "
+        "is consistent with probing what a credential can reach while mapping an "
+        "account's infrastructure. The evidence shows what the platform refused and "
+        "across how many kinds of object; it does not show that the caller was "
+        "enumerating rather than misconfigured, and a role missing one permission "
+        "produces the same shape.",
+    ),
+    # -- AWS-005 : identity authority removed (M18-8) --------------------------------
+    #
+    # The parent technique, not a sub-technique. T1098.003 Additional Cloud Roles and
+    # T1098.001 Additional Cloud Credentials both describe authority being *added*;
+    # this rule fires on authority being taken away, which the parent's "modification of
+    # accounts" covers and neither sub-technique does. Claiming .003 for a detach would
+    # be reporting the opposite of what happened.
+    MappingRule(
+        "AWS-005", "T1098", Confidence.MEDIUM,
+        "An identity's authority was deleted or revoked and the platform performed it, "
+        "which is account manipulation as this technique defines it. Reported at the "
+        "parent because the cloud sub-techniques describe authority being *added*, and "
+        "this evidence shows it being removed. What the evidence shows is which "
+        "principal removed what, and when; what it does not show is why -- routine "
+        "deprovisioning and an intruder stripping the access that would evict them are "
+        "the same rows.",
+    ),
+    # -- AWS-006 : repeated rejected identity writes (M18-8) -------------------------
+    #
+    # LOW, not MEDIUM, and the reason is in the word "attempted". Account manipulation
+    # is a change to an account; every row behind this finding is a change the platform
+    # *did not make*. The technique is plausible -- someone is trying to write authority
+    # and searching for a form that will be accepted -- but its defining element, an
+    # account actually manipulated, was never observed.
+    MappingRule(
+        "AWS-006", "T1098", Confidence.LOW,
+        "One identity repeatedly attempted to write identity authority and the platform "
+        "rejected each attempt for reasons other than authorization, which is "
+        "consistent with searching for a policy form that will be accepted. LOW because "
+        "the technique's defining element -- an account that was actually manipulated "
+        "-- was not observed: every call in this evidence failed. A deployment script "
+        "retrying a malformed policy document produces exactly these rows.",
+    ),
     # -- K8S-001 : RBAC binding grants a maximally-privileged role (Milestone 13) ----
     MappingRule(
         "K8S-001", "T1098.006", Confidence.HIGH,

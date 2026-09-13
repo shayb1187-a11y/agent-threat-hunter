@@ -68,6 +68,63 @@ class HuntConfig:
     identity) and K8S-002 (RBAC grant -> pod exec by the newly-privileged identity) --
     both are the same shape: a grant, then that grant's beneficiary acting on it."""
 
+    # --- AWS-003 / AWS-004 / AWS-005 / AWS-006 generic control-plane behaviour ---
+    #
+    # Every number below was pre-registered in reports/m18/cloud_detection/PREREGISTERED.md
+    # at HEAD eb7d395, *before* any of these four rules existed and before anything ran
+    # against the held-out attack corpus. Each is traced there to the background
+    # distribution in reports/m18/cloud_behaviour/flaws_cloud.json (flaws.cloud,
+    # 1,857,154 control rows, 55 actors, ~3.6 years) and to the candidate grid M18-7
+    # evaluated in advance. A test parses that file and fails if any value here differs
+    # from what was registered, so tuning after seeing the results is not a quiet edit.
+
+    cloud_discovery_min_services: int = 10
+    """AWS-003: distinct services a single actor's read-class calls must touch inside
+    :attr:`cloud_discovery_window` before the breadth is called a discovery burst.
+
+    The background distribution over 55 actors at a 10-minute window is p50 = 1,
+    p90 = 11.8, p99 = 125.6, max = 145. The pre-registered grid prices the candidates at
+    that window: >= 5 reaches 9 actors on 335 actor-days, >= 10 reaches 7 actors on 179
+    actor-days, >= 20 reaches 4 actors on 89 actor-days. 10 sits just above p90 -- the
+    knee -- and below the 19 services the T1526 capture reaches, because a breadth rule
+    that misses breadth is the failure this exists to avoid."""
+
+    cloud_discovery_window: timedelta = timedelta(minutes=10)
+    """AWS-003: the sliding window the distinct services must fall inside. Ten minutes is
+    the window the background distribution above was measured over; a rule applying a
+    threshold at a different window than the one it was priced at is a different rule."""
+
+    cloud_denial_min_count: int = 25
+    """AWS-004: authorization denials (``decision == "denied"``, never "an error
+    occurred") one actor must accumulate inside :attr:`cloud_denial_window`.
+
+    Background at 10 minutes: p50 = 0, p90 = 1.6, p99 = 2,417, max = 2,639 -- a trail
+    where almost every actor is never refused and three are refused constantly. The grid
+    prices 10/25/50/100 at 306/203/162/134 actor-days. 25 takes most of the volume
+    reduction available; past it the cost stops falling, because the remaining cost is
+    the same three tail identities."""
+
+    cloud_denial_window: timedelta = timedelta(minutes=10)
+    """AWS-004: the sliding window those denials must fall inside."""
+
+    cloud_identity_change_window: timedelta = timedelta(minutes=60)
+    """AWS-005 and AWS-006: the episode length over which one actor's authority changes
+    on the identity service are aggregated into a single finding.
+
+    Sixty minutes, not ten, because the behaviour is a person or a script working through
+    a list of identities rather than a scanner emptying a target list -- and because the
+    background statistics were measured at both lengths, so this one is priced too."""
+
+    cloud_identity_failed_min_count: int = 5
+    """AWS-006: identity authority changes the platform *rejected for a reason other than
+    authorization* that one actor must accumulate inside
+    :attr:`cloud_identity_change_window`.
+
+    The background distribution is p50 = 0, p90 = 0, p99 = 2.92, max = 4, at both window
+    lengths; the grid reaches 1 actor on 1 actor-day at >= 3 and **no actor at all** at
+    >= 5 or >= 10. 5 is the smallest value flaws.cloud never reaches -- exactly one above
+    its observed maximum."""
+
 
 # Process names treated as script interpreters / LOLBins capable of executing
 # attacker-supplied code. Lower-cased for case-insensitive comparison.

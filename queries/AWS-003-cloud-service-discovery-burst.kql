@@ -1,0 +1,61 @@
+// =====================================================================================
+// AWS-003 : Cloud service discovery burst
+// Severity: MEDIUM (HIGH when the majority of the burst was refused)
+// Pandas  : src/ath/hunting/rules/cloud_behaviour_rules.py :: CloudServiceDiscoveryBurst
+//
+// One identity's read-class calls touching many distinct services inside a short
+// window. Every call is individually unremarkable; the breadth is the behaviour.
+// The threshold was pre-registered from the background distribution before the rule
+// existed -- see reports/m18/cloud_detection/PREREGISTERED.md.
+//
+// KQL notes: AWSCloudTrail is Sentinel's built-in CloudTrail ingestion table. The verb
+// class is derived here the way the adapter derives it -- from the first word of the
+// API name -- rather than from a list of API names, which is the whole point: a query
+// naming APIs is silent about every API AWS ships next.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, actor, verb, resource_type, decision, event_id
+//   optional (evidence text only): resource_name
+//
+// LIKELY FALSE POSITIVES
+//   - Cloud security posture and compliance scanners, whose job is exactly this.
+//   - Inventory, cost-explorer and backup tooling enumerating across services.
+//   - Infrastructure-as-code planning runs reading current state before changing it.
+//   - An administrator working through the console during an incident or an audit.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let Window = 10m;
+let MinServices = 10;             // pre-registered: just above the background p90
+let ReadVerbs = dynamic(["get","list","describe","lookup","search","query","scan",
+                         "check","view","discover","simulate","decode","validate",
+                         "test","resolve","translate","estimate","preview","head",
+                         "download","select","watch"]);
+AWSCloudTrail
+| where TimeGenerated > ago(LookBack)
+| extend Service = tostring(split(EventSource, ".")[0])
+// The verb is the leading word of the API name: DescribeInstances -> describe.
+| extend Verb = tolower(tostring(extract("^([A-Z][a-z]+)", 1, EventName)))
+| where Verb in (ReadVerbs)
+| extend Denied = iff(ErrorCode has_any ("AccessDenied","Unauthorized","Forbidden",
+                                         "NotAuthorized","AuthFailure"), 1, 0)
+| summarize Services = dcount(Service), Calls = count(), DeniedCalls = sum(Denied),
+            SampleEvents = make_set(AwsEventId, 20)
+    by Actor = UserIdentityUserName, Bucket = bin(TimeGenerated, Window)
+| where Services >= MinServices
+| extend DeniedFraction = todouble(DeniedCalls) / todouble(Calls)
+| extend Grade = iff(DeniedFraction > 0.5, "HIGH", "MEDIUM")
+| sort by Bucket desc, Services desc
+
+// pandas equivalent:
+//   reads = controls[verb_class(verb) == "read"]
+//   per actor: sliding, non-overlapping 10-minute episodes (ath.hunting.episodes)
+//   keep episodes with >= 10 distinct services -> one finding each
+//   HIGH when (decision == "denied").mean() > 0.5, else MEDIUM
+//
+// Known difference, stated rather than hidden: bin() is a FIXED bucket and the pandas
+// rule uses a SLIDING window. A burst straddling a bucket boundary is halved here and
+// is not halved there; Sentinel has no non-overlapping sliding-window operator, so this
+// query is the conservative approximation and will miss episodes the rule catches.

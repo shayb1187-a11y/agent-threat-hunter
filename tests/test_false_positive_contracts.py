@@ -66,6 +66,54 @@ def _office_env() -> list[dict]:
     ]
 
 
+# -- control-plane helpers for AWS-003/004/005/006 -------------------------------------
+#
+# Invented services and families throughout (`quokka<N>`, `ledger-*`), the same
+# vocabulary tests/test_cloud_behaviour_rules.py proves disjoint from both real corpora.
+# `iam:` is the one real token, and it has to be: the identity-service predicate is
+# defined by that prefix.
+_AWS_DEVICE = "aws:519204773311/ap-southeast-2"
+
+
+def _cloud(actor: str, verb: str, resource_type: str, name: str, minute: float,
+           decision: str = "allowed", target: str = "") -> dict:
+    return ctrl(actor, verb, resource_type, name, target_actor=target, decision=decision,
+                device=_AWS_DEVICE, source="cloudtrail_mgmt", when=at(minute))
+
+
+def _sweep(actor: str, services: int, decision: str = "allowed") -> list[dict]:
+    """One identity reading `services` distinct services inside four minutes."""
+    return [
+        _cloud(actor, "describe", f"quokka{i}:ledger-fleet", f"ledger-{i}",
+               i * (4 / max(services - 1, 1)), decision)
+        for i in range(services)
+    ]
+
+
+def _refusals(actor: str, count: int, families: int) -> list[dict]:
+    """`count` authorization refusals spread over `families` resource families."""
+    return [
+        _cloud(actor, "describe", f"quokka0:family{i % families}", f"family-{i % families}",
+               i * (6 / count), "denied")
+        for i in range(count)
+    ]
+
+
+def _removals(actor: str, count: int, target: str = "") -> list[dict]:
+    return [
+        _cloud(actor, "detach" if i % 2 else "delete", "iam:quokka-policy",
+               f"quokka-policy-{i}", i * 2, "allowed", target)
+        for i in range(count)
+    ]
+
+
+def _rejected_writes(actor: str, count: int) -> list[dict]:
+    return [
+        _cloud(actor, "create", "iam:quokka-policy", f"quokka-policy-{i}", i * 2, "failed")
+        for i in range(count)
+    ]
+
+
 FP_CASES: tuple[Case, ...] = (
     # ---------------------------------------------------------------- ATH-001
     Case("ATH-001", 0, "Legitimate Office add-ins", lambda: telemetry(procs=_office_env() + [
@@ -224,6 +272,55 @@ FP_CASES: tuple[Case, ...] = (
     # ---------------------------------------------------------------- AWS-002
     Case("AWS-002", 0, "A deliberate, change-managed", lambda: telemetry(ctrls=[
         ctrl("ops_bob", "delete", "cloudtrail:trail", "legacy-trail", device="aws:123/us-east-1", source="cloudtrail_mgmt")]), "fires"),
+    # ---------------------------------------------------------------- AWS-003
+    # All four fire, and all four are graded MEDIUM because the platform allowed the
+    # breadth. That grading is the entire discount this rule offers these four readings,
+    # so it is pinned rather than merely mentioned.
+    Case("AWS-003", 0, "Cloud security posture", lambda: telemetry(
+        ctrls=_sweep("quokka_posture_scanner", 16)), "fires:not_high",
+        "the declared cost: a posture scanner's whole job is this shape, every day"),
+    Case("AWS-003", 1, "Inventory, asset-management", lambda: telemetry(
+        ctrls=_sweep("quokka_inventory", 12)), "fires:not_high"),
+    Case("AWS-003", 2, "Infrastructure-as-code planning", lambda: telemetry(
+        ctrls=_sweep("quokka_planner", 11)), "fires:not_high"),
+    Case("AWS-003", 3, "An administrator working through", lambda: telemetry(
+        ctrls=_sweep("bilby_admin", 10)), "fires:not_high",
+        "exactly at the pre-registered threshold, which is where the console case lands"),
+    # ---------------------------------------------------------------- AWS-004
+    Case("AWS-004", 0, "A pipeline or application whose role", lambda: telemetry(
+        ctrls=_refusals("numbat_pipeline", 30, 1)), "fires:not_high",
+        "one missing permission on one kind of object: fires, and the rule already "
+        "discounts it to MEDIUM on the resource-type breadth"),
+    Case("AWS-004", 1, "Security scanners and posture", lambda: telemetry(
+        ctrls=_refusals("quokka_posture_scanner", 30, 8)), "fires",
+        "refused across eight kinds of object, which is the HIGH condition: the "
+        "declared cost of the grading rule, pinned rather than argued about"),
+    Case("AWS-004", 2, "A newly created or newly scoped-down", lambda: telemetry(
+        ctrls=_refusals("quoll_service", 26, 2)), "fires:not_high"),
+    Case("AWS-004", 3, "Cross-account or cross-region", lambda: telemetry(
+        ctrls=_refusals("potoroo_federator", 40, 6)), "fires"),
+    # ---------------------------------------------------------------- AWS-005
+    # Every one of these fires, at MEDIUM, whatever the count -- which is the rule's own
+    # stated position: count is magnitude, not malice.
+    Case("AWS-005", 0, "Routine deprovisioning", lambda: telemetry(
+        ctrls=_removals("bilby_admin", 3, target="wallaby_leaver")), "fires:not_high"),
+    Case("AWS-005", 1, "Infrastructure-as-code runs that delete", lambda: telemetry(
+        ctrls=_removals("quokka_planner", 6)), "fires:not_high"),
+    Case("AWS-005", 2, "Least-privilege cleanup", lambda: telemetry(
+        ctrls=_removals("bilby_admin", 25)), "fires:not_high",
+        "a bulk campaign is one finding, not twenty-five: the episode is the unit"),
+    Case("AWS-005", 3, "Policy churn during development", lambda: telemetry(
+        ctrls=_removals("quoll_developer", 2)), "fires:not_high"),
+    # ---------------------------------------------------------------- AWS-006
+    Case("AWS-006", 0, "A deployment or policy-generation", lambda: telemetry(
+        ctrls=_rejected_writes("quoll_script", 5)), "fires:not_high",
+        "exactly at the pre-registered threshold, and the most common cause of it"),
+    Case("AWS-006", 1, "Automation racing itself", lambda: telemetry(
+        ctrls=_rejected_writes("numbat_pipeline", 6)), "fires:not_high"),
+    Case("AWS-006", 2, "An engineer iterating on a trust", lambda: telemetry(
+        ctrls=_rejected_writes("quoll_developer", 8)), "fires:not_high"),
+    Case("AWS-006", 3, "A tool written against a newer", lambda: telemetry(
+        ctrls=_rejected_writes("potoroo_cli", 12)), "fires:not_high"),
     # ---------------------------------------------------------------- K8S-001
     Case("K8S-001", 0, "Legitimate cluster bootstrap", lambda: telemetry(ctrls=[
         ctrl("system:apiserver", "create", "clusterrolebindings", "cluster-admin", target_actor="system:masters",

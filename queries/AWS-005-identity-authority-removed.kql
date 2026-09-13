@@ -1,0 +1,55 @@
+// =====================================================================================
+// AWS-005 : Identity authority removed
+// Severity: MEDIUM, always -- count is magnitude, not malice
+// Pandas  : src/ath/hunting/rules/cloud_behaviour_rules.py :: IdentityAuthorityRemoved
+//
+// Delete- or revoke-class changes to identity authority that the platform PERFORMED,
+// grouped per identity per episode. A removal the platform refused is not a removal;
+// those belong to AWS-004 and AWS-006. See reports/m18/cloud_detection/PREREGISTERED.md.
+//
+// KQL notes: keyed on the identity service and the verb class, never on a list of IAM
+// API names -- every call that service ships names its subject the same way, including
+// the ones that do not exist yet.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, actor, verb, resource_type, decision, event_id
+//   optional (evidence text only): resource_name, target_actor, role_ref
+//
+// LIKELY FALSE POSITIVES
+//   - Routine deprovisioning when someone leaves or a service is decommissioned.
+//   - Infrastructure-as-code runs that delete and recreate identity objects per apply.
+//   - Least-privilege cleanup campaigns removing unused policies in bulk.
+//   - Policy churn during development, while someone works out what a role needs.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let Window = 60m;
+let RemovalVerbs = dynamic(["delete","terminate","destroy","purge","discard","cancel",
+                            "release","deregister","unregister","expire","detach",
+                            "remove","revoke","disassociate","deny","reject","unshare",
+                            "unbind"]);
+AWSCloudTrail
+| where TimeGenerated > ago(LookBack)
+| where EventSource == "iam.amazonaws.com"          // the identity service
+| where isempty(ErrorCode)                          // performed, not attempted
+| extend Verb = tolower(tostring(extract("^([A-Z][a-z]+)", 1, EventName)))
+| where Verb in (RemovalVerbs)
+| extend Subject = tostring(coalesce(parse_json(RequestParameters).userName,
+                                     parse_json(RequestParameters).roleName,
+                                     parse_json(RequestParameters).groupName))
+| summarize Removals = count(), Subjects = make_set(Subject, 20),
+            SampleEvents = make_set(AwsEventId, 20)
+    by Actor = UserIdentityUserName, Bucket = bin(TimeGenerated, Window)
+| sort by Bucket desc, Removals desc
+
+// pandas equivalent:
+//   removals = controls[changes_authority(verb, resource_type)
+//                       & verb_class in {delete, revoke}
+//                       & (decision == "allowed")]
+//   per actor: 60-minute episodes -> one MEDIUM finding each, evidence capped at 20
+//
+// Known differences: fixed bin() here versus a sliding window in pandas; and the
+// beneficiary is recovered from three request parameters here, where the adapter
+// recovers it once, centrally, for every call the identity service has.

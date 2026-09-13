@@ -7,42 +7,11 @@ raw counts.
 
 from __future__ import annotations
 
-from datetime import timedelta
-
-import pandas as pd
-
 from ath.hunting.base import Detector, register
+from ath.hunting.episodes import find_episodes as _find_bursts
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.schema import EVENT_LOGON, describe_logon_type
 from ath.telemetry.loader import Telemetry
-
-
-def _find_bursts(
-    timestamps: list[pd.Timestamp], min_events: int, window: timedelta
-) -> list[tuple[int, int]]:
-    """Find non-overlapping clusters of >= ``min_events`` inside ``window``.
-
-    A two-pointer sweep over sorted timestamps. Returns inclusive ``(start, end)``
-    index pairs.
-
-    Why a sliding window rather than "count failures per hour": bucketing by fixed
-    clock hours splits a burst that straddles a boundary, so a 14-attempt attack
-    spanning 09:58-10:02 becomes two sub-threshold buckets and is missed entirely.
-    Boundary artefacts like this are a classic source of silent false negatives.
-    """
-    bursts: list[tuple[int, int]] = []
-    n = len(timestamps)
-    i = 0
-    while i < n:
-        j = i
-        while j + 1 < n and timestamps[j + 1] - timestamps[i] <= window:
-            j += 1
-        if j - i + 1 >= min_events:
-            bursts.append((i, j))
-            i = j + 1  # non-overlapping: do not re-report the same failures
-        else:
-            i += 1
-    return bursts
 
 
 @register

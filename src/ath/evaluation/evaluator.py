@@ -104,6 +104,16 @@ RULE_COVERAGE: dict[str, frozenset[str]] = {
     # ath.evaluation.suite, over their own cloud/Kubernetes telemetry.
     "AWS-001": frozenset(),
     "AWS-002": frozenset(),
+    # M18-8. Same reasoning as the four above, and for the same reason: the synthetic
+    # Windows generator this ground truth labels emits no control rows at all, so these
+    # four have no stage of *this* dataset to declare. They are measured for real on the
+    # held-out AWS attack corpus, against capture-level ATT&CK labels, in
+    # reports/m18/cloud_detection/ -- which is the first cloud ground truth this project
+    # has ever had, and is deliberately not smuggled into this synthetic benchmark.
+    "AWS-003": frozenset(),
+    "AWS-004": frozenset(),
+    "AWS-005": frozenset(),
+    "AWS-006": frozenset(),
     "K8S-001": frozenset(),
     "K8S-002": frozenset(),
 }

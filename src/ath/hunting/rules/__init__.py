@@ -8,13 +8,17 @@ Rules are grouped by telemetry source, mirroring how public detection repositori
 candidates proposed and measured by ``ath.engineering`` -- see that package and
 ``docs/detection-engineering.md`` for the propose/evaluate/iterate history.
 
-``aws_rules`` and ``k8s_rules`` read ``ath.schema.EVENT_CONTROL`` (cloud/Kubernetes
-control-plane activity) rather than the Windows-shaped process/network/logon tables
-every other module here reads.
+``aws_rules``, ``cloud_behaviour_rules`` and ``k8s_rules`` read
+``ath.schema.EVENT_CONTROL`` (cloud/Kubernetes control-plane activity) rather than the
+Windows-shaped process/network/logon tables every other module here reads. The split
+between the first two is what the rule *names*: ``aws_rules`` keys on particular IAM and
+audit-service resource families, ``cloud_behaviour_rules`` (M18-8) names nothing at all
+and describes behaviour purely through verb classes, ``decision``, breadth and windows.
 """
 
 from ath.hunting.rules import (
     aws_rules,
+    cloud_behaviour_rules,
     defense_impairment_rules,
     discovery_rules,
     impact_rules,
@@ -29,5 +33,5 @@ __all__ = [
     "process_rules", "network_rules", "logon_rules",
     "initial_access_rules", "discovery_rules",
     "impact_rules", "defense_impairment_rules",
-    "aws_rules", "k8s_rules",
+    "aws_rules", "cloud_behaviour_rules", "k8s_rules",
 ]

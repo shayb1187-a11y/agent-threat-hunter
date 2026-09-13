@@ -1,0 +1,60 @@
+// =====================================================================================
+// AWS-006 : Repeated rejected identity authority changes
+// Severity: MEDIUM
+// Pandas  : src/ath/hunting/rules/cloud_behaviour_rules.py :: RepeatedRejectedIdentityChanges
+//
+// Repeated identity-authority writes the platform rejected for reasons OTHER than
+// authorization -- malformed policy documents, name conflicts, principals that do not
+// exist. That is the shape of searching for a form the platform will accept, and it is
+// a different statement from being told "you may not", which is AWS-004's subject.
+// Threshold pre-registered: 5 is one above the background corpus's observed maximum.
+//
+// KQL notes: the error filter is a NEGATION of the authorization vocabulary, which is
+// why the tri-state decision column had to exist first (M18-7).
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, actor, verb, resource_type, decision, event_id
+//   optional (evidence text only): resource_name
+//
+// LIKELY FALSE POSITIVES
+//   - A deployment script emitting a malformed policy document and retrying it.
+//   - Automation racing itself, where the loser is rejected for a name conflict.
+//   - An engineer iterating on a trust policy by hand until the platform accepts it.
+//   - A tool written against a different API shape than the account exposes.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let Window = 60m;
+let MinRejections = 5;
+let AuthzErrors = dynamic(["AccessDenied","Unauthorized","Forbidden","NotAuthorized",
+                           "AuthFailure","InvalidClientTokenId","ExpiredToken",
+                           "SignatureDoesNotMatch","InvalidIdentityToken",
+                           "UnrecognizedClient"]);
+let ChangeVerbs = dynamic(["create","put","generate","copy","import","register",
+                           "allocate","request","provision","restore","upload","clone",
+                           "issue","attach","add","authorize","associate","grant",
+                           "share","bind","allow","detach","remove","revoke",
+                           "disassociate","deny","reject","unshare","unbind","modify",
+                           "update","set","change","replace","enable","disable",
+                           "activate","deactivate","rotate","delete","terminate"]);
+AWSCloudTrail
+| where TimeGenerated > ago(LookBack)
+| where EventSource == "iam.amazonaws.com"          // the identity service
+| where isnotempty(ErrorCode)
+| where not(ErrorCode has_any (AuthzErrors))        // rejected, not refused
+| extend Verb = tolower(tostring(extract("^([A-Z][a-z]+)", 1, EventName)))
+| where Verb in (ChangeVerbs)
+| summarize Rejections = count(), Codes = make_set(ErrorCode, 10),
+            SampleEvents = make_set(AwsEventId, 20)
+    by Actor = UserIdentityUserName, Bucket = bin(TimeGenerated, Window)
+| where Rejections >= MinRejections
+| sort by Bucket desc, Rejections desc
+
+// pandas equivalent:
+//   rejected = controls[changes_authority(verb, resource_type) & (decision == "failed")]
+//   per actor: sliding, non-overlapping 60-minute episodes of >= 5 rows -> one MEDIUM
+//   finding each
+//
+// Known difference: fixed bin() here versus a sliding window in pandas -- see AWS-003.

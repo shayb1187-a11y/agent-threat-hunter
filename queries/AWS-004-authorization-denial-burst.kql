@@ -1,0 +1,54 @@
+// =====================================================================================
+// AWS-004 : Authorization-denial burst
+// Severity: MEDIUM (HIGH when the refusals span >= 5 distinct resource types)
+// Pandas  : src/ath/hunting/rules/cloud_behaviour_rules.py :: AuthorizationDenialBurst
+//
+// One identity refused authorization many times in a short window -- the negative
+// image of a permission probe. The threshold was pre-registered from the background
+// distribution; see reports/m18/cloud_detection/PREREGISTERED.md.
+//
+// KQL notes: the filter is on *authorization* refusals specifically, never "an error
+// occurred". On a real trail the largest single contributor to "any error" is API
+// throttling, and a rule counting that is counting a retry loop (M18-7).
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// REQUIRED TELEMETRY FIELDS (our canonical schema)
+//   control_events: timestamp, actor, resource_type, decision, event_id
+//   optional (evidence text only): verb, resource_name
+//
+// LIKELY FALSE POSITIVES
+//   - A pipeline whose role is missing a permission, retrying the call it cannot make.
+//   - Security scanners probing services the account does not use.
+//   - A newly scoped-down role exercising paths its old policy allowed.
+//   - Cross-account tooling pointed at an account it was never granted access to.
+// -------------------------------------------------------------------------------------
+
+let LookBack = 7d;
+let Window = 10m;
+let MinDenials = 25;              // pre-registered from the 10/25/50/100 grid
+let AuthzErrors = dynamic(["AccessDenied","Unauthorized","Forbidden","NotAuthorized",
+                           "AuthFailure","InvalidClientTokenId","ExpiredToken",
+                           "SignatureDoesNotMatch","InvalidIdentityToken",
+                           "UnrecognizedClient"]);
+AWSCloudTrail
+| where TimeGenerated > ago(LookBack)
+| where ErrorCode has_any (AuthzErrors)
+| extend Service = tostring(split(EventSource, ".")[0])
+// Resource family from the API name's noun, mirroring the adapter's morphology pass.
+| extend Family = tolower(tostring(extract("^[A-Z][a-z]+([A-Z][A-Za-z]*)", 1, EventName)))
+| extend ResourceType = strcat(Service, ":", Family)
+| summarize Denials = count(), ResourceTypes = dcount(ResourceType),
+            SampleEvents = make_set(AwsEventId, 20)
+    by Actor = UserIdentityUserName, Bucket = bin(TimeGenerated, Window)
+| where Denials >= MinDenials
+| extend Grade = iff(ResourceTypes >= 5, "HIGH", "MEDIUM")
+| sort by Bucket desc, Denials desc
+
+// pandas equivalent:
+//   denials = controls[decision == "denied"]           # authorization, not "any error"
+//   per actor: sliding, non-overlapping 10-minute episodes of >= 25 rows
+//   HIGH when resource_type.nunique() >= 5, else MEDIUM
+//
+// Known difference: fixed bin() here versus a sliding window in pandas -- the same
+// conservative approximation noted on AWS-003.
