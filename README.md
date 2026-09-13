@@ -6,7 +6,7 @@ uses an LLM agent to investigate possible attack chains — where every conclusi
 traceable to a specific telemetry event.
 
 > **Status: work in progress.** Milestones 1-8 complete: telemetry (synthetic **and
-> real Microsoft Defender exports**), **10** detection rules with KQL, MITRE ATT&CK
+> real Microsoft Defender exports**), **20** detection rules with KQL, MITRE ATT&CK
 > mapping, detector evaluation, deterministic attack-chain correlation, an autonomous
 > investigation agent, calibrated report generation, a detection-engineering loop, and
 > an **environment + visibility model** that reports what the system *cannot* see as
@@ -59,7 +59,8 @@ agentic-threat-hunter/
 │   │   ├── synthetic_source.py  # wraps the generator behind the same interface
 │   │   ├── defender_source.py   # real Microsoft Defender CSV/JSON import
 │   │   ├── identity.py  #    sha256 / signer / signature_status: a file vs its filename
-│   │   ├── cloudtrail_source.py # AWS CloudTrail: authentication + management-API activity
+│   │   ├── cloudtrail_source.py # AWS CloudTrail: authentication + EVERY management
+│   │   │                        #   record, as service + verb + resource family (M18-3)
 │   │   ├── k8s_audit_source.py  # Kubernetes audit log: RBAC grants + pod exec
 │   │   ├── normalize.py #    shared coerce_and_validate() -- one funnel, every source
 │   │   └── loader.py    #    reads canonical CSVs; merge_telemetry() combines sources
@@ -69,7 +70,8 @@ agentic-threat-hunter/
 │   │   ├── indicators.py#    shared helpers (b64 decode, IP classification)
 │   │   ├── engine.py    #    run_hunt() with per-rule error isolation
 │   │   └── rules/       #    grouped by telemetry source, Sigma-style -- including
-│   │                    #    aws_rules.py / k8s_rules.py over EVENT_CONTROL
+│   │                    #    aws_rules.py / k8s_rules.py and cloud_behaviour_rules.py
+│   │                    #    (AWS-003..006, generic) over EVENT_CONTROL
 │   ├── mitre/           # ✅ verified ATT&CK catalogue + evidence-gated mapper
 │   │   ├── attack.py    #    Technique catalogue, Tactic, AttackMapping
 │   │   └── mapper.py    #    gated rule -> technique interpretations
@@ -1744,14 +1746,20 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   CloudTrail evidence, and would correctly report that no cloud-specific capability
   exists — but it would not create one. That is the next milestone, and it needs the
   capability registry and evaluation harness the vision describes.
-- **The canonical schema is Windows-shaped, and CloudTrail proved exactly where.**
-  `ath.telemetry.cloudtrail_source` maps AWS authentication events cleanly — and
-  **refuses** to map management API calls (`CreateAccessKey`, `AttachUserPolicy`,
-  `StopLogging`), because `process_name = "CreateAccessKey"` would make the visibility
-  model report `process_execution` as *available* for an environment with no endpoint
-  telemetry at all. Those records are reported as unmapped rather than coerced. So
-  roughly a third of a real CloudTrail export currently has nowhere to go, and closing
-  that needs a schema change, not another adapter.
+- **Cloud management activity has its own table now, and it took a schema change.**
+  This limitation used to read "roughly a third of a real CloudTrail export has nowhere
+  to go": the adapter named five management calls (`CreateAccessKey`, `AttachUserPolicy`,
+  `StopLogging`, ...) and refused every other record, because `process_name =
+  "CreateAccessKey"` would have made the visibility model report `process_execution` as
+  *available* for an environment with no endpoint telemetry at all. `EVENT_CONTROL`
+  (M13) gave those records a table and M18-3 stopped the allowlist: every admitted,
+  time-valid management record is a control row whose verb, resource family, service,
+  actor and three-valued decision are parsed from the record's own shape, with no API
+  name enumerated anywhere. Measured on `data/external/attack_data_aws`, ingestion went
+  from 2 of 2,349 records to 2,349 of 2,349 — see
+  [docs/m18-representation-and-cloud-detection-report.md](docs/m18-representation-and-cloud-detection-report.md).
+  What is still true is the shape of the argument: a channel with no canonical
+  representation must get one, not be coerced into a column that means something else.
 - **`logon_type` has no cloud equivalent, and that has consequences.** It is left null
   rather than invented, which correctly stops `ATH-006`'s host-ownership inference from
   firing on telemetry where interactive host sessions do not exist — but it also means
