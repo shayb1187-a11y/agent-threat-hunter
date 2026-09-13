@@ -49,6 +49,8 @@ def _minimal_process_frame() -> pd.DataFrame:
         "file_path": r"C:\Windows\System32\cmd.exe",
         "sha256": "b" * 64, "signer": "Microsoft Corporation",
         "signature_status": "signed_valid",
+        "process_guid": "start:pc01|100|2026-01-01T00:00:00.000Z",
+        "parent_process_guid": "",
     }])
 
 

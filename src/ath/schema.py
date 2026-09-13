@@ -76,6 +76,29 @@ PROCESS_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     "sha256",               # content hash: the only truly stable identifier
     "signer",               # signing organisation, e.g. "Microsoft Corporation"
     "signature_status",     # see SIGNATURE_STATUSES
+    # -- which *run* of a program, as opposed to which program ------------------------
+    # `process_id` names a slot, not a process: the OS reissues a PID within minutes, so
+    # `(device, process_id)` is ambiguous by construction. Measured on the COMISET slice
+    # (reports/m17/H4_FROZEN.json): 86.5% of `(device, pid)` keys covered more than one
+    # process instance, the worst one 27 of them -- while 99.98% of network rows "matched
+    # a process", which is how an ambiguous key passes for a working join.
+    #
+    # These two columns carry the instance identity the source itself asserted, under
+    # one of two schemes (`ath.instance_identity`):
+    #
+    #   "sysmon:<guid>"                 the source's own instance identifier, verbatim
+    #   "start:<device>|<pid>|<iso ms>" a deterministic key over the instance's
+    #                                   *creation time*, used only where the source
+    #                                   records it
+    #
+    # The scheme is part of the value because the two are answers from different
+    # authorities to the same question: **identities are comparable only within a
+    # scheme**, and prefixing them makes an accidental cross-authority `==` impossible.
+    # Empty means the source asserted no identity and recorded no creation time -- a real
+    # gap, measured as one, never a value inferred from an event's own timestamp unless
+    # that event *is* the process's creation (Sysmon 1, Security 4688).
+    "process_guid",         # this instance's identity
+    "parent_process_guid",  # the creating instance's identity, when the source names it
 )
 
 # Authenticode-style signature outcomes, kept as constants so a typo is an ImportError.
@@ -95,6 +118,13 @@ SIGNATURE_STATUSES: Final[tuple[str, ...]] = (
 NETWORK_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
     "process_name",  # process that opened the connection -- lets us join network -> process
     "process_id",
+    # The identity of the instance that opened this connection, under the same two
+    # schemes and the same rule as the process table's column above: verbatim when the
+    # source asserts one (Sysmon writes ProcessGuid on event 3 as well as event 1), and
+    # otherwise empty. Never a `start` key built from this row's timestamp -- a
+    # connection's time is when the socket opened, not when the process began, and a key
+    # built from it would look joinable and join to nothing.
+    "process_guid",
     "remote_ip",
     "remote_port",
     "protocol",      # "tcp" / "udp"

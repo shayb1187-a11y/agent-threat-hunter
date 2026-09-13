@@ -40,6 +40,7 @@ from typing import Any
 
 import pandas as pd
 
+from ath.instance_identity import start_identity
 from ath.logging_setup import get_logger
 from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN
 from ath.telemetry.admission import (
@@ -268,6 +269,48 @@ def _empty_canonical_frame(event_type: str) -> pd.DataFrame:
     return coerce_and_validate(pd.DataFrame(columns=list(TABLE_COLUMNS[event_type])), event_type)
 
 
+# Defender's own answer to "which run of this program". Advanced hunting carries a
+# creation time beside every process id it exports -- `ProcessCreationTime` for the row's
+# own process, `InitiatingProcessCreationTime` for the process that started it, and
+# `InitiatingProcessParentCreationTime` for that one's creator -- which is exactly the
+# `(device, pid, creation time)` triple `ath.instance_identity`'s `start` scheme is
+# defined over. Microsoft documents these as part of the identifying set for a process
+# precisely because ProcessId alone is not one.
+#
+# `InitiatingProcessParentCreationTime` is deliberately unused: it identifies the
+# *grandparent*, and the canonical schema carries no column for a process's
+# grandparent. Mapping it into `parent_process_guid` would put the wrong generation's
+# identity in the column every lineage join reads.
+_PROCESS_INSTANCE_COLUMNS = ("DeviceName", "ProcessId", "ProcessCreationTime")
+_INITIATING_INSTANCE_COLUMNS = (
+    "DeviceName", "InitiatingProcessId", "InitiatingProcessCreationTime",
+)
+
+
+def _start_keys(raw: pd.DataFrame, columns: tuple[str, str, str]) -> list[str]:
+    """A `start` identity per row, or ``""`` throughout when the export omits a column.
+
+    A scoped advanced-hunting query commonly selects a handful of columns, and an export
+    without `ProcessCreationTime` is not malformed -- it carries less identity than a
+    full one, and says so with an empty column rather than with a key built from the
+    row's event time. Those two coincide on `ProcessCreated` rows and on nothing else,
+    so substituting one for the other would be right by luck on the process table and
+    wrong on every network row, where the event time is the socket's.
+    """
+    device, pid, created = columns
+    if any(column not in raw.columns for column in columns):
+        missing = [column for column in columns if column not in raw.columns]
+        logger.info(
+            "Export carries no %s; process-instance identity left empty for these rows",
+            ", ".join(missing),
+        )
+        return [""] * len(raw)
+    return [
+        start_identity(row[device], row[pid], row[created])
+        for _, row in raw.iterrows()
+    ]
+
+
 def _admit_export(path: Path, event_type: str) -> tuple[FileAdmission, pd.DataFrame | None]:
     """Read one candidate export and decide whether its header identifies it.
 
@@ -365,6 +408,10 @@ def _normalize_process(
         if column not in df.columns:
             df[column] = ""
 
+    kept = raw.loc[valid].reset_index(drop=True)
+    df["process_guid"] = _start_keys(kept, _PROCESS_INSTANCE_COLUMNS)
+    df["parent_process_guid"] = _start_keys(kept, _INITIATING_INSTANCE_COLUMNS)
+
     # Signature status is never evaluated by this export, and says so explicitly.
     # Leaving it empty would let a downstream reader treat the blank as "unsigned",
     # which is a claim this data does not support.
@@ -399,6 +446,13 @@ def _normalize_network(
     df["source_ref"] = [
         f"ReportId={row.get('ReportId', '')};File={file_name}" for _, row in raw[valid].iterrows()
     ]
+    # DeviceNetworkEvents describes a connection by the process that *initiated* it, so
+    # the opener's identity is the initiating triple -- the same one that lands in
+    # `parent_process_guid` on the process table, because there it names the creator and
+    # here it names the connector. Both are `(device, pid, creation time)` for whichever
+    # instance the row is about.
+    df["process_guid"] = _start_keys(raw.loc[valid].reset_index(drop=True),
+                                     _INITIATING_INSTANCE_COLUMNS)
     return df, issues
 
 

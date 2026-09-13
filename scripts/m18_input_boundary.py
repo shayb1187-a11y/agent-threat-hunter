@@ -52,6 +52,9 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.hunting import run_hunt  # noqa: E402
 from ath.schema import (  # noqa: E402
@@ -59,13 +62,11 @@ from ath.schema import (  # noqa: E402
     EVENT_LOGON,
     EVENT_NETWORK,
     EVENT_PROCESS,
-    TABLE_COLUMNS,
 )
 from ath.telemetry.loader import Telemetry, load_telemetry  # noqa: E402
 from ath.telemetry.normalize import (  # noqa: E402
     QUARANTINE_REASON_PREFIX,
     TIMESTAMP_FLOOR,
-    coerce_and_validate,
     quarantine_implausible_timestamps,
 )
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult  # noqa: E402
@@ -108,27 +109,20 @@ def to_telemetry(tables: dict[str, pd.DataFrame]) -> Telemetry:
     )
 
 
-def empty_table(event_type: str) -> pd.DataFrame:
-    return coerce_and_validate(
-        pd.DataFrame(columns=list(TABLE_COLUMNS[event_type])), event_type,
-    )
-
-
 def read_canonical(directory: Path, prefix: str) -> dict[str, pd.DataFrame]:
     """The canonical parquet tables an earlier milestone froze (the M17 COMISET set).
 
     Read, never rewritten: this script reports on those artifacts and must not become a
-    way of quietly regenerating them.
+    way of quietly regenerating them. Columns the schema has gained since the freeze are
+    added empty, at read time, with a notice on stdout naming them -- see
+    ``scripts/pre_schema_parquet``.
     """
     names = {EVENT_PROCESS: "process", EVENT_NETWORK: "network",
              EVENT_LOGON: "logon", EVENT_CONTROL: "control"}
-    tables = {}
-    for event_type, name in names.items():
-        path = directory / f"{prefix}_{name}.parquet"
-        tables[event_type] = (
-            pd.read_parquet(path) if path.exists() else empty_table(event_type)
-        )
-    return tables
+    return {
+        event_type: read_canonical_table(directory, prefix, name, event_type)
+        for event_type, name in names.items()
+    }
 
 
 # --------------------------------------------------------------------------------------

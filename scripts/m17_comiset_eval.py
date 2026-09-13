@@ -37,20 +37,31 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.hunting import run_hunt  # noqa: E402
 from ath.hunting.base import all_detectors  # noqa: E402
 from ath.netaddr import is_public_ip  # noqa: E402
+from ath.schema import (  # noqa: E402
+    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+)
 from ath.telemetry.loader import Telemetry  # noqa: E402
 
 def load_canonical(directory: Path) -> Telemetry:
-    def read(name: str) -> pd.DataFrame:
-        path = directory / f"comiset_{name}.parquet"
-        return pd.read_parquet(path) if path.exists() else pd.DataFrame()
+    """The frozen COMISET tables, widened to whatever the schema says today.
 
+    ``reports/m17/canonical`` is read and never rewritten, so it predates every column
+    added after M17 -- the process-instance identities of M18b-1 among them. The
+    widening is announced on stdout for each table it touches; see
+    ``scripts/pre_schema_parquet``.
+    """
     return Telemetry(
-        processes=read("process"), network=read("network"),
-        logons=read("logon"), controls=read("control"),
+        processes=read_canonical_table(directory, "comiset", "process", EVENT_PROCESS),
+        network=read_canonical_table(directory, "comiset", "network", EVENT_NETWORK),
+        logons=read_canonical_table(directory, "comiset", "logon", EVENT_LOGON),
+        controls=read_canonical_table(directory, "comiset", "control", EVENT_CONTROL),
     )
 
 

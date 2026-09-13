@@ -36,6 +36,7 @@ from typing import Any, Iterable, Iterator
 
 import pandas as pd
 
+from ath.instance_identity import start_identity, sysmon_identity
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL,
@@ -304,13 +305,13 @@ def _build(
         )
 
     if table == EVENT_PROCESS:
-        return _process_row(record, reference, stamp, source)
+        return _process_row(record, reference, stamp, source, device)
     if table == EVENT_NETWORK:
         return _network_row(record, reference, stamp, source)
     return _logon_row(record, reference, stamp, source, success=event_id == "4624")
 
 
-def _process_row(record, reference, stamp, source):
+def _process_row(record, reference, stamp, source, device):
     name = _text(record.get("process_name")).lower()
     if not name:
         name = _text(record.get("process_path")).replace("/", "\\").rsplit("\\", 1)[-1].lower()
@@ -332,6 +333,26 @@ def _process_row(record, reference, stamp, source):
         # reason -- see the module docstring.
         "signer": _text(record.get("Company")),
         "signature_status": SIG_UNKNOWN,
+        # Instance identity. This layout's pipeline renames Sysmon's ProcessGuid and
+        # ParentProcessGuid to `process_guid` / `process_parent_guid` and strips the
+        # braces (see the `general_rename-ProcessGuid` and `process_guid-cleanup`
+        # stages in every COMISET record's own `etl_pipeline`), so the GUID arrives
+        # as bare upper-case hex and is lower-cased by `sysmon_identity`.
+        #
+        # The fallback is a `start` key and is *only* legitimate here: every record
+        # routed to this table is a process-create event (Sysmon 1 today, Security 4688
+        # if EVENT_ROUTING ever carries it), so its event time IS the creation time of
+        # the process it names. That is the one case invariant A permits deriving an
+        # identity from an event's own timestamp.
+        "process_guid": (
+            sysmon_identity(record.get("process_guid"))
+            or start_identity(device, record.get("process_id"), stamp)
+        ),
+        # No fallback for the parent: a process-create event records when the *child*
+        # started and never when its creator did. 4688 in particular names the creator's
+        # PID and nothing else about it, so an empty value here is the honest answer and
+        # a `start` key built from this row's time would be a different process's.
+        "parent_process_guid": sysmon_identity(record.get("process_parent_guid")),
     })
     return row, None
 
@@ -349,6 +370,10 @@ def _network_row(record, reference, stamp, source):
     row.update({
         "process_name": _text(record.get("process_name")).lower(),
         "process_id": _int_or_na(record.get("process_id")),
+        # Sysmon writes ProcessGuid on event 3 as well as event 1, which is the whole
+        # reason a network row can name a process instance at all. No fallback: this
+        # event's time is when the socket opened, not when the process started.
+        "process_guid": sysmon_identity(record.get("process_guid")),
         "remote_ip": remote_ip,
         "remote_port": _int_or_na(record.get("dst_port")),
         "protocol": _text(record.get("network_protocol")).lower(),

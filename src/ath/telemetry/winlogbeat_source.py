@@ -69,6 +69,7 @@ from typing import Any
 
 import pandas as pd
 
+from ath.instance_identity import start_identity, sysmon_identity
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
@@ -319,6 +320,30 @@ def _core(record: dict[str, Any], reference: str, event_type: str, stamp: Any, u
     }
 
 
+def _entity_guid(record: dict[str, Any], ecs_field: str, event_data_field: str) -> str:
+    """A Sysmon ProcessGuid from wherever this Winlogbeat build put it.
+
+    Winlogbeat's ``sysmon`` module promotes ``ProcessGuid`` into ECS's
+    ``process.entity_id`` and removes it from ``winlog.event_data`` -- verified on
+    DEDALE D02 (Winlogbeat 7.10.2, ECS 1.5.0): every Sysmon 1 record there carries
+    ``process.entity_id`` = ``"{416dd0c5-6a1f-676a-0300-000000000800}"`` and an
+    ``event_data`` object whose keys are ``Company``, ``Description``, ``FileVersion``,
+    ``IntegrityLevel``, ``LogonGuid``, ``LogonId``, ``OriginalFileName``, ``ParentUser``,
+    ``Product``, ``RuleName``, ``TerminalSessionId`` -- and no ``ProcessGuid`` at all.
+    The raw field is still read as a fallback because a pipeline that ships
+    ``winlog.event_data`` untouched (an ``include_raw`` configuration, or a build without
+    the module) is a shape this adapter should not lose the identity to.
+
+    Braces and casing differ between pipelines and are normalised by
+    :func:`ath.instance_identity.sysmon_identity`; the value is otherwise verbatim.
+    """
+    return str(
+        _get(record, ecs_field)
+        or _get(record, f"winlog.event_data.{event_data_field}")
+        or ""
+    )
+
+
 def _process_row(record: dict[str, Any], reference: str) -> tuple[dict[str, Any] | None, NormalizationIssue | None]:
     stamp, issue = _timestamp(record, reference, EVENT_PROCESS)
     if issue is not None:
@@ -344,6 +369,24 @@ def _process_row(record: dict[str, Any], reference: str) -> tuple[dict[str, Any]
         # Version-info company, not a signature. Marked unknown for exactly that reason.
         "signer": _dash_empty(_get(record, "winlog.event_data.Company")),
         "signature_status": SIG_UNKNOWN,
+        # Instance identity. Sysmon's own identifier when the record carries it;
+        # otherwise a `start` key, which is legitimate here and only here because every
+        # record routed to this table is a process-create event (Sysmon 1 today, Security
+        # 4688 if this adapter ever routes it) whose event time is the creation time of
+        # the process it names.
+        "process_guid": (
+            sysmon_identity(_entity_guid(record, "process.entity_id", "ProcessGuid"))
+            or start_identity(
+                _short_host(record), _get(record, "process.pid"), stamp,
+            )
+        ),
+        # The creator's identity only when the source states it. A process-create event
+        # records when the child started, never when its parent did, so there is no
+        # honest fallback -- and 4688, which names the creator's PID and nothing more,
+        # is exactly the case that would tempt one.
+        "parent_process_guid": sysmon_identity(
+            _entity_guid(record, "process.parent.entity_id", "ParentProcessGuid"),
+        ),
     })
     return row, None
 
@@ -366,6 +409,12 @@ def _network_row(record: dict[str, Any], reference: str) -> tuple[dict[str, Any]
     row.update({
         "process_name": str(_get(record, "process.name") or ""),
         "process_id": _int_or_na(_get(record, "process.pid")),
+        # Sysmon writes ProcessGuid on event 3 too, which is what lets a connection name
+        # the instance that opened it. No fallback: this row's time is the socket's, not
+        # the process's, and a key built from it would look joinable and join to nothing.
+        "process_guid": sysmon_identity(
+            _entity_guid(record, "process.entity_id", "ProcessGuid"),
+        ),
         "remote_ip": remote_ip,
         "remote_port": _int_or_na(_get(record, "destination.port") or _get(record, "winlog.event_data.DestinationPort")),
         "protocol": str(_get(record, "network.transport") or _get(record, "winlog.event_data.Protocol") or "").lower(),

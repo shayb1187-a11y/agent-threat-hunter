@@ -43,6 +43,7 @@ from typing import Any
 import pandas as pd
 
 from ath.logging_setup import get_logger
+from ath.instance_identity import start_identity
 from ath.telemetry.identity import derive_identity
 from ath.schema import (
     EVENT_LOGON,
@@ -161,8 +162,21 @@ def _process_event(
     parent_process_name: str,
     parent_pid: int,
     file_path: str,
+    parent_started: datetime | None = None,
     gt: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    """One process-create event.
+
+    Args:
+        parent_started: When the *creating* process began, when the generator knows --
+            i.e. when the parent is itself a row in this dataset. ``None`` everywhere
+            else (``explorer.exe``, ``services.exe``, the Outlook that is only named),
+            and ``None`` becomes an empty ``parent_process_guid``. The generator is the
+            identity authority for this corpus, so it either knows the parent instance
+            or says it does not; it never reconstructs one by looking for the most
+            recent row with a matching PID, which is the guess
+            ``ath.instance_identity`` exists to refuse.
+    """
     # Identity is derived from the image and its location, not sampled, so the same
     # binary carries the same hash and publisher on every host. See
     # ath.telemetry.identity for why the name alone is not allowed to confer trust.
@@ -183,6 +197,13 @@ def _process_event(
         "sha256": sha256,
         "signer": signer,
         "signature_status": signature_status,
+        # This event *is* the creation of the process it names, so its own timestamp is
+        # that instance's creation time -- the one case invariant A allows an identity to
+        # be built from an event time.
+        "process_guid": start_identity(device, pid, ts),
+        "parent_process_guid": (
+            start_identity(device, parent_pid, parent_started) if parent_started else ""
+        ),
         "_gt": gt,
     }
 
@@ -195,11 +216,22 @@ def _network_event(
     pid: int,
     remote_ip: str,
     remote_port: int,
+    opener_started: datetime,
     protocol: str = "tcp",
     direction: str = "outbound",
     remote_url: str = "",
     gt: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    """One network-connection event.
+
+    Args:
+        opener_started: When the process that opened this connection began. Required,
+            not optional: the generator builds both rows of every connection in this
+            corpus, so there is always an answer, and making it required is what stops a
+            future connection being added without one and quietly acquiring an empty
+            identity. It is emphatically *not* ``ts`` -- a connection's time is when the
+            socket opened, and using it would mint a key that joins to nothing.
+    """
     return {
         "timestamp": ts,
         "event_type": EVENT_NETWORK,
@@ -209,6 +241,7 @@ def _network_event(
         "source_ref": "",
         "process_name": process_name,
         "process_id": pid,
+        "process_guid": start_identity(device, pid, opener_started),
         "remote_ip": remote_ip,
         "remote_port": remote_port,
         "protocol": protocol,
@@ -304,6 +337,94 @@ _BENIGN_NETWORK_PROCESSES: tuple[tuple[str, int], ...] = (
     ("MsMpEng.exe", 443),
 )
 
+# The two host processes every workstation has and this corpus does not record: the
+# shell a user's session runs under, and the service control manager. Named constants so
+# the parent PIDs below are at least self-consistent; neither is a row here, so neither
+# has an identity here, and their children carry an empty `parent_process_guid`.
+_EXPLORER_PID: int = 1180
+_SERVICES_PID: int = 712
+
+# The long-running applications the benign traffic above comes out of: image, install
+# path, launching process, and -- where it is not the workstation's primary user -- the
+# account it runs under.
+#
+# These exist as process *rows* because until M18b-1 they did not: every benign network
+# event carried a freshly-invented PID belonging to no process this dataset contained,
+# so a network row whose opener was absent was indistinguishable, to any join, from one
+# whose opener had been lost in ingestion. The generator knows which process opened each
+# connection; it now says so on both sides, which is the only way this corpus can be a
+# witness for a cross-channel join at all.
+#
+# One instance per (host, application), not one per connection: a browser opens thousands
+# of sockets from a single process, and a fresh PID per connection is not what an
+# endpoint sees.
+_DESKTOP_APPLICATIONS: tuple[tuple[str, str, str, str], ...] = (
+    ("chrome.exe", r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+     "explorer.exe", ""),
+    ("OUTLOOK.EXE", r"C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE",
+     "explorer.exe", ""),
+    ("Teams.exe", r"C:\Users\{user}\AppData\Local\Microsoft\Teams\current\Teams.exe",
+     "explorer.exe", ""),
+    ("OneDrive.exe", r"C:\Program Files\Microsoft OneDrive\OneDrive.exe",
+     "explorer.exe", ""),
+    # The anti-malware service is not a desktop application: it runs as SYSTEM under the
+    # service control manager, and the connections it makes carry that account.
+    ("MsMpEng.exe", r"C:\ProgramData\Microsoft\Windows Defender\Platform\MsMpEng.exe",
+     "services.exe", "SYSTEM"),
+)
+
+# PIDs for those instances, in their own band so the CSV is readable to a human: the nth
+# application on the mth workstation is 2000 + m*10 + n. Nothing depends on the band --
+# identity is (device, pid, creation time), never the number.
+_DESKTOP_PID_BASE: int = 2000
+
+
+def _desktop_applications(cfg: GeneratorConfig) -> dict[tuple[str, str], dict[str, Any]]:
+    """One running instance of each application on each workstation, keyed by both.
+
+    Built once and read twice -- by the function that emits the process rows and by the
+    one that attributes connections -- so the two halves of a connection cannot disagree
+    about who opened it.
+    """
+    instances: dict[tuple[str, str], dict[str, Any]] = {}
+    for host_index, device in enumerate(WORKSTATIONS):
+        for app_index, (name, path, parent, account) in enumerate(_DESKTOP_APPLICATIONS):
+            user = account or PRIMARY_USER[device]
+            instances[(device, name)] = {
+                "device": device,
+                "user": user,
+                "process_name": name,
+                "pid": _DESKTOP_PID_BASE + host_index * 10 + app_index,
+                "started": cfg.start,
+                "file_path": path.format(user=user),
+                "parent_process_name": parent,
+                "parent_pid": (
+                    _EXPLORER_PID if parent == "explorer.exe" else _SERVICES_PID
+                ),
+            }
+    return instances
+
+
+def _generate_desktop_application_processes(
+    instances: dict[tuple[str, str], dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """The process-create row for each instance in the pool.
+
+    Unlabelled: these are the ordinary applications a workstation is running, and
+    labelling them would put background noise into the answer key.
+    """
+    return [
+        _process_event(
+            ts=instance["started"], device=instance["device"], user=instance["user"],
+            process_name=instance["process_name"], pid=instance["pid"],
+            command_line='"' + instance["file_path"] + '"',
+            parent_process_name=instance["parent_process_name"],
+            parent_pid=instance["parent_pid"],
+            file_path=instance["file_path"],
+        )
+        for instance in instances.values()
+    ]
+
 
 def _generate_benign_processes(
     rng: random.Random, cfg: GeneratorConfig
@@ -337,13 +458,18 @@ def _generate_benign_processes(
 
 
 def _generate_benign_network(
-    rng: random.Random, cfg: GeneratorConfig
+    rng: random.Random, cfg: GeneratorConfig,
+    instances: dict[tuple[str, str], dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Ordinary outbound web/collaboration traffic, plus internal server chatter."""
+    """Ordinary outbound web/collaboration traffic, plus internal server chatter.
+
+    Every connection is attributed to an instance from ``instances`` -- the same pool
+    :func:`_generate_desktop_application_processes` emitted rows for -- so its PID, its
+    account and its identity all name a process that exists in this dataset.
+    """
     events: list[dict[str, Any]] = []
     for _ in range(cfg.benign_network_events):
         device = rng.choice(list(WORKSTATIONS))
-        user = PRIMARY_USER[device]
         process_name, port = rng.choice(_BENIGN_NETWORK_PROCESSES)
         offset = timedelta(seconds=rng.randint(0, 4 * 3600))
 
@@ -354,13 +480,18 @@ def _generate_benign_network(
         else:
             remote_ip = rng.choice(BENIGN_EXTERNAL_IPS)
 
+        opener = instances[(device, process_name)]
         events.append(
             _network_event(
                 ts=cfg.start + offset,
                 device=device,
-                user=user,
+                # The account is the opener's, not the workstation's primary user: the
+                # anti-malware service's connections are SYSTEM's, and saying otherwise
+                # would make one instance carry two accounts.
+                user=opener["user"],
                 process_name=process_name,
-                pid=rng.randint(1000, 9999),
+                pid=opener["pid"],
+                opener_started=opener["started"],
                 remote_ip=remote_ip,
                 remote_port=port,
             )
@@ -459,7 +590,9 @@ def _generate_benign_logons(
 # --------------------------------------------------------------------------------------
 
 
-def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
+def _generate_attack_chain(
+    cfg: GeneratorConfig, instances: dict[tuple[str, str], dict[str, Any]],
+) -> list[dict[str, Any]]:
     """A single coherent intrusion: phishing -> execution -> C2 -> creds -> lateral move.
 
     The stages are modelled on publicly documented commodity-intrusion behaviour.
@@ -474,6 +607,10 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
         return day + timedelta(minutes=minute, seconds=second)
 
     encoded = encode_powershell(C2_STAGER_SCRIPT)
+    # The mail client the attachment arrived in is the one that has been running on PC01
+    # all morning, not a second Outlook invented for this stage -- so the macro's parent
+    # is a row in this dataset and `parent_process_guid` names it.
+    outlook = instances[("PC01", "OUTLOOK.EXE")]
 
     # -- Stage 1: user opens a macro-enabled attachment from email -----------------
     events.append(
@@ -484,7 +621,8 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
                 r'"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE" /n '
                 r'"C:\Users\jdoe\Downloads\Invoice_Q3_2026.docm"'
             ),
-            parent_process_name="OUTLOOK.EXE", parent_pid=3120,
+            parent_process_name="OUTLOOK.EXE", parent_pid=outlook["pid"],
+            parent_started=outlook["started"],
             file_path=r"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE",
             gt={"scenario": "intrusion", "stage": "1-initial-access",
                 "note": "macro-enabled attachment opened from Outlook"},
@@ -498,6 +636,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
             process_name="powershell.exe", pid=6612,
             command_line=f"powershell.exe -nop -w hidden -enc {encoded}",
             parent_process_name="WINWORD.EXE", parent_pid=4820,
+            parent_started=at(12, 4),
             file_path=r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
             gt={"scenario": "intrusion", "stage": "2-execution",
                 "note": "Office application spawning hidden encoded PowerShell"},
@@ -508,7 +647,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
     events.append(
         _network_event(
             ts=at(12, 43), device="PC01", user="jdoe",
-            process_name="powershell.exe", pid=6612,
+            process_name="powershell.exe", pid=6612, opener_started=at(12, 41),
             remote_ip=C2_IP, remote_port=80,
             remote_url=f"http://{C2_IP}/a.ps1",
             gt={"scenario": "intrusion", "stage": "3-payload-download",
@@ -521,7 +660,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
         events.append(
             _network_event(
                 ts=at(13 + i * 5, 10), device="PC01", user="jdoe",
-                process_name="powershell.exe", pid=6612,
+                process_name="powershell.exe", pid=6612, opener_started=at(12, 41),
                 remote_ip=C2_IP, remote_port=C2_PORT,
                 gt={"scenario": "intrusion", "stage": "4-command-and-control",
                     "note": "regular-interval outbound connections to a fixed remote host"},
@@ -541,7 +680,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
                 process_name=name, pid=7000 + i,
                 command_line=cmd,
                 parent_process_name="powershell.exe", parent_pid=6612,
-                file_path=path,
+                parent_started=at(12, 41), file_path=path,
                 gt={"scenario": "intrusion", "stage": "5-discovery",
                     "note": "account and domain enumeration from the PowerShell session"},
             )
@@ -559,6 +698,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
                 r"C:\Users\Public\lsass.dmp full"
             ),
             parent_process_name="powershell.exe", parent_pid=6612,
+            parent_started=at(12, 41),
             file_path=r"C:\Windows\System32\rundll32.exe",
             gt={"scenario": "intrusion", "stage": "6-credential-access",
                 "note": "LSASS process memory dumped via signed Microsoft DLL"},
@@ -609,7 +749,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
                 r"powershell.exe -nop -c Compress-Archive -Path D:\Finance\* "
                 r"-DestinationPath C:\Windows\Temp\fin.zip"
             ),
-            parent_process_name="cmd.exe", parent_pid=2244,
+            parent_process_name="cmd.exe", parent_pid=2244, parent_started=at(34, 12),
             file_path=r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
             gt={"scenario": "intrusion", "stage": "9-collection",
                 "note": "bulk archive of a finance file share into a temp directory"},
@@ -618,7 +758,7 @@ def _generate_attack_chain(cfg: GeneratorConfig) -> list[dict[str, Any]]:
     events.append(
         _network_event(
             ts=at(37, 5), device="FS02", user="svc_backup",
-            process_name="powershell.exe", pid=2280,
+            process_name="powershell.exe", pid=2280, opener_started=at(35, 40),
             remote_ip=C2_IP, remote_port=C2_PORT,
             gt={"scenario": "intrusion", "stage": "10-exfiltration",
                 "note": "server-side process contacting the same external host as PC01"},
@@ -653,7 +793,7 @@ def _generate_benign_lookalike(cfg: GeneratorConfig) -> list[dict[str, Any]]:
     events.append(
         _network_event(
             ts=base + timedelta(seconds=6), device="PC07", user="adm_sarah",
-            process_name="powershell.exe", pid=5150,
+            process_name="powershell.exe", pid=5150, opener_started=base,
             remote_ip="20.190.160.14", remote_port=443,
             remote_url="https://login.microsoftonline.com/",
             gt={"scenario": "benign_lookalike", "stage": "it-inventory",
@@ -787,11 +927,16 @@ def generate_telemetry(
     cfg = cfg or GeneratorConfig()
     rng = random.Random(cfg.seed)
 
+    # The applications the benign traffic comes out of, resolved once: the process rows
+    # and the connections that name them are built from the same instance descriptors.
+    instances = _desktop_applications(cfg)
+
     raw: list[dict[str, Any]] = []
+    raw += _generate_desktop_application_processes(instances)
     raw += _generate_benign_processes(rng, cfg)
-    raw += _generate_benign_network(rng, cfg)
+    raw += _generate_benign_network(rng, cfg, instances)
     raw += _generate_benign_logons(rng, cfg)
-    raw += _generate_attack_chain(cfg)
+    raw += _generate_attack_chain(cfg, instances)
     raw += _generate_benign_lookalike(cfg)
     raw += _generate_benign_recovery_activity(cfg)
     raw += _generate_ransomware_prep(cfg)

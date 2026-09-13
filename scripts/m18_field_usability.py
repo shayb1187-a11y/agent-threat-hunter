@@ -39,6 +39,9 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.environment import assess_coverage, build_environment_model  # noqa: E402
 from ath.hunting import run_hunt  # noqa: E402
@@ -47,10 +50,8 @@ from ath.schema import (  # noqa: E402
     EVENT_LOGON,
     EVENT_NETWORK,
     EVENT_PROCESS,
-    TABLE_COLUMNS,
 )
 from ath.telemetry.loader import Telemetry, load_telemetry  # noqa: E402
-from ath.telemetry.normalize import coerce_and_validate  # noqa: E402
 from ath.telemetry.source import SourceLoadResult  # noqa: E402
 
 TABLES = (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL)
@@ -88,17 +89,15 @@ def load_canonical(directory: Path, prefix: str = "comiset") -> Telemetry:
 
     A table the corpus does not carry becomes an *empty but schema-valid* frame rather
     than a bare ``DataFrame()``: a table with no columns is not the same thing as a
-    table with no rows, and everything downstream reads columns by name. The M17
-    script gets away with the bare version only because it never builds an
-    environment model.
+    table with no rows, and everything downstream reads columns by name.
+
+    A table the corpus *does* carry but which predates a column added since the freeze
+    is widened with that column empty, and the widening is announced on stdout -- so a
+    zero population for it reads as "this artifact is older than the column" rather than
+    as "the corpus never carried the value". See ``scripts/pre_schema_parquet``.
     """
     def read(name: str, event_type: str) -> pd.DataFrame:
-        path = directory / f"{prefix}_{name}.parquet"
-        if path.exists():
-            return pd.read_parquet(path)
-        return coerce_and_validate(
-            pd.DataFrame(columns=list(TABLE_COLUMNS[event_type])), event_type,
-        )
+        return read_canonical_table(directory, prefix, name, event_type)
 
     return Telemetry(
         processes=read("process", EVENT_PROCESS), network=read("network", EVENT_NETWORK),

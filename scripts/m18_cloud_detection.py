@@ -58,6 +58,9 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.correlation import correlate  # noqa: E402
 from ath.environment import (  # noqa: E402
@@ -130,15 +133,15 @@ def load_corpus(corpus: str) -> Telemetry:
         from ath.telemetry.loader import load_telemetry
         return load_telemetry(ROOT / "data" / "raw")
     if corpus == "comiset":
+        # Frozen at M17 and read, never rewritten, so it predates every column added
+        # since -- the M18b-1 process-instance identities included. Each widening is
+        # announced on stdout; see `scripts/pre_schema_parquet`.
         directory = ROOT / "reports" / "m17" / "canonical"
-
-        def read(name: str) -> pd.DataFrame:
-            path = directory / f"comiset_{name}.parquet"
-            return pd.read_parquet(path) if path.exists() else pd.DataFrame()
-
         return Telemetry(
-            processes=read("process"), network=read("network"),
-            logons=read("logon"), controls=read("control"),
+            processes=read_canonical_table(directory, "comiset", "process", EVENT_PROCESS),
+            network=read_canonical_table(directory, "comiset", "network", EVENT_NETWORK),
+            logons=read_canonical_table(directory, "comiset", "logon", EVENT_LOGON),
+            controls=read_canonical_table(directory, "comiset", "control", EVENT_CONTROL),
         )
     raise SystemExit(f"unknown corpus {corpus!r}")
 

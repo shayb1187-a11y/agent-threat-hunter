@@ -141,6 +141,18 @@ FIELD_TO_CHANNEL: dict[str, TelemetryChannel] = {
     "command_line": TelemetryChannel.PROCESS_COMMAND_LINE,
     "parent_process_name": TelemetryChannel.PROCESS_LINEAGE,
     "parent_process_id": TelemetryChannel.PROCESS_LINEAGE,
+    # Process-*instance* identity (`ath.instance_identity`). No new channel: knowing
+    # *which run* of a program this row is about is a property of the process-execution
+    # observation itself, so `process_guid` maps where `process_id` already does -- on
+    # the network table as well, exactly as `process_id` does, since the column means the
+    # same thing there. `parent_process_guid` maps to lineage for the same reason
+    # `parent_process_id` does: it is only ever read to tie a child to its creator, and a
+    # source that records execution without recording parentage populates one and not the
+    # other. Deliberately absent from `CHANNEL_SPECS`' evidence columns: a channel's
+    # AVAILABLE/PARTIAL state is measured over those, and an empty identity column is a
+    # gap in identity, not evidence that process execution was not observed.
+    "process_guid": TelemetryChannel.PROCESS_EXECUTION,
+    "parent_process_guid": TelemetryChannel.PROCESS_LINEAGE,
     "remote_ip": TelemetryChannel.NETWORK_FLOW,
     "remote_port": TelemetryChannel.NETWORK_FLOW,
     "protocol": TelemetryChannel.NETWORK_FLOW,

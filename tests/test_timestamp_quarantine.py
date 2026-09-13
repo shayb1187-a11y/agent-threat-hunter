@@ -96,6 +96,7 @@ def _network_table(stamps: list[pd.Timestamp]) -> pd.DataFrame:
             "device": "KIOSK-14", "user": "hana.mori", "source": "test",
             "source_ref": f"ReportId=net-{i:03d};File=kiosk.csv",
             "process_name": "curl.exe", "process_id": 700 + i,
+            "process_guid": f"sysmon:0000cafe-0000-0000-0000-{i:012d}",
             "remote_ip": "198.51.100.9", "remote_port": 4444, "protocol": "tcp",
             "direction": "outbound", "remote_url": "",
         }

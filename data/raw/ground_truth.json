@@ -6,34 +6,34 @@
         "backup-enumeration": {
           "note": "admin listing shadow copies -- read-only, legitimate",
           "event_ids": [
-            "evt-000171",
-            "evt-000175"
+            "evt-000209",
+            "evt-000213"
           ]
         },
         "it-inventory": {
           "note": "encoded PowerShell launched by patch management -- legitimate",
           "event_ids": [
-            "evt-000571",
-            "evt-000572"
+            "evt-000598",
+            "evt-000599"
           ]
         },
         "it-admin-multi-host": {
           "note": "admin touching multiple servers -- looks like lateral movement",
           "event_ids": [
-            "evt-000578",
-            "evt-000583",
-            "evt-000589"
+            "evt-000606",
+            "evt-000613",
+            "evt-000617"
           ]
         }
       },
       "event_ids": [
-        "evt-000171",
-        "evt-000175",
-        "evt-000571",
-        "evt-000572",
-        "evt-000578",
-        "evt-000583",
-        "evt-000589"
+        "evt-000209",
+        "evt-000213",
+        "evt-000598",
+        "evt-000599",
+        "evt-000606",
+        "evt-000613",
+        "evt-000617"
       ]
     },
     "intrusion": {
@@ -41,117 +41,117 @@
         "1-initial-access": {
           "note": "macro-enabled attachment opened from Outlook",
           "event_ids": [
-            "evt-000322"
+            "evt-000355"
           ]
         },
         "2-execution": {
           "note": "Office application spawning hidden encoded PowerShell",
           "event_ids": [
-            "evt-000324"
+            "evt-000357"
           ]
         },
         "3-payload-download": {
           "note": "PowerShell retrieving remote script over cleartext HTTP",
           "event_ids": [
-            "evt-000325"
+            "evt-000358"
           ]
         },
         "4-command-and-control": {
           "note": "regular-interval outbound connections to a fixed remote host",
           "event_ids": [
-            "evt-000328",
-            "evt-000343",
-            "evt-000374",
-            "evt-000400",
-            "evt-000429",
-            "evt-000459"
+            "evt-000362",
+            "evt-000380",
+            "evt-000399",
+            "evt-000421",
+            "evt-000454",
+            "evt-000486"
           ]
         },
         "5-discovery": {
           "note": "account and domain enumeration from the PowerShell session",
           "event_ids": [
-            "evt-000334",
-            "evt-000336",
-            "evt-000339"
+            "evt-000367",
+            "evt-000370",
+            "evt-000374"
           ]
         },
         "6-credential-access": {
           "note": "LSASS process memory dumped via signed Microsoft DLL",
           "event_ids": [
-            "evt-000346"
+            "evt-000381"
           ]
         },
         "7-brute-force": {
           "note": "repeated failed network logons for one account from one source",
           "event_ids": [
-            "evt-000396",
-            "evt-000401",
-            "evt-000404",
-            "evt-000405",
-            "evt-000406",
-            "evt-000408",
-            "evt-000409",
-            "evt-000411",
-            "evt-000415",
-            "evt-000416",
-            "evt-000417",
-            "evt-000418",
             "evt-000419",
-            "evt-000421",
-            "evt-000433"
+            "evt-000422",
+            "evt-000425",
+            "evt-000427",
+            "evt-000429",
+            "evt-000431",
+            "evt-000432",
+            "evt-000433",
+            "evt-000437",
+            "evt-000438",
+            "evt-000439",
+            "evt-000440",
+            "evt-000442",
+            "evt-000444",
+            "evt-000457"
           ]
         },
         "8-lateral-movement": {
           "note": "command shell spawned by the service control manager, output redirected to an admin share",
           "event_ids": [
-            "evt-000437"
+            "evt-000461"
           ]
         },
         "9-collection": {
           "note": "bulk archive of a finance file share into a temp directory",
           "event_ids": [
-            "evt-000447"
+            "evt-000469"
           ]
         },
         "10-exfiltration": {
           "note": "server-side process contacting the same external host as PC01",
           "event_ids": [
-            "evt-000456"
+            "evt-000481"
           ]
         }
       },
       "event_ids": [
-        "evt-000322",
-        "evt-000324",
-        "evt-000325",
-        "evt-000328",
-        "evt-000334",
-        "evt-000336",
-        "evt-000339",
-        "evt-000343",
-        "evt-000346",
+        "evt-000355",
+        "evt-000357",
+        "evt-000358",
+        "evt-000362",
+        "evt-000367",
+        "evt-000370",
         "evt-000374",
-        "evt-000396",
-        "evt-000400",
-        "evt-000401",
-        "evt-000404",
-        "evt-000405",
-        "evt-000406",
-        "evt-000408",
-        "evt-000409",
-        "evt-000411",
-        "evt-000415",
-        "evt-000416",
-        "evt-000417",
-        "evt-000418",
+        "evt-000380",
+        "evt-000381",
+        "evt-000399",
         "evt-000419",
         "evt-000421",
+        "evt-000422",
+        "evt-000425",
+        "evt-000427",
         "evt-000429",
+        "evt-000431",
+        "evt-000432",
         "evt-000433",
         "evt-000437",
-        "evt-000447",
-        "evt-000456",
-        "evt-000459"
+        "evt-000438",
+        "evt-000439",
+        "evt-000440",
+        "evt-000442",
+        "evt-000444",
+        "evt-000454",
+        "evt-000457",
+        "evt-000461",
+        "evt-000469",
+        "evt-000481",
+        "evt-000486"
       ]
     },
     "ransomware_prep": {
@@ -159,27 +159,27 @@
         "1-defense-impairment": {
           "note": "powershell.exe -nop -w hidden Set-MpPreference -DisableRealtimeMonitoring $true",
           "event_ids": [
-            "evt-000868",
-            "evt-000874",
-            "evt-000880"
+            "evt-000901",
+            "evt-000905",
+            "evt-000909"
           ]
         },
         "2-recovery-inhibition": {
           "note": "vssadmin.exe delete shadows /all /quiet",
           "event_ids": [
-            "evt-000890",
-            "evt-000893",
-            "evt-000895"
+            "evt-000922",
+            "evt-000925",
+            "evt-000927"
           ]
         }
       },
       "event_ids": [
-        "evt-000868",
-        "evt-000874",
-        "evt-000880",
-        "evt-000890",
-        "evt-000893",
-        "evt-000895"
+        "evt-000901",
+        "evt-000905",
+        "evt-000909",
+        "evt-000922",
+        "evt-000925",
+        "evt-000927"
       ]
     }
   }
