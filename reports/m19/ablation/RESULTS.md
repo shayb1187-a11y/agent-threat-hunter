@@ -248,3 +248,112 @@ every other arm is read against. See the dated addendum in `PREREGISTERED.md`.
 `specialists_run` now counts distinct specialists rather than steps. Arm A never runs a
 specialist twice, so no arm A number moves; arm B's generalist runs on several steps and
 would otherwise have reported a completeness above 1.0.
+
+---
+
+# M19-3: arm B's planner is consulted
+
+**Everything below is a scripted run.** The responses were written by this repository,
+not by a model; the rows live under `scripted/` and are labelled `*_SCRIPTED`. They prove
+that the arm's planner and synthesis path executes end to end. **They say nothing
+whatever about model quality**, and the fact counts below are a property of a canned
+planner that always names the last eligible candidate.
+
+```
+python scripts/m19_ablation.py run --arm B --scripted
+python scripts/m19_ablation.py run --arm C --scripted
+```
+
+## What changed, and why it had to
+
+M19-2 built arm B as a crew of one. `InvestigationOrchestrator.plan` consults the model
+only when more than one specialist is eligible, so arm B's planner was never asked
+anything: **0 planner-chosen steps**. The arm measured synthesis over a fixed walk.
+
+Arm B is still one generalist, and its tool surface is now seven facets of that surface
+(`generalist:case`, `generalist:finding`, `generalist:process`, `generalist:timeline`,
+`generalist:account`, `generalist:host`, `generalist:technique`) sharing one walk, one
+toolbox and one budget. See the dated addendum in `PREREGISTERED.md`.
+
+## How each step was chosen
+
+`planner` = the model named an eligible candidate and the run followed it.
+`only eligible` = one candidate, so the model was never asked. `fallback` = the
+deterministic priority order, or the first eligible candidate in crew order.
+
+| run | cases | steps | planner | only eligible | fallback |
+|---|---:|---:|---:|---:|---:|
+| B scripted, M19-2 | 22 | 49 | **0** | 49 | 0 |
+| B scripted, M19-3 | 22 | 134 | **113** | 21 | 0 |
+| C scripted, M19-3 | 22 | 46 | 3 | 43 | 0 |
+
+Arm C is byte-identical to its M19-2 rows (re-run and diffed; only `generated_at`, `head`
+and wall-clock fields differ). Arm A was re-run twice, reported `IDENTICAL`, and matched
+its committed rows field for field, so its published file is left untouched.
+
+## Arm B, before and after
+
+| corpus | n | steps (before → after) | tool calls | facts | inf | hyp | step budget hit |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `attack_data_aws` | 2 | 4 → 12 | 14 → 14 | 10 → 10 | 2 → 2 | 2 → 2 | 0 → 0 |
+| `comiset` | 2 | 4 → 12 | 14 → 14 | 14 → 14 | 2 → 2 | 2 → 2 | 0 → 0 |
+| `flaws_cloud` | 14 | 28 → 84 | 99 → 99 | 84 → 84 | 14 → 14 | 14 → 14 | 0 → 0 |
+| `synthetic:INC-001` | 1 | 7 → 8 | 35 → **23** | 35 → **23** | 1 → 1 | 1 → 1 | 0 → **1** |
+| `synthetic:INC-002` | 1 | 2 → 6 | 7 → 7 | 6 → 6 | 1 → 1 | 1 → 1 | 0 → 0 |
+| `synthetic:INC-004` | 1 | 2 → 6 | 8 → 8 | 8 → 8 | 1 → 1 | 1 → 1 | 0 → 0 |
+| `synthetic:INC-005` | 1 | 2 → 6 | 8 → 8 | 6 → 6 | 1 → 1 | 1 → 1 | 0 → 0 |
+| **all 22** | 22 | **49 → 134** | **185 → 173** | **163 → 151** | 22 | 22 | **0 → 1** |
+
+Tool calls and facts are **unchanged on 21 of the 22 cases**. Every difference in the
+totals comes from one case.
+
+## The one case that lost work, and what it shows
+
+`synthetic:INC-001` is the largest case in the manifest (13 findings, 35 planned
+entities). It now ends at the 8-step budget with `generalist:case` and
+`generalist:finding` still eligible and never run -- so it reaches 23 of its 35 entities
+where the fixed walk reached all 35.
+
+Two independent reasons, and they should not be conflated:
+
+* **A step is narrower.** A facet walks up to `ITEMS_PER_STEP` entities *of its own
+  kind*; the M19-2 agent walked five entities across kinds. A kind with one entity
+  (`case`, `timeline`) therefore costs a whole step. This is the mechanical price of
+  giving the planner a menu, and it is why step counts roughly tripled everywhere while
+  tool calls did not move.
+* **The canned planner chose badly, on purpose.** `ScriptedArmLLM` always names the
+  *last* eligible candidate -- chosen so the plan log can be distinguished from the
+  fallback, not because it is a good strategy. On INC-001 that spends the budget on
+  techniques, hosts, accounts and processes and never reaches the findings. A run where
+  the planner steers into worse coverage than the deterministic order is exactly the
+  behaviour the ablation exists to be able to see, and here it is visible in the
+  `budgets` block and in `eligible_never_ran` rather than hidden in a lower score.
+
+Neither is evidence about a model. The first is a design property of the arm; the second
+is a property of text written in `scripts/m19_ablation.py`.
+
+## A harness defect this run found
+
+The scripted planner parsed a candidate line by splitting on the first colon, so
+`generalist:process` was read as `generalist` -- not an eligible name. The orchestrator
+discarded every answer and every step fell back to the deterministic order: the first
+M19-3 run recorded 0 planner steps and 113 fallback steps, which looks exactly like the
+defect it was meant to fix. The parser now splits on colon-space, and
+`tests/test_m19_scripted_harness.py` asserts it on a facet name. A harness proof that
+silently proves the fallback works is worse than no proof.
+
+## Completeness, and what it now means for arm B
+
+`specialists_run` counts the agent *family*, so arm B reports **1 of 1** specialists run
+on every case and its completeness is 1.0 throughout. That is correct -- arm B is one
+agent -- and it means completeness can no longer say anything about arm B's coverage.
+What arm B left undone is in `eligible_never_ran` (facet names) and in the `budgets`
+block, per case, and it must be read there.
+
+## Artifact size guard
+
+M19-2 wrote and then replaced a 372 MB `scripted/arm_B.json`. `write_artifact` now
+refuses any single artifact above 50 MB, prints the largest fields, and exits non-zero;
+`tests/test_artifact_size_guard.py` fails if any file under `reports/` reaches 60 MB
+outside the two named COMISET parquet freezes (53.2 MB each). The current
+`scripted/arm_B.json` is 16.3 MB.

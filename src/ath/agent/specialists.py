@@ -61,6 +61,28 @@ logger = get_logger(__name__)
 _PROGRESSION_TACTICS = ("Credential Access", "Lateral Movement", "Collection")
 
 
+FAMILY_SEPARATOR = ":"
+"""Separates an agent family from the facet of it that ran. See :func:`agent_family`."""
+
+
+def agent_family(name: str) -> str:
+    """The agent an ``agents_run`` entry belongs to, ignoring which facet of it ran.
+
+    Every specialist in this module is its own family, so ``endpoint`` is ``endpoint``
+    and nothing about arms A or C changes. It exists for arm B: M19-3 split the single
+    generalist into seven :class:`~ath.agent.generalist.GeneralistFacet` instances --
+    ``generalist:case``, ``generalist:process``, ... -- sharing one walk, one toolbox and
+    one budget, so that the orchestrator's planner has something to choose between.
+
+    They are seven *names* and one *agent*. A completeness metric that counted the names
+    would report arm B as "7 of 7 specialists run" and make a single agent look like a
+    crew -- the precise confusion the ablation exists to resolve. So every aggregate
+    counts the family, and the facet suffix survives only where it is informative: the
+    plan log, each claim's ``agent`` field, and ``eligible_never_ran``.
+    """
+    return name.split(FAMILY_SEPARATOR, 1)[0]
+
+
 def budget_note(tool: str) -> str:
     """What a specialist records when a tool refused it for want of budget.
 

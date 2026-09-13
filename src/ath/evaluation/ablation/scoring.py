@@ -69,6 +69,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
+from ath.agent.specialists import agent_family
 from ath.agent.state import InvestigationState
 from ath.correlation.chain import InvestigationCase
 from ath.instance_identity import INFERRED_FROM_PID
@@ -385,13 +386,30 @@ def score_case(
         techniques_asserted_not_mapped=tuple(sorted(asserted - mapped)),
         techniques_mapped_not_asserted=tuple(sorted(mapped - asserted)),
         techniques_in_prose=tuple(sorted(in_prose)),
-        # Distinct specialists, not steps. An agent that resumes across steps (arm B's
-        # generalist) appears in ``agents_run`` once per step, and counting those would
-        # report "2 of 1 specialists run" -- a completeness ratio above 1.0, which is not
-        # a weaker score but a meaningless one. Arm A never runs a specialist twice, so
-        # every already-published arm A number is unchanged by this.
-        specialists_run=len(set(state.agents_run)),
-        specialists_eligible=len(set(state.agents_run) | set(eligible_never_ran)),
+        # Distinct agent *families*, not steps and not facet names. Two corrections,
+        # both to the same question -- how many agents did this run actually use?
+        #
+        # M19-2: an agent that resumes across steps (arm B's generalist) appears in
+        # ``agents_run`` once per step, and counting those would report "2 of 1
+        # specialists run" -- a completeness ratio above 1.0, which is not a weaker
+        # score but a meaningless one.
+        #
+        # M19-3: arm B is now seven facets of one generalist sharing one walk, one
+        # toolbox and one budget, so that its planner has something to choose between.
+        # Counting ``generalist:case`` and ``generalist:process`` as two specialists
+        # would make the single-agent arm look like a crew of seven, which is the exact
+        # distinction this ablation exists to measure. ``agent_family`` collapses them,
+        # on both sides of the ratio.
+        #
+        # Arm A and arm C carry no facet suffix and never run a specialist twice, so
+        # every already-published number in those arms is unchanged by either
+        # correction. ``eligible_never_ran`` keeps the facet names: which part of the
+        # tool surface went unvisited is information, and it is the only place the
+        # suffix is load-bearing in a score.
+        specialists_run=len({agent_family(a) for a in state.agents_run}),
+        specialists_eligible=len({
+            agent_family(a) for a in set(state.agents_run) | set(eligible_never_ran)
+        }),
         eligible_never_ran=tuple(sorted(set(eligible_never_ran))),
         steps=state.step,
         status=state.status.value,

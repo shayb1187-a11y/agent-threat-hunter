@@ -12,8 +12,9 @@ anything, synthesises on top of the verified claims:
     the same manifest and every claim, every tool call and every score is identical.
 
 ``B_single_llm``
-    One :class:`~ath.agent.generalist.GeneralistAgent` with the whole tool surface, as a
-    crew of one, with the LLM planner and synthesis on.
+    One generalist with the whole tool surface, presented to the planner as the seven
+    :class:`~ath.agent.generalist.GeneralistFacet` instances of that surface -- one walk,
+    one toolbox, one budget -- with the LLM planner and synthesis on.
 
 ``C_crew_llm``
     The existing specialist crew with ``use_llm_planner`` and ``use_llm_synthesis`` on.
@@ -55,10 +56,17 @@ keeps ``tool_call_cap: null`` -- the deterministic crew's calls are bounded by e
 specialist's own scope, and capping the baseline to match a limit invented for the
 generalist would change the thing every other arm is read against.
 
-Arm B is one :class:`~ath.agent.generalist.GeneralistAgent` assembled as a crew of one
-and handed to ``InvestigationOrchestrator(specialists=[...])``: no orchestrator change,
-no registry entry, and no route by which the agent being measured can be assembled into
-the crew doing the measuring.
+Arm B is one generalist, handed to ``InvestigationOrchestrator(specialists=[...])`` as
+the seven facets of its tool surface: no orchestrator change, no registry entry, and no
+route by which the agent being measured can be assembled into the crew doing the
+measuring.
+
+M19-2 handed it over as a *crew of one*, and the orchestrator consults the model only
+when more than one candidate is eligible -- so arm B's planner was never asked anything
+(0 planner-chosen steps for B against 3 for C). The arm measured synthesis over a fixed
+walk. The facets fix that without touching the tool surface, the budgets, the claim rules
+or the evidence discipline: **what changed is what arm B's planner chooses among, and
+nothing else.** See :mod:`ath.agent.generalist`.
 
 Scripted runs
 --------------
@@ -77,7 +85,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Sequence
 
 from ath.agent.claims import ClaimVerifier
-from ath.agent.generalist import GeneralistAgent
+from ath.agent.generalist import build_generalist_crew
 from ath.agent.llm import LLMClient, NullLLM, build_llm
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
 from ath.agent.state import InvestigationStatus
@@ -140,8 +148,9 @@ class ArmConfig:
             refusal rather than a fallback.
         tool_call_cap: Per-case tool-call budget handed to the ``ToolBox``. ``None`` is
             uncapped, which is what arm A runs under.
-        generalist: Run one :class:`~ath.agent.generalist.GeneralistAgent` as the whole
-            crew instead of the environment-assembled specialists.
+        generalist: Run the facets of one
+            :class:`~ath.agent.generalist.GeneralistFacet` generalist as the whole crew,
+            instead of the environment-assembled specialists.
         implemented: False for an arm that is declared but not built; running it raises
             :class:`NotImplementedError` with the design note.
         design_note: Why an unimplemented arm is unimplemented.
@@ -499,10 +508,11 @@ def run_arm(
         tools = ToolBox(
             telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap,
         )
-        # Arm B is a crew of one. Built per case, like the toolbox, because the
-        # generalist carries the walk it has left to do and a shared instance would
-        # arrive at the second case already finished.
-        crew = [GeneralistAgent(tools)] if arm.generalist else None
+        # Arm B is one generalist, presented to the planner as the seven facets of its
+        # own tool surface (M19-3). Built per case, like the toolbox, because the facets
+        # share a walk and a shared instance would arrive at the second case already
+        # finished.
+        crew = build_generalist_crew(tools) if arm.generalist else None
         orchestrator = InvestigationOrchestrator(
             tools, verifier, llm=client, config=arm.config, environment=environment,
             specialists=crew,

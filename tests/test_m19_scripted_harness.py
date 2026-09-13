@@ -85,6 +85,24 @@ def test_the_planner_answer_names_an_eligible_candidate() -> None:
     assert response.parsed["next_agent"] == "attack"
 
 
+def test_the_planner_reads_a_candidate_name_that_contains_a_colon() -> None:
+    """Arm B's candidates are ``generalist:<facet>``. The separator is colon-space.
+
+    Fails if the candidate parser splits on the first colon: it then answers
+    ``"generalist"``, which is not an eligible name, the orchestrator discards it, and
+    every scripted step falls back to the deterministic order -- a harness proof that
+    proves only the fallback. That is exactly what happened on the first M19-3 run.
+    """
+    prompt = "\n".join([
+        "Case: CASE-001",
+        "Candidates:",
+        "  generalist:case: the case record itself (eligible because x)",
+        "  generalist:technique: the verified ATT&CK entry (eligible because y)",
+    ])
+    response = ScriptedArmLLM().complete(PLANNER_SYSTEM, prompt)
+    assert response.parsed["next_agent"] == "generalist:technique"
+
+
 def test_the_planner_declines_rather_than_inventing_a_name() -> None:
     """A candidate list it cannot read must produce "none", never a guess."""
     response = ScriptedArmLLM().complete(PLANNER_SYSTEM, "Case: CASE-001\n")

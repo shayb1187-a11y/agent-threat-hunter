@@ -182,10 +182,18 @@ class ScriptedArmLLM(ScriptedLLM):
 
     @staticmethod
     def _plan(prompt: str) -> str:
+        # The orchestrator writes each candidate as "  <name>: <domain> (eligible ...)",
+        # so the separator is colon-**space**, not colon. An agent name may itself
+        # contain a colon: since M19-3 arm B's candidates are ``generalist:process`` and
+        # its six siblings, and splitting on the first colon returned "generalist" --
+        # not an eligible name, so every answer was discarded and every step fell back
+        # to the deterministic order. A harness proof that silently proves the fallback
+        # works is worse than no proof, so this is asserted in
+        # tests/test_m19_scripted_harness.py on a facet name.
         candidates = [
-            line.strip().split(":", 1)[0]
+            line.strip().split(": ", 1)[0]
             for line in prompt.splitlines()
-            if line.startswith("  ") and ":" in line
+            if line.startswith("  ") and ": " in line
         ]
         if not candidates:
             return json.dumps({
@@ -238,6 +246,89 @@ class ScriptedArmLLM(ScriptedLLM):
             "confidence": 0.9,
         })
         return json.dumps({"claims": claims})
+
+
+# --------------------------------------------------------------------------------------
+# The size guard -- an artifact nobody can open is not an artifact
+# --------------------------------------------------------------------------------------
+
+MAX_ARTIFACT_BYTES = 50 * 1024 * 1024
+"""Largest single file this script will write. Above it, the write is refused.
+
+M19-2 committed a **372 MB** ``scripted/arm_B.json`` and had to replace it; the blob is
+still in this repository's history, where it will stay. One unfiltered
+``host_network_activity`` call on a COMISET host returned 589,476 event ids, and both
+the tool call and the claim it fed recorded every one of them, twice per case.
+:data:`~ath.evaluation.ablation.arms.MAX_SERIALISED_IDS` now bounds those id lists, and
+this bounds the file whatever the next unbounded field turns out to be. The two are
+deliberately different mechanisms: one shapes a known field, the other refuses an
+unknown one.
+
+A refusal, not a truncation. A results file silently trimmed to fit is a file whose
+numbers no longer add up, and the whole point of this milestone's artifacts is that a
+reader can recompute from them. So the run exits non-zero, names what it would have
+written and where the bytes were, and leaves no file behind for anyone to mistake for a
+result.
+
+50 MB against a 60 MB test sweep: the writer refuses before the committed tree can grow
+past what ``tests/test_artifact_size_guard.py`` will accept, so the guard that runs at
+write time and the guard that runs in CI cannot disagree about a file in between.
+"""
+
+
+def largest_fields(
+    payload: Any, depth: int = 3, top: int = 8,
+) -> list[tuple[str, int]]:
+    """The biggest paths in a payload, so a refusal says *where* the bytes are.
+
+    Re-serialises each node, so it is deliberately only called on the refusal path: the
+    answer to "why is this file 372 MB" is worth a few seconds, and paying for it on
+    every successful write would not be.
+    """
+    sizes: list[tuple[str, int]] = []
+
+    def visit(node: Any, path: str, level: int) -> None:
+        if path:
+            sizes.append((path, len(json.dumps(node, default=str).encode("utf-8"))))
+        if level >= depth:
+            return
+        if isinstance(node, dict):
+            for key, value in node.items():
+                visit(value, f"{path}.{key}" if path else str(key), level + 1)
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                visit(value, f"{path}[{index}]", level + 1)
+
+    visit(payload, "", 0)
+    sizes.sort(key=lambda pair: (-pair[1], pair[0]))
+    return sizes[:top]
+
+
+def write_artifact(path: Path, payload: Any) -> None:
+    """Serialise ``payload`` to ``path``, or refuse and exit non-zero.
+
+    The check is on the serialised bytes rather than on any proxy for them (row counts,
+    id counts), because the only thing that has ever gone wrong here is the size of the
+    file on disk, and a proxy is exactly what missed it the first time.
+    """
+    text = json.dumps(payload, indent=2, default=str)
+    size = len(text.encode("utf-8"))
+    if size > MAX_ARTIFACT_BYTES:
+        print(
+            f"REFUSED to write {path}: {size / 1e6:.1f} MB exceeds the "
+            f"{MAX_ARTIFACT_BYTES / 1e6:.0f} MB artifact limit. Nothing was written.",
+            file=sys.stderr,
+        )
+        print("largest fields:", file=sys.stderr)
+        for field_path, field_size in largest_fields(payload):
+            print(f"  {field_size / 1e6:9.1f} MB  {field_path}", file=sys.stderr)
+        raise SystemExit(
+            "an artifact this large is not a record anybody can open; bound the field "
+            "that grew (see ath.evaluation.ablation.arms.MAX_SERIALISED_IDS) rather "
+            "than raising the limit"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def arm_output_path(out_dir: Path, letter: str, scripted: bool) -> Path:
@@ -557,7 +648,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
     path = args.out_dir / MANIFEST_PATH.name
-    path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    write_artifact(path, payload)
     print(f"\nmanifest_hash {digest}")
     print(f"wrote {path} ({len(entries)} case(s))")
     return 0
@@ -672,7 +763,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     }
     if scripted:
         record["warning"] = SCRIPTED_WARNING
-    out.write_text(json.dumps(record, indent=2, default=str), encoding="utf-8")
+    write_artifact(out, record)
     print(f"wrote {out} ({len(runs[0])} case row(s))")
 
     if args.repeat > 1:
@@ -739,7 +830,7 @@ def _write_scores(
     }
     if scripted:
         payload["warning"] = SCRIPTED_WARNING
-    out.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    write_artifact(out, payload)
     print(f"wrote {out}")
     print(json.dumps(summary, indent=2, default=str)[:3000])
 

@@ -1,7 +1,7 @@
-"""The single generalist investigator -- arm B of the M19 ablation, and nothing else.
+"""The generalist investigator -- arm B of the M19 ablation, and nothing else.
 
-Why this class exists
-----------------------
+Why this module exists
+-----------------------
 It is the industry-default agent shape this project exists to be compared against: **one
 agent, every tool, a model deciding what to look at.** The ablation cannot say that a
 constrained crew of specialists is worth its complexity unless the unconstrained
@@ -12,11 +12,30 @@ was willing to wait measures patience, not design.
 
 What it is not
 ---------------
-It is **not** a fifth specialist, and it is deliberately not in
+These are **not** a fifth specialist, and they are deliberately not in
 :mod:`ath.agent.specialists` or in :data:`~ath.capabilities.registry.CAPABILITY_REGISTRY`.
-No environment assembles it; no case dispatches it. It is instantiated only by
-:func:`~ath.evaluation.ablation.arms.run_arm` for arm B, as a crew of one. Putting it in
-the registry would let the thing being measured leak into the thing doing the measuring.
+No environment assembles them; no case dispatches them. They are instantiated only by
+:func:`~ath.evaluation.ablation.arms.run_arm` for arm B. Putting them in the registry
+would let the thing being measured leak into the thing doing the measuring.
+
+The M19-3 correction: a planner with nothing to choose between is not a planner
+-------------------------------------------------------------------------------
+M19-2 built arm B as a single :class:`GeneralistAgent` walking one fixed queue. The
+orchestrator consults the model only when **more than one** specialist is eligible -- with
+a crew of one it records ``"only eligible specialist"`` and moves on -- so arm B never
+exercised the LLM planner at all: M19-2 measured **0** planner-chosen steps for B against
+3 for C. What that arm actually measured was model *synthesis* laid over a fixed walk,
+which is not the arm the brief describes.
+
+The fix is not to change what a generalist may do; it is to make its next move a choice.
+The tool surface is split into seven :class:`GeneralistFacet` instances, one per
+:data:`KIND_ORDER` entry, **sharing one walk, one ToolBox and one budget**. Each is
+eligible while its own kind still has un-walked entities, so on any case naming more than
+one kind of entity the orchestrator has several candidates and asks the model which to
+run next. Nothing else moves: the tool surface, the budgets, the claim rules and the
+evidence discipline are identical to arm C, and the handlers below are the M19-2 handlers
+unchanged. **The only difference between B and C is what the planner chooses among** --
+facets of one agent's tool surface, or domain specialists.
 
 The three constraints that make it a fair comparison
 -----------------------------------------------------
@@ -30,15 +49,19 @@ The three constraints that make it a fair comparison
    (as the scripted harness proof does), **it produces no inference and no hypothesis at
    all**, and that zero is a property of the run, not a finding about single agents.
 3. **It runs under the same budgets as every other arm**: the orchestrator's step budget,
-   and the :class:`~ath.agent.tools.ToolBox`'s per-case tool-call cap. It walks
-   :data:`ITEMS_PER_STEP` entities per step and resumes where it stopped, so a case with
-   more entities than the budgets allow ends with work visibly undone rather than with an
-   arm that silently took longer.
+   and the :class:`~ath.agent.tools.ToolBox`'s per-case tool-call cap. A facet walks
+   :data:`ITEMS_PER_STEP` entities per step and the walk resumes where it stopped, so a
+   case with more entities than the budgets allow ends with work visibly undone rather
+   than with an arm that silently took longer.
 
-The walk, in fixed order
--------------------------
+The facets, and the walk each owns
+-----------------------------------
 Built once per case from the case itself -- no set iteration anywhere, so two runs walk
-the same entities in the same order and produce byte-identical claims:
+the same entities and produce byte-identical claims. The **order below is the fallback
+order**: when no model is available, or when the model's answer is rejected, the
+orchestrator takes the first eligible candidate in crew order, which is this one. A
+keyless run of arm B is therefore still deterministic, and identical to the queue M19-2
+walked.
 
 ===  ===============  ===========================================================
 1    ``case``         :meth:`~ath.agent.tools.ToolBox.get_case`
@@ -57,9 +80,19 @@ the same entities in the same order and produce byte-identical claims:
 
 Breadth-first by category, and the order is the architect's, not a preference: it puts
 the entities a detection actually named before the ones the case merely contains. A large
-case therefore spends its budget on findings and process trees and reaches the technique
-lookups only if the budget survives -- which is itself a measurement of what a single
-agent with a fixed budget can cover.
+case walked in fallback order therefore spends its budget on findings and process trees
+and reaches the technique lookups only if the budget survives -- which is itself a
+measurement of what a single agent with a fixed budget can cover. A *planned* run may
+spend it differently, and that difference is the measurement arm B exists to make.
+
+One agent, seven names
+-----------------------
+Each facet is named ``generalist:<kind>`` -- one family, ``generalist``, with a facet
+suffix. The suffix is what makes the plan log say which part of the tool surface the
+model chose; the family is what every aggregate counts, so
+:func:`~ath.evaluation.ablation.scoring.score_case` reports arm B as **one** agent run
+out of one eligible rather than seven, and its completeness stays a ratio of at most
+1.0. See :func:`~ath.agent.specialists.agent_family`.
 """
 
 from __future__ import annotations
@@ -76,12 +109,48 @@ from ath.logging_setup import get_logger
 logger = get_logger(__name__)
 
 ITEMS_PER_STEP = 5
-"""Entities walked per orchestrator step.
+"""Entities one facet walks per orchestrator step.
 
 Chosen against the ablation's other two budgets rather than picked: the step budget is 8
 and the tool-call cap is 40, so a run that uses every step at this rate spends exactly
 the cap. Neither budget is slack, and an arm that hits one hits the other at the same
 point -- which is what makes "it ran out" a single, reportable fact.
+
+Unchanged by the M19-3 facet split, and that is the point: the seven facets share one
+budget, so splitting the tool surface changed what arm B may *choose* and not what it
+may *spend*.
+"""
+
+
+FAMILY = "generalist"
+"""The agent family every facet belongs to, and the name aggregates count once."""
+
+KIND_ORDER: tuple[str, ...] = (
+    "case", "finding", "process", "timeline", "account", "host", "technique",
+)
+"""The seven facets, in the architect's fixed order.
+
+Two things at once, deliberately. It is the order the facets are handed to the
+orchestrator, and therefore -- because the orchestrator's deterministic fallback takes
+the first eligible candidate in crew order -- it is also the order a keyless arm B walks
+in. That makes a model-less arm B reproducible by construction and identical to the
+single queue M19-2 walked, without a second list anywhere that could drift from this one.
+"""
+
+FACET_DOMAINS: dict[str, str] = {
+    "case": "the case record itself -- what it links, and what evidence it cites",
+    "finding": "each detection finding, as its detector recorded it",
+    "process": "process lineage for each process instance the findings name",
+    "timeline": "the case's cited telemetry, in time order",
+    "account": "authentication history for each account the case names",
+    "host": "outbound network activity for each host the case names",
+    "technique": "the verified ATT&CK entry for each technique mapped to the case",
+}
+"""What each facet tells the planner it would do.
+
+This is the text the model is choosing between: ``Specialist.domain`` is what the
+orchestrator puts in the planner prompt beside each candidate. Seven facets whose domains
+all read "every entity of the case" would be a menu with one item written seven times.
 """
 
 
@@ -93,10 +162,69 @@ class WalkItem:
     arguments: dict[str, Any] = field(default_factory=dict)
 
 
-class GeneralistAgent(Specialist):
-    """One agent, every tool, every entity of the case -- until a budget stops it."""
+class GeneralistWalk:
+    """One case's walk, shared by every facet of one generalist.
 
-    name = "generalist"
+    This is the whole of the facet refactor's risk, so it is one small object rather
+    than state spread over seven agents: the plan is built **once** for a case, and an
+    entity is marked walked the moment a facet takes it. Two facets cannot walk the same
+    entity, and no entity is dropped between them, because there is exactly one list and
+    exactly one flag per item.
+
+    Not a set of walked items: :class:`WalkItem` carries a dict and is not hashable, and
+    a "walked" set keyed on anything else would have to invent an identity for an entity
+    that already has a position. Positions are what is tracked, and the plan tuple is
+    iterated in order, so nothing here depends on hash ordering.
+    """
+
+    def __init__(self) -> None:
+        self.case_id: str = ""
+        self.plan: tuple[WalkItem, ...] = ()
+        self.walked: list[bool] = []
+
+    def _sync(self, state: InvestigationState) -> None:
+        """Rebuild the plan when the case changes. Idempotent within one case."""
+        if state.case.case_id != self.case_id:
+            self.case_id = state.case.case_id
+            self.plan = tuple(plan_walk(state))
+            self.walked = [False] * len(self.plan)
+
+    def remaining(
+        self, state: InvestigationState, kind: str | None = None,
+    ) -> list[tuple[int, WalkItem]]:
+        """Un-walked items, in plan order; all of them when ``kind`` is ``None``."""
+        self._sync(state)
+        return [
+            (index, item)
+            for index, item in enumerate(self.plan)
+            if not self.walked[index] and (kind is None or item.kind == kind)
+        ]
+
+    def mark(self, index: int) -> None:
+        """Record that the item at ``index`` has been taken. Never undone."""
+        self.walked[index] = True
+
+    def walked_items(self) -> list[WalkItem]:
+        """Everything taken so far, in plan order. For tests and for the audit trail."""
+        return [item for index, item in enumerate(self.plan) if self.walked[index]]
+
+
+class GeneralistFacet(Specialist):
+    """One facet of the single generalist: every entity of one kind, and no other.
+
+    A facet is not an agent in its own right -- it shares its walk, its
+    :class:`~ath.agent.tools.ToolBox` and therefore its budget with its six siblings, and
+    it reports under the ``generalist`` family. It exists so that the orchestrator's
+    planner has a menu: *which part of this case's tool surface is worth the next step?*
+
+    ``kind=None`` is the M19-2 shape -- one agent over every kind, one queue -- and is
+    kept as :class:`GeneralistAgent`. It is not assembled into any arm; it is the
+    reference the facet split is asserted equal to in ``tests/test_generalist_agent.py``,
+    which is the only thing that makes "the refactor changed no work" checkable rather
+    than claimed.
+    """
+
+    name = FAMILY
     domain = "every entity of the case, through every tool"
 
     # Empty by design: a generalist is never declined for missing telemetry, because it
@@ -106,39 +234,58 @@ class GeneralistAgent(Specialist):
     reads_channels = frozenset()
     reads_channels_any = frozenset()
 
-    def __init__(self, tools: Any, items_per_step: int = ITEMS_PER_STEP) -> None:
+    def __init__(
+        self,
+        tools: Any,
+        kind: str | None = None,
+        walk: GeneralistWalk | None = None,
+        items_per_step: int = ITEMS_PER_STEP,
+    ) -> None:
         super().__init__(tools)
+        if kind is not None and kind not in KIND_ORDER:
+            raise ValueError(
+                f"unknown generalist facet {kind!r}; the facets are {KIND_ORDER}. "
+                "A facet whose kind no walk item carries would be permanently "
+                "ineligible and would silently shrink arm B's tool surface."
+            )
+        self.kind = kind
+        self.walk = walk if walk is not None else GeneralistWalk()
         self.items_per_step = max(1, items_per_step)
-        self._case_id: str = ""
-        self._pending: list[WalkItem] = []
+        # Instance attributes, shadowing the class ones: seven facets of one class need
+        # seven names and seven domains, and the planner prompt is built from both.
+        self.name = FAMILY if kind is None else f"{FAMILY}:{kind}"
+        self.domain = self.domain if kind is None else FACET_DOMAINS[kind]
 
     # -- eligibility ------------------------------------------------------------------
 
     def should_run(self, state: InvestigationState) -> tuple[bool, str]:
-        """Always eligible while entities remain unwalked.
+        """Eligible while this facet's kind still has un-walked entities.
 
         Overrides the base gate entirely, and both halves of that matter. The base
-        declines a specialist that has already run, which would make the generalist a
-        one-pass agent and silently answer the budget question this milestone exists to
-        settle. The base also declines on missing telemetry, which a generalist declares
-        none of.
+        declines a specialist that has already run, which would make each facet a
+        one-pass agent and silently answer the budget question M19-2 exists to settle.
+        The base also declines on missing telemetry, which a generalist declares none of.
         """
-        remaining = self._queue(state)
+        remaining = self.walk.remaining(state, self.kind)
         if not remaining:
-            return False, (
-                f"every entity of {state.case.case_id} has been walked "
-                f"({len(self._walked_kinds())} tool surface(s) covered)"
+            if self.kind is None:
+                return False, f"every entity of {state.case.case_id} has been walked"
+            return False, f"every {self.kind} entity has been walked"
+        if self.kind is None:
+            return True, (
+                f"{len(remaining)} entit(ies) of {state.case.case_id} remain unwalked; "
+                "a generalist investigates everything the case names"
             )
         return True, (
-            f"{len(remaining)} entit(ies) of {state.case.case_id} remain unwalked; "
-            "a generalist investigates everything the case names"
+            f"{len(remaining)} {self.kind} entit(ies) of {state.case.case_id} remain "
+            "unwalked"
         )
 
     # -- the walk ---------------------------------------------------------------------
 
     def investigate(self, state: InvestigationState) -> AgentResult:
         _, reason = self.should_run(state)
-        queue = self._queue(state)
+        batch = self.walk.remaining(state, self.kind)[: self.items_per_step]
 
         # This step's tool calls only. ``Specialist._result`` attaches
         # ``tools.calls_by(name)``, which is every call this agent has ever made -- fine
@@ -149,8 +296,12 @@ class GeneralistAgent(Specialist):
 
         claims: list[Claim] = []
         notes: list[str] = []
-        batch, self._pending = queue[: self.items_per_step], queue[self.items_per_step :]
-        for item in batch:
+        for index, item in batch:
+            # Marked before the handler runs, not after. An entity that stayed unwalked
+            # because its handler raised would leave this facet eligible forever, and
+            # the orchestrator -- which contains one specialist's failure rather than
+            # ending the run -- would spend the whole step budget retrying it.
+            self.walk.mark(index)
             handler = getattr(self, f"_walk_{item.kind}")
             handler(state, item, claims, notes)
 
@@ -158,8 +309,9 @@ class GeneralistAgent(Specialist):
             call for call in self.tools.calls[first_call:] if call.agent == self.name
         )
         logger.debug(
-            "generalist: walked %d item(s), %d call(s), %d claim(s); %d item(s) left",
-            len(batch), len(step_calls), len(claims), len(self._pending),
+            "%s: walked %d item(s), %d call(s), %d claim(s); %d item(s) left for this "
+            "facet", self.name, len(batch), len(step_calls), len(claims),
+            len(self.walk.remaining(state, self.kind)),
         )
         return AgentResult(
             agent=self.name,
@@ -168,18 +320,6 @@ class GeneralistAgent(Specialist):
             tool_calls=step_calls,
             notes=tuple(notes),
         )
-
-    # -- the queue --------------------------------------------------------------------
-
-    def _queue(self, state: InvestigationState) -> list[WalkItem]:
-        """The remaining walk for this case, built once and consumed across steps."""
-        if state.case.case_id != self._case_id:
-            self._case_id = state.case.case_id
-            self._pending = _plan_walk(state)
-        return self._pending
-
-    def _walked_kinds(self) -> set[str]:
-        return {call.tool for call in self.tools.calls_by(self.name)}
 
     # -- one handler per item kind ----------------------------------------------------
 
@@ -396,7 +536,37 @@ class GeneralistAgent(Specialist):
         ))
 
 
-def _plan_walk(state: InvestigationState) -> list[WalkItem]:
+class GeneralistAgent(GeneralistFacet):
+    """The M19-2 shape: one agent, one queue over every kind.
+
+    Retained deliberately and used by no arm. The facet split's correctness is stated as
+    an equality -- *the union of the seven facets' work is exactly this agent's work* --
+    and an equality needs both sides. Written as ``kind=None`` rather than as a second
+    implementation so there is no duplicate walk to drift from the facets'.
+    """
+
+    def __init__(self, tools: Any, items_per_step: int = ITEMS_PER_STEP) -> None:
+        super().__init__(tools, kind=None, items_per_step=items_per_step)
+
+
+def build_generalist_crew(
+    tools: Any, items_per_step: int = ITEMS_PER_STEP,
+) -> list[GeneralistFacet]:
+    """Arm B's crew: seven facets of one generalist, in :data:`KIND_ORDER`.
+
+    One :class:`GeneralistWalk` and one ``tools`` between them, so the seven share a
+    walk, a tool-call budget and an audit trail. Handing back a list in ``KIND_ORDER``
+    is what makes the orchestrator's deterministic fallback -- first eligible candidate
+    in crew order -- equal to the fixed order this module documents.
+    """
+    walk = GeneralistWalk()
+    return [
+        GeneralistFacet(tools, kind=kind, walk=walk, items_per_step=items_per_step)
+        for kind in KIND_ORDER
+    ]
+
+
+def plan_walk(state: InvestigationState) -> list[WalkItem]:
     """Every entity this case names, in the fixed order this module documents.
 
     Deterministic by construction: the case's finding tuple is chronological and fixed,

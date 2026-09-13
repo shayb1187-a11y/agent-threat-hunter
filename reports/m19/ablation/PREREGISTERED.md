@@ -158,3 +158,72 @@ Consequences, none of which change a metric defined in §3:
   rather than hidden, and it is a prediction-relevant fact for §4 (iii): **arm C can now
   score below arm A on coverage for a reason that is a budget rather than a planning
   failure**, and the `budgets` block is what distinguishes the two.
+
+---
+
+## Addendum, 2026-09-13 (M19-3): arm B's planner must have a choice to make
+
+Nothing above is edited. This addendum supersedes one sentence of the M19-2 addendum and
+records the design that replaces it.
+
+### What was wrong
+
+The M19-2 addendum recorded arm B as implemented "as `ath.agent.generalist.GeneralistAgent`,
+a crew of one". That is accurate about the code and wrong about the experiment. The
+orchestrator consults the model **only when more than one specialist is eligible**; with a
+single candidate `plan()` returns `"only eligible specialist"` and never calls it. So arm
+B's planner was inert: the M19-2 scripted run recorded **0** planner-chosen steps for B
+against 3 for C. What arm B measured was model *synthesis* laid over a fixed walk, and §1
+of this document describes it as "one strong general LLM investigator... the model
+deciding what to look at next".
+
+**The M19-2 statement that arm B is a crew of one is superseded as of this addendum.** The
+budget ruling it recorded is not: both budgets are unchanged.
+
+### The facet design
+
+Arm B is still **one** generalist. Its tool surface is now presented to the planner as
+seven `GeneralistFacet` instances -- one per walk-item kind, in the fixed order
+`case, finding, process, timeline, account, host, technique` -- which
+
+* **share one walk.** The plan is built once per case; an entity is marked walked the
+  moment a facet takes it, so no entity is walked twice and none is dropped between
+  facets.
+* **share one `ToolBox`, and therefore one budget.** The 40-call cap and the 8-step
+  budget are per case, not per facet. Splitting the surface changed what arm B may
+  *choose*; it did not change what arm B may *spend*.
+* **are eligible per kind.** A facet declines with `"every <kind> entity has been walked"`
+  once its own kind is exhausted, so on any case naming more than one kind of entity the
+  planner has a real menu.
+* **count as one agent.** `specialists_run` counts the agent *family* (`agent_family`
+  splits `generalist:process` at the colon), so arm B reports one specialist run out of
+  one eligible and its completeness stays at most 1.0. `eligible_never_ran` keeps the
+  facet names: which part of the tool surface went unvisited is information. Arms A and C
+  carry no facet suffix and no number in either arm moves.
+* **fall back to the fixed order.** With no model, or when the model's answer is
+  rejected, the orchestrator takes the first eligible candidate in crew order -- which is
+  the order above. A keyless arm B is therefore still deterministic and walks exactly the
+  queue M19-2 walked.
+
+**The invariant:** the tool surface, the budgets, the claim rules and the evidence
+discipline are identical to arm C. The difference between B and C is what the planner
+chooses among -- tool-surface facets versus domain specialists -- and nothing else. The
+orchestrator is unchanged; no metric defined in §3 is redefined.
+
+### Consequences for the predictions in §4
+
+* **(iii) Coverage.** A step now covers one facet rather than a slice across the whole
+  surface, so arm B spends more steps per case for the same work and can reach the
+  8-step budget where it previously did not. That is the cost of giving the planner a
+  choice, it is recorded in the `budgets` block per case, and it is a property of the
+  arm rather than of any model.
+* **(vii) The decision rule** is unchanged.
+
+### The artifact size guard
+
+M19-2 wrote, committed and then replaced a **372 MB** `scripted/arm_B.json`; the blob
+remains in this repository's history. `scripts/m19_ablation.py` now refuses to write any
+single artifact above **50 MB**, prints where the bytes were, and exits non-zero, and
+`tests/test_artifact_size_guard.py` fails if any file under `reports/` reaches 60 MB
+outside the two named COMISET parquet freezes. Neither is a change to any arm or any
+metric.

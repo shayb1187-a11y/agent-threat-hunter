@@ -29,7 +29,9 @@ import pytest
 
 from _builders import ctrl, logon, proc, telemetry as build_telemetry
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier, RejectedClaim
+from ath.agent.generalist import KIND_ORDER
 from ath.agent.llm import NullLLM, ScriptedLLM
+from ath.agent.specialists import agent_family
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
 from ath.agent.tools import ToolCall
 from ath.correlation import correlate
@@ -244,13 +246,16 @@ def test_wall_time_is_excluded_from_the_comparison_and_nothing_else_is(
 
 
 def test_arm_b_runs_one_generalist_as_the_whole_crew(manifest, corpus, pipeline) -> None:
-    """Arm B is a crew of one, and the crew it replaces does not run beside it.
+    """Arm B is one generalist, and the crew it replaces does not run beside it.
 
     Fails if the generalist is added to the assembled crew rather than replacing it --
     in which case arm B would be "a crew plus a generalist", which is neither arm.
+    Since M19-3 the generalist is presented as seven facets of its own tool surface, so
+    the assertion is on the *family*: every name that ran must be the generalist, and no
+    ``endpoint``/``identity``/``network``/``attack`` specialist may appear.
     """
     findings, cases, environment = pipeline
-    scripted = ScriptedLLM(responses=['{"claims": []}'] * 8, name="scripted-model")
+    scripted = ScriptedLLM(responses=['{"claims": []}'] * 64, name="scripted-model")
 
     results = run_arm(
         arm_b(), manifest, corpus, cases, findings=findings,
@@ -260,7 +265,11 @@ def test_arm_b_runs_one_generalist_as_the_whole_crew(manifest, corpus, pipeline)
     assert results
     for result in results:
         assert result.arm == ARM_B
-        assert set(result.state["agents_run"]) == {"generalist"}
+        ran = set(result.state["agents_run"])
+        assert ran, "arm B must actually run something"
+        assert {agent_family(name) for name in ran} == {"generalist"}
+        assert all(name.split(":", 1)[-1] in KIND_ORDER or name == "generalist"
+                   for name in ran), ran
 
 
 @pytest.mark.parametrize("builder,cap", [(arm_a, None), (arm_b, 40), (arm_c, 40)])
@@ -766,6 +775,64 @@ def test_a_resuming_agent_counts_once_not_once_per_step(corpus, pipeline) -> Non
     assert scores.specialists_run == 1
     assert scores.steps == 3
     assert scores.specialist_completeness == 1.0
+
+
+def test_the_generalist_family_counts_once_however_many_facets_ran(
+    corpus, pipeline
+) -> None:
+    """M19-3: seven facets of one generalist are one agent, on both sides of the ratio.
+
+    Arm B's tool surface is now ``generalist:case``, ``generalist:process`` and five
+    more, sharing one walk, one toolbox and one budget. Counting the names would report
+    the single-agent arm as a crew of seven -- the exact distinction this ablation
+    exists to measure -- and would let its completeness climb above 1.0 whenever more
+    facets ran than were eligible at the end.
+
+    Fails if ``specialists_run`` goes back to counting names rather than families, or if
+    ``eligible_never_ran`` loses the facet suffix, which is the only place a reader can
+    see *which* part of the tool surface went unvisited.
+    """
+    _findings, cases, _environment = pipeline
+    case = cases[0]
+    state = InvestigationState(case=case)
+    state.agents_run = [
+        "generalist:case", "generalist:finding", "generalist:finding",
+        "generalist:technique",
+    ]
+    state.step = 4
+
+    scores = score_case(
+        state, case, ClaimVerifier(corpus),
+        eligible_never_ran=["generalist:host", "generalist:account"],
+    )
+
+    assert scores.specialists_run == 1
+    assert scores.specialists_eligible == 1
+    assert scores.specialist_completeness == 1.0
+    assert scores.steps == 4
+    assert scores.eligible_never_ran == ("generalist:account", "generalist:host")
+
+
+def test_a_crew_arm_still_counts_one_specialist_per_name(corpus, pipeline) -> None:
+    """The family collapse must not touch arms A and C.
+
+    Fails if ``agent_family`` ever splits on something the specialists' own names
+    contain -- which would silently merge ``endpoint`` and ``identity`` into one agent
+    and make every published completeness number in arms A and C wrong.
+    """
+    _findings, cases, _environment = pipeline
+    case = cases[0]
+    state = InvestigationState(case=case)
+    state.agents_run = ["endpoint", "identity", "network"]
+    state.step = 3
+
+    scores = score_case(
+        state, case, ClaimVerifier(corpus), eligible_never_ran=["attack"],
+    )
+
+    assert scores.specialists_run == 3
+    assert scores.specialists_eligible == 4
+    assert scores.specialist_completeness == 0.75
 
 
 def test_a_long_evidence_list_is_capped_in_the_file_and_says_how_much_it_dropped(

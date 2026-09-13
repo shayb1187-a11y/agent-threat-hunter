@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T04:37:36.234142+00:00",
-  "head": "9f64652",
+  "generated_at": "2026-09-13T05:14:56.374067+00:00",
+  "head": "2025aa1",
   "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
   "summary": {
     "cases": 22,
@@ -14,15 +14,15 @@
             "technique_jaccard": 1.0,
             "specialist_completeness": 1.0,
             "unsupported_claims": 1.0,
-            "facts": 7.4091,
+            "facts": 6.8636,
             "inferences": 1.0,
             "hypotheses": 1.0,
-            "tool_calls": 8.4091,
-            "steps": 2.2273,
-            "wall_seconds": 0.3626
+            "tool_calls": 7.8636,
+            "steps": 6.0909,
+            "wall_seconds": 0.3437
           },
           "total": {
-            "facts": 163,
+            "facts": 151,
             "inferences": 22,
             "hypotheses": 22,
             "unsupported_claims": 22,
@@ -32,15 +32,16 @@
             "cited_event_ids_existing": 1271045,
             "case_evidence_ids": 361,
             "case_evidence_touched": 361,
-            "tool_calls": 185,
-            "steps": 49,
-            "wall_seconds": 7.977,
+            "tool_calls": 173,
+            "steps": 134,
+            "wall_seconds": 7.562,
             "facts_inferred_from_pid": 0,
             "ambiguous_pid_inferences": 0,
-            "tokens": 3300
+            "tokens": 20250
           },
           "statuses": {
-            "complete": 22
+            "complete": 21,
+            "step_limit": 1
           },
           "degraded_runs": 0
         },
@@ -57,8 +58,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 7.0,
-              "steps": 2.0,
-              "wall_seconds": 0.0086
+              "steps": 6.0,
+              "wall_seconds": 0.0079
             },
             "total": {
               "facts": 10,
@@ -72,11 +73,11 @@
               "case_evidence_ids": 37,
               "case_evidence_touched": 37,
               "tool_calls": 14,
-              "steps": 4,
-              "wall_seconds": 0.017,
+              "steps": 12,
+              "wall_seconds": 0.016,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 300
+              "tokens": 1800
             },
             "statuses": {
               "complete": 2
@@ -95,8 +96,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 7.0,
-              "steps": 2.0,
-              "wall_seconds": 2.7734
+              "steps": 6.0,
+              "wall_seconds": 2.5913
             },
             "total": {
               "facts": 14,
@@ -110,11 +111,11 @@
               "case_evidence_ids": 3,
               "case_evidence_touched": 3,
               "tool_calls": 14,
-              "steps": 4,
-              "wall_seconds": 5.547,
+              "steps": 12,
+              "wall_seconds": 5.183,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 300
+              "tokens": 1800
             },
             "statuses": {
               "complete": 2
@@ -133,8 +134,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 7.0714,
-              "steps": 2.0,
-              "wall_seconds": 0.1673
+              "steps": 6.0,
+              "wall_seconds": 0.1637
             },
             "total": {
               "facts": 84,
@@ -148,11 +149,11 @@
               "case_evidence_ids": 269,
               "case_evidence_touched": 269,
               "tool_calls": 99,
-              "steps": 28,
-              "wall_seconds": 2.342,
+              "steps": 84,
+              "wall_seconds": 2.292,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 2100
+              "tokens": 12600
             },
             "statuses": {
               "complete": 14
@@ -167,15 +168,15 @@
               "technique_jaccard": 1.0,
               "specialist_completeness": 1.0,
               "unsupported_claims": 1.0,
-              "facts": 35.0,
+              "facts": 23.0,
               "inferences": 1.0,
               "hypotheses": 1.0,
-              "tool_calls": 35.0,
-              "steps": 7.0,
-              "wall_seconds": 0.0371
+              "tool_calls": 23.0,
+              "steps": 8.0,
+              "wall_seconds": 0.0343
             },
             "total": {
-              "facts": 35,
+              "facts": 23,
               "inferences": 1,
               "hypotheses": 1,
               "unsupported_claims": 1,
@@ -185,15 +186,15 @@
               "cited_event_ids_existing": 155,
               "case_evidence_ids": 31,
               "case_evidence_touched": 31,
-              "tool_calls": 35,
-              "steps": 7,
-              "wall_seconds": 0.037,
+              "tool_calls": 23,
+              "steps": 8,
+              "wall_seconds": 0.034,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 150
+              "tokens": 1350
             },
             "statuses": {
-              "complete": 1
+              "step_limit": 1
             },
             "degraded_runs": 0
           },
@@ -209,8 +210,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 7.0,
-              "steps": 2.0,
-              "wall_seconds": 0.0087
+              "steps": 6.0,
+              "wall_seconds": 0.0097
             },
             "total": {
               "facts": 6,
@@ -224,11 +225,11 @@
               "case_evidence_ids": 13,
               "case_evidence_touched": 13,
               "tool_calls": 7,
-              "steps": 2,
-              "wall_seconds": 0.009,
+              "steps": 6,
+              "wall_seconds": 0.01,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 150
+              "tokens": 900
             },
             "statuses": {
               "complete": 1
@@ -247,8 +248,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 8.0,
-              "steps": 2.0,
-              "wall_seconds": 0.018
+              "steps": 6.0,
+              "wall_seconds": 0.0202
             },
             "total": {
               "facts": 8,
@@ -262,11 +263,11 @@
               "case_evidence_ids": 6,
               "case_evidence_touched": 6,
               "tool_calls": 8,
-              "steps": 2,
-              "wall_seconds": 0.018,
+              "steps": 6,
+              "wall_seconds": 0.02,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 150
+              "tokens": 900
             },
             "statuses": {
               "complete": 1
@@ -285,8 +286,8 @@
               "inferences": 1.0,
               "hypotheses": 1.0,
               "tool_calls": 8.0,
-              "steps": 2.0,
-              "wall_seconds": 0.0075
+              "steps": 6.0,
+              "wall_seconds": 0.0071
             },
             "total": {
               "facts": 6,
@@ -300,11 +301,11 @@
               "case_evidence_ids": 2,
               "case_evidence_touched": 2,
               "tool_calls": 8,
-              "steps": 2,
-              "wall_seconds": 0.008,
+              "steps": 6,
+              "wall_seconds": 0.007,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": 150
+              "tokens": 900
             },
             "statuses": {
               "complete": 1
