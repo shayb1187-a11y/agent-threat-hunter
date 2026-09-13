@@ -318,3 +318,20 @@ past it would defeat the one mechanism that makes M19's arms comparable.
 equal to M19's, with the flag named as the one permitted difference -- writes it into the
 run directory, and reuses `m19_ablation`'s own loaders, manifest reader and `run_arm`, so
 the rows are built by the code that built M19's.
+
+### Reproducing the flaws.cloud measurement in a worktree
+
+`m19_ablation._load_telemetry` reads `data/external/<corpus>/raw` under the *worktree*
+root, and `data/external/*` is gitignored, so a fresh worktree has the COMISET canonical
+parquet (committed under `reports/m18b/canonical/`) but not the flaws.cloud capture.
+This task read it through a directory junction to the main clone's copy, created once and
+never written to:
+
+```powershell
+New-Item -ItemType Junction -Path data\external\flaws_cloud `
+  -Target ..\agentic-threat-hunter\data\external\flaws_cloud
+```
+
+The junction is inside the gitignore and is not part of the commit. Without it,
+`measure --case comiset/CASE-001 comiset/CASE-002` still runs; only the
+`flaws_cloud/CASE-018` contrast needs it.
