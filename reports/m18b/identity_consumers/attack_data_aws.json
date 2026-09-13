@@ -1,0 +1,95 @@
+{
+ "corpus": "attack_data_aws",
+ "source": {
+  "loader": "scripts/m18_cloud_detection.load_corpus",
+  "load_seconds": 0.1,
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 2,
+   "control": 2347
+  }
+ },
+ "before_from": {
+  "frozen_artifact": "reports/m18b/identity_consumers/BEFORE_7e68840.json",
+  "findings": 33,
+  "cases": 2,
+  "links": 1,
+  "agrees_with_frozen": true
+ },
+ "detection": {
+  "findings_at_7e68840": 33,
+  "findings_after": 33,
+  "by_rule_at_7e68840": {
+   "AWS-003": 1,
+   "AWS-004": 2,
+   "AWS-005": 27,
+   "AWS-006": 3
+  },
+  "by_rule_after": {
+   "AWS-003": 1,
+   "AWS-004": 2,
+   "AWS-005": 27,
+   "AWS-006": 3
+  },
+  "unchanged": true
+ },
+ "correlation": {
+  "findings_unchanged": true,
+  "cases_before": 2,
+  "cases_after": 2,
+  "links_before": 1,
+  "links_after": 1,
+  "links_by_signal_before": {
+   "same_device": 1,
+   "same_user": 1,
+   "shared_evidence": 1,
+   "temporal_close": 1
+  },
+  "links_by_signal_after": {
+   "same_device": 1,
+   "same_user": 1,
+   "shared_evidence": 1,
+   "temporal_close": 1
+  },
+  "lost_process_links": [],
+  "lost_process_link_count": 0,
+  "gained_process_links": [],
+  "gained_process_link_count": 0,
+  "inferred_links_after": {}
+ },
+ "run_stats_after": {
+  "findings": 33,
+  "cases": 2,
+  "links": 1,
+  "links_by_signal": {
+   "same_device": 1,
+   "same_user": 1,
+   "shared_evidence": 1,
+   "temporal_close": 1
+  },
+  "inferred_links_by_signal": {}
+ },
+ "pid_ambiguity": {
+  "process_keys": 0,
+  "reused": 0,
+  "worst": null,
+  "keys": []
+ },
+ "process_tree_study": [],
+ "investigation_after": {
+  "totals": {
+   "cases": 2,
+   "facts": 45,
+   "inferences": 6,
+   "hypotheses": 0,
+   "rejected": 0,
+   "tool_calls": 12,
+   "steps": 4
+  },
+  "facts_labelled_inferred_from_pid": 0,
+  "claims_naming_an_ambiguous_pid": 0,
+  "examples": []
+ },
+ "investigation_before": {}
+}

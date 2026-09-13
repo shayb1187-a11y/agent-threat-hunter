@@ -1,0 +1,2110 @@
+{
+ "_method": {
+  "commit": "7e68840",
+  "commit_subject": "M18b-1 Part C: the identity is measured before anything consumes it",
+  "captured": "2026-09-13",
+  "what": "The pipeline at the last commit before M18b-2, run over the six corpora: hunt -> triage -> correlate (ath.hunting.run_hunt, ath.triage.assess_findings, ath.correlation.correlate with set_aside), then ToolBox.process_tree for the reused (device, pid) keys, then the deterministic NullLLM investigation (scripts/m18_cloud_detection.investigate_cases, limit 10) on synthetic and COMISET.",
+  "corpora": "Each loaded by scripts/m18_cloud_detection.load_corpus, except COMISET, which is read from reports/m18b/canonical -- the M17 freeze predates the identity columns, so measuring this milestone against it would measure a corpus that cannot exercise it.",
+  "why_frozen": "The investigation numbers cannot be recomputed without the old specialist, so they are recorded here rather than re-derived. The correlation numbers CAN be recomputed: scripts/m18b_identity_consumers.py transcribes the old index, reruns it, and reports agreement with this file on every run.",
+  "links": "links counted are those inside raised cases, by signal name."
+ },
+ "synthetic": {
+  "rows": {
+   "process": 462,
+   "network": 389,
+   "logon": 267,
+   "control": 0
+  },
+  "findings": 15,
+  "by_rule": {
+   "ATH-004": 1,
+   "ATH-005": 1,
+   "ATH-012": 1,
+   "ATH-011": 1,
+   "ATH-001": 1,
+   "ATH-002": 2,
+   "ATH-003": 3,
+   "ATH-006": 1,
+   "ATH-007": 1,
+   "ATH-008": 1,
+   "ATH-009": 1,
+   "ATH-010": 1
+  },
+  "cases": 2,
+  "links": 21,
+  "links_by_signal": {
+   "process_lineage": 9,
+   "same_device": 18,
+   "same_user": 18,
+   "temporal_close": 21,
+   "shared_evidence": 2,
+   "same_process": 4,
+   "sibling_lineage": 3,
+   "host_movement": 3,
+   "auth_then_exec": 2
+  },
+  "case_sizes": [
+   11,
+   2
+  ]
+ },
+ "comiset": {
+  "rows": {
+   "process": 15095,
+   "network": 589476,
+   "logon": 6063,
+   "control": 0
+  },
+  "findings": 5,
+  "by_rule": {
+   "ATH-012": 1,
+   "ATH-010": 1,
+   "ATH-002": 3
+  },
+  "cases": 1,
+  "links": 0,
+  "links_by_signal": {},
+  "case_sizes": [
+   1
+  ]
+ },
+ "flaws_cloud": {
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 79424,
+   "control": 1857154
+  },
+  "findings": 1476,
+  "by_rule": {
+   "ATH-005": 36,
+   "AWS-002": 3,
+   "AWS-004": 1142,
+   "AWS-003": 278,
+   "AWS-005": 17
+  },
+  "cases": 281,
+  "links": 194,
+  "links_by_signal": {
+   "shared_evidence": 194,
+   "same_device": 121,
+   "same_user": 194,
+   "temporal_close": 194
+  },
+  "case_sizes": [
+   1,
+   1,
+   1,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   1,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   2,
+   2,
+   2,
+   4,
+   2,
+   2,
+   1,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   6,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   3,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   2,
+   1,
+   2,
+   1,
+   1,
+   1,
+   2,
+   4,
+   2,
+   1,
+   3,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   1,
+   1,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   1,
+   2,
+   1,
+   1,
+   2,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2
+  ]
+ },
+ "attack_data_aws": {
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 2,
+   "control": 2347
+  },
+  "findings": 33,
+  "by_rule": {
+   "AWS-003": 1,
+   "AWS-004": 2,
+   "AWS-005": 27,
+   "AWS-006": 3
+  },
+  "cases": 2,
+  "links": 1,
+  "links_by_signal": {
+   "shared_evidence": 1,
+   "same_device": 1,
+   "same_user": 1,
+   "temporal_close": 1
+  },
+  "case_sizes": [
+   2,
+   1
+  ]
+ },
+ "k8s_ci": {
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 0,
+   "control": 7951
+  },
+  "findings": 0,
+  "by_rule": {},
+  "cases": 0,
+  "links": 0,
+  "links_by_signal": {},
+  "case_sizes": []
+ },
+ "k8ntext": {
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 0,
+   "control": 31
+  },
+  "findings": 0,
+  "by_rule": {},
+  "cases": 0,
+  "links": 0,
+  "links_by_signal": {},
+  "case_sizes": []
+ },
+ "synthetic_reused_keys": {
+  "PC03|1453": {
+   "instances": 2,
+   "rows": [
+    {
+     "event_id": "evt-000290",
+     "process_name": "Teams.exe",
+     "timestamp": "2026-08-17 08:58:40+00:00",
+     "process_guid": "start:pc03|1453|2026-08-17T08:58:40.000Z"
+    },
+    {
+     "event_id": "evt-000506",
+     "process_name": "cmd.exe",
+     "timestamp": "2026-08-17 09:43:23+00:00",
+     "process_guid": "start:pc03|1453|2026-08-17T09:43:23.000Z"
+    }
+   ],
+   "process_tree_before": {
+    "device": "PC03",
+    "pid": 1453,
+    "ancestry": [
+     {
+      "event_id": "evt-000290",
+      "timestamp": "2026-08-17T08:58:40+00:00",
+      "process_name": "Teams.exe",
+      "process_id": 1453,
+      "parent_process_name": "explorer.exe",
+      "parent_process_id": 844,
+      "command_line": "\"C:\\Users\\achen\\AppData\\Local\\Microsoft\\Teams\\current\\Teams.exe\"",
+      "user": "achen"
+     }
+    ],
+    "children": []
+   }
+  },
+  "PC03|3471": {
+   "instances": 2,
+   "rows": [
+    {
+     "event_id": "evt-000081",
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 08:14:12+00:00",
+     "process_guid": "start:pc03|3471|2026-08-17T08:14:12.000Z"
+    },
+    {
+     "event_id": "evt-000648",
+     "process_name": "EXCEL.EXE",
+     "timestamp": "2026-08-17 10:14:17+00:00",
+     "process_guid": "start:pc03|3471|2026-08-17T10:14:17.000Z"
+    }
+   ],
+   "process_tree_before": {
+    "device": "PC03",
+    "pid": 3471,
+    "ancestry": [
+     {
+      "event_id": "evt-000081",
+      "timestamp": "2026-08-17T08:14:12+00:00",
+      "process_name": "powershell.exe",
+      "process_id": 3471,
+      "parent_process_name": "CcmExec.exe",
+      "parent_process_id": 546,
+      "command_line": "powershell.exe -ExecutionPolicy Bypass -File C:\\Windows\\CCM\\SystemTemp\\inventory.ps1",
+      "user": "achen"
+     }
+    ],
+    "children": []
+   }
+  },
+  "PC03|9601": {
+   "instances": 2,
+   "rows": [
+    {
+     "event_id": "evt-000300",
+     "process_name": "cmd.exe",
+     "timestamp": "2026-08-17 09:00:46+00:00",
+     "process_guid": "start:pc03|9601|2026-08-17T09:00:46.000Z"
+    },
+    {
+     "event_id": "evt-001028",
+     "process_name": "EXCEL.EXE",
+     "timestamp": "2026-08-17 11:36:52+00:00",
+     "process_guid": "start:pc03|9601|2026-08-17T11:36:52.000Z"
+    }
+   ],
+   "process_tree_before": {
+    "device": "PC03",
+    "pid": 9601,
+    "ancestry": [
+     {
+      "event_id": "evt-000300",
+      "timestamp": "2026-08-17T09:00:46+00:00",
+      "process_name": "cmd.exe",
+      "process_id": 9601,
+      "parent_process_name": "explorer.exe",
+      "parent_process_id": 744,
+      "command_line": "cmd.exe /c ipconfig /all",
+      "user": "achen"
+     }
+    ],
+    "children": []
+   }
+  },
+  "PC05|9893": {
+   "instances": 2,
+   "rows": [
+    {
+     "event_id": "evt-000944",
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 11:19:41+00:00",
+     "process_guid": "start:pc05|9893|2026-08-17T11:19:41.000Z"
+    },
+    {
+     "event_id": "evt-000992",
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 11:29:01+00:00",
+     "process_guid": "start:pc05|9893|2026-08-17T11:29:01.000Z"
+    }
+   ],
+   "process_tree_before": {
+    "device": "PC05",
+    "pid": 9893,
+    "ancestry": [
+     {
+      "event_id": "evt-000944",
+      "timestamp": "2026-08-17T11:19:41+00:00",
+      "process_name": "powershell.exe",
+      "process_id": 9893,
+      "parent_process_name": "explorer.exe",
+      "parent_process_id": 595,
+      "command_line": "powershell.exe -NoProfile -Command Get-ChildItem C:\\Users\\klarsen\\Documents",
+      "user": "klarsen"
+     }
+    ],
+    "children": []
+   }
+  },
+  "PC07|1826": {
+   "instances": 2,
+   "rows": [
+    {
+     "event_id": "evt-000690",
+     "process_name": "OneDrive.exe",
+     "timestamp": "2026-08-17 10:22:31+00:00",
+     "process_guid": "start:pc07|1826|2026-08-17T10:22:31.000Z"
+    },
+    {
+     "event_id": "evt-001008",
+     "process_name": "Teams.exe",
+     "timestamp": "2026-08-17 11:31:42+00:00",
+     "process_guid": "start:pc07|1826|2026-08-17T11:31:42.000Z"
+    }
+   ],
+   "process_tree_before": {
+    "device": "PC07",
+    "pid": 1826,
+    "ancestry": [
+     {
+      "event_id": "evt-000690",
+      "timestamp": "2026-08-17T10:22:31+00:00",
+      "process_name": "OneDrive.exe",
+      "process_id": 1826,
+      "parent_process_name": "explorer.exe",
+      "parent_process_id": 602,
+      "command_line": "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background",
+      "user": "adm_sarah"
+     }
+    ],
+    "children": []
+   }
+  }
+ },
+ "comiset_worst_keys": {
+  "desktop-4pvps6e|548": {
+   "process_rows": 3,
+   "distinct_identities": 3,
+   "candidates": [
+    {
+     "event_id": "comiset_slice.jsonl:0c250798118a92b3edab1148bcc9fdcbb803223a",
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 11:56:40.084000+00:00",
+     "process_guid": "sysmon:4fd6b357-2178-6376-4902-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:e9f2016d25d0d684456dfa07607a82d1248458be",
+     "process_name": "conhost.exe",
+     "timestamp": "2022-11-17 11:13:06.888000+00:00",
+     "process_guid": "sysmon:4fd6b357-1742-6376-a800-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:de225430fbf34b47935778493ab29366ed974269",
+     "process_name": "wmiapsrv.exe",
+     "timestamp": "2022-11-19 11:43:43.964000+00:00",
+     "process_guid": "sysmon:4fd6b357-c16f-6378-8200-000000000800"
+    }
+   ],
+   "process_tree_before": {
+    "device": "desktop-4pvps6e",
+    "pid": 548,
+    "ancestry": [
+     {
+      "event_id": "comiset_slice.jsonl:0c250798118a92b3edab1148bcc9fdcbb803223a",
+      "timestamp": "2022-11-17T11:56:40.084000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 548,
+      "parent_process_name": "ngen.exe",
+      "parent_process_id": 6584,
+      "command_line": "c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\mscorsvw.exe -startupevent 31c -interruptevent 0 -ngenprocess 204 -pipe 218 -comment \"ngen worker process\"",
+      "user": "system"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:019c6d133387c19985458a3a0899189f3ca34e1f",
+      "timestamp": "2022-11-17T11:18:31.133000+00:00",
+      "process_name": "ngen.exe",
+      "process_id": 6584,
+      "parent_process_name": "ngentask.exe",
+      "parent_process_id": 5896,
+      "command_line": "\"c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\ngen.exe\" executequeueditems 2 /legacyservicebehavior",
+      "user": "system"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:eb5f8da37536c22c8a0f3ca77eeeaf7582cff06d",
+      "timestamp": "2022-11-16T11:19:29.144000+00:00",
+      "process_name": "rundll32.exe",
+      "process_id": 5896,
+      "parent_process_name": "svchost.exe",
+      "parent_process_id": 904,
+      "command_line": "c:\\windows\\system32\\rundll32.exe windows.storage.applicationdata.dll,cleanuptemporarystate",
+      "user": "system"
+     }
+    ],
+    "children": [
+     {
+      "event_id": "comiset_slice.jsonl:0f9bcff6366a4c609d581ae925a4f00516aec3cc",
+      "timestamp": "2022-11-16T11:17:03.048000+00:00",
+      "process_name": "sppsvc.exe",
+      "process_id": 1088,
+      "command_line": "c:\\windows\\system32\\sppsvc.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:9153723706d55a2f8a9933cf90ee4ce7d073b3bf",
+      "timestamp": "2022-11-16T11:14:38.223000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 828,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservice"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:cd38e1cca8ed9e2aa57c34f276b9210833f1f7a7",
+      "timestamp": "2022-11-16T11:14:36.953000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 692,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k rpcss"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8edcea7b1ab82be51e3cd0adc2ba40a08b0f2e36",
+      "timestamp": "2022-11-16T11:14:39.193000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 904,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:964c79fb3fdf0051139f55c3070e01d02220742d",
+      "timestamp": "2022-11-16T11:14:39.428000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 960,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localserviceandnoimpersonation"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8a307cb17fd25af09dd01e0bc1d6a03d0ccdbd2d",
+      "timestamp": "2022-11-16T11:14:53.918000+00:00",
+      "process_name": "msmpeng.exe",
+      "process_id": 2160,
+      "command_line": "\"c:\\program files\\windows defender\\msmpeng.exe\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:e3ddb4f32a9d478f4190118a7ab1755ee2cc9f39",
+      "timestamp": "2022-11-16T11:14:44.484000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1272,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenonetwork"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:132144a67e00c577aaaac570a3fef0b74c2bb20e",
+      "timestamp": "2022-11-16T11:15:06.923000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 2812,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{02d4b3f1-fd88-11d1-960d-00805fc79235}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:39e12e928e0672aae8ecfceb6a764b2efb69a364",
+      "timestamp": "2022-11-16T11:15:12.846000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3116,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:157859e2a57e4fafa826f482e553de9c0196b3b1",
+      "timestamp": "2022-11-16T11:15:15.031000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3224,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4b357df767fadbef522ced2c788099c2749ba431",
+      "timestamp": "2022-11-16T11:18:04.552000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 4716,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:77284fc9907ac97cde6213b46eb53c5f899056bf",
+      "timestamp": "2022-11-16T11:14:38.238000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 836,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k netsvcs"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a28e2a94ea840361236a50b7ef31df6ef3fad99e",
+      "timestamp": "2022-11-16T11:14:41.785000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 300,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localsystemnetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:364f8259207e305d09e77753fc07aa72651796e7",
+      "timestamp": "2022-11-16T11:14:49.848000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1960,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k appmodel"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:1c467c2261bf15d0334806de6c5d4091635aecef",
+      "timestamp": "2022-11-16T11:14:48.380000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1752,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k utcsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:513826c8a5c22ddd979ec9dacd5a907054093055",
+      "timestamp": "2022-11-16T11:14:47.219000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1576,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wbiosvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:1d5527ebb873aaa0b9c38771251af087119dd12a",
+      "timestamp": "2022-11-16T11:15:02.156000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 2552,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{70e7e2ca-fa4f-4eff-86e7-4407042cc710}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4f21938d19b2ae9916453a41d8fb558dafbd8a10",
+      "timestamp": "2022-11-16T11:15:10.386000+00:00",
+      "process_name": "searchindexer.exe",
+      "process_id": 1872,
+      "command_line": "c:\\windows\\system32\\searchindexer.exe /embedding"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:28408ead3da8c6c51a865bff29aff069c6ec77bf",
+      "timestamp": "2022-11-16T11:15:30.003000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 3568,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a159e1a05a261ba7068e85cea706ecb573f2825f",
+      "timestamp": "2022-11-16T11:15:55.527000+00:00",
+      "process_name": "nissrv.exe",
+      "process_id": 4092,
+      "command_line": "\"c:\\program files\\windows defender\\nissrv.exe\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:5596dd038fe5ba29871534c66c29fe1fe3e80dfd",
+      "timestamp": "2022-11-17T11:38:47.444000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3636,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k defragsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:980030a67548c27f602c59bfc09b2e0ab14ece0e",
+      "timestamp": "2022-11-17T11:41:32.265000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3816,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7dbde7913d6733105cb3c6911a8e40d507df9131",
+      "timestamp": "2022-11-17T10:48:52.273000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1832,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k utcsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:273083f89496990381d33e20ea1e7c8e81d5221e",
+      "timestamp": "2022-11-17T10:48:50.886000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 944,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:bcc3e70500f620e702093e63a61b4367c60ab4f3",
+      "timestamp": "2022-11-17T10:48:52.081000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1656,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wbiosvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a3f0992c060eb61934725cd2b2224b4039e918dd",
+      "timestamp": "2022-11-17T10:48:50.833000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 868,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k netsvcs"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:d0dc210b58ddfbd60b6b0c59062b8c3b5bf77d59",
+      "timestamp": "2022-11-17T10:48:50.949000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 988,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localserviceandnoimpersonation"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8138bfd57dc1f779241191e77c924437016899ab",
+      "timestamp": "2022-11-17T10:48:51.369000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1196,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenonetwork"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:333d41537b93e16367d6ff34b5a565ba22196e61",
+      "timestamp": "2022-11-17T10:48:50.613000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 692,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k rpcss"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7de1bb46fffca8b202e5881994d6ef30d734fb5e",
+      "timestamp": "2022-11-17T10:48:50.812000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 828,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservice"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:66a56b60066fe31c4f6349c6c7dbb633645bc21f",
+      "timestamp": "2022-11-17T10:48:53.128000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1408,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k appmodel"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:cc750226ea26278de166bbec961926078ff7d63e",
+      "timestamp": "2022-11-17T10:48:53.769000+00:00",
+      "process_name": "msmpeng.exe",
+      "process_id": 2188,
+      "command_line": "\"c:\\program files\\windows defender\\msmpeng.exe\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:9bf1a088ef332f80442e8c367e9e5087331d8340",
+      "timestamp": "2022-11-17T10:48:55.607000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 2816,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{70e7e2ca-fa4f-4eff-86e7-4407042cc710}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:37cf4744ce031560bc4cc35b252b4ef0d5ddd52e",
+      "timestamp": "2022-11-17T10:48:55.996000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 2928,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{02d4b3f1-fd88-11d1-960d-00805fc79235}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:46e3ef3145c1cbd278e928ca543f52fbaa176814",
+      "timestamp": "2022-11-17T12:17:58.350000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 4216,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k swprv"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:86c285b33ebc02a38e1776ce73d6e6ecccddc7c4",
+      "timestamp": "2022-11-17T12:24:52.339000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 5712,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:017a3ecd274531c3e92d13954e31d6232db52fec",
+      "timestamp": "2022-11-17T11:55:23.776000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 5668,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k defragsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4ee7738256c306e43f1c3f0cb3f0908cdce23648",
+      "timestamp": "2022-11-17T12:24:30.916000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 4136,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k defragsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8bc3186c5200f0edaa890fdaba266b0af117ce97",
+      "timestamp": "2022-11-17T11:56:59.778000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 5420,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:16dd13e6a72839810bae90045635566085a2508e",
+      "timestamp": "2022-11-17T10:53:19.072000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 3176,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:bb6a521f981d7935fd3db5476008ddb9cea8afd3",
+      "timestamp": "2022-11-17T10:53:56.185000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 4628,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:afb4a49c546b1fed42b0340ff7b6ed437a9d22d8",
+      "timestamp": "2022-11-17T10:54:16.295000+00:00",
+      "process_name": "sppsvc.exe",
+      "process_id": 5412,
+      "command_line": "c:\\windows\\system32\\sppsvc.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:623719afde249cdfd52cb69a8d3c89144036f8bf",
+      "timestamp": "2022-11-17T11:03:20.917000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3856,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k swprv"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:65f162eed33547552f766e0fb53358d030d0c1c9",
+      "timestamp": "2022-11-17T11:02:33.908000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 5536,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wsappx"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:aa841ea5e90586c9605364cce4919881d6db7b29",
+      "timestamp": "2022-11-17T10:54:50.095000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 4532,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k unistacksvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a8fe7c5af47b1bdaafc4fb32cc967b26fae45757",
+      "timestamp": "2022-11-17T10:48:51.255000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1092,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localsystemnetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7b023f9b58790f951a3cf0b9dee8e33e22c4ecf4",
+      "timestamp": "2022-11-17T10:48:52.161000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1740,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:c3b3d371e2a2b367f4d99259d9a21609ac68f2de",
+      "timestamp": "2022-11-17T10:49:15.732000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 3968,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:c29f23b3b4c8f3377d0b180f23faf5b47960802e",
+      "timestamp": "2022-11-17T10:51:18.466000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 376,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:05e65949415b52058594efb1d88667d6163c0dc1",
+      "timestamp": "2022-11-17T10:49:00.567000+00:00",
+      "process_name": "nissrv.exe",
+      "process_id": 3328,
+      "command_line": "\"c:\\program files\\windows defender\\nissrv.exe\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:f45afbfef84e9e5ada68ba67c2ac292602d2d3ae",
+      "timestamp": "2022-11-17T10:50:55.752000+00:00",
+      "process_name": "winlogbeat.exe",
+      "process_id": 4092,
+      "command_line": "\"c:\\program files (x86)\\microsoft winlogbeat\\winlogbeat\\winlogbeat.exe\" --environment=windows_service -c \"c:\\program files (x86)\\microsoft winlogbeat\\winlogbeat\\winlogbeat.yml\" --path.home \"c:\\program files (x86)\\microsoft winlogbeat\\winlogbeat\" --path.data \"c:\\programdata\\winlogbeat\" --path.logs \"c:\\programdata\\winlogbeat\\logs\" -e logging.files.redirect_stderr=true"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:990d2f17d2e7fdd781b40e31ee59cfe7bc1159d9",
+      "timestamp": "2022-11-17T10:50:58.723000+00:00",
+      "process_name": "searchindexer.exe",
+      "process_id": 2768,
+      "command_line": "c:\\windows\\system32\\searchindexer.exe /embedding"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:398cf5d85dbabc4ebc09abb11132f5c9c9dfddaf",
+      "timestamp": "2022-11-17T10:50:55.125000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 372,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservice"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:732b10653d8ca9bf360c5e0fcdb73045550f704b",
+      "timestamp": "2022-11-17T10:50:55.461000+00:00",
+      "process_name": "sppsvc.exe",
+      "process_id": 2392,
+      "command_line": "c:\\windows\\system32\\sppsvc.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:050e9f57ac4a6da102dd05488e4aa9091efc38f4",
+      "timestamp": "2022-11-17T10:51:18.660000+00:00",
+      "process_name": "wmiapsrv.exe",
+      "process_id": 2476,
+      "command_line": "c:\\windows\\system32\\wbem\\wmiapsrv.exe"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:b6ef13c1610ea271aebe39a7b325f5dddb2217cc",
+      "timestamp": "2022-11-17T10:54:41.962000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 5468,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wbiosvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4670c791683cbb8482ab8d39210c86c90c8cfd76",
+      "timestamp": "2022-11-18T13:40:21.848000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 864,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k netsvcs"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:b4e3e554fcf58e159db5a08cf4b98ce588430014",
+      "timestamp": "2022-11-18T13:40:22.201000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 952,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localserviceandnoimpersonation"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:e22c7009111cc565c565426934dbcf7478b77e27",
+      "timestamp": "2022-11-18T13:40:23.248000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1116,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenonetwork"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8dc0f73c82dfa778a5cea1e64ad214bc61df86f0",
+      "timestamp": "2022-11-18T13:40:26.826000+00:00",
+      "process_name": "msmpeng.exe",
+      "process_id": 1912,
+      "command_line": "\"c:\\program files\\windows defender\\msmpeng.exe\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:2160052d133f3865939364fa63e36acb3a6cac8e",
+      "timestamp": "2022-11-18T13:40:36.126000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 3024,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{02d4b3f1-fd88-11d1-960d-00805fc79235}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:1818f8def768cd714b00ab6d5ddd4b3d76fa11b6",
+      "timestamp": "2022-11-18T13:40:34.856000+00:00",
+      "process_name": "dllhost.exe",
+      "process_id": 2720,
+      "command_line": "c:\\windows\\system32\\dllhost.exe /processid:{70e7e2ca-fa4f-4eff-86e7-4407042cc710}"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:f178ef36cdf25434783ff0bb3dcb94930bde0a69",
+      "timestamp": "2022-11-18T13:40:22.881000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 712,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localsystemnetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:2fa5b3d0496a4bf1310d0471c8572058649df4ea",
+      "timestamp": "2022-11-18T13:40:22.211000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 968,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k localservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:1db96c75f64955fbeacebf2505f57f7089a75e0f",
+      "timestamp": "2022-11-18T13:40:21.034000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 696,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k rpcss"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7b94ed234c328cdf9eca37db29ab327041c4df93",
+      "timestamp": "2022-11-18T13:40:22.010000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 904,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservice"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:fe2506e25f9578dd76e915ff0aeeda718b4b7d4a",
+      "timestamp": "2022-11-18T13:40:26.108000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1680,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k utcsvc"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:2a773dae331257531d636f8c0d1190b38a36a35d",
+      "timestamp": "2022-11-18T13:40:25.858000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1604,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k networkservicenetworkrestricted"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:c13de386f2971918096972f53380f842d5248e5a",
+      "timestamp": "2022-11-18T13:40:25.516000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1536,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wbiosvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4b0444c6d41be2f11e766754b04a2d4bcbae6c69",
+      "timestamp": "2022-11-18T13:40:26.702000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 1860,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k appmodel"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7785337cba94f14d51a9d011dd96eac7d24bca65",
+      "timestamp": "2022-11-19T15:35:47.026000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3936,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k unistacksvcgroup"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:aca52714882d6f9875981d7ca291f65fefd69c0d",
+      "timestamp": "2022-11-19T15:33:37.768000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 3344,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k defragsvc"
+     }
+    ]
+   }
+  },
+  "desktop-4pvps6e|5924": {
+   "process_rows": 27,
+   "distinct_identities": 27,
+   "candidates": [
+    {
+     "event_id": "comiset_slice.jsonl:55cabc72d750f0aee31a589295ea9a3a340d0905",
+     "process_name": "mpuxsrv.exe",
+     "timestamp": "2022-11-16 11:21:45.988000+00:00",
+     "process_guid": "sysmon:4fd6b357-c7c9-6374-e700-000000002a00"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:e08a426e3074c9923f043b26c174cf6e03eda3ad",
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 11:39:19.484000+00:00",
+     "process_guid": "sysmon:4fd6b357-1d67-6376-7e01-000000002b00"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:807ac741e8665595c04a2dcfa8f4bec876c9589e",
+     "process_name": "ngen.exe",
+     "timestamp": "2022-11-17 11:40:53.711000+00:00",
+     "process_guid": "sysmon:4fd6b357-1dc5-6376-2a02-000000002b00"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:97535cf88b36a0b0fafd20b39be254720b524606",
+     "process_name": "ngen.exe",
+     "timestamp": "2022-11-17 11:40:59.178000+00:00",
+     "process_guid": "sysmon:4fd6b357-1dcb-6376-5f02-000000002b00"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:0229e22cdbd80b6cc24b43fbca71bddfc1b31c6c",
+     "process_name": "conhost.exe",
+     "timestamp": "2022-11-17 15:13:54.629000+00:00",
+     "process_guid": "sysmon:4fd6b357-4fb2-6376-4201-000000002900"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:b2ac6aa17525e187fa654c52755827fda9d49496",
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:09:16.366000+00:00",
+     "process_guid": "sysmon:4fd6b357-084c-6376-7902-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:13a897cfa80517e9b0a0acce725709f0891285af",
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:10:37.574000+00:00",
+     "process_guid": "sysmon:4fd6b357-089d-6376-ee02-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:8209f7bb40d10c0136658850404423b405b8ab91",
+     "process_name": "ngen.exe",
+     "timestamp": "2022-11-17 10:11:42.720000+00:00",
+     "process_guid": "sysmon:4fd6b357-08de-6376-5603-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:b5351ff8475c8b46c2e3919c7b3f00a7174e662d",
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:11:46.894000+00:00",
+     "process_guid": "sysmon:4fd6b357-08e2-6376-6c03-000000000400"
+    },
+    {
+     "event_id": "comiset_slice.jsonl:52fb6d2974d07041619d2ce6442e4594f7f89160",
+     "process_name": "wmiprvse.exe",
+     "timestamp": "2022-11-17 10:46:32.218000+00:00",
+     "process_guid": "sysmon:4fd6b357-1108-6376-be03-000000000400"
+    }
+   ],
+   "process_tree_before": {
+    "device": "desktop-4pvps6e",
+    "pid": 5924,
+    "ancestry": [
+     {
+      "event_id": "comiset_slice.jsonl:55cabc72d750f0aee31a589295ea9a3a340d0905",
+      "timestamp": "2022-11-16T11:21:45.988000+00:00",
+      "process_name": "mpuxsrv.exe",
+      "process_id": 5924,
+      "parent_process_name": "svchost.exe",
+      "parent_process_id": 632,
+      "command_line": "\"c:\\program files\\windows defender\\mpuxsrv.exe\" -embedding",
+      "user": "louis"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:79940efc9664a26340acac8a5f149d90e8d6eeac",
+      "timestamp": "2022-11-16T11:07:57.415000+00:00",
+      "process_name": "svchost.exe",
+      "process_id": 632,
+      "parent_process_name": "services.exe",
+      "parent_process_id": 536,
+      "command_line": "c:\\windows\\system32\\svchost.exe -k wersvcgroup",
+      "user": "system"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:d66ce9accd11f27e687d16d1a38b528d41ecf1d7",
+      "timestamp": "2022-11-17T11:23:05.737000+00:00",
+      "process_name": "fontdrvhost.exe",
+      "process_id": 536,
+      "parent_process_name": "winlogon.exe",
+      "parent_process_id": 3924,
+      "command_line": "\"fontdrvhost.exe\"",
+      "user": "umfd-2"
+     }
+    ],
+    "children": [
+     {
+      "event_id": "comiset_slice.jsonl:37ee06e2369faf4a1f05a25d658b08331c0e40e3",
+      "timestamp": "2022-11-17T11:40:53.775000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5708,
+      "command_line": "c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\mscorsvw.exe -startupevent 144 -interruptevent 0 -ngenprocess fc -pipe 140 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:eebfd8f764cc6aeac41f61cb55992f3e4c62b01f",
+      "timestamp": "2022-11-17T11:40:59.204000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 3624,
+      "command_line": "c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\mscorsvw.exe -startupevent 154 -interruptevent 0 -ngenprocess 140 -pipe 150 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:ad0783cd9f5ddec53fe7ce9b59f0fdadc4cad78e",
+      "timestamp": "2022-11-17T11:40:59.257000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5780,
+      "command_line": "c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\mscorsvw.exe -startupevent 230 -interruptevent 0 -ngenprocess 16c -pipe 140 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:3399d6b63f3e9f575f14bbfc9d413cb3b3bc2962",
+      "timestamp": "2022-11-17T10:11:42.807000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5220,
+      "command_line": "c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\mscorsvw.exe -startupevent 1b4 -interruptevent 0 -ngenprocess 1a0 -pipe 1b0 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:de08f91f025a5ba2806b70bbc5e05366805f7161",
+      "timestamp": "2022-11-17T17:47:55.737000+00:00",
+      "process_name": "conhost.exe",
+      "process_id": 6840,
+      "command_line": "\\??\\c:\\windows\\system32\\conhost.exe 0xffffffff -forcev1"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:520e7c53db39d4b4d70d5d0b7aab9b1a89b30283",
+      "timestamp": "2022-11-18T14:34:01.274000+00:00",
+      "process_name": "onedrivesetup.exe",
+      "process_id": 3860,
+      "command_line": "\"c:\\users\\louis\\appdata\\local\\microsoft\\onedrive\\update\\onedrivesetup.exe\" /update /restart /updatesource:odu"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a4a92b8a3331815ad73b67b84dec862d914feecb",
+      "timestamp": "2022-11-18T08:59:16.870000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 2552,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 1fc -interruptevent 0 -ngenprocess 16c -pipe 1f8 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:6fdaab42786bcd832b8a4d502a9af55bf61ab464",
+      "timestamp": "2022-11-18T08:59:17.033000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 4112,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 294 -interruptevent 0 -ngenprocess 2a4 -pipe 288 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:073aa4d1e963f114a633a382cd01bafb44b7da5b",
+      "timestamp": "2022-11-18T09:12:55.974000+00:00",
+      "process_name": "conhost.exe",
+      "process_id": 3600,
+      "command_line": "\\??\\c:\\windows\\system32\\conhost.exe 0xffffffff -forcev1"
+     },
+     {
+      "event_id": "comiset_slice.jsonl:cedf051ac5e282f880b0736c30c997e12f8e5976",
+      "timestamp": "2022-11-19T09:30:16.149000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 536,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 22c -interruptevent 0 -ngenprocess 340 -pipe 33c -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:54c18d861b3f16df53081344c238fc3d2ae1b0f2",
+      "timestamp": "2022-11-19T09:30:13.956000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 540,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 2cc -interruptevent 0 -ngenprocess 2c4 -pipe 334 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:da30791258fe6f5b21b1c04e785bd40e390c5064",
+      "timestamp": "2022-11-19T09:31:26.468000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5668,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3a4 -interruptevent 0 -ngenprocess 3a8 -pipe 3b4 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:c1a0cad41c2f3434d2777bc49fda9393c6e57185",
+      "timestamp": "2022-11-19T09:31:32.266000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 524,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 2d0 -interruptevent 0 -ngenprocess 2b8 -pipe 304 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:07d4710f27dc78e28dbbc70b21182e0c12bd8d3c",
+      "timestamp": "2022-11-19T09:31:32.905000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 3272,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3c8 -interruptevent 0 -ngenprocess 38c -pipe 3a8 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:6a0618430aaa225408d0cfe82ccf9d672c9337b5",
+      "timestamp": "2022-11-19T09:31:33.534000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 940,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3b0 -interruptevent 0 -ngenprocess 3c4 -pipe 304 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:f46da7a06e1d6652a0a05c41a693a935275c8143",
+      "timestamp": "2022-11-19T09:31:39.451000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5692,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 38c -interruptevent 0 -ngenprocess 3c0 -pipe 314 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:02ee5aed77766c08e6c74aa3740122ca36c06ab4",
+      "timestamp": "2022-11-19T09:31:15.842000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5188,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 37c -interruptevent 0 -ngenprocess 354 -pipe 374 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:74812b05adbb6b4f7962d571ab83c169ece8e991",
+      "timestamp": "2022-11-19T09:31:34.296000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 4368,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3b0 -interruptevent 0 -ngenprocess 360 -pipe 3c4 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:8b0c5d0b354b68564ea395208cb0793935c43de1",
+      "timestamp": "2022-11-19T09:31:35.824000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5732,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 2d0 -interruptevent 0 -ngenprocess 2d4 -pipe 2b8 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:7a98dcfc6842eda9e7166ce6534d2858b11b390c",
+      "timestamp": "2022-11-19T09:31:35.172000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5892,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3b0 -interruptevent 0 -ngenprocess 354 -pipe 37c -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:b38a9924b84ae4c5f1a1fbce4845bea6cb705069",
+      "timestamp": "2022-11-19T09:31:23.054000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 3648,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 358 -interruptevent 0 -ngenprocess 38c -pipe 390 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:889b5884559778b861a42355162c15562924f7a9",
+      "timestamp": "2022-11-19T09:31:36.551000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5976,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3b0 -interruptevent 0 -ngenprocess 38c -pipe 354 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:6513665f386d870043181fc893345041b76833ab",
+      "timestamp": "2022-11-19T09:31:38.398000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5600,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 3c0 -interruptevent 0 -ngenprocess 3bc -pipe 2d4 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:21aa7f14fabf141ea98ae8132633185b359bff14",
+      "timestamp": "2022-11-19T09:31:20.380000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5340,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 38c -interruptevent 0 -ngenprocess 37c -pipe 388 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:a512d3b596bdc70ba2e0afde296c4e26cbb85c0a",
+      "timestamp": "2022-11-19T09:30:19.292000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 5368,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 33c -interruptevent 0 -ngenprocess 338 -pipe 348 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:4dad0a5b727162416e90d4bdb4bd2d2a69ea2a7c",
+      "timestamp": "2022-11-19T09:30:20.958000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 1416,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 30c -interruptevent 0 -ngenprocess 344 -pipe 34c -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:ca32dfc0243903afe77505dbb8f406dc0db89ba1",
+      "timestamp": "2022-11-19T09:31:13.712000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 4064,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 354 -interruptevent 0 -ngenprocess 38c -pipe 378 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:2c89a7b7717f096f15d16adf395968172d75be10",
+      "timestamp": "2022-11-19T09:30:37.836000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 4092,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 360 -interruptevent 0 -ngenprocess 364 -pipe 370 -comment \"ngen worker process\""
+     },
+     {
+      "event_id": "comiset_slice.jsonl:d2e1059386b943560a92a9694e73638c08a49515",
+      "timestamp": "2022-11-19T09:30:39.408000+00:00",
+      "process_name": "mscorsvw.exe",
+      "process_id": 2492,
+      "command_line": "c:\\windows\\microsoft.net\\framework\\v4.0.30319\\mscorsvw.exe -startupevent 384 -interruptevent 0 -ngenprocess 37c -pipe 380 -comment \"ngen worker process\""
+     }
+    ]
+   }
+  }
+ },
+ "comiset_investigation_before": {
+  "totals": {
+   "cases": 1,
+   "facts": 2,
+   "inferences": 2,
+   "hypotheses": 0,
+   "rejected_claims": 0,
+   "tool_calls": 3,
+   "steps": 2,
+   "agent_endpoint": 1,
+   "agent_attack": 1
+  },
+  "example_case": {
+   "case_id": "CASE-001",
+   "rules": [
+    "ATH-012"
+   ],
+   "findings": 1,
+   "agents_run": [
+    "endpoint",
+    "attack"
+   ],
+   "counts": {
+    "facts": 2,
+    "inferences": 2,
+    "hypotheses": 0,
+    "rejected": 0,
+    "tool_calls": 3
+   },
+   "tool_calls": [
+    "endpoint::get_events(event_ids=['comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b']) -> 1/1 found",
+    "endpoint::process_tree(device='desktop-4pvps6e', pid=4928) -> 3 ancestor(s), 0 child(ren)",
+    "attack::lookup_technique(technique_id='T1685') -> Disable or Modify Tools"
+   ],
+   "plan_log": [
+    "step 1: endpoint -- only eligible specialist; case evidence rests on process_command_line, process_execution telemetry (from ATH-012)",
+    "step 2: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+    "step 3: stop -- no specialist has further useful work on the available evidence"
+   ],
+   "claims": [
+    {
+     "type": "FACT",
+     "statement": "On desktop-4pvps6e, mscorsvw.exe (PID 4928) was started by ngen.exe under account system.",
+     "source": "tool",
+     "evidence_ids": [
+      "comiset_slice.jsonl:6c2793044b2ceb03332e97d1c2c44f7fd2385455"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on desktop-4pvps6e: mighost.exe -> conhost.exe -> regsvr32.exe -> mscorsvw.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "comiset_slice.jsonl:6c2793044b2ceb03332e97d1c2c44f7fd2385455",
+      "comiset_slice.jsonl:3a276d77caa39862ff3bff4542dbed78e8dc4c1e",
+      "comiset_slice.jsonl:3fe75bb0a9c698d826d0fdde1c9aee2c84e13e89"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-012 is consistent with T1685 Disable or Modify Tools (Defense Impairment). A security product's protection was disabled, its process terminated, or a scanning exclusion added. Reported at the parent technique because ",
+     "source": "mitre",
+     "evidence_ids": [
+      "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The case spans 1 ATT&CK tactics (Defense Impairment). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+     "source": "mitre",
+     "evidence_ids": [
+      "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+     ]
+    }
+   ],
+   "rejected_claims": []
+  }
+ },
+ "synthetic_investigation_before": {
+  "totals": {
+   "cases": 2,
+   "facts": 22,
+   "inferences": 31,
+   "hypotheses": 2,
+   "rejected_claims": 0,
+   "tool_calls": 86,
+   "steps": 6,
+   "agent_endpoint": 2,
+   "agent_identity": 1,
+   "agent_network": 1,
+   "agent_attack": 2
+  },
+  "example_case": {
+   "case_id": "CASE-001",
+   "rules": [
+    "ATH-001",
+    "ATH-002",
+    "ATH-003",
+    "ATH-004",
+    "ATH-005",
+    "ATH-006",
+    "ATH-007",
+    "ATH-008",
+    "ATH-009",
+    "ATH-010"
+   ],
+   "findings": 11,
+   "agents_run": [
+    "endpoint",
+    "identity",
+    "network",
+    "attack"
+   ],
+   "counts": {
+    "facts": 20,
+    "inferences": 28,
+    "hypotheses": 2,
+    "rejected": 0,
+    "tool_calls": 43
+   },
+   "tool_calls": [
+    "endpoint::get_events(event_ids=['evt-000355']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=4820) -> 2 ancestor(s), 1 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000357']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=6612) -> 3 ancestor(s), 4 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000357']) -> 1/1 found",
+    "endpoint::get_events(event_ids=['evt-000367', 'evt-000370', 'evt-000374']) -> 3/3 found",
+    "endpoint::process_tree(device='PC01', pid=7000) -> 3 ancestor(s), 0 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000381']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=7420) -> 3 ancestor(s), 0 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000419', 'evt-000422', 'evt-000425', 'evt-000427', 'evt-000429', 'evt-000431', 'evt-000432', 'evt-000433', 'evt-000437', 'evt-000438']) -> 15/15 found",
+    "endpoint::get_events(event_ids=['evt-000457']) -> 1/1 found",
+    "endpoint::get_events(event_ids=['evt-000461']) -> 1/1 found",
+    "endpoint::process_tree(device='FS02', pid=2244) -> 1 ancestor(s), 1 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000469']) -> 1/1 found",
+    "endpoint::process_tree(device='FS02', pid=2280) -> 2 ancestor(s), 0 child(ren)",
+    "identity::user_auth_history(user='jdoe') -> 44 logons (1 failed)",
+    "identity::user_auth_history(user='svc_backup') -> 20 logons (14 failed)",
+    "network::host_network_activity(device='FS02', remote_ip='185.220.101.47') -> 1 connections to 1 destination(s)",
+    "network::host_network_activity(device='PC01', remote_ip='185.220.101.47') -> 7 connections to 1 destination(s)",
+    "network::analyse_beacon(device='FS02', remote_ip='185.220.101.47') -> a single connection provides no interval to measure",
+    "network::analyse_beacon(device='PC01', remote_ip='185.220.101.47') -> 6 intervals, median 300s, robust cv 0.000, regular",
+    "attack::lookup_technique(technique_id='T1059.001') -> PowerShell",
+    "attack::lookup_technique(technique_id='T1027.010') -> Command Obfuscation",
+    "attack::lookup_technique(technique_id='T1059.001') -> PowerShell",
+    "attack::lookup_technique(technique_id='T1003.001') -> LSASS Memory",
+    "attack::lookup_technique(technique_id='T1110.001') -> Password Guessing",
+    "attack::lookup_technique(technique_id='T1569.002') -> Service Execution",
+    "attack::lookup_technique(technique_id='T1560.001') -> Archive via Utility",
+    "attack::lookup_technique(technique_id='T1204.002') -> Malicious File",
+    "attack::lookup_technique(technique_id='T1204.002') -> Malicious File",
+    "attack::lookup_technique(technique_id='T1105') -> Ingress Tool Transfer",
+    "attack::lookup_technique(technique_id='T1071.001') -> Web Protocols",
+    "attack::lookup_technique(technique_id='T1105') -> Ingress Tool Transfer",
+    "attack::lookup_technique(technique_id='T1033') -> System Owner/User Discovery",
+    "attack::lookup_technique(technique_id='T1069.002') -> Domain Groups",
+    "attack::lookup_technique(technique_id='T1482') -> Domain Trust Discovery",
+    "attack::lookup_technique(technique_id='T1218.011') -> Rundll32",
+    "attack::lookup_technique(technique_id='T1078') -> Valid Accounts",
+    "attack::lookup_technique(technique_id='T1021.002') -> SMB/Windows Admin Shares",
+    "attack::lookup_technique(technique_id='T1078') -> Valid Accounts",
+    "attack::lookup_technique(technique_id='T1021.002') -> SMB/Windows Admin Shares",
+    "attack::lookup_technique(technique_id='T1074.001') -> Local Data Staging",
+    "attack::lookup_technique(technique_id='T1071.001') -> Web Protocols"
+   ],
+   "plan_log": [
+    "step 1: endpoint -- deterministic priority order; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ATH-001, ATH-002, ATH-003, ATH-004, ATH-007, ATH-008, ATH-009, ATH-010)",
+    "step 2: identity -- deterministic priority order; case evidence rests on auth_source_attribution, authentication telemetry (from ATH-005, ATH-006)",
+    "step 3: network -- deterministic priority order; case evidence rests on network_flow telemetry (from ATH-003)",
+    "step 4: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+    "step 5: stop -- no specialist has further useful work on the available evidence"
+   ],
+   "claims": [
+    {
+     "type": "FACT",
+     "statement": "On PC01, WINWORD.EXE (PID 4820) was started by OUTLOOK.EXE under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: explorer.exe -> OUTLOOK.EXE -> WINWORD.EXE.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Execution on PC01 originated from a document opened in an Office application rather than from user-initiated command line activity, which is consistent with macro-based execution.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "WINWORD.EXE (PID 4820) on PC01 spawned 1 child process(es): powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, powershell.exe (PID 6612) was started by WINWORD.EXE under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: explorer.exe -> OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357",
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "powershell.exe (PID 6612) on PC01 spawned 4 child process(es): net.exe, nltest.exe, rundll32.exe, whoami.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374",
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, whoami.exe (PID 7000) was started by powershell.exe under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe -> whoami.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000357",
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, rundll32.exe (PID 7420) was started by powershell.exe under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe -> rundll32.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000381",
+      "evt-000357",
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On FS02, cmd.exe (PID 2244) was started by services.exe under account svc_backup.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "cmd.exe (PID 2244) on FS02 spawned 1 child process(es): powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On FS02, powershell.exe (PID 2280) was started by cmd.exe under account svc_backup.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on FS02: services.exe -> cmd.exe -> powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469",
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'jdoe' has 44 authentication events (1 failed, 43 successful) across hosts APP01, FS02, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000032",
+      "evt-000044",
+      "evt-000113",
+      "evt-000119"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' has 20 authentication events (14 failed, 6 successful) across hosts APP01, DC01, FS02.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000229",
+      "evt-000281",
+      "evt-000419",
+      "evt-000422"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' authenticated from more than one source host: APP01, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000229",
+      "evt-000281",
+      "evt-000419",
+      "evt-000422"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The 14 failed authentications for 'svc_backup' followed by success are consistent with the account's password having been guessed rather than with ordinary user error.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' authenticated to FS02 from PC01, a host whose observed interactive user(s) are jdoe.",
+     "source": "detector",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Credential use for 'svc_backup' originating from PC01 is consistent with credentials obtained on that host being reused to reach another system.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "HYPOTHESIS",
+     "statement": "The credentials for 'svc_backup' may have been obtained from memory on PC01. This is unverified: no telemetry links the credential-access activity to this specific account.",
+     "source": "analysis",
+     "evidence_ids": []
+    },
+    {
+     "type": "FACT",
+     "statement": "The external address 185.220.101.47 was contacted from more than one host: FS02, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "A single external address contacted from 2 separate hosts is consistent with shared adversary infrastructure rather than with independent user activity.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Connections from PC01 to 185.220.101.47 occurred at a median interval of 300s with a robust coefficient of variation (MAD/median) of 0.000 across 7 connections.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The regularity of these intervals indicates automated rather than human-driven communication, which is consistent with command-and-control beaconing.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-001 is consistent with T1059.001 Command and Scripting Interpreter: PowerShell (Execution). PowerShell was executed as a child of an Office application.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1027.010 Obfuscated Files or Information: Command Obfuscation (Stealth). The command was passed base64-encoded via -EncodedCommand, which meets ATT&CK's definition of command obfuscation. Note ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1059.001 Command and Scripting Interpreter: PowerShell (Execution). The command was executed by powershell.exe.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-004 is consistent with T1003.001 OS Credential Dumping: LSASS Memory (Credential Access). The command line targets LSASS process memory for dumping, which is the defining behaviour of this sub-technique.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-005 is consistent with T1110.001 Brute Force: Password Guessing (Credential Access). Repeated failed authentications for a single account from a single source are consistent with systematically guessing that account's",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-007 is consistent with T1569.002 System Services: Service Execution (Execution). A command interpreter was started by the Service Control Manager, which is the defining behaviour of executing a payload as a Windows se",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-008 is consistent with T1560.001 Archive Collected Data: Archive via Utility (Collection). A standard archive utility was used to compress data, which is the defining behaviour of archiving collected data via a utilit",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-009 is consistent with T1204.002 User Execution: Malicious File (Execution). A user opened a document in a macro-capable format delivered by an email client. This is consistent with a malicious attachment being execut",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-001 is consistent with T1204.002 User Execution: Malicious File (Execution). An Office application spawned an interpreter, which is consistent with a user opening a document that executed embedded code. The document i",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1105 Ingress Tool Transfer (Command and Control). The decoded payload retrieves remote content, which is consistent with transferring a further tool or stage onto the host.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1071.001 Application Layer Protocol: Web Protocols (Command and Control). A script interpreter communicated outbound over web protocol ports, which is consistent with command-and-control over H",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1105 Ingress Tool Transfer (Command and Control). A URL or cleartext HTTP retrieval was observed from the interpreter, which is consistent with pulling an additional payload onto the host.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1033 System Owner/User Discovery (Discovery). whoami, systeminfo, hostname or quser was among the discovery commands observed, consistent with identifying the current user or system context.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1069.002 Permission Groups Discovery: Domain Groups (Discovery). net.exe was used with domain-group enumeration syntax, consistent with mapping domain-level permission groups.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1482 Domain Trust Discovery (Discovery). nltest was among the discovery commands observed, consistent with enumerating domain trust relationships to identify lateral-movement opportunities.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-004 is consistent with T1218.011 System Binary Proxy Execution: Rundll32 (Stealth). The dump was performed by invoking an export of a signed Microsoft DLL through rundll32.exe, using trusted binaries as a proxy for ex",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-005 is consistent with T1078 Valid Accounts (Persistence). A successful authentication followed the failure burst, which is consistent with the account credential now being under adversary control.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-006 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). The account authenticated to a remote host over a network (SMB) logon from a machine where it holds no session, which is c",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-006 is consistent with T1078 Valid Accounts (Persistence). A valid account was used from a host it does not operate on. Legitimate alternate-credential workflows produce the same pattern.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-007 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). Command output was redirected to an administrative share, indicating the service was driven over an authenticated SMB sess",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-008 is consistent with T1074.001 Data Staged: Local Data Staging (Collection). The archive was written to a shared staging directory rather than the operator's own profile, consistent with staging data locally before ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1071.001 Application Layer Protocol: Web Protocols (Command and Control). A script interpreter communicated outbound over web protocol ports, which is consistent with command-and-control over H",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000481"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The case spans 8 ATT&CK tactics (Execution -> Persistence -> Stealth -> Credential Access -> Discovery -> Lateral Movement -> Collection -> Command and Control). Progression across multiple tactics is harder to explain as coincidental than ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000357",
+      "evt-000358",
+      "evt-000362"
+     ]
+    },
+    {
+     "type": "HYPOTHESIS",
+     "statement": "Data staged on disk may have been transferred to the external destination observed in this case. This is unverified: the telemetry records archive creation and outbound connections separately, and does not show the archive's contents leavin",
+     "source": "analysis",
+     "evidence_ids": []
+    }
+   ],
+   "rejected_claims": []
+  }
+ }
+}

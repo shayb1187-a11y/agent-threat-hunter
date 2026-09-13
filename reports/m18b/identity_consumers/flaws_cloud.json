@@ -1,0 +1,97 @@
+{
+ "corpus": "flaws_cloud",
+ "source": {
+  "loader": "scripts/m18_cloud_detection.load_corpus",
+  "load_seconds": 57.3,
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 79424,
+   "control": 1857154
+  }
+ },
+ "before_from": {
+  "frozen_artifact": "reports/m18b/identity_consumers/BEFORE_7e68840.json",
+  "findings": 1476,
+  "cases": 281,
+  "links": 194,
+  "agrees_with_frozen": true
+ },
+ "detection": {
+  "findings_at_7e68840": 1476,
+  "findings_after": 1476,
+  "by_rule_at_7e68840": {
+   "ATH-005": 36,
+   "AWS-002": 3,
+   "AWS-004": 1142,
+   "AWS-003": 278,
+   "AWS-005": 17
+  },
+  "by_rule_after": {
+   "ATH-005": 36,
+   "AWS-002": 3,
+   "AWS-003": 278,
+   "AWS-004": 1142,
+   "AWS-005": 17
+  },
+  "unchanged": true
+ },
+ "correlation": {
+  "findings_unchanged": true,
+  "cases_before": 281,
+  "cases_after": 281,
+  "links_before": 194,
+  "links_after": 194,
+  "links_by_signal_before": {
+   "same_device": 121,
+   "same_user": 194,
+   "shared_evidence": 194,
+   "temporal_close": 194
+  },
+  "links_by_signal_after": {
+   "same_device": 121,
+   "same_user": 194,
+   "shared_evidence": 194,
+   "temporal_close": 194
+  },
+  "lost_process_links": [],
+  "lost_process_link_count": 0,
+  "gained_process_links": [],
+  "gained_process_link_count": 0,
+  "inferred_links_after": {}
+ },
+ "run_stats_after": {
+  "findings": 1476,
+  "cases": 281,
+  "links": 194,
+  "links_by_signal": {
+   "same_device": 121,
+   "same_user": 194,
+   "shared_evidence": 194,
+   "temporal_close": 194
+  },
+  "inferred_links_by_signal": {}
+ },
+ "pid_ambiguity": {
+  "process_keys": 0,
+  "reused": 0,
+  "worst": null,
+  "keys": []
+ },
+ "process_tree_study": [],
+ "investigation_after": {
+  "totals": {
+   "cases": 10,
+   "facts": 203,
+   "inferences": 34,
+   "hypotheses": 0,
+   "rejected": 0,
+   "tool_calls": 172,
+   "steps": 20
+  },
+  "facts_labelled_inferred_from_pid": 0,
+  "claims_naming_an_ambiguous_pid": 0,
+  "examples": []
+ },
+ "investigation_before": {}
+}

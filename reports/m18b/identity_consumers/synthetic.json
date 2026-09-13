@@ -1,0 +1,937 @@
+{
+ "corpus": "synthetic",
+ "source": {
+  "loader": "scripts/m18_cloud_detection.load_corpus",
+  "load_seconds": 0.0,
+  "rows": {
+   "process": 462,
+   "network": 389,
+   "logon": 267,
+   "control": 0
+  }
+ },
+ "before_from": {
+  "frozen_artifact": "reports/m18b/identity_consumers/BEFORE_7e68840.json",
+  "findings": 15,
+  "cases": 2,
+  "links": 21,
+  "agrees_with_frozen": true
+ },
+ "detection": {
+  "findings_at_7e68840": 15,
+  "findings_after": 15,
+  "by_rule_at_7e68840": {
+   "ATH-004": 1,
+   "ATH-005": 1,
+   "ATH-012": 1,
+   "ATH-011": 1,
+   "ATH-001": 1,
+   "ATH-002": 2,
+   "ATH-003": 3,
+   "ATH-006": 1,
+   "ATH-007": 1,
+   "ATH-008": 1,
+   "ATH-009": 1,
+   "ATH-010": 1
+  },
+  "by_rule_after": {
+   "ATH-001": 1,
+   "ATH-002": 2,
+   "ATH-003": 3,
+   "ATH-004": 1,
+   "ATH-005": 1,
+   "ATH-006": 1,
+   "ATH-007": 1,
+   "ATH-008": 1,
+   "ATH-009": 1,
+   "ATH-010": 1,
+   "ATH-011": 1,
+   "ATH-012": 1
+  },
+  "unchanged": true
+ },
+ "correlation": {
+  "findings_unchanged": true,
+  "cases_before": 2,
+  "cases_after": 2,
+  "links_before": 21,
+  "links_after": 21,
+  "links_by_signal_before": {
+   "auth_then_exec": 2,
+   "host_movement": 3,
+   "process_lineage": 9,
+   "same_device": 18,
+   "same_process": 4,
+   "same_user": 18,
+   "shared_evidence": 2,
+   "sibling_lineage": 3,
+   "temporal_close": 21
+  },
+  "links_by_signal_after": {
+   "auth_then_exec": 2,
+   "host_movement": 3,
+   "process_lineage": 9,
+   "same_device": 18,
+   "same_process": 4,
+   "same_user": 18,
+   "shared_evidence": 2,
+   "sibling_lineage": 3,
+   "temporal_close": 21
+  },
+  "lost_process_links": [],
+  "lost_process_link_count": 0,
+  "gained_process_links": [],
+  "gained_process_link_count": 0,
+  "inferred_links_after": {
+   "any": 1,
+   "sibling_lineage": 1
+  }
+ },
+ "run_stats_after": {
+  "findings": 15,
+  "cases": 2,
+  "links": 22,
+  "links_by_signal": {
+   "auth_then_exec": 2,
+   "host_movement": 3,
+   "process_lineage": 9,
+   "same_device": 19,
+   "same_process": 5,
+   "same_user": 19,
+   "shared_evidence": 2,
+   "sibling_lineage": 3,
+   "temporal_close": 22
+  },
+  "inferred_links_by_signal": {
+   "any": 1,
+   "sibling_lineage": 1
+  }
+ },
+ "pid_ambiguity": {
+  "process_keys": 457,
+  "reused": 5,
+  "worst": {
+   "key": "PC03|1453",
+   "instances": 2
+  },
+  "keys": [
+   {
+    "device": "PC03",
+    "pid": 1453,
+    "instances": 2
+   },
+   {
+    "device": "PC03",
+    "pid": 3471,
+    "instances": 2
+   },
+   {
+    "device": "PC03",
+    "pid": 9601,
+    "instances": 2
+   },
+   {
+    "device": "PC05",
+    "pid": 9893,
+    "instances": 2
+   },
+   {
+    "device": "PC07",
+    "pid": 1826,
+    "instances": 2
+   }
+  ]
+ },
+ "process_tree_study": [
+  {
+   "key": "PC03|1453",
+   "process_rows": 2,
+   "distinct_identities": 2,
+   "instances": [
+    {
+     "process_name": "Teams.exe",
+     "timestamp": "2026-08-17 08:58:40+00:00",
+     "process_guid": "start:pc03|1453|2026-08-17T08:58:40.000Z"
+    },
+    {
+     "process_name": "cmd.exe",
+     "timestamp": "2026-08-17 09:43:23+00:00",
+     "process_guid": "start:pc03|1453|2026-08-17T09:43:23.000Z"
+    }
+   ],
+   "before": {
+    "picked": "Teams.exe",
+    "ancestry": [
+     "Teams.exe"
+    ],
+    "children": 0,
+    "other_instances_silently_discarded": 1
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 2,
+    "candidates": [
+     {
+      "process_name": "Teams.exe",
+      "timestamp": "2026-08-17T08:58:40+00:00",
+      "process_guid": "start:pc03|1453|2026-08-17T08:58:40.000Z"
+     },
+     {
+      "process_name": "cmd.exe",
+      "timestamp": "2026-08-17T09:43:23+00:00",
+      "process_guid": "start:pc03|1453|2026-08-17T09:43:23.000Z"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  },
+  {
+   "key": "PC03|3471",
+   "process_rows": 2,
+   "distinct_identities": 2,
+   "instances": [
+    {
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 08:14:12+00:00",
+     "process_guid": "start:pc03|3471|2026-08-17T08:14:12.000Z"
+    },
+    {
+     "process_name": "EXCEL.EXE",
+     "timestamp": "2026-08-17 10:14:17+00:00",
+     "process_guid": "start:pc03|3471|2026-08-17T10:14:17.000Z"
+    }
+   ],
+   "before": {
+    "picked": "powershell.exe",
+    "ancestry": [
+     "powershell.exe"
+    ],
+    "children": 0,
+    "other_instances_silently_discarded": 1
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 2,
+    "candidates": [
+     {
+      "process_name": "powershell.exe",
+      "timestamp": "2026-08-17T08:14:12+00:00",
+      "process_guid": "start:pc03|3471|2026-08-17T08:14:12.000Z"
+     },
+     {
+      "process_name": "EXCEL.EXE",
+      "timestamp": "2026-08-17T10:14:17+00:00",
+      "process_guid": "start:pc03|3471|2026-08-17T10:14:17.000Z"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  },
+  {
+   "key": "PC03|9601",
+   "process_rows": 2,
+   "distinct_identities": 2,
+   "instances": [
+    {
+     "process_name": "cmd.exe",
+     "timestamp": "2026-08-17 09:00:46+00:00",
+     "process_guid": "start:pc03|9601|2026-08-17T09:00:46.000Z"
+    },
+    {
+     "process_name": "EXCEL.EXE",
+     "timestamp": "2026-08-17 11:36:52+00:00",
+     "process_guid": "start:pc03|9601|2026-08-17T11:36:52.000Z"
+    }
+   ],
+   "before": {
+    "picked": "cmd.exe",
+    "ancestry": [
+     "cmd.exe"
+    ],
+    "children": 0,
+    "other_instances_silently_discarded": 1
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 2,
+    "candidates": [
+     {
+      "process_name": "cmd.exe",
+      "timestamp": "2026-08-17T09:00:46+00:00",
+      "process_guid": "start:pc03|9601|2026-08-17T09:00:46.000Z"
+     },
+     {
+      "process_name": "EXCEL.EXE",
+      "timestamp": "2026-08-17T11:36:52+00:00",
+      "process_guid": "start:pc03|9601|2026-08-17T11:36:52.000Z"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  },
+  {
+   "key": "PC05|9893",
+   "process_rows": 2,
+   "distinct_identities": 2,
+   "instances": [
+    {
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 11:19:41+00:00",
+     "process_guid": "start:pc05|9893|2026-08-17T11:19:41.000Z"
+    },
+    {
+     "process_name": "powershell.exe",
+     "timestamp": "2026-08-17 11:29:01+00:00",
+     "process_guid": "start:pc05|9893|2026-08-17T11:29:01.000Z"
+    }
+   ],
+   "before": {
+    "picked": "powershell.exe",
+    "ancestry": [
+     "powershell.exe"
+    ],
+    "children": 0,
+    "other_instances_silently_discarded": 1
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 2,
+    "candidates": [
+     {
+      "process_name": "powershell.exe",
+      "timestamp": "2026-08-17T11:19:41+00:00",
+      "process_guid": "start:pc05|9893|2026-08-17T11:19:41.000Z"
+     },
+     {
+      "process_name": "powershell.exe",
+      "timestamp": "2026-08-17T11:29:01+00:00",
+      "process_guid": "start:pc05|9893|2026-08-17T11:29:01.000Z"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  },
+  {
+   "key": "PC07|1826",
+   "process_rows": 2,
+   "distinct_identities": 2,
+   "instances": [
+    {
+     "process_name": "OneDrive.exe",
+     "timestamp": "2026-08-17 10:22:31+00:00",
+     "process_guid": "start:pc07|1826|2026-08-17T10:22:31.000Z"
+    },
+    {
+     "process_name": "Teams.exe",
+     "timestamp": "2026-08-17 11:31:42+00:00",
+     "process_guid": "start:pc07|1826|2026-08-17T11:31:42.000Z"
+    }
+   ],
+   "before": {
+    "picked": "OneDrive.exe",
+    "ancestry": [
+     "OneDrive.exe"
+    ],
+    "children": 0,
+    "other_instances_silently_discarded": 1
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 2,
+    "candidates": [
+     {
+      "process_name": "OneDrive.exe",
+      "timestamp": "2026-08-17T10:22:31+00:00",
+      "process_guid": "start:pc07|1826|2026-08-17T10:22:31.000Z"
+     },
+     {
+      "process_name": "Teams.exe",
+      "timestamp": "2026-08-17T11:31:42+00:00",
+      "process_guid": "start:pc07|1826|2026-08-17T11:31:42.000Z"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  }
+ ],
+ "investigation_after": {
+  "totals": {
+   "cases": 2,
+   "facts": 22,
+   "inferences": 31,
+   "hypotheses": 2,
+   "rejected": 0,
+   "tool_calls": 86,
+   "steps": 6
+  },
+  "facts_labelled_inferred_from_pid": 3,
+  "claims_naming_an_ambiguous_pid": 0,
+  "examples": [
+   "On FS02, cmd.exe (PID 2244) was started by services.exe (PID 712, identity inferred from pid) under account svc_backup.",
+   "On PC03, powershell.exe (PID 7420) was started by cmd.exe (PID 7419, identity inferred from pid) under account achen.",
+   "On PC03, vssadmin.exe (PID 7423) was started by cmd.exe (PID 7419, identity inferred from pid) under account achen."
+  ]
+ },
+ "investigation_before": {
+  "totals": {
+   "cases": 2,
+   "facts": 22,
+   "inferences": 31,
+   "hypotheses": 2,
+   "rejected_claims": 0,
+   "tool_calls": 86,
+   "steps": 6,
+   "agent_endpoint": 2,
+   "agent_identity": 1,
+   "agent_network": 1,
+   "agent_attack": 2
+  },
+  "example_case": {
+   "case_id": "CASE-001",
+   "rules": [
+    "ATH-001",
+    "ATH-002",
+    "ATH-003",
+    "ATH-004",
+    "ATH-005",
+    "ATH-006",
+    "ATH-007",
+    "ATH-008",
+    "ATH-009",
+    "ATH-010"
+   ],
+   "findings": 11,
+   "agents_run": [
+    "endpoint",
+    "identity",
+    "network",
+    "attack"
+   ],
+   "counts": {
+    "facts": 20,
+    "inferences": 28,
+    "hypotheses": 2,
+    "rejected": 0,
+    "tool_calls": 43
+   },
+   "tool_calls": [
+    "endpoint::get_events(event_ids=['evt-000355']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=4820) -> 2 ancestor(s), 1 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000357']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=6612) -> 3 ancestor(s), 4 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000357']) -> 1/1 found",
+    "endpoint::get_events(event_ids=['evt-000367', 'evt-000370', 'evt-000374']) -> 3/3 found",
+    "endpoint::process_tree(device='PC01', pid=7000) -> 3 ancestor(s), 0 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000381']) -> 1/1 found",
+    "endpoint::process_tree(device='PC01', pid=7420) -> 3 ancestor(s), 0 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000419', 'evt-000422', 'evt-000425', 'evt-000427', 'evt-000429', 'evt-000431', 'evt-000432', 'evt-000433', 'evt-000437', 'evt-000438']) -> 15/15 found",
+    "endpoint::get_events(event_ids=['evt-000457']) -> 1/1 found",
+    "endpoint::get_events(event_ids=['evt-000461']) -> 1/1 found",
+    "endpoint::process_tree(device='FS02', pid=2244) -> 1 ancestor(s), 1 child(ren)",
+    "endpoint::get_events(event_ids=['evt-000469']) -> 1/1 found",
+    "endpoint::process_tree(device='FS02', pid=2280) -> 2 ancestor(s), 0 child(ren)",
+    "identity::user_auth_history(user='jdoe') -> 44 logons (1 failed)",
+    "identity::user_auth_history(user='svc_backup') -> 20 logons (14 failed)",
+    "network::host_network_activity(device='FS02', remote_ip='185.220.101.47') -> 1 connections to 1 destination(s)",
+    "network::host_network_activity(device='PC01', remote_ip='185.220.101.47') -> 7 connections to 1 destination(s)",
+    "network::analyse_beacon(device='FS02', remote_ip='185.220.101.47') -> a single connection provides no interval to measure",
+    "network::analyse_beacon(device='PC01', remote_ip='185.220.101.47') -> 6 intervals, median 300s, robust cv 0.000, regular",
+    "attack::lookup_technique(technique_id='T1059.001') -> PowerShell",
+    "attack::lookup_technique(technique_id='T1027.010') -> Command Obfuscation",
+    "attack::lookup_technique(technique_id='T1059.001') -> PowerShell",
+    "attack::lookup_technique(technique_id='T1003.001') -> LSASS Memory",
+    "attack::lookup_technique(technique_id='T1110.001') -> Password Guessing",
+    "attack::lookup_technique(technique_id='T1569.002') -> Service Execution",
+    "attack::lookup_technique(technique_id='T1560.001') -> Archive via Utility",
+    "attack::lookup_technique(technique_id='T1204.002') -> Malicious File",
+    "attack::lookup_technique(technique_id='T1204.002') -> Malicious File",
+    "attack::lookup_technique(technique_id='T1105') -> Ingress Tool Transfer",
+    "attack::lookup_technique(technique_id='T1071.001') -> Web Protocols",
+    "attack::lookup_technique(technique_id='T1105') -> Ingress Tool Transfer",
+    "attack::lookup_technique(technique_id='T1033') -> System Owner/User Discovery",
+    "attack::lookup_technique(technique_id='T1069.002') -> Domain Groups",
+    "attack::lookup_technique(technique_id='T1482') -> Domain Trust Discovery",
+    "attack::lookup_technique(technique_id='T1218.011') -> Rundll32",
+    "attack::lookup_technique(technique_id='T1078') -> Valid Accounts",
+    "attack::lookup_technique(technique_id='T1021.002') -> SMB/Windows Admin Shares",
+    "attack::lookup_technique(technique_id='T1078') -> Valid Accounts",
+    "attack::lookup_technique(technique_id='T1021.002') -> SMB/Windows Admin Shares",
+    "attack::lookup_technique(technique_id='T1074.001') -> Local Data Staging",
+    "attack::lookup_technique(technique_id='T1071.001') -> Web Protocols"
+   ],
+   "plan_log": [
+    "step 1: endpoint -- deterministic priority order; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ATH-001, ATH-002, ATH-003, ATH-004, ATH-007, ATH-008, ATH-009, ATH-010)",
+    "step 2: identity -- deterministic priority order; case evidence rests on auth_source_attribution, authentication telemetry (from ATH-005, ATH-006)",
+    "step 3: network -- deterministic priority order; case evidence rests on network_flow telemetry (from ATH-003)",
+    "step 4: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+    "step 5: stop -- no specialist has further useful work on the available evidence"
+   ],
+   "claims": [
+    {
+     "type": "FACT",
+     "statement": "On PC01, WINWORD.EXE (PID 4820) was started by OUTLOOK.EXE under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: explorer.exe -> OUTLOOK.EXE -> WINWORD.EXE.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Execution on PC01 originated from a document opened in an Office application rather than from user-initiated command line activity, which is consistent with macro-based execution.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "WINWORD.EXE (PID 4820) on PC01 spawned 1 child process(es): powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, powershell.exe (PID 6612) was started by WINWORD.EXE under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: explorer.exe -> OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000357",
+      "evt-000355",
+      "evt-000002"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "powershell.exe (PID 6612) on PC01 spawned 4 child process(es): net.exe, nltest.exe, rundll32.exe, whoami.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374",
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, whoami.exe (PID 7000) was started by powershell.exe under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe -> whoami.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000357",
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On PC01, rundll32.exe (PID 7420) was started by powershell.exe under account jdoe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on PC01: OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe -> rundll32.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000381",
+      "evt-000357",
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On FS02, cmd.exe (PID 2244) was started by services.exe under account svc_backup.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "cmd.exe (PID 2244) on FS02 spawned 1 child process(es): powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "On FS02, powershell.exe (PID 2280) was started by cmd.exe under account svc_backup.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on FS02: services.exe -> cmd.exe -> powershell.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000469",
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'jdoe' has 44 authentication events (1 failed, 43 successful) across hosts APP01, FS02, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000032",
+      "evt-000044",
+      "evt-000113",
+      "evt-000119"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' has 20 authentication events (14 failed, 6 successful) across hosts APP01, DC01, FS02.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000229",
+      "evt-000281",
+      "evt-000419",
+      "evt-000422"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' authenticated from more than one source host: APP01, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000229",
+      "evt-000281",
+      "evt-000419",
+      "evt-000422"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The 14 failed authentications for 'svc_backup' followed by success are consistent with the account's password having been guessed rather than with ordinary user error.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Account 'svc_backup' authenticated to FS02 from PC01, a host whose observed interactive user(s) are jdoe.",
+     "source": "detector",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Credential use for 'svc_backup' originating from PC01 is consistent with credentials obtained on that host being reused to reach another system.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "HYPOTHESIS",
+     "statement": "The credentials for 'svc_backup' may have been obtained from memory on PC01. This is unverified: no telemetry links the credential-access activity to this specific account.",
+     "source": "analysis",
+     "evidence_ids": []
+    },
+    {
+     "type": "FACT",
+     "statement": "The external address 185.220.101.47 was contacted from more than one host: FS02, PC01.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "A single external address contacted from 2 separate hosts is consistent with shared adversary infrastructure rather than with independent user activity.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Connections from PC01 to 185.220.101.47 occurred at a median interval of 300s with a robust coefficient of variation (MAD/median) of 0.000 across 7 connections.",
+     "source": "tool",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The regularity of these intervals indicates automated rather than human-driven communication, which is consistent with command-and-control beaconing.",
+     "source": "analysis",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-001 is consistent with T1059.001 Command and Scripting Interpreter: PowerShell (Execution). PowerShell was executed as a child of an Office application.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1027.010 Obfuscated Files or Information: Command Obfuscation (Stealth). The command was passed base64-encoded via -EncodedCommand, which meets ATT&CK's definition of command obfuscation. Note ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1059.001 Command and Scripting Interpreter: PowerShell (Execution). The command was executed by powershell.exe.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-004 is consistent with T1003.001 OS Credential Dumping: LSASS Memory (Credential Access). The command line targets LSASS process memory for dumping, which is the defining behaviour of this sub-technique.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-005 is consistent with T1110.001 Brute Force: Password Guessing (Credential Access). Repeated failed authentications for a single account from a single source are consistent with systematically guessing that account's",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-007 is consistent with T1569.002 System Services: Service Execution (Execution). A command interpreter was started by the Service Control Manager, which is the defining behaviour of executing a payload as a Windows se",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-008 is consistent with T1560.001 Archive Collected Data: Archive via Utility (Collection). A standard archive utility was used to compress data, which is the defining behaviour of archiving collected data via a utilit",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-009 is consistent with T1204.002 User Execution: Malicious File (Execution). A user opened a document in a macro-capable format delivered by an email client. This is consistent with a malicious attachment being execut",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000355"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-001 is consistent with T1204.002 User Execution: Malicious File (Execution). An Office application spawned an interpreter, which is consistent with a user opening a document that executed embedded code. The document i",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-002 is consistent with T1105 Ingress Tool Transfer (Command and Control). The decoded payload retrieves remote content, which is consistent with transferring a further tool or stage onto the host.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1071.001 Application Layer Protocol: Web Protocols (Command and Control). A script interpreter communicated outbound over web protocol ports, which is consistent with command-and-control over H",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1105 Ingress Tool Transfer (Command and Control). A URL or cleartext HTTP retrieval was observed from the interpreter, which is consistent with pulling an additional payload onto the host.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1033 System Owner/User Discovery (Discovery). whoami, systeminfo, hostname or quser was among the discovery commands observed, consistent with identifying the current user or system context.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1069.002 Permission Groups Discovery: Domain Groups (Discovery). net.exe was used with domain-group enumeration syntax, consistent with mapping domain-level permission groups.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-010 is consistent with T1482 Domain Trust Discovery (Discovery). nltest was among the discovery commands observed, consistent with enumerating domain trust relationships to identify lateral-movement opportunities.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-004 is consistent with T1218.011 System Binary Proxy Execution: Rundll32 (Stealth). The dump was performed by invoking an export of a signed Microsoft DLL through rundll32.exe, using trusted binaries as a proxy for ex",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-005 is consistent with T1078 Valid Accounts (Persistence). A successful authentication followed the failure burst, which is consistent with the account credential now being under adversary control.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-006 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). The account authenticated to a remote host over a network (SMB) logon from a machine where it holds no session, which is c",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-006 is consistent with T1078 Valid Accounts (Persistence). A valid account was used from a host it does not operate on. Legitimate alternate-credential workflows produce the same pattern.",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-007 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). Command output was redirected to an administrative share, indicating the service was driven over an authenticated SMB sess",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-008 is consistent with T1074.001 Data Staged: Local Data Staging (Collection). The archive was written to a shared staging directory rather than the operator's own profile, consistent with staging data locally before ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-003 is consistent with T1071.001 Application Layer Protocol: Web Protocols (Command and Control). A script interpreter communicated outbound over web protocol ports, which is consistent with command-and-control over H",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000481"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The case spans 8 ATT&CK tactics (Execution -> Persistence -> Stealth -> Credential Access -> Discovery -> Lateral Movement -> Collection -> Command and Control). Progression across multiple tactics is harder to explain as coincidental than ",
+     "source": "mitre",
+     "evidence_ids": [
+      "evt-000355",
+      "evt-000357",
+      "evt-000358",
+      "evt-000362"
+     ]
+    },
+    {
+     "type": "HYPOTHESIS",
+     "statement": "Data staged on disk may have been transferred to the external destination observed in this case. This is unverified: the telemetry records archive creation and outbound connections separately, and does not show the archive's contents leavin",
+     "source": "analysis",
+     "evidence_ids": []
+    }
+   ],
+   "rejected_claims": []
+  }
+ }
+}

@@ -1,0 +1,433 @@
+{
+ "corpus": "comiset",
+ "source": {
+  "path": "reports/m18b/canonical",
+  "adapter": "frozen canonical parquet",
+  "load_seconds": 0.5,
+  "rows": {
+   "process": 15095,
+   "network": 589476,
+   "logon": 6063,
+   "control": 0
+  }
+ },
+ "before_from": {
+  "frozen_artifact": "reports/m18b/identity_consumers/BEFORE_7e68840.json",
+  "findings": 5,
+  "cases": 1,
+  "links": 0,
+  "agrees_with_frozen": true
+ },
+ "detection": {
+  "findings_at_7e68840": 5,
+  "findings_after": 5,
+  "by_rule_at_7e68840": {
+   "ATH-012": 1,
+   "ATH-010": 1,
+   "ATH-002": 3
+  },
+  "by_rule_after": {
+   "ATH-002": 3,
+   "ATH-010": 1,
+   "ATH-012": 1
+  },
+  "unchanged": true
+ },
+ "correlation": {
+  "findings_unchanged": true,
+  "cases_before": 1,
+  "cases_after": 2,
+  "links_before": 0,
+  "links_after": 1,
+  "links_by_signal_before": {},
+  "links_by_signal_after": {
+   "same_device": 1,
+   "same_user": 1,
+   "sibling_lineage": 1,
+   "temporal_close": 1
+  },
+  "lost_process_links": [],
+  "lost_process_link_count": 0,
+  "gained_process_links": [
+   {
+    "pair": "ATH-002:comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353->ATH-002:comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4",
+    "signal": "sibling_lineage"
+   }
+  ],
+  "gained_process_link_count": 1,
+  "inferred_links_after": {}
+ },
+ "run_stats_after": {
+  "findings": 5,
+  "cases": 2,
+  "links": 1,
+  "links_by_signal": {
+   "same_device": 1,
+   "same_user": 1,
+   "sibling_lineage": 1,
+   "temporal_close": 1
+  },
+  "inferred_links_by_signal": {}
+ },
+ "pid_ambiguity": {
+  "process_keys": 2430,
+  "reused": 2096,
+  "worst": {
+   "key": "desktop-4pvps6e|5924",
+   "instances": 27
+  },
+  "keys": [
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5924,
+    "instances": 27
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4832,
+    "instances": 24
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4776,
+    "instances": 23
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 3272,
+    "instances": 23
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4816,
+    "instances": 23
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4508,
+    "instances": 23
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5904,
+    "instances": 23
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 3900,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4604,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5092,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5572,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5220,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5996,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 6096,
+    "instances": 22
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4396,
+    "instances": 21
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5796,
+    "instances": 21
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5864,
+    "instances": 21
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5780,
+    "instances": 20
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5800,
+    "instances": 20
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 3980,
+    "instances": 19
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 4584,
+    "instances": 19
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 3708,
+    "instances": 19
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5900,
+    "instances": 19
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 6060,
+    "instances": 19
+   },
+   {
+    "device": "desktop-4pvps6e",
+    "pid": 5752,
+    "instances": 19
+   }
+  ]
+ },
+ "process_tree_study": [
+  {
+   "key": "desktop-4pvps6e|548",
+   "process_rows": 3,
+   "distinct_identities": 3,
+   "instances": [
+    {
+     "process_name": "conhost.exe",
+     "timestamp": "2022-11-17 11:13:06.888000+00:00",
+     "process_guid": "sysmon:4fd6b357-1742-6376-a800-000000000400"
+    },
+    {
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 11:56:40.084000+00:00",
+     "process_guid": "sysmon:4fd6b357-2178-6376-4902-000000000400"
+    },
+    {
+     "process_name": "wmiapsrv.exe",
+     "timestamp": "2022-11-19 11:43:43.964000+00:00",
+     "process_guid": "sysmon:4fd6b357-c16f-6378-8200-000000000800"
+    }
+   ],
+   "before": {
+    "picked": "mscorsvw.exe",
+    "ancestry": [
+     "mscorsvw.exe",
+     "ngen.exe",
+     "rundll32.exe"
+    ],
+    "children": 72,
+    "other_instances_silently_discarded": 2
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 3,
+    "candidates": [
+     {
+      "process_name": "conhost.exe",
+      "timestamp": "2022-11-17T11:13:06.888000+00:00",
+      "process_guid": "sysmon:4fd6b357-1742-6376-a800-000000000400"
+     },
+     {
+      "process_name": "mscorsvw.exe",
+      "timestamp": "2022-11-17T11:56:40.084000+00:00",
+      "process_guid": "sysmon:4fd6b357-2178-6376-4902-000000000400"
+     },
+     {
+      "process_name": "wmiapsrv.exe",
+      "timestamp": "2022-11-19T11:43:43.964000+00:00",
+      "process_guid": "sysmon:4fd6b357-c16f-6378-8200-000000000800"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  },
+  {
+   "key": "desktop-4pvps6e|5924",
+   "process_rows": 27,
+   "distinct_identities": 27,
+   "instances": [
+    {
+     "process_name": "mpuxsrv.exe",
+     "timestamp": "2022-11-16 11:21:45.988000+00:00",
+     "process_guid": "sysmon:4fd6b357-c7c9-6374-e700-000000002a00"
+    },
+    {
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 09:28:54.862000+00:00",
+     "process_guid": "sysmon:4fd6b357-fed6-6375-8903-000000000400"
+    },
+    {
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:09:16.366000+00:00",
+     "process_guid": "sysmon:4fd6b357-084c-6376-7902-000000000400"
+    },
+    {
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:10:25.428000+00:00",
+     "process_guid": "sysmon:4fd6b357-0891-6376-cb02-000000000400"
+    },
+    {
+     "process_name": "mscorsvw.exe",
+     "timestamp": "2022-11-17 10:10:37.574000+00:00",
+     "process_guid": "sysmon:4fd6b357-089d-6376-ee02-000000000400"
+    }
+   ],
+   "before": {
+    "picked": "mpuxsrv.exe",
+    "ancestry": [
+     "mpuxsrv.exe",
+     "svchost.exe",
+     "fontdrvhost.exe"
+    ],
+    "children": 29,
+    "other_instances_silently_discarded": 26
+   },
+   "after": {
+    "resolution": "ambiguous_pid",
+    "ambiguous_pid": 27,
+    "candidates": [
+     {
+      "process_name": "mpuxsrv.exe",
+      "timestamp": "2022-11-16T11:21:45.988000+00:00",
+      "process_guid": "sysmon:4fd6b357-c7c9-6374-e700-000000002a00"
+     },
+     {
+      "process_name": "mscorsvw.exe",
+      "timestamp": "2022-11-17T09:28:54.862000+00:00",
+      "process_guid": "sysmon:4fd6b357-fed6-6375-8903-000000000400"
+     },
+     {
+      "process_name": "mscorsvw.exe",
+      "timestamp": "2022-11-17T10:09:16.366000+00:00",
+      "process_guid": "sysmon:4fd6b357-084c-6376-7902-000000000400"
+     },
+     {
+      "process_name": "mscorsvw.exe",
+      "timestamp": "2022-11-17T10:10:25.428000+00:00",
+      "process_guid": "sysmon:4fd6b357-0891-6376-cb02-000000000400"
+     },
+     {
+      "process_name": "mscorsvw.exe",
+      "timestamp": "2022-11-17T10:10:37.574000+00:00",
+      "process_guid": "sysmon:4fd6b357-089d-6376-ee02-000000000400"
+     }
+    ],
+    "ancestry": [],
+    "children": 0,
+    "notes": []
+   }
+  }
+ ],
+ "investigation_after": {
+  "totals": {
+   "cases": 2,
+   "facts": 8,
+   "inferences": 7,
+   "hypotheses": 0,
+   "rejected": 0,
+   "tool_calls": 19,
+   "steps": 4
+  },
+  "facts_labelled_inferred_from_pid": 0,
+  "claims_naming_an_ambiguous_pid": 0,
+  "examples": []
+ },
+ "investigation_before": {
+  "totals": {
+   "cases": 1,
+   "facts": 2,
+   "inferences": 2,
+   "hypotheses": 0,
+   "rejected_claims": 0,
+   "tool_calls": 3,
+   "steps": 2,
+   "agent_endpoint": 1,
+   "agent_attack": 1
+  },
+  "example_case": {
+   "case_id": "CASE-001",
+   "rules": [
+    "ATH-012"
+   ],
+   "findings": 1,
+   "agents_run": [
+    "endpoint",
+    "attack"
+   ],
+   "counts": {
+    "facts": 2,
+    "inferences": 2,
+    "hypotheses": 0,
+    "rejected": 0,
+    "tool_calls": 3
+   },
+   "tool_calls": [
+    "endpoint::get_events(event_ids=['comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b']) -> 1/1 found",
+    "endpoint::process_tree(device='desktop-4pvps6e', pid=4928) -> 3 ancestor(s), 0 child(ren)",
+    "attack::lookup_technique(technique_id='T1685') -> Disable or Modify Tools"
+   ],
+   "plan_log": [
+    "step 1: endpoint -- only eligible specialist; case evidence rests on process_command_line, process_execution telemetry (from ATH-012)",
+    "step 2: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+    "step 3: stop -- no specialist has further useful work on the available evidence"
+   ],
+   "claims": [
+    {
+     "type": "FACT",
+     "statement": "On desktop-4pvps6e, mscorsvw.exe (PID 4928) was started by ngen.exe under account system.",
+     "source": "tool",
+     "evidence_ids": [
+      "comiset_slice.jsonl:6c2793044b2ceb03332e97d1c2c44f7fd2385455"
+     ]
+    },
+    {
+     "type": "FACT",
+     "statement": "Execution chain on desktop-4pvps6e: mighost.exe -> conhost.exe -> regsvr32.exe -> mscorsvw.exe.",
+     "source": "tool",
+     "evidence_ids": [
+      "comiset_slice.jsonl:6c2793044b2ceb03332e97d1c2c44f7fd2385455",
+      "comiset_slice.jsonl:3a276d77caa39862ff3bff4542dbed78e8dc4c1e",
+      "comiset_slice.jsonl:3fe75bb0a9c698d826d0fdde1c9aee2c84e13e89"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "Behaviour cited by ATH-012 is consistent with T1685 Disable or Modify Tools (Defense Impairment). A security product's protection was disabled, its process terminated, or a scanning exclusion added. Reported at the parent technique because ",
+     "source": "mitre",
+     "evidence_ids": [
+      "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+     ]
+    },
+    {
+     "type": "INFERENCE",
+     "statement": "The case spans 1 ATT&CK tactics (Defense Impairment). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+     "source": "mitre",
+     "evidence_ids": [
+      "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+     ]
+    }
+   ],
+   "rejected_claims": []
+  }
+ }
+}

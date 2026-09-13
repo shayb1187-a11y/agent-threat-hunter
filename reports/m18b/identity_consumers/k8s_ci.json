@@ -1,0 +1,59 @@
+{
+ "corpus": "k8s_ci",
+ "source": {
+  "loader": "scripts/m18_cloud_detection.load_corpus",
+  "load_seconds": 13.2,
+  "rows": {
+   "process": 0,
+   "network": 0,
+   "logon": 0,
+   "control": 7951
+  }
+ },
+ "before_from": {
+  "frozen_artifact": "reports/m18b/identity_consumers/BEFORE_7e68840.json",
+  "findings": 0,
+  "cases": 0,
+  "links": 0,
+  "agrees_with_frozen": true
+ },
+ "detection": {
+  "findings_at_7e68840": 0,
+  "findings_after": 0,
+  "by_rule_at_7e68840": {},
+  "by_rule_after": {},
+  "unchanged": true
+ },
+ "correlation": {
+  "findings_unchanged": true,
+  "cases_before": 0,
+  "cases_after": 0,
+  "links_before": 0,
+  "links_after": 0,
+  "links_by_signal_before": {},
+  "links_by_signal_after": {},
+  "lost_process_links": [],
+  "lost_process_link_count": 0,
+  "gained_process_links": [],
+  "gained_process_link_count": 0,
+  "inferred_links_after": {}
+ },
+ "run_stats_after": {
+  "findings": 0,
+  "cases": 0,
+  "links": 0,
+  "links_by_signal": {},
+  "inferred_links_by_signal": {}
+ },
+ "pid_ambiguity": {
+  "process_keys": 0,
+  "reused": 0,
+  "worst": null,
+  "keys": []
+ },
+ "process_tree_study": [],
+ "investigation_after": {
+  "cases": 0
+ },
+ "investigation_before": {}
+}
