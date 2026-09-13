@@ -52,6 +52,7 @@ from ath.evaluation.ablation.scoring import (
     score_case,
     scores_from_dict,
     techniques_in,
+    techniques_looked_up,
 )
 
 __all__ = [
@@ -62,6 +63,6 @@ __all__ = [
     "begin_token_accounting", "budgets_of", "build_manifest", "capture_label_scores",
     "identical", "label_scores_from_outcome", "leading_rule_of", "load_manifest",
     "manifest_hash", "run_arm", "score_case", "scores_from_dict", "table_digest",
-    "techniques_in", "tokens_spent",
+    "techniques_in", "techniques_looked_up", "tokens_spent",
     "telemetry_hash", "telemetry_rows",
 ]

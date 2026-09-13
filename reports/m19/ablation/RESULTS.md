@@ -128,7 +128,10 @@ prediction was right about the corpus it was drawn from and wrong as a general c
   the ATT&CK mapper's own reason for `T1110.001` ends "(a spray against many accounts
   would be `T1110.003`)", so a technique named as a *contrast* counts as asserted. It is
   not corrected by a prose heuristic -- see the scoring module's docstring for why -- and
-  every arm is read the same way.
+  every arm is read the same way. **¹ Superseded on 2026-09-13 -- the metric is now
+  structural and this figure is 1.000. See "M19-2: the technique metric is structural
+  now" below; this paragraph is left as written, because it is what the number meant when
+  it was published.**
 * **Claims cite far more evidence than the case contains**: 4885 cited ids against 361
   case evidence ids. The specialists publish what the tools found (ancestry, children,
   peers), not only what the detections cited. An arm that cites fewer ids is not
@@ -159,3 +162,89 @@ prediction was right about the corpus it was drawn from and wrong as a general c
   is HIGH. Recorded in `PREREGISTERED.md` next to the expectation it missed.
 * **The synthetic corpora have no M18b counterpart** to check against, because M18b
   measured the whole `data/raw` set rather than the per-incident slices.
+
+
+---
+
+# M19-2 (2026-09-13): the technique metric is structural now
+
+## What changed, and why
+
+`technique_agreement`'s asserted set was a regular expression over claim text. The
+paragraph above named the resulting artefact honestly and kept it, which was the right
+call for M19-1 -- the metric was pre-registered and an arm had already run against it.
+M19-2 replaces the measurement rather than patching the sentence it tripped on:
+
+**Asserted techniques are now the technique ids the investigation passed to the
+`lookup_technique` tool**, read from the recorded `ToolCall` arguments. An investigation
+asserts a technique by going and getting it. That is an action, it is already recorded,
+and there is no wording to interpret. A call the tool budget refused is excluded: the
+investigation asked, was not answered, and published nothing.
+
+`Claim` carries no structured technique field. That was checked, and none was added:
+inventing a field for one metric would let the metric shape the claim layer.
+
+The old text-derived set is kept as a **diagnostic**, `techniques_in_prose`, with
+`in_prose_not_asserted` beside it, so the difference between what an investigation
+retrieved and what it wrote down stays visible instead of being scored.
+
+## Arm A, re-scored
+
+Same rows, same manifest `1764be3c…`, same 22 cases; only the scores move.
+
+```
+python scripts/m19_ablation.py run --arm A --repeat 2
+```
+
+| corpus | cases | Jaccard (M19-1, prose) | Jaccard (M19-2, structural) |
+|---|---:|---:|---:|
+| `attack_data_aws` | 2 | 1.000 | 1.000 |
+| `comiset` | 2 | 1.000 | 1.000 |
+| `flaws_cloud` | 14 | 0.976 | **1.000** |
+| `synthetic:INC-001` | 1 | 0.941 | **1.000** |
+| `synthetic:INC-002` | 1 | 0.667 | **1.000** |
+| `synthetic:INC-004` | 1 | 1.000 | 1.000 |
+| `synthetic:INC-005` | 1 | 1.000 | 1.000 |
+| **all 22** | 22 | **0.967** | **1.000** |
+
+The `T1110.003` artefact is gone, from exactly the three cases that carried it
+(`synthetic:INC-001`, `synthetic:INC-002`, `flaws_cloud/CASE-005`). `T1110.003` now
+appears in each of those rows under `in_prose_not_asserted`, which is precisely where a
+technique nobody retrieved belongs. **Every other arm A number is unchanged**: the two
+runs of this re-run were identical to each other, and each row is byte-identical to the
+one M19-1 published apart from its scores, its wall-clock fields, and the new `budgets`
+and `scripted` keys that every row now carries.
+
+## What this costs -- stated, not buried
+
+Only a specialist can call a tool. A model plans and synthesises; neither touches the
+toolbox. So **a model arm cannot add to the asserted set at all**, and on any arm whose
+crew reaches the ATT&CK step the asserted set simply *is* the mapper's set. The metric
+has therefore become a coverage question -- *did this investigation retrieve the
+techniques its own detection layer produced?* -- and arm A now answers it 1.000
+everywhere, which means prediction (iv) can no longer be graded on this number alone.
+
+That is a real loss and it is worth being explicit about: the question (iv) asks -- did
+a model name a technique nothing supports -- is now answered by the
+`in_prose_not_asserted` diagnostic, per case, and it must be read there. It is not folded
+into the Jaccard, where a model's invention would have been indistinguishable from a
+mapper disagreement.
+
+Two cases where the structural metric will still move, and they are the ones that matter:
+
+* a run that hits its **tool budget** before the ATT&CK step retrieves fewer techniques
+  than the mapper produced, and scores below 1.0 with `mapped_not_asserted` naming
+  exactly what it missed;
+* a run whose **planner** skips the ATT&CK specialist retrieves none of them.
+
+## The other change visible in these rows
+
+Every row now carries a `budgets` block (`max_steps`, `tool_call_cap`,
+`tool_calls_served`, `tool_calls_refused`, `tool_budget_hit`, `step_budget_hit`) and a
+`scripted` flag. Arm A's `tool_call_cap` is `null` by the architect's ruling -- the cap
+was invented for the generalist, and capping the baseline to match would change the thing
+every other arm is read against. See the dated addendum in `PREREGISTERED.md`.
+
+`specialists_run` now counts distinct specialists rather than steps. Arm A never runs a
+specialist twice, so no arm A number moves; arm B's generalist runs on several steps and
+would otherwise have reported a completeness above 1.0.

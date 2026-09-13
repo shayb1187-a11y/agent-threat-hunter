@@ -52,6 +52,7 @@ from ath.evaluation.ablation import (
     score_case,
     scores_from_dict,
     techniques_in,
+    techniques_looked_up,
     telemetry_hash,
 )
 from ath.evaluation.ablation import scoring as scoring_module
@@ -508,8 +509,9 @@ def test_evidence_coverage_is_one_half_on_a_case_of_two_events() -> None:
     assert scores.evidence_coverage == 0.5
 
 
-def test_technique_jaccard_on_a_known_pair() -> None:
-    """Two sets whose overlap is worked out by hand, in both directions."""
+def _technique_state(mapped: tuple[str, ...], looked_up: tuple[str, ...], text: str):
+    """A hand-built case and state: what the mapper produced, what was retrieved, what
+    the claim says. The three are set independently, which is the whole point."""
     from ath.correlation.chain import InvestigationCase
     from ath.hunting.finding import Evidence, Finding, Severity
     from ath.mitre.attack import AttackMapping, Confidence
@@ -519,42 +521,123 @@ def test_technique_jaccard_on_a_known_pair() -> None:
         rule_id="TEST-001", title="t", severity=Severity.HIGH, device="d", user="u",
         evidence=(Evidence(event_id="c-1", timestamp=at(), summary="one"),), reason="r",
     )
-    mappings = (
+    mappings = tuple(
         AttackMapping(
-            rule_id="TEST-001", technique_id="T1098.006",
+            rule_id="TEST-001", technique_id=technique,
             confidence=Confidence.HIGH, reason="r", evidence_ids=("c-1",),
-        ),
-        AttackMapping(
-            rule_id="TEST-001", technique_id="T1609",
-            confidence=Confidence.HIGH, reason="r", evidence_ids=("c-1",),
-        ),
+        )
+        for technique in mapped
     )
     case = InvestigationCase(case_id="CASE-001", findings=(finding,), mappings=mappings)
-
-    asserted = Claim(
-        claim_type=ClaimType.INFERENCE,
-        statement="Consistent with T1098.006 and also with T1611.",
+    claim = Claim(
+        claim_type=ClaimType.INFERENCE, statement=text,
         evidence_ids=("c-1",), source="mitre", agent="attack",
+    )
+    calls = tuple(
+        ToolCall(
+            tool="lookup_technique", arguments={"technique_id": technique},
+            agent="attack", result_summary="name",
+        )
+        for technique in looked_up
     )
     state = InvestigationState(case=case)
     state.record(
-        AgentResult(agent="attack", ran_because="hand-built", claims=(asserted,)),
-        [asserted], [],
+        AgentResult(
+            agent="attack", ran_because="hand-built", claims=(claim,), tool_calls=calls,
+        ),
+        [claim], [],
+    )
+    return state, case
+
+
+def test_technique_jaccard_on_a_known_pair() -> None:
+    """Two sets whose overlap is worked out by hand, in both directions.
+
+    The asserted set is what the investigation *retrieved*, so the disagreement is
+    built from tool calls rather than from wording.
+    """
+    state, case = _technique_state(
+        mapped=("T1098.006", "T1609"),
+        looked_up=("T1098.006", "T1611"),
+        text="Consistent with T1098.006 and also with T1611.",
     )
 
     scores = score_case(state, case, ClaimVerifier(build_telemetry()))
+
     # asserted {T1098.006, T1611}; mapped {T1098.006, T1609}; intersection 1, union 3.
     assert scores.technique_jaccard == pytest.approx(1 / 3)
     assert scores.techniques_asserted_not_mapped == ("T1611",)
     assert scores.techniques_mapped_not_asserted == ("T1609",)
 
 
-def test_techniques_are_read_out_of_claim_text() -> None:
+def test_a_technique_named_as_a_contrast_is_no_longer_asserted() -> None:
+    """The M19-1 artefact, exactly: the mapper's own reason for T1110.001 ends
+    "(a spray against many accounts would be T1110.003)".
+
+    Fails if the asserted set goes back to a regular expression over claim text, which
+    scored three arm A cases at 0.5 for a parenthesis.
+    """
+    state, case = _technique_state(
+        mapped=("T1110.001",),
+        looked_up=("T1110.001",),
+        text=(
+            "Behaviour cited by ATH-005 is consistent with T1110.001 "
+            "(a spray against many accounts would be T1110.003)."
+        ),
+    )
+
+    scores = score_case(state, case, ClaimVerifier(build_telemetry()))
+
+    assert scores.techniques_asserted == ("T1110.001",)
+    assert scores.techniques_in_prose == ("T1110.001", "T1110.003")
+    assert scores.technique_jaccard == 1.0
+    assert scores.techniques_asserted_not_mapped == ()
+    assert scores.to_dict()["technique_agreement"]["in_prose_not_asserted"] == [
+        "T1110.003"
+    ]
+
+
+def test_a_refused_lookup_is_not_an_assertion() -> None:
+    """The investigation asked and was not answered; it has asserted nothing.
+
+    Fails if a budget-refused call counts, which would credit a truncated run with a
+    technique it never retrieved.
+    """
+    state, case = _technique_state(mapped=("T1110.001",), looked_up=(), text="no id here")
+    refused = ToolCall(
+        tool="lookup_technique", arguments={"technique_id": "T1110.001"},
+        agent="attack", result_summary="tool budget exhausted (0 calls)", refused=True,
+    )
+    state.results[0] = AgentResult(
+        agent="attack", ran_because="hand-built",
+        claims=state.results[0].claims, tool_calls=(refused,),
+    )
+
+    scores = score_case(state, case, ClaimVerifier(build_telemetry()))
+
+    assert scores.techniques_asserted == ()
+    assert scores.techniques_mapped_not_asserted == ("T1110.001",)
+
+
+def test_techniques_in_prose_remains_available_as_a_diagnostic() -> None:
     claim = Claim(
         claim_type=ClaimType.HYPOTHESIS,
         statement="T1059.001 and T1105 but not T999 or 1234",
     )
     assert techniques_in([claim]) == ("T1059.001", "T1105")
+
+
+def test_the_asserted_set_comes_from_lookup_calls_only() -> None:
+    """Fails if another tool's arguments start counting as an assertion."""
+    calls = [
+        ToolCall(tool="lookup_technique", arguments={"technique_id": "t1059.001"},
+                 agent="attack", result_summary="ok"),
+        ToolCall(tool="get_events", arguments={"technique_id": "T1105"},
+                 agent="endpoint", result_summary="ok"),
+        ToolCall(tool="lookup_technique", arguments={}, agent="attack",
+                 result_summary="ok"),
+    ]
+    assert techniques_looked_up(calls) == ("T1059.001",)
 
 
 def test_a_fact_without_evidence_cannot_be_constructed() -> None:

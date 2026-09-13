@@ -24,26 +24,42 @@ written down separately, by the architect, in
 :class:`~ath.agent.claims.Claim` refuses to construct one. If it is ever observed, that
 is a defect in the claim layer and it raises rather than scoring badly.
 
-Why techniques are read out of claim text
-------------------------------------------
-A claim carries no structured technique field; ``AttackMappingAgent`` renders the
-technique id into the statement it publishes. Extracting it with a regular expression is
-therefore reading the agent's own output in the only form it has, not inferring meaning
-from prose -- an id either appears literally or it does not. It is recorded as
-``techniques_asserted`` and compared with what the deterministic ATT&CK mapper produced
-for the same case, in both directions, because "the model named a technique the mapper
-did not" and "the mapper named one the investigation never mentioned" are different
-findings and averaging them into one number hides both.
+Why techniques are read out of tool calls, not out of prose (M19-2)
+--------------------------------------------------------------------
+Until M19-2 the asserted-technique set was a regular expression over claim text. That is
+reading an id that is literally present rather than inferring meaning, so it was
+defensible -- and it was wrong in a way the first run showed. The ATT&CK mapper's own
+reason for ``T1110.001`` ends "(a spray against many accounts would be T1110.003)", so
+three arm A cases reported ``T1110.003`` as asserted-but-unmapped. A technique named as
+a *contrast* counted as a technique asserted. The Jaccard those three cases produced was
+not a weak measurement of agreement; it was a measurement of a sentence.
 
-The cost of reading ids out of text is that a id named as a *contrast* counts as
-asserted. The ATT&CK mapper's own reason for ``T1110.001`` ends "(a spray against many
-accounts would be T1110.003)", so every case carrying ATH-005 reports ``T1110.003`` as
-asserted-but-unmapped -- on arm A, that accounts for all of them. This is not corrected
-by a prose heuristic: a rule that stripped "would be" clauses would be tuned to one
-sentence in this codebase and would silently mis-handle whatever an LLM arm writes.
-Every arm is read the same way, which is what keeps the comparison fair, and the
-artefact is named here so ``asserted_not_mapped`` is never read as hallucination on its
-own.
+So the asserted set is now **structural**: the technique ids the investigation passed to
+the ``lookup_technique`` tool, taken from the recorded
+:class:`~ath.agent.tools.ToolCall` arguments. An investigation asserts a technique by
+going and getting it, which is an action, recorded, with no wording to interpret. A
+refused call (tool budget) is excluded: the investigation asked, was not answered, and
+published nothing.
+
+There is no structured technique field on :class:`~ath.agent.claims.Claim` to add to it.
+That was checked rather than assumed, and none is added here: inventing a field for one
+metric would let the metric shape the claim layer.
+
+What this costs, stated plainly
+--------------------------------
+Only a specialist can call a tool -- a model can plan and synthesise, and neither
+touches the toolbox -- so a model arm cannot add to the asserted set at all. On every
+arm whose crew reaches the ATT&CK step, the asserted set therefore *is* the mapper's
+set, and the metric degenerates towards a coverage question: **did this investigation
+actually retrieve the techniques its own detection layer produced?** That is a real
+question (a budget-capped or step-limited run answers it "no"), but it is no longer the
+question of whether a model named a technique nothing supports.
+
+That second question keeps its data: ``techniques_in_prose`` records the old regular
+expression over claim text as a **diagnostic, never a score**. When a model arm writes a
+technique id into a synthesised claim, the difference between ``techniques_in_prose`` and
+``techniques_asserted`` is exactly that claim -- visible, separately reportable, and not
+folded into a Jaccard where it would be indistinguishable from a mapper disagreement.
 """
 
 from __future__ import annotations
@@ -79,6 +95,22 @@ def techniques_in(claims: Iterable[Claim]) -> tuple[str, ...]:
     found: set[str] = set()
     for claim in claims:
         found.update(_TECHNIQUE_PATTERN.findall(claim.statement))
+    return tuple(sorted(found))
+
+
+def techniques_looked_up(calls: Iterable[Any]) -> tuple[str, ...]:
+    """Technique ids the investigation actually retrieved, from its own tool calls.
+
+    Refused calls are excluded: a call the budget refused returned nothing and authored
+    nothing, so counting it would credit an investigation with a technique it never got.
+    """
+    found: set[str] = set()
+    for call in calls:
+        if call.tool != "lookup_technique" or getattr(call, "refused", False):
+            continue
+        technique = str(call.arguments.get("technique_id", "")).strip()
+        if technique:
+            found.add(technique.upper())
     return tuple(sorted(found))
 
 
@@ -130,6 +162,11 @@ class CaseScores:
     techniques_mapped: tuple[str, ...] = ()
     techniques_asserted_not_mapped: tuple[str, ...] = ()
     techniques_mapped_not_asserted: tuple[str, ...] = ()
+    techniques_in_prose: tuple[str, ...] = ()
+    """Ids appearing in claim *text* -- a diagnostic beside the score, never in it.
+
+    Kept so the difference between what an investigation retrieved and what it wrote
+    down stays visible. On arm A it is where the ``T1110.003`` contrast artefact went."""
 
     # -- completeness ---------------------------------------------------------------
     specialists_run: int = 0
@@ -208,6 +245,10 @@ class CaseScores:
                 "mapped": list(self.techniques_mapped),
                 "asserted_not_mapped": list(self.techniques_asserted_not_mapped),
                 "mapped_not_asserted": list(self.techniques_mapped_not_asserted),
+                "in_prose": list(self.techniques_in_prose),
+                "in_prose_not_asserted": sorted(
+                    set(self.techniques_in_prose) - set(self.techniques_asserted)
+                ),
             },
             "completeness": {
                 "specialists_run": self.specialists_run,
@@ -255,6 +296,7 @@ def scores_from_dict(payload: dict[str, Any]) -> CaseScores:
         techniques_mapped=tuple(agreement.get("mapped", ())),
         techniques_asserted_not_mapped=tuple(agreement.get("asserted_not_mapped", ())),
         techniques_mapped_not_asserted=tuple(agreement.get("mapped_not_asserted", ())),
+        techniques_in_prose=tuple(agreement.get("in_prose", ())),
         specialists_run=int(completeness.get("specialists_run", 0)),
         specialists_eligible=int(completeness.get("specialists_eligible", 0)),
         eligible_never_ran=tuple(completeness.get("eligible_never_ran", ())),
@@ -318,8 +360,11 @@ def score_case(
     case_evidence = set(case.event_ids)
     touched = {e for call in state.tool_calls for e in call.event_ids}
 
-    asserted = set(techniques_in(accepted))
+    # Structural: what the investigation retrieved, not what it wrote. See the module
+    # docstring for what that costs as well as what it fixes.
+    asserted = set(techniques_looked_up(state.tool_calls))
     mapped = {m.technique_id for m in case.mappings}
+    in_prose = set(techniques_in(accepted))
 
     reasons: dict[str, int] = {}
     for rejection in state.rejected_claims:
@@ -339,6 +384,7 @@ def score_case(
         techniques_mapped=tuple(sorted(mapped)),
         techniques_asserted_not_mapped=tuple(sorted(asserted - mapped)),
         techniques_mapped_not_asserted=tuple(sorted(mapped - asserted)),
+        techniques_in_prose=tuple(sorted(in_prose)),
         # Distinct specialists, not steps. An agent that resumes across steps (arm B's
         # generalist) appears in ``agents_run`` once per step, and counting those would
         # report "2 of 1 specialists run" -- a completeness ratio above 1.0, which is not
