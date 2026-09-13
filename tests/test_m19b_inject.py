@@ -162,7 +162,7 @@ def test_the_manifest_names_the_script_that_is_committed(manifest):
     describing bytes the committed script no longer produces.
     """
     assert manifest["script"] == "scripts/m19b_inject_dedale.py"
-    assert manifest["script_sha256"] == _sha256(SCRIPT), (
+    assert manifest["script_sha256"] == hashlib.sha256(SCRIPT.read_bytes().replace(b"\r\n", b"\n")).hexdigest(), (
         "the generator has changed since the cases were written; rerun "
         "`python scripts/m19b_inject_dedale.py`"
     )

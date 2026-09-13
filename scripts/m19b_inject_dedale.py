@@ -1161,6 +1161,17 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _script_sha256(path: Path) -> str:
+    """The generator's own hash over LF-normalised bytes.
+
+    The manifest hashes case files as committed bytes (protected by .gitattributes), but
+    the script itself is checked out under core.autocrlf on Windows, so its on-disk bytes
+    differ by line ending from the bytes that were hashed at generation time. Normalising
+    makes the identity claim about the code, not about the checkout.
+    """
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def _segment_file(host: str, date: str, hour: str) -> str:
     return f"{host}_{date}T{hour}.jsonl"
 
@@ -1706,7 +1717,7 @@ def main(argv: list[str] | None = None) -> int:
         "generated_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "seed": args.seed,
         "script": "scripts/m19b_inject_dedale.py",
-        "script_sha256": _sha256(Path(__file__).resolve()),
+        "script_sha256": _script_sha256(Path(__file__).resolve()),
         "provenance": "real+injected",
         "provenance_note": "real benign DEDALE background + injected attack rows",
         "attribution": ATTRIBUTION,

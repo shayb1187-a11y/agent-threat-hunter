@@ -1,8 +1,8 @@
 {
-  "generated_utc": "2026-09-13T23:15:14Z",
+  "generated_utc": "2026-09-13T23:55:06Z",
   "seed": 19026,
   "script": "scripts/m19b_inject_dedale.py",
-  "script_sha256": "fd5d7742b044623ac4c8fc8dafa9deb6485a82ccf30bfd45fce9ecf11e6937e4",
+  "script_sha256": "d5f97a3db2132f892808f6f4c44f9d913b7e91b946c7a1d5d26f64d6191bea91",
   "provenance": "real+injected",
   "provenance_note": "real benign DEDALE background + injected attack rows",
   "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
