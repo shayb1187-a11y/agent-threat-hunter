@@ -100,7 +100,7 @@ Record your answers in `answers_template.csv`.
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**
@@ -919,7 +919,7 @@ _This hypothesis cites no event ids._
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**
@@ -999,7 +999,7 @@ _This hypothesis cites no event ids._
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**
@@ -1072,7 +1072,7 @@ _This hypothesis cites no event ids._
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**
@@ -1855,7 +1855,7 @@ _This hypothesis cites no event ids._
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**
@@ -1972,7 +1972,7 @@ _This hypothesis cites no event ids._
 
 | rule | severity | why it fired | events it cites |
 | --- | --- | --- | --- |
-| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... | 1: `k8s-control-000003` |
+| `K8S-001` | HIGH | 'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary ... (full text in worksheet.csv) | 1: `k8s-control-000003` |
 | `K8S-002` | CRITICAL | 'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant. | 2: `k8s-control-000003`, `k8s-control-000004` |
 
 **Hypothesis (verbatim):**

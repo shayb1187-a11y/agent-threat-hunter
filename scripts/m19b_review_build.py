@@ -448,7 +448,10 @@ def render_worksheet_md(entries: Sequence[dict[str, Any]]) -> str:
             for finding in entry["findings"]:
                 reason = _cell(finding["reason"])
                 if len(reason) > REASON_CHARS:
-                    reason = reason[:REASON_CHARS].rstrip() + " ..."
+                    reason = (
+                        reason[:REASON_CHARS].rstrip()
+                        + " ... (full text in worksheet.csv)"
+                    )
                 lines.append(
                     f"| `{finding['rule_id']}` | {finding['severity']} | {reason} | "
                     f"{len(finding['event_ids'])}: {_ids_for_md(finding['event_ids'])} |"

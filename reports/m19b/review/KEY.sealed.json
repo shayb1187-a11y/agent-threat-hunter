@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T21:57:18.503410+00:00",
-  "head": "41c0d97",
+  "generated_at": "2026-09-13T21:59:41.172690+00:00",
+  "head": "bf57aeb",
   "warning": "The unblinding key for reports/m19b/review/worksheet.md. A reviewer must not read this file before submitting their answers.",
   "seed": 20260914,
   "shuffle": "entries sorted by (arm, corpus, case_id, claim_index), then random.Random(seed).shuffle",
