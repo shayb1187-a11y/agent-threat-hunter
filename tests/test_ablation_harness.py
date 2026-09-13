@@ -683,3 +683,46 @@ def test_a_resuming_agent_counts_once_not_once_per_step(corpus, pipeline) -> Non
     assert scores.specialists_run == 1
     assert scores.steps == 3
     assert scores.specialist_completeness == 1.0
+
+
+def test_a_long_evidence_list_is_capped_in_the_file_and_says_how_much_it_dropped(
+) -> None:
+    """The cap bounds the artifact, never a score, and never silently.
+
+    Fails if truncation stops being marked -- an unmarked truncation would turn "this
+    claim cites 589,476 events" into "this claim cites 5,000 events", which is a
+    different and false statement about the run.
+    """
+    from ath.evaluation.ablation.arms import MAX_SERIALISED_IDS, cap_serialised_ids
+
+    long_ids = [f"evt-{n:06d}" for n in range(MAX_SERIALISED_IDS + 7)]
+    state = {
+        "claims": [{"statement": "x", "evidence_ids": long_ids}],
+        "rejected_claims": [{"reason": "r", "claim": {"evidence_ids": long_ids}}],
+        "results": [{
+            "claims": [{"statement": "y", "evidence_ids": long_ids}],
+            "tool_calls": [{"tool": "t", "event_ids": long_ids}],
+        }],
+        "evidence_ids": long_ids,
+    }
+
+    capped = cap_serialised_ids(state)
+
+    assert len(capped["claims"][0]["evidence_ids"]) == MAX_SERIALISED_IDS
+    assert capped["claims"][0]["evidence_ids_omitted"] == 7
+    assert capped["rejected_claims"][0]["claim"]["evidence_ids_omitted"] == 7
+    assert capped["results"][0]["tool_calls"][0]["event_ids_omitted"] == 7
+    assert capped["evidence_ids_omitted"] == 7
+
+
+def test_a_list_that_fits_is_written_exactly_as_before(corpus, pipeline) -> None:
+    """No marker, no change -- every already-published arm A row is byte-identical."""
+    from ath.evaluation.ablation.arms import cap_serialised_ids
+
+    state = {
+        "claims": [{"statement": "x", "evidence_ids": ["evt-1", "evt-2"]}],
+        "rejected_claims": [],
+        "results": [{"claims": [], "tool_calls": [{"tool": "t", "event_ids": ["evt-1"]}]}],
+        "evidence_ids": ["evt-1", "evt-2"],
+    }
+    assert cap_serialised_ids(state) == state

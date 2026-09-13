@@ -96,6 +96,27 @@ ARM_A = "A_deterministic"
 ARM_B = "B_single_llm"
 ARM_C = "C_crew_llm"
 
+MAX_SERIALISED_IDS = 5000
+"""Longest event-id list written into a results file, per claim and per tool call.
+
+Not a change to what any arm did, and not an input to any score: the counts, the
+coverage and the correctness ratios are all computed from the full sets on the live
+state, before this applies. It bounds the *file* only, and every truncated list carries
+the number of ids it dropped beside it.
+
+It exists because arm B's first full scripted run produced a **395 MB** ``arm_B.json``.
+One generalist call -- ``host_network_activity`` unfiltered on a COMISET host -- returns
+589,476 event ids, and both the tool call and the claim it fed recorded every one of
+them, twice per case. A record nobody can open is not a record; and 589,476 ids attached
+to the sentence "this host made 589,476 connections" are not evidence, they are the same
+number written out longhand.
+
+The value is set above the longest list any already-published arm A row contains (4,522,
+on ``flaws_cloud``), so applying it moves no byte of an existing result. That is a
+deliberate choice of constant and it is stated rather than hidden: the cap exists for
+the pathological case, not to trim the normal one.
+"""
+
 
 class ManifestMismatch(RuntimeError):
     """The inputs are not the inputs the manifest pinned. The run is refused."""
@@ -267,7 +288,7 @@ class CaseResult:
             "labels": dict(self.labels),
             "label_scores": dict(self.label_scores),
             "scores": self.scores.to_dict(),
-            "state": self.state,
+            "state": cap_serialised_ids(self.state),
         }
 
     def comparable(self) -> dict[str, Any]:
@@ -298,6 +319,56 @@ class CaseResult:
                 k: v for k, v in self.label_scores.items() if k != "runtime_seconds"
             },
         }
+
+
+def _cap(ids: list[Any]) -> tuple[list[Any], int]:
+    if len(ids) <= MAX_SERIALISED_IDS:
+        return list(ids), 0
+    return list(ids[:MAX_SERIALISED_IDS]), len(ids) - MAX_SERIALISED_IDS
+
+
+def _cap_claim(claim: dict[str, Any]) -> dict[str, Any]:
+    kept, omitted = _cap(claim.get("evidence_ids", []))
+    if not omitted:
+        return claim
+    return {**claim, "evidence_ids": kept, "evidence_ids_omitted": omitted}
+
+
+def _cap_call(call: dict[str, Any]) -> dict[str, Any]:
+    kept, omitted = _cap(call.get("event_ids", []))
+    if not omitted:
+        return call
+    return {**call, "event_ids": kept, "event_ids_omitted": omitted}
+
+
+def cap_serialised_ids(state: dict[str, Any]) -> dict[str, Any]:
+    """A state payload whose id lists are bounded for the file. See MAX_SERIALISED_IDS.
+
+    Truncation is always marked (``evidence_ids_omitted`` / ``event_ids_omitted``) and
+    the marker is absent when nothing was dropped, so a row that fits is written exactly
+    as it was before this existed.
+    """
+    kept_evidence, omitted_evidence = _cap(state.get("evidence_ids", []))
+    capped = {
+        **state,
+        "claims": [_cap_claim(c) for c in state.get("claims", [])],
+        "rejected_claims": [
+            {**r, "claim": _cap_claim(r.get("claim", {}))}
+            for r in state.get("rejected_claims", [])
+        ],
+        "results": [
+            {
+                **result,
+                "claims": [_cap_claim(c) for c in result.get("claims", [])],
+                "tool_calls": [_cap_call(t) for t in result.get("tool_calls", [])],
+            }
+            for result in state.get("results", [])
+        ],
+        "evidence_ids": kept_evidence,
+    }
+    if omitted_evidence:
+        capped["evidence_ids_omitted"] = omitted_evidence
+    return capped
 
 
 def _strip_times(state: dict[str, Any]) -> dict[str, Any]:
