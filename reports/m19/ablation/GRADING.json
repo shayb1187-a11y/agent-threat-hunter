@@ -1,0 +1,1271 @@
+{
+  "cases": 22,
+  "arms": {
+    "A_deterministic": {
+      "A_deterministic": {
+        "cases": 22,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 1.0,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0909,
+          "facts": 15.2273,
+          "inferences": 4.4091,
+          "hypotheses": 0.0909,
+          "tool_calls": 5.5909,
+          "steps": 2.0909,
+          "wall_seconds": 0.2095
+        },
+        "total": {
+          "facts": 335,
+          "inferences": 97,
+          "hypotheses": 2,
+          "unsupported_claims": 2,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 4885,
+          "cited_event_ids_existing": 4885,
+          "case_evidence_ids": 361,
+          "case_evidence_touched": 361,
+          "tool_calls": 123,
+          "steps": 46,
+          "wall_seconds": 4.61,
+          "facts_inferred_from_pid": 3,
+          "ambiguous_pid_inferences": 0,
+          "tokens": null
+        },
+        "statuses": {
+          "complete": 22
+        },
+        "degraded_runs": 0
+      }
+    },
+    "B_single_llm": {
+      "B_single_llm": {
+        "cases": 20,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 0.95,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0,
+          "facts": 6.65,
+          "inferences": 3.95,
+          "hypotheses": 2.05,
+          "tool_calls": 7.75,
+          "steps": 6.1,
+          "wall_seconds": 47.643
+        },
+        "total": {
+          "facts": 133,
+          "inferences": 79,
+          "hypotheses": 41,
+          "unsupported_claims": 0,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 83174,
+          "cited_event_ids_existing": 83174,
+          "case_evidence_ids": 358,
+          "case_evidence_touched": 358,
+          "tool_calls": 155,
+          "steps": 122,
+          "wall_seconds": 952.86,
+          "facts_inferred_from_pid": 0,
+          "ambiguous_pid_inferences": 0,
+          "tokens": 1223791
+        },
+        "statuses": {
+          "complete": 19,
+          "step_limit": 1
+        },
+        "degraded_runs": 0
+      },
+      "B_single_llm_DEGRADED": {
+        "cases": 2,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 1.0,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0,
+          "facts": 7.0,
+          "inferences": 0.0,
+          "hypotheses": 0.0,
+          "tool_calls": 7.0,
+          "steps": 6.0,
+          "wall_seconds": 31.6055
+        },
+        "total": {
+          "facts": 14,
+          "inferences": 0,
+          "hypotheses": 0,
+          "unsupported_claims": 0,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 1187871,
+          "cited_event_ids_existing": 1187871,
+          "case_evidence_ids": 3,
+          "case_evidence_touched": 3,
+          "tool_calls": 14,
+          "steps": 12,
+          "wall_seconds": 63.211,
+          "facts_inferred_from_pid": 0,
+          "ambiguous_pid_inferences": 0,
+          "tokens": 6381
+        },
+        "statuses": {
+          "complete": 2
+        },
+        "degraded_runs": 2
+      }
+    },
+    "C_crew_llm": {
+      "C_crew_llm": {
+        "cases": 22,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 0.9972,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0909,
+          "facts": 15.2273,
+          "inferences": 7.3182,
+          "hypotheses": 2.6818,
+          "tool_calls": 5.5909,
+          "steps": 2.0909,
+          "wall_seconds": 27.7622
+        },
+        "total": {
+          "facts": 335,
+          "inferences": 161,
+          "hypotheses": 59,
+          "unsupported_claims": 2,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 4885,
+          "cited_event_ids_existing": 4885,
+          "case_evidence_ids": 361,
+          "case_evidence_touched": 361,
+          "tool_calls": 123,
+          "steps": 46,
+          "wall_seconds": 610.769,
+          "facts_inferred_from_pid": 3,
+          "ambiguous_pid_inferences": 0,
+          "tokens": 214862
+        },
+        "statuses": {
+          "complete": 22
+        },
+        "degraded_runs": 0
+      }
+    }
+  },
+  "i_evidence_correctness": {
+    "A": {
+      "min_ec": 1.0,
+      "rejected_total": 0,
+      "facts_without_evidence": 0
+    },
+    "B": {
+      "min_ec": 1.0,
+      "rejected_total": 0,
+      "facts_without_evidence": 0
+    },
+    "C": {
+      "min_ec": 1.0,
+      "rejected_total": 0,
+      "facts_without_evidence": 0
+    }
+  },
+  "ii_unsupported": {
+    "A": {
+      "total": 2,
+      "per_case_mean": 0.0909,
+      "cases_with_any": 1,
+      "by_type": [
+        "HYPOTHESIS"
+      ]
+    },
+    "B": {
+      "total": 0,
+      "per_case_mean": 0,
+      "cases_with_any": 0,
+      "by_type": []
+    },
+    "C": {
+      "total": 2,
+      "per_case_mean": 0.0909,
+      "cases_with_any": 1,
+      "by_type": [
+        "HYPOTHESIS"
+      ]
+    }
+  },
+  "iii_coverage": {
+    "cases_C_below_A": [],
+    "mean_A": 1.0,
+    "mean_B": 1.0,
+    "mean_C": 1.0,
+    "tool_budget_hit": {
+      "A": [],
+      "B": [],
+      "C": [
+        "synthetic:INC-001/CASE-001"
+      ]
+    },
+    "step_budget_hit": {
+      "A": [],
+      "B": [
+        "synthetic:INC-001/CASE-001"
+      ],
+      "C": []
+    },
+    "INC-001": {
+      "A": {
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_calls_served": 43,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false,
+        "coverage": 1.0
+      },
+      "B": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 19,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": true,
+        "coverage": 1.0
+      },
+      "C": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 40,
+        "tool_calls_refused": 3,
+        "tool_budget_hit": true,
+        "step_budget_hit": false,
+        "coverage": 1.0
+      }
+    }
+  },
+  "iv_technique": {
+    "A": {
+      "jaccard_mean": 1.0,
+      "asserted_not_mapped": [],
+      "mapped_not_asserted": []
+    },
+    "B": {
+      "jaccard_mean": 0.9545,
+      "asserted_not_mapped": [],
+      "mapped_not_asserted": [
+        [
+          "synthetic:INC-001/CASE-001",
+          [
+            "T1003.001",
+            "T1021.002",
+            "T1027.010",
+            "T1033",
+            "T1059.001",
+            "T1069.002",
+            "T1071.001",
+            "T1074.001",
+            "T1078",
+            "T1105",
+            "T1110.001",
+            "T1204.002",
+            "T1218.011",
+            "T1482",
+            "T1560.001",
+            "T1569.002"
+          ]
+        ]
+      ]
+    },
+    "C": {
+      "jaccard_mean": 0.9972,
+      "asserted_not_mapped": [],
+      "mapped_not_asserted": [
+        [
+          "synthetic:INC-001/CASE-001",
+          [
+            "T1074.001"
+          ]
+        ]
+      ]
+    }
+  },
+  "v_hypotheses": {
+    "A": {
+      "total": 2,
+      "cases_with_any": 1,
+      "actionable_vs_restating": "UNAVAILABLE: manual reading required by the pre-registration; see HYPOTHESES.md"
+    },
+    "B": {
+      "total": 41,
+      "cases_with_any": 19,
+      "actionable_vs_restating": "UNAVAILABLE: manual reading required by the pre-registration; see HYPOTHESES.md"
+    },
+    "C": {
+      "total": 59,
+      "cases_with_any": 21,
+      "actionable_vs_restating": "UNAVAILABLE: manual reading required by the pre-registration; see HYPOTHESES.md"
+    }
+  },
+  "vi_cost": {
+    "A": {
+      "tokens_total": 0,
+      "tokens_mean": null,
+      "tokens_median": null,
+      "tokens_max": null,
+      "wall_total_s": 4.6,
+      "wall_mean_s": 0.21,
+      "wall_max_s": 0.5
+    },
+    "B": {
+      "tokens_total": 1230172,
+      "tokens_mean": 55916.9,
+      "tokens_median": 71279.5,
+      "tokens_max": 161538,
+      "wall_total_s": 1016.1,
+      "wall_mean_s": 46.19,
+      "wall_max_s": 75.5
+    },
+    "C": {
+      "tokens_total": 214862,
+      "tokens_mean": 9766.5,
+      "tokens_median": 3676.5,
+      "tokens_max": 122684,
+      "wall_total_s": 610.8,
+      "wall_mean_s": 27.76,
+      "wall_max_s": 45.5
+    }
+  },
+  "vii_decision_rule": {
+    "thresholds": {
+      "A_mean_inferences_per_case": 4.4091,
+      "strict_1.0": 1.0
+    },
+    "B": {
+      "A_mean_inferences_per_case": {
+        "cases_under_threshold": 22,
+        "cases_with_new_evidence_hypothesis_vs_A_claims": 13,
+        "cases_with_new_evidence_hypothesis_vs_A_tools": 13,
+        "cases_meeting_both_vs_claims": 13,
+        "cases_meeting_both_vs_tools": 13
+      },
+      "strict_1.0": {
+        "cases_under_threshold": 22,
+        "cases_with_new_evidence_hypothesis_vs_A_claims": 13,
+        "cases_with_new_evidence_hypothesis_vs_A_tools": 13,
+        "cases_meeting_both_vs_claims": 13,
+        "cases_meeting_both_vs_tools": 13
+      },
+      "per_case": [
+        {
+          "case": "attack_data_aws/CASE-001",
+          "hypotheses": 1,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "attack_data_aws/CASE-002",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "comiset/CASE-001",
+          "hypotheses": 0,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": true
+        },
+        {
+          "case": "comiset/CASE-002",
+          "hypotheses": 0,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": true
+        },
+        {
+          "case": "synthetic:INC-001/CASE-001",
+          "hypotheses": 1,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-002/CASE-001",
+          "hypotheses": 0,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-005/CASE-001",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-004/CASE-001",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-005",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-018",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-050",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-065",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-066",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-067",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-077",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-113",
+          "hypotheses": 1,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-118",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-122",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-143",
+          "hypotheses": 1,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-205",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-219",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-256",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": true,
+          "hyp_cites_evidence_A_never_touched": true,
+          "degraded": false
+        }
+      ]
+    },
+    "C": {
+      "A_mean_inferences_per_case": {
+        "cases_under_threshold": 22,
+        "cases_with_new_evidence_hypothesis_vs_A_claims": 0,
+        "cases_with_new_evidence_hypothesis_vs_A_tools": 0,
+        "cases_meeting_both_vs_claims": 0,
+        "cases_meeting_both_vs_tools": 0
+      },
+      "strict_1.0": {
+        "cases_under_threshold": 21,
+        "cases_with_new_evidence_hypothesis_vs_A_claims": 0,
+        "cases_with_new_evidence_hypothesis_vs_A_tools": 0,
+        "cases_meeting_both_vs_claims": 0,
+        "cases_meeting_both_vs_tools": 0
+      },
+      "per_case": [
+        {
+          "case": "attack_data_aws/CASE-001",
+          "hypotheses": 0,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "attack_data_aws/CASE-002",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "comiset/CASE-001",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "comiset/CASE-002",
+          "hypotheses": 4,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-001/CASE-001",
+          "hypotheses": 4,
+          "unsupported": 2,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-002/CASE-001",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-005/CASE-001",
+          "hypotheses": 4,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "synthetic:INC-004/CASE-001",
+          "hypotheses": 4,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-005",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-018",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-050",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-065",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-066",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-067",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-077",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-113",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-118",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-122",
+          "hypotheses": 3,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-143",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-205",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-219",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        },
+        {
+          "case": "flaws_cloud/CASE-256",
+          "hypotheses": 2,
+          "unsupported": 0,
+          "hyp_cites_evidence_A_claims_did_not": false,
+          "hyp_cites_evidence_A_never_touched": false,
+          "degraded": false
+        }
+      ]
+    }
+  },
+  "labels": {
+    "A": {
+      "attack_data_aws/CASE-002": {
+        "labelled_technique": "T1580",
+        "labelled_technique_mapped": true,
+        "labelled_technique_asserted": true
+      },
+      "synthetic:INC-001/CASE-001": {
+        "incident_id": "INC-001",
+        "arm": "A_deterministic",
+        "configuration": "deterministic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-002/CASE-001": {
+        "incident_id": "INC-002",
+        "arm": "A_deterministic",
+        "configuration": "deterministic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 0.9286,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-005/CASE-001": {
+        "incident_id": "INC-005",
+        "arm": "A_deterministic",
+        "configuration": "deterministic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-004/CASE-001": {
+        "incident_id": "INC-004",
+        "arm": "A_deterministic",
+        "configuration": "deterministic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      }
+    },
+    "B": {
+      "attack_data_aws/CASE-002": {
+        "labelled_technique": "T1580",
+        "labelled_technique_mapped": true,
+        "labelled_technique_asserted": true
+      },
+      "synthetic:INC-001/CASE-001": {
+        "incident_id": "INC-001",
+        "arm": "B_single_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": false,
+        "event_recall": 1.0,
+        "trustworthy": false,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [
+          "exfiltrat"
+        ],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-002/CASE-001": {
+        "incident_id": "INC-002",
+        "arm": "B_single_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 0.9286,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-005/CASE-001": {
+        "incident_id": "INC-005",
+        "arm": "B_single_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-004/CASE-001": {
+        "incident_id": "INC-004",
+        "arm": "B_single_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      }
+    },
+    "C": {
+      "attack_data_aws/CASE-002": {
+        "labelled_technique": "T1580",
+        "labelled_technique_mapped": true,
+        "labelled_technique_asserted": true
+      },
+      "synthetic:INC-001/CASE-001": {
+        "incident_id": "INC-001",
+        "arm": "C_crew_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-002/CASE-001": {
+        "incident_id": "INC-002",
+        "arm": "C_crew_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 0.9286,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-005/CASE-001": {
+        "incident_id": "INC-005",
+        "arm": "C_crew_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      },
+      "synthetic:INC-004/CASE-001": {
+        "incident_id": "INC-004",
+        "arm": "C_crew_llm",
+        "configuration": "anthropic",
+        "llm_degraded": false,
+        "passed": true,
+        "event_recall": 1.0,
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "calibration_warnings": 0,
+        "overclaimed_as_fact": [],
+        "techniques_missing": [],
+        "conclusions_missed": [],
+        "investigated": true,
+        "computed_from": "this row's own investigation state"
+      }
+    }
+  },
+  "planner": {
+    "B": {
+      "cases_with_a_choice": 22,
+      "steps_offered": 113,
+      "steps_chosen": 113,
+      "unparseable_replies": 0,
+      "degraded_cases": [
+        "comiset/CASE-001",
+        "comiset/CASE-002"
+      ],
+      "per_case": {
+        "attack_data_aws/CASE-001": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "attack_data_aws/CASE-002": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "comiset/CASE-001": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": true
+        },
+        "comiset/CASE-002": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": true
+        },
+        "synthetic:INC-001/CASE-001": {
+          "chose": 8,
+          "offered": 8,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-002/CASE-001": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-005/CASE-001": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-004/CASE-001": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-005": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-018": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-050": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-065": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-066": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-067": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-077": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-113": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-118": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-122": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-143": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-205": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-219": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-256": {
+          "chose": 5,
+          "offered": 5,
+          "unparseable": 0,
+          "degraded": false
+        }
+      }
+    },
+    "C": {
+      "cases_with_a_choice": 1,
+      "steps_offered": 3,
+      "steps_chosen": 3,
+      "unparseable_replies": 1,
+      "degraded_cases": [],
+      "per_case": {
+        "attack_data_aws/CASE-001": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 1,
+          "degraded": false
+        },
+        "attack_data_aws/CASE-002": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "comiset/CASE-001": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "comiset/CASE-002": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-001/CASE-001": {
+          "chose": 3,
+          "offered": 3,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-002/CASE-001": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-005/CASE-001": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "synthetic:INC-004/CASE-001": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-005": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-018": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-050": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-065": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-066": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-067": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-077": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-113": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-118": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-122": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-143": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-205": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-219": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        },
+        "flaws_cloud/CASE-256": {
+          "chose": 0,
+          "offered": 0,
+          "unparseable": 0,
+          "degraded": false
+        }
+      }
+    }
+  },
+  "degraded": {
+    "B": [
+      {
+        "case": "comiset/CASE-001",
+        "status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate"
+      },
+      {
+        "case": "comiset/CASE-002",
+        "status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate"
+      }
+    ],
+    "C": []
+  },
+  "identity_hygiene": {
+    "A": {
+      "facts_inferred_from_pid": 3,
+      "ambiguous_pid_inferences": 0
+    },
+    "B": {
+      "facts_inferred_from_pid": 0,
+      "ambiguous_pid_inferences": 0
+    },
+    "C": {
+      "facts_inferred_from_pid": 3,
+      "ambiguous_pid_inferences": 0
+    }
+  }
+}

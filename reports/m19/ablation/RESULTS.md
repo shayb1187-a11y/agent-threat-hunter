@@ -362,3 +362,40 @@ refuses any single artifact above 50 MB, prints the largest fields, and exits no
 `tests/test_artifact_size_guard.py` fails if any file under `reports/` reaches 60 MB
 outside the two named COMISET parquet freezes (53.2 MB each). The current
 `scripted/arm_B.json` is 16.3 MB.
+
+---
+
+# M19 Phase 2: arms B and C against the model, and the grading
+
+Run 2026-09-13/14 at the `0dcfdf4` freeze of commit `5b8c3f2`. Arm A re-run twice
+(`reproducibility: IDENTICAL`; identical to the Phase 1 rows outside timestamps, wall
+seconds and head). Arm B and arm C ran once each; the planner check exited 0 for both:
+no model-arm row planned deterministically under a model label.
+
+| arm | rows | ec | coverage | jaccard | unsupported/case | hyp/case | tools | steps | wall s | tokens/case | F/I/H | rejected |
+| --- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --- | --: |
+| A_deterministic | 22 | 1.000 | 1.000 | 1.000 | 0.09 | 0.09 | 5.6 | 2.1 | 0.2 | 0 | 335/97/2 | 0 |
+| B_single_llm | 20 | 1.000 | 1.000 | 0.950 | 0.00 | 2.05 | 7.8 | 6.1 | 47.6 | 55,917 | 133/79/41 | 0 |
+| B_single_llm_DEGRADED | 2 | 1.000 | 1.000 | 1.000 | 0.00 | 0.00 | 7.0 | 6.0 | 31.6 | 3,191 | 14/0/0 | 0 |
+| C_crew_llm | 22 | 1.000 | 1.000 | 0.997 | 0.09 | 2.68 | 5.6 | 2.1 | 27.8 | 9,767 | 335/161/59 | 0 |
+
+Degraded: B `comiset/CASE-001`, `comiset/CASE-002` -- one HTTP 413 each, permanent by
+the frozen retry policy; planner had decided 5/5 steps on both; synthesis lost.
+C: none; one complete-but-unparseable reply on `attack_data_aws/CASE-001`, counted.
+Planner: B asked on 22/22 cases, 113/113 multi-candidate steps chosen; **C asked on
+1/22 cases** (`synthetic:INC-001`, 3/3) -- one eligible specialist per step everywhere
+else. Budgets: C tool cap hit on INC-001 (40 served, 3 refused, coverage still 1.000);
+B step budget hit on INC-001 (technique facet never reached).
+
+Predictions (PREREGISTERED.md §4), graded from `GRADING.json`:
+(i) MATCH -- ec 1.000 on all 66 rows, 0 rejected, 0 facts without evidence.
+(ii) MISS toward the model arms -- B 0 unsupported, C 2 (A's own two), A 2.
+(iii) MATCH -- C = A on every case.
+(iv) MATCH in form -- asserted-not-mapped 0 for all arms; mapped-not-asserted: C `T1074.001` on INC-001; B all 16 on INC-001 (step budget).
+(v) PARTIAL -- B 41, C 59 hypotheses; actionable-vs-restating UNAVAILABLE (manual reading; `HYPOTHESES.md`).
+(vi) reported -- B 1,230,172 tokens / 1,016 s; C 214,862 / 611 s; A 4.6 s.
+(vii) B meets both conditions on 13/22 cases (threshold A-mean-inferences 4.41 or 1.0, same result); C on 0/22 -- no C hypothesis cites evidence A's claims did not.
+Labels: identical across arms except B `synthetic:INC-001` failed `never_as_fact` on a
+tool-authored FACT that republishes ATH-008's reason text ("...prior to exfiltration, but").
+
+Full reading: `docs/m19-ablation-report.md`.
