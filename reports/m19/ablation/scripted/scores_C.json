@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T04:12:14.915355+00:00",
-  "head": "6ddb845",
+  "generated_at": "2026-09-13T04:21:57.327741+00:00",
+  "head": "b8e02a8",
   "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
   "summary": {
     "cases": 22,
@@ -19,7 +19,7 @@
             "hypotheses": 1.0909,
             "tool_calls": 5.5909,
             "steps": 2.0909,
-            "wall_seconds": 0.0688
+            "wall_seconds": 0.066
           },
           "total": {
             "facts": 331,
@@ -34,10 +34,10 @@
             "case_evidence_touched": 360,
             "tool_calls": 123,
             "steps": 46,
-            "wall_seconds": 1.513,
+            "wall_seconds": 1.452,
             "facts_inferred_from_pid": 2,
             "ambiguous_pid_inferences": 0,
-            "tokens": null
+            "tokens": 3750
           },
           "statuses": {
             "complete": 22
@@ -58,7 +58,7 @@
               "hypotheses": 1.0,
               "tool_calls": 3.5,
               "steps": 2.0,
-              "wall_seconds": 0.0057
+              "wall_seconds": 0.0054
             },
             "total": {
               "facts": 45,
@@ -76,7 +76,7 @@
               "wall_seconds": 0.011,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 300
             },
             "statuses": {
               "complete": 2
@@ -96,7 +96,7 @@
               "hypotheses": 1.0,
               "tool_calls": 5.5,
               "steps": 2.0,
-              "wall_seconds": 0.0648
+              "wall_seconds": 0.0565
             },
             "total": {
               "facts": 8,
@@ -111,10 +111,10 @@
               "case_evidence_touched": 3,
               "tool_calls": 11,
               "steps": 4,
-              "wall_seconds": 0.13,
+              "wall_seconds": 0.113,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 300
             },
             "statuses": {
               "complete": 2
@@ -134,7 +134,7 @@
               "hypotheses": 1.0,
               "tool_calls": 3.4286,
               "steps": 2.0,
-              "wall_seconds": 0.0919
+              "wall_seconds": 0.0887
             },
             "total": {
               "facts": 255,
@@ -149,10 +149,10 @@
               "case_evidence_touched": 269,
               "tool_calls": 48,
               "steps": 28,
-              "wall_seconds": 1.286,
+              "wall_seconds": 1.242,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 2100
             },
             "statuses": {
               "complete": 14
@@ -172,7 +172,7 @@
               "hypotheses": 3.0,
               "tool_calls": 43.0,
               "steps": 4.0,
-              "wall_seconds": 0.0631
+              "wall_seconds": 0.064
             },
             "total": {
               "facts": 16,
@@ -187,10 +187,10 @@
               "case_evidence_touched": 30,
               "tool_calls": 43,
               "steps": 4,
-              "wall_seconds": 0.063,
+              "wall_seconds": 0.064,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 600
             },
             "statuses": {
               "complete": 1
@@ -210,7 +210,7 @@
               "hypotheses": 1.0,
               "tool_calls": 3.0,
               "steps": 2.0,
-              "wall_seconds": 0.0028
+              "wall_seconds": 0.0021
             },
             "total": {
               "facts": 2,
@@ -225,10 +225,10 @@
               "case_evidence_touched": 13,
               "tool_calls": 3,
               "steps": 2,
-              "wall_seconds": 0.003,
+              "wall_seconds": 0.002,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 150
             },
             "statuses": {
               "complete": 1
@@ -248,7 +248,7 @@
               "hypotheses": 1.0,
               "tool_calls": 6.0,
               "steps": 2.0,
-              "wall_seconds": 0.0138
+              "wall_seconds": 0.0149
             },
             "total": {
               "facts": 2,
@@ -263,10 +263,10 @@
               "case_evidence_touched": 6,
               "tool_calls": 6,
               "steps": 2,
-              "wall_seconds": 0.014,
+              "wall_seconds": 0.015,
               "facts_inferred_from_pid": 2,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 150
             },
             "statuses": {
               "complete": 1
@@ -286,7 +286,7 @@
               "hypotheses": 1.0,
               "tool_calls": 5.0,
               "steps": 2.0,
-              "wall_seconds": 0.0055
+              "wall_seconds": 0.0057
             },
             "total": {
               "facts": 3,
@@ -304,7 +304,7 @@
               "wall_seconds": 0.006,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
-              "tokens": null
+              "tokens": 150
             },
             "statuses": {
               "complete": 1

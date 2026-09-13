@@ -507,6 +507,7 @@ def run_arm(
             tools, verifier, llm=client, config=arm.config, environment=environment,
             specialists=crew,
         )
+        baseline = begin_token_accounting(client)
         started = time.perf_counter()
         state = orchestrator.investigate(case)
         elapsed = time.perf_counter() - started
@@ -515,7 +516,7 @@ def run_arm(
         # that has already run, and every other gate is monotone within one case), so
         # what is still eligible at the end is exactly the work the run left undone.
         eligible_never_ran = [s.name for s, _ in orchestrator.eligible(state)]
-        tokens = getattr(client, "tokens_used", None)
+        tokens = tokens_spent(client, baseline)
 
         case_scores = score_case(
             state, case, verifier,
@@ -547,6 +548,39 @@ def run_arm(
             results[-1].scores.inferences, results[-1].scores.hypotheses, elapsed,
         )
     return results
+
+
+def begin_token_accounting(client: Any) -> int | None:
+    """Start one case's token accounting and return the baseline to subtract, if any.
+
+    ``CaseResult.tokens`` is a *per-case* number. A client accumulates across every call
+    it makes, so without this the second case of a run would be charged for the first,
+    and the last case of a 22-case manifest would carry the whole manifest's bill -- the
+    cost column's version of the cumulative tool-call defect this milestone corrected in
+    the M18 script.
+
+    A client that can reset is reset. One that cannot is snapshotted and subtracted, so
+    a third-party double that only exposes a running total still yields a per-case
+    figure rather than a misleading one.
+    """
+    reset = getattr(client, "reset_token_accounting", None)
+    if callable(reset):
+        reset()
+        return None
+    return getattr(client, "tokens_used", None)
+
+
+def tokens_spent(client: Any, baseline: int | None) -> int | None:
+    """What this case cost, or ``None`` when the client reported nothing.
+
+    Never ``0`` for a client that said nothing: "the model spent nothing" and "nobody
+    told us what it spent" are different facts, and only one of them belongs in a cost
+    column.
+    """
+    total = getattr(client, "tokens_used", None)
+    if total is None:
+        return None
+    return total - (baseline or 0)
 
 
 def budgets_of(tools: ToolBox, arm: ArmConfig, state: Any) -> dict[str, Any]:
