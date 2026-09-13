@@ -80,6 +80,7 @@ code paths.
 
 from __future__ import annotations
 
+import inspect
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Sequence
@@ -154,20 +155,27 @@ class ArmConfig:
         implemented: False for an arm that is declared but not built; running it raises
             :class:`NotImplementedError` with the design note.
         design_note: Why an unimplemented arm is unimplemented.
+        model: The model id this arm pins, or ``None`` for an arm that uses none. Passed
+            to ``llm_factory`` when the factory accepts it, and written into the results
+            header. Pinned per arm rather than read from configuration because an
+            experiment whose model id comes from an environment variable cannot say,
+            afterwards, which model produced which row.
     """
 
     name: str
-    llm_factory: Callable[[], LLMClient]
+    llm_factory: Callable[..., LLMClient]
     config: InvestigationConfig
     requires_model: bool = False
     tool_call_cap: int | None = None
     generalist: bool = False
     implemented: bool = True
     design_note: str = ""
+    model: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
+            "model": self.model,
             "use_llm_planner": self.config.use_llm_planner,
             "use_llm_synthesis": self.config.use_llm_synthesis,
             "max_steps": self.config.max_steps,
@@ -188,6 +196,37 @@ STEP_BUDGET = 8
 
 TOOL_CALL_CAP = 40
 """Tool calls per case for the model arms. A call beyond it is refused, not raised."""
+
+ABLATION_MODEL = "claude-opus-5"
+"""The model both LLM arms run, pinned by the experiment rather than by configuration.
+
+The architect's Phase 1 ruling, recorded verbatim in ``PREREGISTERED.md`` and in
+``ENVIRONMENT.md``: the ablation pins its own model id on :class:`ArmConfig` for arms B
+and C -- the brief calls arm B "one strong general LLM investigator" -- and
+``ath.config.DEFAULT_MODEL`` is left unchanged and out of scope. Two arms differing in
+model would be a different experiment from two arms differing in reasoning
+architecture, so the id is one constant read by both.
+"""
+
+
+def build_client(arm: "ArmConfig") -> LLMClient:
+    """The client for an arm, with the arm's pinned model when the factory takes one.
+
+    The factory is part of an arm's definition and tests inject their own -- typically a
+    zero-argument lambda returning a :class:`~ath.agent.llm.ScriptedLLM`. So the model
+    id is passed only to a factory that declares it, and the signature is inspected
+    rather than the call attempted-and-excepted: a ``TypeError`` raised *inside* a
+    factory would otherwise be silently retried as if the factory took no model, and an
+    arm would run on the default id while the header said otherwise.
+    """
+    if arm.model is None:
+        return arm.llm_factory()
+    parameters = inspect.signature(arm.llm_factory).parameters
+    takes_model = "model" in parameters or any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    )
+    return arm.llm_factory(model=arm.model) if takes_model else arm.llm_factory()
 
 
 def arm_a(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
@@ -212,6 +251,7 @@ def arm_b(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
         requires_model=True,
         tool_call_cap=TOOL_CALL_CAP,
         generalist=True,
+        model=ABLATION_MODEL,
     )
 
 
@@ -225,6 +265,7 @@ def arm_c(llm_factory: Callable[[], LLMClient] | None = None) -> ArmConfig:
         ),
         requires_model=True,
         tool_call_cap=TOOL_CALL_CAP,
+        model=ABLATION_MODEL,
     )
 
 
@@ -467,7 +508,7 @@ def run_arm(
     if not arm.implemented:
         raise NotImplementedError(f"{arm.name} is declared, not implemented. {arm.design_note}")
 
-    client = llm if llm is not None else arm.llm_factory()
+    client = llm if llm is not None else build_client(arm)
     if scripted and not client.available:
         # A "scripted" run handed NullLLM would be a deterministic run wearing an LLM
         # arm's name with a reassuring suffix. The suffix is there to say *which* kind

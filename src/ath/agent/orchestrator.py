@@ -68,6 +68,43 @@ PLANNER_SYSTEM = (
     'appropriate, respond {"next_agent": "none", "reason": "..."}.'
 )
 
+PLANNER_MAX_TOKENS = 8192
+"""Output budget for one planning call.
+
+Thinking tokens count against this cap, and a response that reaches it comes back with
+``stop_reason == "max_tokens"`` and possibly no text block at all -- which parses to
+``None`` and, before M19 Phase 0.5, fell through to the deterministic order while the
+row still described itself as a model arm. The planner's answer is two short JSON
+fields, so this is not a target: it is a bound on what one call can cost, set far above
+anything the answer needs so that hitting it means something has gone wrong rather than
+that the budget was tight.
+"""
+
+SYNTHESIS_MAX_TOKENS = 8192
+"""Output budget for one synthesis call. Same reasoning, same number."""
+
+PLANNER_USER_TEMPLATE = """Case: {case_id}
+Hosts: {hosts}
+Accounts: {accounts}
+Detection rules fired: {rule_ids}
+ATT&CK tactics observed: {tactics}
+Specialists already run: {agents_run}
+Verified facts so far: {facts}; inferences: {inferences}; hypotheses: {hypotheses}
+
+Candidates:
+{candidates}"""
+"""The planner's user message, as a template so it can be hashed and frozen.
+
+Extracted for the M19 Phase 1 environment freeze: a prompt that differs between two
+arms is a difference between the arms, and the only way to prove it did not is to
+record the hash of what was sent before either ran. The rendered text is byte-identical
+to what M19-2 and M19-3 sent -- the extraction moved the string, not the prompt.
+"""
+
+SYNTHESIS_USER_TEMPLATE = """Case {case_id}. Verified claims:
+{claims}"""
+"""The synthesis user message, as a template. Hashed and frozen for the same reason."""
+
 SYNTHESIS_SYSTEM = (
     "You are the synthesis component of a security investigation system. You are given "
     "verified claims that were derived from telemetry. Your job is to identify "
@@ -148,13 +185,20 @@ class InvestigationOrchestrator:
             return None, "no specialist has further useful work on the available evidence"
 
         if len(candidates) == 1:
+            state.note_planner_decision("only-eligible")
             specialist, reason = candidates[0]
             return specialist, f"only eligible specialist; {reason}"
 
+        # From here the step is a real choice, and the state records who made it. A
+        # model arm with no ``model-chosen`` step on a case that offered a menu planned
+        # exactly as the deterministic arm did, whatever the row is labelled.
         if self.config.use_llm_planner and self.llm.available:
-            chosen = self._llm_plan(state, candidates)
+            chosen, decision = self._llm_plan(state, candidates)
+            state.note_planner_decision(decision)
             if chosen is not None:
                 return chosen
+        else:
+            state.note_planner_decision("planner-not-consulted")
 
         # Deterministic fallback: fixed priority order.
         by_name = {s.name: (s, r) for s, r in candidates}
@@ -167,31 +211,45 @@ class InvestigationOrchestrator:
 
     def _llm_plan(
         self, state: InvestigationState, candidates: list[tuple[Specialist, str]]
-    ) -> tuple[Specialist, str] | None:
+    ) -> tuple[tuple[Specialist, str] | None, str]:
         """Ask the model to choose among eligible specialists.
 
         The model receives a *summary* -- case shape, what has run, what each candidate
         would do. It never receives telemetry. Its answer is validated against the
         candidate list; anything else is discarded.
+
+        Returns:
+            ``(choice, decision)``. ``choice`` is ``None`` whenever the deterministic
+            order must answer instead; ``decision`` is the :data:`~ath.agent.state.
+            PLANNER_DECISIONS` name saying *why*, which is the part an aggregate can
+            read. The four ways to end up back on the deterministic path are not the
+            same event, and a row that records only "fell back" cannot tell a model
+            outage from a model that declined.
         """
         names = [s.name for s, _ in candidates]
-        summary = "\n".join([
-            f"Case: {state.case.case_id}",
-            f"Hosts: {', '.join(state.case.devices)}",
-            f"Accounts: {', '.join(state.case.users)}",
-            f"Detection rules fired: {', '.join(state.case.rule_ids)}",
-            f"ATT&CK tactics observed: {', '.join(state.case.tactics) or 'none'}",
-            f"Specialists already run: {', '.join(state.agents_run) or 'none'}",
-            f"Verified facts so far: {len(state.facts)}; "
-            f"inferences: {len(state.inferences)}; hypotheses: {len(state.hypotheses)}",
-            "",
-            "Candidates:",
-            *[f"  {s.name}: {s.domain} (eligible because {r})" for s, r in candidates],
-        ])
-        response = self.llm.complete(PLANNER_SYSTEM, summary, max_tokens=256)
+        summary = PLANNER_USER_TEMPLATE.format(
+            case_id=state.case.case_id,
+            hosts=", ".join(state.case.devices),
+            accounts=", ".join(state.case.users),
+            rule_ids=", ".join(state.case.rule_ids),
+            tactics=", ".join(state.case.tactics) or "none",
+            agents_run=", ".join(state.agents_run) or "none",
+            facts=len(state.facts),
+            inferences=len(state.inferences),
+            hypotheses=len(state.hypotheses),
+            candidates="\n".join(
+                f"  {s.name}: {s.domain} (eligible because {r})" for s, r in candidates
+            ),
+        )
+        response = self.llm.complete(
+            PLANNER_SYSTEM, summary, max_tokens=PLANNER_MAX_TOKENS
+        )
         if not response.ok:
             # Recorded on the state, not merely logged at debug: a run that lost its
-            # model must say so, or "ran deterministically" reads as a choice.
+            # model must say so, or "ran deterministically" reads as a choice. A reply
+            # truncated at the cap, or carrying no text block, arrives here too -- the
+            # client turns both into an error precisely so that they degrade the row
+            # instead of quietly becoming deterministic planning.
             state.llm_errors.append(response.error or "unknown error")
             state.plan_log.append(
                 f"planner: model call failed ({response.error}); "
@@ -199,27 +257,37 @@ class InvestigationOrchestrator:
             )
             logger.warning("Planner LLM unusable (%s); using deterministic order",
                            response.error)
-            return None
+            return None, "model-error"
         if not response.parsed:
+            state.note_unparseable("planner")
             state.plan_log.append(
                 "planner: model response was not parseable JSON; "
                 "using deterministic priority order"
             )
             logger.info("Planner response unparseable; using deterministic order")
-            return None
+            return None, "model-unparseable"
 
         choice = str(response.parsed.get("next_agent", "")).strip().lower()
         if choice not in names:
-            # Not an error worth failing on -- just an answer we will not act on.
+            # Not an error worth failing on -- just an answer we will not act on. The
+            # two shapes are kept apart: "none" is the answer the system prompt asks
+            # for when nothing fits, and any other name is an answer off the menu.
             logger.info(
                 "Planner proposed %r which is not an eligible candidate %s; "
                 "falling back to deterministic order", choice, names,
             )
-            return None
+            state.plan_log.append(
+                f"planner: proposed {choice!r}, which is not one of the eligible "
+                f"candidates {names}; using deterministic priority order"
+                if choice != "none" else
+                "planner: the model judged that no candidate is appropriate; using "
+                "deterministic priority order"
+            )
+            return None, "model-declined" if choice == "none" else "model-invalid-name"
 
         specialist = self._by_name[choice]
         reason = str(response.parsed.get("reason", "")).strip() or "selected by planner"
-        return specialist, f"planner: {reason}"
+        return (specialist, f"planner: {reason}"), "model-chosen"
 
     # -- node: act ------------------------------------------------------------------
 
@@ -271,14 +339,17 @@ class InvestigationOrchestrator:
         )
         response = self.llm.complete(
             SYNTHESIS_SYSTEM,
-            f"Case {state.case.case_id}. Verified claims:\n{rendered}",
-            max_tokens=1500,
+            SYNTHESIS_USER_TEMPLATE.format(
+                case_id=state.case.case_id, claims=rendered,
+            ),
+            max_tokens=SYNTHESIS_MAX_TOKENS,
         )
         if not response.ok:
             state.llm_errors.append(response.error or "unknown error")
             state.plan_log.append(f"synthesis skipped: model call failed ({response.error})")
             return state
         if not response.parsed:
+            state.note_unparseable("synthesis")
             state.plan_log.append("synthesis skipped: unparseable response")
             return state
 

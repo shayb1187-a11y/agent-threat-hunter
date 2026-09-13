@@ -23,6 +23,47 @@ from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
 
 
+PLANNER_DECISIONS: tuple[str, ...] = (
+    "only-eligible",
+    "planner-not-consulted",
+    "model-chosen",
+    "model-unparseable",
+    "model-error",
+    "model-declined",
+    "model-invalid-name",
+)
+"""Every way the next specialist can come to be chosen, counted per run.
+
+The distinction this exists to keep is between *the model steered this investigation*
+and *the deterministic order did, on a run labelled as a model arm*. Both produce a plan
+log entry and a specialist; only one of them is what an ablation's model arm claims to
+measure. Reading the counts:
+
+``only-eligible``
+    One candidate. The planner was not asked, because the decision was not a decision.
+``planner-not-consulted``
+    More than one candidate, and the planner is off or no model is available. The
+    deterministic arm's normal state.
+``model-chosen``
+    The model named an eligible candidate and the run followed it.
+``model-unparseable``
+    The model answered, completely, with something that is not JSON. Not an outage --
+    see :attr:`InvestigationState.llm_unparseable_responses`.
+``model-error``
+    The call failed, or its reply was truncated or carried no text. This one degrades
+    the run.
+``model-declined``
+    The model answered ``"none"``: no candidate is appropriate. An answer, not a fault.
+``model-invalid-name``
+    The model named something that was not on the menu. Discarded.
+"""
+
+MODEL_FALLBACK_DECISIONS: frozenset = frozenset({
+    "model-unparseable", "model-error", "model-declined", "model-invalid-name",
+})
+"""The decisions in which the model was asked and the deterministic order answered."""
+
+
 class InvestigationStatus(str, Enum):
     """Where an investigation currently stands."""
 
@@ -104,6 +145,19 @@ class InvestigationState:
     started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     llm_requested: bool = False
     """Whether this run was configured to use a model at all."""
+    llm_unparseable_responses: int = 0
+    """Complete model replies that were not parseable JSON.
+
+    Deliberately *not* an entry in :attr:`llm_errors`: a model that answers in prose is
+    a working model being unhelpful, and counting it as an outage would inflate the
+    degraded signal until a reader learns to ignore it. But it is not nothing either --
+    a model arm whose every answer was discarded ran deterministically in all but name,
+    and before this counter existed the only trace of that was a line in ``plan_log``
+    that no aggregate read."""
+    llm_unparseable_by_kind: dict[str, int] = field(default_factory=dict)
+    """The same count split by call kind (``planner`` / ``synthesis``)."""
+    planner_decisions: dict[str, int] = field(default_factory=dict)
+    """How each planning step was actually decided. See :data:`PLANNER_DECISIONS`."""
     llm_errors: list[str] = field(default_factory=list)
     """Model calls that failed. Populated even though the run still completes.
 
@@ -169,15 +223,94 @@ class InvestigationState:
 
     @property
     def llm_status(self) -> str:
-        """One line describing what the model actually contributed."""
+        """One line describing what the model actually contributed.
+
+        A run that asked for a model says what the model *did*, not merely that one was
+        available: "model available and used for planning/synthesis" was equally true of
+        a run in which every planner answer was discarded, and that reading is the one
+        this milestone exists to close.
+        """
         if not self.llm_requested:
             return "deterministic mode (no model requested)"
         if self.llm_errors:
-            return (
+            head = (
                 f"DEGRADED -- model requested but {len(self.llm_errors)} call(s) "
                 f"failed ({self.llm_errors[0]}); ran deterministically"
             )
-        return "model available and used for planning/synthesis"
+        else:
+            head = "model available and used for planning/synthesis"
+        return head + self._planner_clause() + self._unparseable_clause()
+
+    def _planner_clause(self) -> str:
+        multi = self.multi_candidate_steps
+        if not multi:
+            return (
+                "; no step had more than one eligible candidate, so the planner was "
+                "never asked"
+            )
+        return (
+            f"; the planner chose {self.planner_chosen} of {multi} step(s) that had "
+            "more than one candidate"
+        )
+
+    def _unparseable_clause(self) -> str:
+        if not self.llm_unparseable_responses:
+            return ""
+        return (
+            f"; {self.llm_unparseable_responses} complete reply(ies) were not parseable "
+            "and were discarded"
+        )
+
+    def note_planner_decision(self, decision: str) -> None:
+        """Count one planning step by how it was decided."""
+        if decision not in PLANNER_DECISIONS:
+            raise ValueError(
+                f"unknown planner decision {decision!r}; known: {PLANNER_DECISIONS}"
+            )
+        self.planner_decisions[decision] = self.planner_decisions.get(decision, 0) + 1
+
+    def note_unparseable(self, kind: str) -> None:
+        """Count one complete-but-unparseable model reply, by call kind."""
+        self.llm_unparseable_responses += 1
+        self.llm_unparseable_by_kind[kind] = (
+            self.llm_unparseable_by_kind.get(kind, 0) + 1
+        )
+
+    @property
+    def planner_chosen(self) -> int:
+        """Steps whose specialist the model picked."""
+        return self.planner_decisions.get("model-chosen", 0)
+
+    @property
+    def planner_fallbacks(self) -> dict[str, int]:
+        """Steps where the model was asked and the deterministic order answered."""
+        return {
+            reason: count for reason, count in sorted(self.planner_decisions.items())
+            if reason in MODEL_FALLBACK_DECISIONS
+        }
+
+    @property
+    def multi_candidate_steps(self) -> int:
+        """Steps that were a real choice: more than one eligible specialist.
+
+        The denominator of the only question that detects a model arm which quietly
+        planned deterministically. A case with none of these says nothing either way,
+        which is why it is reported rather than scored.
+        """
+        return sum(
+            count for reason, count in self.planner_decisions.items()
+            if reason != "only-eligible"
+        )
+
+    @property
+    def planner_summary(self) -> dict[str, Any]:
+        """The planning breakdown, as it appears in the serialised state."""
+        return {
+            "multi_candidate_steps": self.multi_candidate_steps,
+            "chosen_by_model": self.planner_chosen,
+            "fallbacks": self.planner_fallbacks,
+            "decisions": dict(sorted(self.planner_decisions.items())),
+        }
 
     def record(self, result: AgentResult, accepted: list[Claim],
                rejected: list[RejectedClaim]) -> None:
@@ -207,6 +340,9 @@ class InvestigationState:
                 "degraded": self.llm_degraded,
                 "status": self.llm_status,
                 "errors": list(self.llm_errors),
+                "unparseable_responses": self.llm_unparseable_responses,
+                "unparseable_by_kind": dict(sorted(self.llm_unparseable_by_kind.items())),
+                "planner": self.planner_summary,
             },
             "claims": [c.to_dict() for c in self.claims],
             "rejected_claims": [r.to_dict() for r in self.rejected_claims],
