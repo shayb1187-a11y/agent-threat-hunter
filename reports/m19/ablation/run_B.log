@@ -1,0 +1,142 @@
+LLM call failed permanently (HTTP 413); continuing deterministically
+CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate
+LLM call failed permanently (HTTP 413); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate
+environment: matches the freeze at 5b8c3f2b464d (ENVIRONMENT.json checked: commit, prompts, scoring, manifest, model ids)
+attack_data_aws: 2 case(s) x 1 run(s) in 84.3s
+comiset: 2 case(s) x 1 run(s) in 94.0s
+synthetic:INC-001: 1 case(s) x 1 run(s) in 75.5s
+synthetic:INC-002: 1 case(s) x 1 run(s) in 47.1s
+synthetic:INC-005: 1 case(s) x 1 run(s) in 39.7s
+synthetic:INC-004: 1 case(s) x 1 run(s) in 44.5s
+flaws_cloud: 14 case(s) x 1 run(s) in 731.3s
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\arm_B.json (22 case row(s))
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\scores_B.json
+{
+  "cases": 22,
+  "arms": {
+    "B_single_llm": {
+      "overall": {
+        "cases": 20,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 0.95,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0,
+          "facts": 6.65,
+          "inferences": 3.95,
+          "hypotheses": 2.05,
+          "tool_calls": 7.75,
+          "steps": 6.1,
+          "wall_seconds": 47.643
+        },
+        "total": {
+          "facts": 133,
+          "inferences": 79,
+          "hypotheses": 41,
+          "unsupported_claims": 0,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 83174,
+          "cited_event_ids_existing": 83174,
+          "case_evidence_ids": 358,
+          "case_evidence_touched": 358,
+          "tool_calls": 155,
+          "steps": 122,
+          "wall_seconds": 952.861,
+          "facts_inferred_from_pid": 0,
+          "ambiguous_pid_inferences": 0,
+          "tokens": 1223791
+        },
+        "statuses": {
+          "complete": 19,
+          "step_limit": 1
+        },
+        "degraded_runs": 0
+      },
+      "by_corpus": {
+        "attack_data_aws": {
+          "cases": 2,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 5.0,
+            "inferences": 4.0,
+            "hypotheses": 2.0,
+            "tool_calls": 7.0,
+            "steps": 6.0,
+            "wall_seconds": 42.1465
+          },
+          "total": {
+            "facts": 10,
+            "inferences": 8,
+            "hypotheses": 4,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts_without_evidence": 0,
+            "cited_event_ids": 37,
+            "cited_event_ids_existing": 37,
+            "case_evidence_ids": 37,
+            "case_evidence_touched": 37,
+            "tool_calls": 14,
+            "steps": 12,
+            "wall_seconds": 84.293,
+            "facts_inferred_from_pid": 0,
+            "ambiguous_pid_inferences": 0,
+            "tokens": 13611
+          },
+          "statuses": {
+            "complete": 2
+          },
+          "degraded_runs": 0
+        },
+        "flaws_cloud": {
+          "cases": 14,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 6.0,
+            "inferences": 3.7857,
+            "hypotheses": 2.2143,
+            "tool_calls": 7.0714,
+            "steps": 6.0,
+            "wall_seconds": 47.2787
+          },
+          "total": {
+            "facts": 84,
+            "inferences": 53,
+            "hypotheses": 31,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+planner accounting:
+  attack_data_aws/CASE-001: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  attack_data_aws/CASE-002: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-001: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-002: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  synthetic:INC-001/CASE-001: planner chose 8 of 8 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-005/CASE-001: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-005: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-050: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-065: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-066: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-067: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-077: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-113: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-118: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-122: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-143: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-205: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-219: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-256: planner chose 5 of 5 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+planner check: no model-arm row planned deterministically
+exit=0
