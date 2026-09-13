@@ -475,11 +475,30 @@ def render_markdown(payload: dict[str, Any]) -> str:
     add("")
     add(f"* commit `{git.get('commit', 'unknown')}` on branch `{git.get('branch')}`")
     dirty = git.get("dirty")
-    add(
-        "* working tree: "
-        + ("clean" if dirty is False else "DIRTY" if dirty else "unknown")
-    )
-    for path in git.get("dirty_paths", []):
+    dirty_paths = list(git.get("dirty_paths") or [])
+    # "dirty" on its own is the wrong answer to the question a reader is asking, which
+    # is whether the code that ran is the code at this commit. An untracked corpus file
+    # or a results file written moments ago is not a change to the experiment, and the
+    # gate ignores both -- so the line says which kind of dirty this is.
+    code_paths = [
+        path for path in dirty_paths
+        if not path.startswith(RESULTS_PREFIX) and not path.startswith(DATA_PREFIX)
+    ]
+    if dirty is None:
+        add("* working tree: unknown (git could not be consulted)")
+    elif not dirty:
+        add("* working tree: clean")
+    elif code_paths:
+        add(
+            f"* working tree: **DIRTY** -- {len(code_paths)} uncommitted change(s) "
+            "outside `reports/` and `data/`; a model arm will refuse to run"
+        )
+    else:
+        add(
+            "* working tree: no uncommitted change outside `reports/` and `data/` "
+            "(the code at this commit is the code that runs)"
+        )
+    for path in dirty_paths:
         add(f"  * `{path}`")
     add(f"* manifest `{payload.get('manifest_hash', '')[:12]}` "
         f"(built at `{payload.get('manifest_head', '')}`)")
