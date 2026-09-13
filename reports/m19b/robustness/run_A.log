@@ -1,0 +1,22 @@
+synthetic:INC-001: repeat 1/1 done (1 case(s))
+synthetic:INC-002: repeat 1/1 done (1 case(s))
+synthetic:INC-004: repeat 1/1 done (1 case(s))
+flaws_cloud: repeat 1/1 done (4 case(s))
+comiset: repeat 1/1 done (2 case(s))
+attack_data_aws: repeat 1/1 done (1 case(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_A_rep1.json (10 row(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_A_repeats.json
+degraded rows: 0 of 10
+planner accounting, repeat 1:
+  synthetic:INC-001/CASE-001: planner chose 0 of 3 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-050: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-065: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-005: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  attack_data_aws/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+planner check: no model-arm row planned deterministically
+M19 identity: arm A reproduced all 10 M19 rows exactly outside the time fields

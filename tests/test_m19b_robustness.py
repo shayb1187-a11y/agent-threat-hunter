@@ -529,6 +529,50 @@ def test_the_spread_is_min_median_max() -> None:
     assert entry["values"] == [3, 1, 2], "the raw repeats stay visible"
 
 
+def test_the_two_degradation_kinds_are_told_apart() -> None:
+    """A 413 is a property of the request; a 400 here was an exhausted credit balance.
+
+    Folding them into one "degradation_frequency" would let an accounting failure read
+    as an architectural one, which is precisely what question (b) is trying to measure.
+    """
+    assert m19b.degradation_kind(
+        "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran "
+        "deterministically"
+    ) == "http_413_request_too_large"
+    assert m19b.degradation_kind(
+        "DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was "
+        "rejected as malformed)); ran deterministically"
+    ) == "http_400_request_rejected"
+    assert m19b.degradation_kind("model available and used for planning") == ""
+    assert m19b.degradation_kind("DEGRADED -- something new") == "other"
+
+
+@pytest.mark.skipif(
+    not (m19b.OUT_DIR / "arm_C_rep3.json").exists(),
+    reason="the arm runs have not been performed in this tree yet",
+)
+def test_the_undegraded_subset_never_hides_a_failure() -> None:
+    """Both denominators are published: the full count, and the count with a model."""
+    scores = json.loads(
+        (m19b.OUT_DIR / "SCORES.json").read_text(encoding="utf-8")
+    )
+    for case in scores["per_case"]:
+        for letter in ("B", "C"):
+            arm = case["arms"][letter]
+            degraded = arm["degradation_frequency"]
+            live = arm["undegraded"]
+            assert live["of"] == degraded["of"]
+            assert live["repeats"] == degraded["of"] - degraded["degraded"]
+            assert (
+                live["decision_rule_passed"]
+                <= arm["decision_rule_pass_frequency"]["passed"]
+            ), "the undegraded subset cannot pass more often than the whole"
+            assert (
+                live["new_evidence_found"] <= arm["new_evidence_frequency"]["found"]
+            )
+            assert sum(degraded["by_kind"].values()) == degraded["degraded"]
+
+
 def test_a_deterministic_arm_repeated_is_not_run(tmp_path) -> None:
     with pytest.raises(SystemExit) as excinfo:
         m19b.cmd_run(SimpleNamespace(

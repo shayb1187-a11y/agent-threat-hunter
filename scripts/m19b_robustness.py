@@ -722,6 +722,55 @@ def metrics_of(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+CREDIT_EXHAUSTION_NOTE = (
+    "MEASURED: 17 of arm C's 30 rows degraded on HTTP 400, a status M19 never saw. The "
+    "status text the client records is generic, so the cause was established by one "
+    "independent probe of the endpoint after the run -- a 16-token request, no row "
+    "re-run -- which returned "
+    "'invalid_request_error: Your credit balance is too low to access the Anthropic "
+    "API'. The failures are ordered in time rather than by case: everything the run "
+    "attempted after flaws_cloud repeat 1 failed, and nothing before it did. VERIFIED: "
+    "the account's credit was exhausted mid-run. This is a property of the account on "
+    "the day, not of arm C, of the crew architecture, or of any case. The rows are kept "
+    "exactly as they came out and are never re-run; every arm C figure is therefore "
+    "reported twice -- over all three repeats, and over the repeats whose model "
+    "answered -- and the arm C half of questions (c), (d) and (e) is INCONCLUSIVE at "
+    "three repeats per case."
+)
+"""What happened to arm C's run, recorded where the numbers are."""
+
+
+def _degradations_by_kind(repeats: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for run in repeats:
+        for row in run.values():
+            if not row["llm_degraded"]:
+                continue
+            kind = degradation_kind(str(row.get("llm_status", "")))
+            counts[kind] = counts.get(kind, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def degradation_kind(status: str) -> str:
+    """Which failure degraded a row, from the status the orchestrator recorded.
+
+    The distinction matters more than the count. An HTTP 413 is a property of the
+    *request* -- the same case will produce it again, and M19 already recorded it twice.
+    An HTTP 400 on this codebase's request shape is not: 400 is the status the Messages
+    API returns for an exhausted credit balance, which is a property of the account on
+    the day and of nothing in the experiment. A row degraded by the second kind says
+    nothing about the arm it was launched as, and folding the two into one
+    "degradation_frequency" would let an accounting failure read as an architectural one.
+    """
+    if "413" in status:
+        return "http_413_request_too_large"
+    if "400" in status:
+        return "http_400_request_rejected"
+    if not status or "DEGRADED" not in status:
+        return ""
+    return "other"
+
+
 def spread(values: list[Any]) -> dict[str, Any]:
     """min / median / max of a metric across repeats, or nulls when nothing was reported.
 
@@ -830,6 +879,10 @@ def cmd_score(args: argparse.Namespace) -> int:
             rows = [r[key] for r in repeats[letter]]
             rules = [decision_rule(r, arm_a_m19[key], threshold) for r in rows]
             metrics = [metrics_of(r) for r in rows]
+            undegraded_metrics = [m for m in metrics if not m["degraded"]]
+            undegraded_rules = [
+                rule for rule, metric in zip(rules, metrics) if not metric["degraded"]
+            ]
             m19_rule = decision_rule(primary[letter][key], arm_a_m19[key], threshold)
             entry["arms"][letter] = {
                 "m19_primary": {
@@ -858,9 +911,49 @@ def cmd_score(args: argparse.Namespace) -> int:
                 "degradation_frequency": {
                     "degraded": sum(1 for m in metrics if m["degraded"]),
                     "of": len(metrics),
+                    "by_kind": {
+                        kind: sum(
+                            1 for m in metrics
+                            if m["degraded"]
+                            and degradation_kind(m["llm_status"]) == kind
+                        )
+                        for kind in sorted({
+                            degradation_kind(m["llm_status"])
+                            for m in metrics if m["degraded"]
+                        })
+                    },
                     "statuses": sorted(
                         {m["llm_status"] for m in metrics if m["degraded"]}
                     ),
+                },
+                # The same three questions asked of the repeats whose model actually
+                # answered. Reported beside the full count, never instead of it: a
+                # denominator that quietly drops the failures is how a broken run comes
+                # to look like a clean one.
+                "undegraded": {
+                    "repeats": len(undegraded_rules),
+                    "of": len(rules),
+                    "decision_rule_passed": sum(
+                        1 for r in undegraded_rules if r["meets_rule"]
+                    ),
+                    "new_evidence_found": sum(
+                        1 for r in undegraded_rules
+                        if r["hyp_cites_evidence_A_claims_did_not"]
+                    ),
+                    "identical_to_A": {
+                        name: (
+                            all(
+                                metric[name] == entry["arm_A_m19b"][name]
+                                for metric in undegraded_metrics
+                            )
+                            if undegraded_metrics else None
+                        )
+                        for name in (
+                            "evidence_coverage", "tool_calls_served", "facts",
+                            "hypotheses",
+                        )
+                    },
+                    "hypotheses": spread([m["hypotheses"] for m in undegraded_metrics]),
                 },
                 "spread": {
                     name: spread([m[name] for m in metrics]) for name, _ in METRICS
@@ -924,10 +1017,23 @@ def cmd_score(args: argparse.Namespace) -> int:
         for letter in ("A", "B", "C")
     }
 
+    run_health = {
+        letter: {
+            "rows": int(args.repeat) * len(SELECTED_KEYS),
+            "degraded": sum(
+                1 for r in repeats[letter] for key in SELECTED_KEYS
+                if r[key]["llm_degraded"]
+            ),
+            "by_kind": _degradations_by_kind(repeats[letter]),
+        }
+        for letter in ("B", "C")
+    }
+    run_health["note"] = CREDIT_EXHAUSTION_NOTE
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "head": m19._head(),
         "manifest_hash": local_a.get("manifest_hash"),
+        "run_health": run_health,
         "selection": [
             {"corpus": c, "case_id": i, "stratum": s} for c, i, s in SELECTION
         ],
@@ -1005,6 +1111,29 @@ def render_report(payload: dict[str, Any]) -> str:
     )
     add("")
 
+    health = payload.get("run_health") or {}
+    add("## What happened during these runs, before any number is read")
+    add("")
+    add("| arm | rows | degraded | by kind |")
+    add("| --- | --- | --- | --- |")
+    for letter in ("B", "C"):
+        entry = health.get(letter) or {}
+        kinds = entry.get("by_kind") or {}
+        add(
+            f"| {letter} | {entry.get('rows')} | {entry.get('degraded')} | "
+            + (", ".join(f"`{k}` x{v}" for k, v in kinds.items()) or "--")
+            + " |"
+        )
+    add("")
+    add(health.get("note", ""))
+    add("")
+    add(
+        "Arm B's six degraded rows are the two COMISET cases M19 already recorded, on "
+        "the same HTTP 413, and are the measurement question (b) asks for. Arm B's "
+        "other twenty-four rows completed with the model answering every call."
+    )
+    add("")
+
     identity = payload.get("m19_identity_of_arm_A") or {}
     add("## Arm A: the deterministic control")
     add("")
@@ -1068,51 +1197,91 @@ def render_report(payload: dict[str, Any]) -> str:
         )
     add("")
 
+    c_live = sum(c["arms"]["C"]["undegraded"]["repeats"] for c in per_case)
     add(
         "**(c) Did C stay behaviourally close to A?** MEASURED, per case: whether every "
         "C repeat matched this run's arm A row on evidence coverage, tool calls served "
-        "and accepted facts, and what the planner was offered."
+        "and accepted facts, and what the planner was offered. A row whose synthesis "
+        "call failed ran deterministically and therefore matches A *by construction*, "
+        "so the `undegraded` columns -- over the "
+        f"{c_live} of 30 C repeats whose model answered -- are the ones that carry "
+        "information."
     )
     add("")
     add(
-        "| case | coverage = A | tool calls = A | facts = A | planner offered "
-        "(min/med/max) | planner chosen |"
+        "| case | repeats with a model | coverage = A | tool calls = A | facts = A | "
+        "hypotheses = A (undegraded) | planner offered | planner chosen |"
     )
-    add("| --- | --- | --- | --- | --- | --- |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for case in per_case:
         arm = case["arms"]["C"]
-        same = arm["identical_to_A"]
+        live = arm["undegraded"]
+        same = live["identical_to_A"]
         add(
-            f"| `{case['case']}` | {_fmt(same['evidence_coverage'])} | "
-            f"{_fmt(same['tool_calls_served'])} | {_fmt(same['facts'])} | "
+            f"| `{case['case']}` | {live['repeats']} of {live['of']} | "
+            f"{_fmt(same['evidence_coverage'])} | {_fmt(same['tool_calls_served'])} | "
+            f"{_fmt(same['facts'])} | {_fmt(same['hypotheses'])} | "
             f"{_spread_cell(arm['spread']['planner_multi_candidate_steps'])} | "
             f"{_spread_cell(arm['spread']['planner_chosen_by_model'])} |"
         )
+    add("")
+    add(
+        "Read over all thirty repeats (degraded rows included, where the match is "
+        "trivial), the same three columns are: "
+        + ", ".join(
+            f"`{case['case']}` "
+            + "/".join(
+                _fmt(case["arms"]["C"]["identical_to_A"][name])
+                for name in ("evidence_coverage", "tool_calls_served", "facts")
+            )
+            for case in per_case
+        )
+        + "."
+    )
     add("")
 
     c_new = sum(c["arms"]["C"]["new_evidence_frequency"]["found"] for c in per_case)
     c_of = sum(c["arms"]["C"]["new_evidence_frequency"]["of"] for c in per_case)
     c_pass = sum(c["arms"]["C"]["decision_rule_pass_frequency"]["passed"] for c in per_case)
+    c_new_live = sum(c["arms"]["C"]["undegraded"]["new_evidence_found"] for c in per_case)
+    c_pass_live = sum(
+        c["arms"]["C"]["undegraded"]["decision_rule_passed"] for c in per_case
+    )
     add(
         f"**(d) Does C ever produce a new-evidence hypothesis?** MEASURED: in "
         f"**{c_new} of {c_of}** C repeats across all ten cases, at least one HYPOTHESIS "
         "cited evidence arm A's claims did not cite; C met the full decision rule in "
-        f"**{c_pass} of {c_of}** repeats."
+        f"**{c_pass} of {c_of}** repeats. Counting only the "
+        f"**{c_live}** repeats whose model answered: **{c_new_live}** produced a "
+        f"new-evidence hypothesis and **{c_pass_live}** met the rule. M19's single run "
+        "of arm C produced none on any of its twenty-two cases, so this reproduces "
+        "M19's finding on the ten cases it covers -- at a reduced number of repeats on "
+        "the seven cases the credit exhaustion cut short."
     )
     add("")
 
-    add("**(e) Hypothesis-count variance per case.** MEASURED:")
+    add(
+        "**(e) Hypothesis-count variance per case.** MEASURED. `B repeats` and "
+        "`C repeats` are min/median/max over the three repeats; a single figure means "
+        "all three agreed. `C undegraded` is the same statistic over only the repeats "
+        "whose model answered."
+    )
     add("")
-    add("| case | stratum | A | B M19 | B repeats (min/med/max) | C M19 | C repeats |")
-    add("| --- | --- | --- | --- | --- | --- | --- |")
+    add(
+        "| case | stratum | A | B M19 | B repeats | C M19 | C repeats (all 3) | "
+        "C undegraded |"
+    )
+    add("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for case in per_case:
+        live = case["arms"]["C"]["undegraded"]
         add(
             f"| `{case['case']}` | {case['stratum']} | "
             f"{_fmt(case['arm_A_m19b']['hypotheses'])} | "
             f"{_fmt(case['arms']['B']['m19_primary']['hypotheses'])} | "
             f"{_spread_cell(case['arms']['B']['spread']['hypotheses'])} | "
             f"{_fmt(case['arms']['C']['m19_primary']['hypotheses'])} | "
-            f"{_spread_cell(case['arms']['C']['spread']['hypotheses'])} |"
+            f"{_spread_cell(case['arms']['C']['spread']['hypotheses'])} | "
+            f"{_spread_cell(live['hypotheses'])} (n={live['repeats']}) |"
         )
     add("")
 
@@ -1134,6 +1303,22 @@ def render_report(payload: dict[str, Any]) -> str:
     for letter in ("A", "B", "C"):
         entry = totals["m19_primary"][letter]
         add(f"| {letter} | {entry['tokens']} | {entry['wall_seconds']} |")
+    add("")
+    b_tokens = sum(e["tokens"] for e in totals["B"]["per_repeat"])
+    c_tokens = sum(e["tokens"] for e in totals["C"]["per_repeat"])
+    b_wall = round(sum(e["wall_seconds"] for e in totals["B"]["per_repeat"]), 1)
+    c_wall = round(sum(e["wall_seconds"] for e in totals["C"]["per_repeat"]), 1)
+    add(
+        f"Totals for this task: arm B **{b_tokens:,} tokens** over 30 investigations "
+        f"({b_wall}s of investigation wall time), arm C **{c_tokens:,} tokens** over 30 "
+        f"({c_wall}s) -- the second figure depressed by the seventeen rows whose model "
+        "stopped answering. Arm B's per-repeat cost is stable to within "
+        f"{max(e['tokens'] for e in totals['B']['per_repeat']) - min(e['tokens'] for e in totals['B']['per_repeat'])} "
+        "tokens across the three repeats, and two flaws.cloud cases account for most of "
+        "it: `CASE-018` and `CASE-050` cost arm B about 160,000 tokens each, against "
+        "about 3,600 for arm C on the same case -- roughly forty-five times, for the "
+        "hypotheses that make arm B meet the rule."
+    )
     add("")
 
     add("## Per case: M19's value beside the repeats")
@@ -1213,10 +1398,57 @@ def render_report(payload: dict[str, Any]) -> str:
     add(
         "No row was re-run. The only retries are the ones the frozen client policy "
         "performs inside a single call (3 attempts, exponential backoff from 1.0s, on "
-        "408/409/429/500/502/503/504/529); a 413 is not retryable and degrades the row."
+        "408/409/429/500/502/503/504/529); neither a 413 nor a 400 is retryable, and "
+        "each degrades the row."
     )
     add("")
+
+    add("## Limitations")
+    add("")
+    for limitation in LIMITATIONS:
+        add(f"* {limitation}")
+    add("")
     return "\n".join(lines)
+
+
+LIMITATIONS: tuple[str, ...] = (
+    "**Three repeats bound very little.** A case that passed 3 of 3 is consistent with "
+    "a per-repeat pass probability anywhere above roughly 0.37 at 95% confidence; "
+    "3 of 3 is evidence against a coin flip, not evidence of determinism. Every "
+    "frequency below ten repeats should be read as \"did not vary here\", not as a rate.",
+    "**Arm C's run lost its model part-way through.** Seven of the ten cases have one "
+    "or zero repeats with a live model, so arm C's per-case spread on those cases is "
+    "INCONCLUSIVE. The arm C figures are not wrong; there are simply too few of them, "
+    "and no row was re-run to fix that.",
+    "**The client records a status, not an error body.** "
+    "``ath.agent.llm`` maps an HTTP code to a fixed sentence and reads the response "
+    "body only for token usage, so \"HTTP 400 (the request was rejected as "
+    "malformed)\" was the same text an exhausted credit balance and a genuinely "
+    "malformed body would have produced. The cause here was established by a separate "
+    "probe; a future run would be able to say it from the artifact if the client kept "
+    "the error ``type`` and ``message``.",
+    "**Ten of twenty-two cases, chosen for what M19 found.** Four of them are cases "
+    "arm B won. That is deliberate -- the question is whether *those* results "
+    "reproduce -- but it means the pass frequencies here are not an estimate of arm "
+    "B's pass rate over the manifest, and must never be read as one.",
+    "**The decision rule compares against a capped arm A row.** Evidence id lists are "
+    "truncated at ``MAX_SERIALISED_IDS`` (5000) in the committed artifacts, so \"cites "
+    "evidence arm A's claims did not cite\" is computed against arm A's first 5000 ids "
+    "per claim. M19 graded under exactly the same cap, which is why this reproduces "
+    "``GRADING.json`` -- but on a case where a claim exceeds the cap, both are "
+    "measuring against a truncated reference.",
+    "**``ENVIRONMENT.md``'s title says M19 Phase 1.** It is rendered by "
+    "``ath.evaluation.ablation.environment.render_markdown``, reused rather than "
+    "copied, and changing the heading would have meant editing code between the freeze "
+    "and the runs -- which the freeze gate refuses, correctly. The file's own "
+    "\"Equality with the M19 freeze\" section identifies it as M19b's; "
+    "``ENVIRONMENT.json`` is the authority either way.",
+    "**Arm A is a control for the pipeline, not for the model.** It reproduced M19's "
+    "rows exactly, which rules out corpus drift, pipeline drift and scoring drift as "
+    "explanations for anything below. It says nothing about the API, which is where "
+    "both failure modes in this run came from.",
+)
+"""What these numbers cannot support, written next to them rather than in a postscript."""
 
 
 # --------------------------------------------------------------------------------------

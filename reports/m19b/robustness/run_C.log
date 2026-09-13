@@ -1,0 +1,110 @@
+environment: matches the freeze at cf4d1e211d3e (ENVIRONMENT.json checked: commit, prompts, scoring, manifest, model ids)
+M19 equality: the freeze is byte-equal to M19's on arms, shared_tool_surface, request, retry, prompts, scoring, manifest_hash
+synthetic:INC-001: repeat 1/3 done (1 case(s))
+synthetic:INC-001: repeat 2/3 done (1 case(s))
+synthetic:INC-001: repeat 3/3 done (1 case(s))
+synthetic:INC-002: repeat 1/3 done (1 case(s))
+synthetic:INC-002: repeat 2/3 done (1 case(s))
+synthetic:INC-002: repeat 3/3 done (1 case(s))
+synthetic:INC-004: repeat 1/3 done (1 case(s))
+synthetic:INC-004: repeat 2/3 done (1 case(s))
+synthetic:INC-004: repeat 3/3 done (1 case(s))
+flaws_cloud: repeat 1/3 done (4 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-018: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-050: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-065: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-005: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+flaws_cloud: repeat 2/3 done (4 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-018: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-050: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-065: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-005: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+flaws_cloud: repeat 3/3 done (4 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+comiset: repeat 1/3 done (2 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+comiset: repeat 2/3 done (2 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+comiset: repeat 3/3 done (2 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+attack_data_aws: repeat 1/3 done (1 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+attack_data_aws: repeat 2/3 done (1 case(s))
+LLM call failed permanently (HTTP 400 (the request was rejected as malformed)); continuing deterministically
+CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+attack_data_aws: repeat 3/3 done (1 case(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_C_rep1.json (10 row(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_C_rep2.json (10 row(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_C_rep3.json (10 row(s))
+wrote <local-checkout>\ath-m19b-robustness\reports\m19b\robustness\arm_C_repeats.json
+degraded rows: 17 of 30
+  DEGRADED comiset/CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED comiset/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED attack_data_aws/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-018: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-050: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-065: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-005: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED comiset/CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED comiset/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED attack_data_aws/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-018: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-050: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-065: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED flaws_cloud/CASE-005: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED comiset/CASE-001: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED comiset/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+  DEGRADED attack_data_aws/CASE-002: DEGRADED -- model requested but 1 call(s) failed (HTTP 400 (the request was rejected as malformed)); ran deterministically; no step had more than one eligible candidate, so the planner was never asked
+planner accounting, repeat 1:
+  synthetic:INC-001/CASE-001: planner chose 3 of 3 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-050: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-065: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-005: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  attack_data_aws/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+planner accounting, repeat 2:
+  synthetic:INC-001/CASE-001: planner chose 3 of 3 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-050: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-065: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-005: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  attack_data_aws/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+planner accounting, repeat 3:
+  synthetic:INC-001/CASE-001: planner chose 3 of 3 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-050: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-065: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  flaws_cloud/CASE-005: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  comiset/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+  attack_data_aws/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded True
+planner check: no model-arm row planned deterministically
