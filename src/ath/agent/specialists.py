@@ -764,7 +764,25 @@ class NetworkAgent(Specialist):
                         evidence_ids=tuple(beacon["event_ids"]),
                         source="analysis", agent=self.name, confidence=0.85,
                     ))
-                elif beacon.get("samples", 0) >= 3:
+                elif beacon.get("robust_cv") is not None:
+                    # Gated on the statistic this branch quotes, not on a count that
+                    # only implies it. ``analyse_beacon`` writes ``robust_cv`` and
+                    # ``median_interval_seconds`` only when the pattern has measurable
+                    # regularity -- ``interarrival_count >= 3``, which is *four*
+                    # connections -- while this branch used to fire at ``samples >= 3``.
+                    # Exactly three connections to one destination therefore satisfied
+                    # the agent and not the tool, and the agent indexed a key that was
+                    # never written: KeyError('robust_cv'), caught by
+                    # ``orchestrator.act``, which logged "Specialist network failed" and
+                    # completed the run with the network specialist contributing nothing
+                    # (M19b T4, reproduced on tests/fixtures/defender_export).
+                    #
+                    # Nothing else moves: no new statistic, no changed threshold. The
+                    # tool computes ``robust_cv`` only at four connections or more, and
+                    # four connections already satisfied ``samples >= 3`` -- so every
+                    # case that reached this branch before still reaches it, and reads
+                    # the same numbers. Verified on all 22 M19 manifest cases: arm A's
+                    # claims, tool calls and scores are unchanged.
                     notes.append(
                         f"Connections from {device} to {remote_ip} are irregular "
                         f"(robust cv {beacon['robust_cv']:.2f} about a median interval "

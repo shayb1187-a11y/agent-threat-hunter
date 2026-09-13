@@ -228,6 +228,13 @@ class ScriptedLLM(TokenAccounting):
             orchestrator actually asked -- including that raw telemetry was never sent.
         fake_input_tokens: Prompt tokens claimed per answered call.
         fake_output_tokens: Completion tokens claimed per answered call.
+        request_observer: The same measurement-only hook
+            :class:`AnthropicLLM` carries, so the path that records what a run sent can
+            be exercised end to end without a key. The body it measures is built by the
+            same :func:`build_request_body` the real client uses, over the prompt the
+            orchestrator actually assembled -- with this client's own name in the
+            ``model`` field, so a scripted measurement differs from a real one by the
+            length of a model id and by nothing else.
     """
 
     responses: list[Any] = field(default_factory=list)
@@ -236,6 +243,7 @@ class ScriptedLLM(TokenAccounting):
     calls: list[tuple[str, str]] = field(default_factory=list)
     fake_input_tokens: int = 100
     fake_output_tokens: int = 50
+    request_observer: Callable[[dict[str, Any]], None] | None = None
     _index: int = 0
 
     def __post_init__(self) -> None:
@@ -243,6 +251,10 @@ class ScriptedLLM(TokenAccounting):
 
     def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
         self.calls.append((system, prompt))
+        if self.request_observer is not None:
+            self.request_observer(request_measurement(build_request_body(
+                model=self.name, max_tokens=max_tokens, system=system, prompt=prompt,
+            )))
         if self._index >= len(self.responses):
             self._record_usage(None, None, model=self.name, error="exhausted")
             return LLMResponse(error="scripted responses exhausted", model=self.name)
@@ -294,12 +306,54 @@ def textless_reply(*, model: str = "scripted") -> LLMResponse:
 _RETRYABLE_STATUS: frozenset[int] = frozenset({408, 409, 429, 500, 502, 503, 504, 529})
 
 
-def _describe_http_error(exc: Any) -> str:
+ERROR_MESSAGE_CHARS = 300
+"""Longest provider error message recorded, in characters.
+
+The API's messages are one sentence; this bounds what an unexpected body -- a proxy's
+HTML error page that happens to parse as JSON, a field that grew -- can write into every
+row of a results file. A truncated message ends with an ellipsis, so a reader can see
+that it was cut rather than that the provider said that much.
+"""
+
+
+def _error_detail(body: Any) -> str:
+    """``"<type>: <message>"`` from a Messages API error body, or ``""``.
+
+    The API answers a failure with ``{"type": "error", "error": {"type", "message"}}``,
+    and those two fields are the only part of it recorded. Never the request, never the
+    headers, never the credential: what is wanted is what the provider said was wrong.
+    """
+    if not isinstance(body, dict):
+        return ""
+    error = body.get("error")
+    if not isinstance(error, dict):
+        return ""
+    kind = error.get("type")
+    message = error.get("message")
+    parts = [str(part) for part in (kind, message) if isinstance(part, str) and part]
+    if not parts:
+        return ""
+    detail = ": ".join(parts)
+    if len(detail) > ERROR_MESSAGE_CHARS:
+        detail = detail[:ERROR_MESSAGE_CHARS] + "..."
+    return detail
+
+
+def _describe_http_error(exc: Any, body: Any = None) -> str:
     """Turn an HTTPError into something an operator can act on.
 
     ``HTTPError: HTTP Error 401: Unauthorized`` tells you what happened but not what to
     do about it. Since the whole point of surfacing this is that a misconfigured key
     must not masquerade as "deterministic mode by choice", the hint matters.
+
+    The hint is this code's guess from the status; ``body`` is what the provider
+    actually said, and it is appended when there is one. M19b needed both: every model
+    call in one robustness run failed with ``HTTP 400 (the request was rejected as
+    malformed)`` and the request was fine -- the account's credit balance was exhausted,
+    which the API said in a field this client read for its token usage and then threw
+    away. An external probe was the only way to find that out. A status-derived hint is
+    a hypothesis about a failure; the provider's own ``error.type`` and ``error.message``
+    are a measurement of it, and a degraded row must carry the second.
     """
     hints = {
         400: "the request was rejected as malformed",
@@ -310,7 +364,8 @@ def _describe_http_error(exc: Any) -> str:
     }
     hint = hints.get(getattr(exc, "code", None), "")
     suffix = f" ({hint})" if hint else ""
-    return f"HTTP {getattr(exc, 'code', '?')}{suffix}"
+    detail = _error_detail(body)
+    return f"HTTP {getattr(exc, 'code', '?')}{suffix}" + (f"; {detail}" if detail else "")
 
 
 def build_request_body(
@@ -423,6 +478,15 @@ class AnthropicLLM(TokenAccounting):
     ``stop_reason`` and the presence of a text block are therefore read on every call,
     recorded in the token log, and turned into an ``error`` when either says the answer
     is unusable.
+
+    A failed call is inspected too
+    -------------------------------
+    The error body carries ``error.type`` and ``error.message``, and both go into the
+    :attr:`LLMResponse.error` that degrades the row -- see :func:`_describe_http_error`.
+    Nothing else from it does: not the request, not the headers, not the credential.
+    Before M19b this client read that body for its token usage and discarded the rest,
+    so an exhausted credit balance and a malformed request were the same line of text in
+    every artifact.
     """
 
     name = "anthropic"
@@ -489,12 +553,15 @@ class AnthropicLLM(TokenAccounting):
                 ) as response:
                     body = json.loads(response.read().decode("utf-8"))
             except urllib.error.HTTPError as exc:
-                last_error = _describe_http_error(exc)
+                # Read once: ``exc.read()`` drains the body, so a second reader gets
+                # nothing. The error text and the usage come from the same dict.
+                error_body = _error_body(exc)
+                last_error = _describe_http_error(exc, error_body)
                 # A rejected attempt can still have cost tokens, and some errors carry
                 # the usage that was spent before the failure. Reading it is best-effort
                 # -- an unreadable error body must never turn a model outage into an
                 # exception -- but ignoring it would make retries look free.
-                used_in, used_out = _usage_of(_error_body(exc))
+                used_in, used_out = _usage_of(error_body)
                 if used_in is not None or used_out is not None:
                     attempts_with_usage += 1
                     spent_in = (spent_in or 0) + (used_in or 0)
