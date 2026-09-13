@@ -1,0 +1,849 @@
+{
+  "generated_at": "2026-09-13T21:59:41.172690+00:00",
+  "head": "bf57aeb",
+  "warning": "The unblinding key for reports/m19b/review/worksheet.md. A reviewer must not read this file before submitting their answers.",
+  "seed": 20260914,
+  "shuffle": "entries sorted by (arm, corpus, case_id, claim_index), then random.Random(seed).shuffle",
+  "baseline_arm": "A_deterministic",
+  "arms": {
+    "A": {
+      "name": "A_deterministic",
+      "model": "",
+      "cases_run": 22,
+      "cases_model_degraded": 0,
+      "cases_incomplete": 0
+    },
+    "B": {
+      "name": "B_single_llm",
+      "model": "claude-opus-5",
+      "cases_run": 22,
+      "cases_model_degraded": 2,
+      "cases_incomplete": 1
+    },
+    "C": {
+      "name": "C_crew_llm",
+      "model": "claude-opus-5",
+      "cases_run": 22,
+      "cases_model_degraded": 0,
+      "cases_incomplete": 0
+    }
+  },
+  "entries": {
+    "R001": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 16,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R002": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R003": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R004": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R005": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R006": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R007": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "claim_index": 39,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R008": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "claim_index": 48,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R009": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R010": {
+      "arm": "B_single_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R011": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 18,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R012": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R013": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "claim_index": 6,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R014": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R015": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R016": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R017": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 13,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R018": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "claim_index": 16,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R019": {
+      "arm": "A_deterministic",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 49,
+      "agent": "attack",
+      "source": "analysis"
+    },
+    "R020": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "claim_index": 20,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R021": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R022": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R023": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R024": {
+      "arm": "C_crew_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R025": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 18,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R026": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 24,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R027": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 46,
+      "agent": "attack",
+      "source": "analysis"
+    },
+    "R028": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R029": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "claim_index": 25,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R030": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R031": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "claim_index": 22,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R032": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 51,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R033": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R034": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R035": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R036": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 13,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R037": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R038": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "claim_index": 5,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R039": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R040": {
+      "arm": "B_single_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-001",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R041": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-219",
+      "claim_index": 48,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R042": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "claim_index": 6,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R043": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-113",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R044": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "claim_index": 6,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R045": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-113",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R046": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R047": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "claim_index": 5,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R048": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R049": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R050": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R051": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R052": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R053": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-219",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R054": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 6,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R055": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-143",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R056": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "claim_index": 43,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R057": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R058": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R059": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-143",
+      "claim_index": 49,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R060": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R061": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 21,
+      "agent": "identity",
+      "source": "analysis"
+    },
+    "R062": {
+      "arm": "B_single_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R063": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 6,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R064": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R065": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-113",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R066": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R067": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R068": {
+      "arm": "B_single_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R069": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 16,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R070": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R071": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R072": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-005",
+      "case_id": "CASE-001",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R073": {
+      "arm": "B_single_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R074": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-018",
+      "claim_index": 17,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R075": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "claim_index": 37,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R076": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-219",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R077": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-002",
+      "case_id": "CASE-001",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R078": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-066",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R079": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "claim_index": 12,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R080": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-065",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R081": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R082": {
+      "arm": "C_crew_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R083": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R084": {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "claim_index": 15,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R085": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "claim_index": 10,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R086": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 52,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R087": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-205",
+      "claim_index": 26,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R088": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-077",
+      "claim_index": 21,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R089": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-118",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R090": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "claim_index": 44,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R091": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-067",
+      "claim_index": 8,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R092": {
+      "arm": "B_single_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R093": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-143",
+      "claim_index": 48,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R094": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R095": {
+      "arm": "A_deterministic",
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "claim_index": 21,
+      "agent": "identity",
+      "source": "analysis"
+    },
+    "R096": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-113",
+      "claim_index": 13,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R097": {
+      "arm": "C_crew_llm",
+      "corpus": "attack_data_aws",
+      "case_id": "CASE-002",
+      "claim_index": 11,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R098": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-219",
+      "claim_index": 49,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R099": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-050",
+      "claim_index": 49,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R100": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-122",
+      "claim_index": 19,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R101": {
+      "arm": "C_crew_llm",
+      "corpus": "synthetic:INC-004",
+      "case_id": "CASE-001",
+      "claim_index": 7,
+      "agent": "synthesis",
+      "source": "llm"
+    },
+    "R102": {
+      "arm": "C_crew_llm",
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-005",
+      "claim_index": 9,
+      "agent": "synthesis",
+      "source": "llm"
+    }
+  }
+}
