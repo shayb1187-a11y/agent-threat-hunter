@@ -1,11 +1,12 @@
 {
   "git": {
-    "commit": "8a1e7bf3da2fd4f80e8121d515511bc41fde3063",
-    "short_commit": "8a1e7bf",
+    "commit": "5b8c3f2b464d781c4cb3b1b383d7e1f55a949aa4",
+    "short_commit": "5b8c3f2",
     "branch": "m14-real-data-validation",
     "dirty": true,
     "dirty_paths": [
-      "data/raw/control_events.csv"
+      "data/raw/control_events.csv",
+      "reports/m19/ablation/run_A.log"
     ]
   },
   "arms": {
@@ -149,7 +150,7 @@
   },
   "credential": {
     "variable": "ATH_LLM_API_KEY",
-    "present": false,
+    "present": true,
     "note": "presence only; the value is never recorded anywhere"
   }
 }

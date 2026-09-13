@@ -10,9 +10,10 @@ A `--scripted` run is exempt. It contains no model output, is written under `scr
 
 ## Code
 
-* commit `8a1e7bf3da2fd4f80e8121d515511bc41fde3063` on branch `m14-real-data-validation`
+* commit `5b8c3f2b464d781c4cb3b1b383d7e1f55a949aa4` on branch `m14-real-data-validation`
 * working tree: no uncommitted change outside `reports/` and `data/` (the code at this commit is the code that runs)
   * `data/raw/control_events.csv`
+  * `reports/m19/ablation/run_A.log`
 * manifest `1764be3cea5a` (built at `ffc31d5`)
 
 ## The arms
@@ -80,4 +81,4 @@ Identical for arms B and C -- asserted when this file is written, and the freeze
 
 ## Credential
 
-* `ATH_LLM_API_KEY`: not set -- presence only; the value is never recorded anywhere
+* `ATH_LLM_API_KEY`: set -- presence only; the value is never recorded anywhere
