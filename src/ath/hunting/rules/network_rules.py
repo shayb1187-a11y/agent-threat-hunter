@@ -43,12 +43,16 @@ class InterpreterExternalConnection(Detector):
     severity = Severity.MEDIUM
     description = "Detects PowerShell and similar interpreters making outbound external connections."
     fields_used = (
-        "process_name", "process_id", "remote_ip", "remote_port", "direction",
-        "protocol", "remote_url", "device", "user", "timestamp",
+        "process_name", "process_id", "process_guid", "remote_ip", "remote_port",
+        "direction", "protocol", "remote_url", "device", "user", "timestamp",
     )
     tables = frozenset({EVENT_NETWORK})
-    optional_fields = frozenset({"protocol", "remote_url"})
-    """Both appear in the evidence summary only, never in the detection mask:
+    optional_fields = frozenset({"protocol", "remote_url", "process_guid"})
+    """All three appear in the evidence summary or metadata only, never in the
+    detection mask. ``process_guid`` is the identity of the instance that opened the
+    connections, carried into metadata so a consumer can walk *that run* rather than
+    whatever else held its PID; a source that does not record it costs this rule
+    nothing, which is exactly what makes it optional. The other two:
     ``f"{row['remote_ip']}:{row['remote_port']}/{row['protocol']}"`` and the
     ``url=`` clause after it. ``remote_port`` is *not* optional -- it decides the
     cleartext-HTTP severity grade and is the field an analyst pivots on, so losing
@@ -84,6 +88,15 @@ class InterpreterExternalConnection(Detector):
             ["device", "process_id", "process_name", "remote_ip"], dropna=False
         ):
             group = group.sort_values("timestamp")
+            # The instance that opened these connections, when every row in the group
+            # agrees on one. Disagreement means this (device, pid) carried more than one
+            # process, so there is no single instance to name and the metadata says so
+            # by staying empty -- a consumer then knows it has a slot and not a process,
+            # rather than being handed the first of several identities.
+            identities = sorted(
+                {g for g in group.get("process_guid", pd.Series(dtype=str))
+                 .astype("string").fillna("") if g}
+            )
             ports = sorted({int(p) for p in group["remote_port"].dropna()})
             urls = sorted({u for u in group["remote_url"].fillna("") if u})
             cleartext = 80 in ports
@@ -128,6 +141,7 @@ class InterpreterExternalConnection(Detector):
                         "ports": ports,
                         "connection_count": len(group),
                         "process_id": int(pid) if pd.notna(pid) else None,
+                        "process_guid": identities[0] if len(identities) == 1 else "",
                         "urls": urls,
                         "cleartext_http": cleartext,
                     },

@@ -812,13 +812,19 @@ def test_channel_view_calls_a_lost_attribute_available_and_the_field_view_does_n
     # are what makes this UNUSABLE; `protocol` is declared optional, so its loss thins
     # the evidence and grades nothing (M18-5).
     assert set(ath003.sparse_fields) == {"remote_port", "direction"}
-    assert ath003.sparse_optional_fields == ("protocol",)
+    # `process_guid` joins `protocol` on the optional side: these rows carry no process
+    # instance identity, which costs the finding's metadata the instance and costs the
+    # detection nothing.
+    assert ath003.sparse_optional_fields == ("process_guid", "protocol")
     assert set(ath003.unpopulated_fields) == {"remote_port", "direction"}
     lost = set(ath003.sparse_fields) | set(ath003.sparse_optional_fields)
-    assert lost == {"remote_port", "protocol", "direction"}
+    assert lost == {"remote_port", "protocol", "direction", "process_guid"}
     for usability in ath003.fields:
-        if usability.column in lost:
+        if usability.column in lost - {"process_guid"}:
             assert usability.fraction == 1 / 250
+    # `process_guid` is not one of the blanked columns: these rows never carried an
+    # identity at all, which is the ordinary shape of a source that does not record one.
+    assert [u.fraction for u in ath003.fields if u.column == "process_guid"] == [0.0]
 
 
 def test_the_same_shape_on_the_logon_table_makes_its_rule_unusable() -> None:
@@ -927,15 +933,16 @@ def test_only_an_optional_field_sparse_is_usable_with_the_evidence_cost_reported
     )
     assert ath003.verdict is RuleVerdict.USABLE
     assert ath003.sparse_fields == ()
-    assert ath003.sparse_optional_fields == ("protocol",)
+    assert ath003.sparse_optional_fields == ("process_guid", "protocol")
     assert not ath003.unpopulated_fields
     assert ath003.runnable
-    assert "evidence detail reduced: protocol" in ath003.detail
+    assert "evidence detail reduced: " in ath003.detail
+    assert "process_guid" in ath003.detail and "protocol" in ath003.detail
 
     payload = ath003.to_dict()
     assert payload["verdict"] == "usable"
     assert payload["sparse_fields"] == []
-    assert payload["sparse_optional_fields"] == ["protocol"]
+    assert payload["sparse_optional_fields"] == ["process_guid", "protocol"]
 
 
 def test_a_sparse_required_field_still_degrades_and_names_the_optional_one_apart() -> None:
@@ -963,14 +970,16 @@ def test_a_sparse_required_field_still_degrades_and_names_the_optional_one_apart
     ath003 = _rule(telemetry, "ATH-003")
     assert ath003.verdict is RuleVerdict.DEGRADED
     assert ath003.sparse_fields == ("direction",)
-    assert ath003.sparse_optional_fields == ("remote_url",)
+    assert ath003.sparse_optional_fields == ("process_guid", "remote_url")
     assert not ath003.unpopulated_fields
 
     reason, _, reported = ath003.detail.partition("; evidence detail reduced: ")
     assert "direction" in reason and "remote_url" not in reason, (
         "the verdict's reason must name only the field that moved it"
     )
-    assert reported.startswith("remote_url")
+    assert "remote_url" in reported and reported.startswith("process_guid"), (
+        "both optional losses are reported, and only after the verdict's own reason"
+    )
 
 
 def test_the_two_thresholds_are_boundaries_not_approximations() -> None:

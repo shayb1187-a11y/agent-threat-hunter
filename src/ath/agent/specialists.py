@@ -43,6 +43,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from typing import Any
 
 import pandas as pd
 
@@ -50,6 +51,7 @@ from ath.agent.claims import Claim, ClaimType
 from ath.agent.state import AgentResult, InvestigationState
 from ath.agent.tools import ToolBox
 from ath.environment import TelemetryChannel, channels_for_fields
+from ath.instance_identity import INFERRED_FROM_PID
 from ath.logging_setup import get_logger
 from ath.mitre.mapper import tactics_covered
 
@@ -267,7 +269,17 @@ class EndpointAgent(Specialist):
 
     The question that decides most endpoint investigations is *lineage*. A PowerShell
     process is unremarkable; a PowerShell process whose parent is WINWORD.EXE is an
-    incident. This agent walks the ancestry of every process implicated in the case.
+    incident. This agent walks the ancestry of every process instance implicated in the
+    case.
+
+    *Instance*, not PID. A finding that carries a ``process_guid`` names one run and is
+    walked by it. A finding that carries only a ``process_id`` names a slot, and this
+    agent will only walk it when exactly one process held that slot -- otherwise it
+    records an INFERENCE that the attribution cannot be made and asserts no parentage
+    at all, because a FACT about "the" process behind an ambiguous pid is a FACT about
+    a process picked at random. Where a hop could only be made on the pid, the claim
+    text says ``inferred from pid``: the finding is still reported, and the reader can
+    see what it rests on.
     """
 
     name = "endpoint"
@@ -289,44 +301,87 @@ class EndpointAgent(Specialist):
         claims: list[Claim] = []
         notes: list[str] = []
         follow_up: list[str] = []
-        seen: set[tuple[str, int]] = set()  # (device, pid) already walked
+        # What has already been walked, keyed by process *instance* where the finding
+        # named one and by (device, pid) where it did not. Keyed on the pid alone, two
+        # runs of one slot would be walked once and the second one's lineage silently
+        # dropped -- the same conflation this milestone removed from the correlator.
+        seen: set[tuple[str, Any]] = set()
         office_ancestor_claimed: set[str] = set()  # devices already carrying this claim
 
         for finding in state.case.findings:
-            pid = finding.metadata.get("process_id")
             device = finding.device
+            # The identity first, because it names one run; the pid only as a fallback,
+            # and one this agent must then be able to say it fell back to.
+            identity = str(finding.metadata.get("process_guid") or "")
+            pid = finding.metadata.get("process_id")
 
-            # Recover the PID from the finding's own evidence when metadata lacks it.
-            if pid is None:
+            # Recover both from the finding's own evidence when metadata lacks them.
+            if pid is None and not identity:
                 events = self.tools.get_events(list(finding.event_ids), agent=self.name)
-                pids = [e.get("process_id") for e in events["events"] if e.get("process_id")]
-                pid = pids[0] if pids else None
-            if pid is None:
+                rows = [e for e in events["events"] if e.get("process_id")]
+                if rows:
+                    pid = rows[0].get("process_id")
+                    identity = str(rows[0].get("process_guid") or "")
+            if pid is None and not identity:
                 continue
-            pid = int(pid)
+            pid = int(pid) if pid is not None else None
 
-            # Several findings on the same case commonly point at the same execution
-            # (e.g. ATH-001 and ATH-002 both cite the same WINWORD->powershell event).
-            # Without this guard we would walk, and claim, the same lineage three times.
-            key = (device, pid)
-            if key in seen:
+            # Several findings on one case commonly point at the same execution
+            # (ATH-001 and ATH-002 both cite the same WINWORD->powershell event), and
+            # they do not all name it the same way: one may carry the identity and
+            # another only the pid. So both names of an instance are remembered, and
+            # either one matching is enough to know this tree has been walked.
+            keys = {("identity", identity)} if identity else set()
+            if pid is not None:
+                keys.add(("pid", device, pid))
+            if keys & seen:
                 continue
-            seen.add(key)
+            seen |= keys
 
-            tree = self.tools.process_tree(device, pid, agent=self.name)
+            tree = self.tools.process_tree(
+                device, pid, agent=self.name, process_guid=identity,
+            )
+            if tree["process_guid"]:
+                seen.add(("identity", tree["process_guid"]))
+            if tree["ancestry"]:
+                seen.add(("pid", device, tree["ancestry"][0]["process_id"]))
+
+            if tree["resolution"] == "ambiguous_pid":
+                # An INFERENCE, and never a FACT about one candidate. The pid names a
+                # slot that several processes passed through; picking one and asserting
+                # its parentage is the failure this branch exists to refuse. What can
+                # honestly be said is that the attribution cannot be made.
+                candidates = tree["candidates"]
+                claims.append(Claim(
+                    claim_type=ClaimType.INFERENCE,
+                    statement=(
+                        f"PID {pid} on {device} was held by {tree['ambiguous_pid']} "
+                        "different process instances "
+                        f"({', '.join(sorted({c['process_name'] for c in candidates}))}), "
+                        "so this finding's activity cannot be attributed to one of them "
+                        "from the pid alone and no lineage is asserted for it."
+                    ),
+                    evidence_ids=tuple(c["event_id"] for c in candidates),
+                    source="analysis", agent=self.name, confidence=0.5,
+                ))
+                continue
+
             ancestry = tree["ancestry"]
             if not ancestry:
                 continue
 
-            root = ancestry[-1]
             leaf = ancestry[0]
-
+            parent_label = (
+                f" (PID {leaf['parent_process_id']}, identity {INFERRED_FROM_PID})"
+                if leaf["parent_resolution"] == INFERRED_FROM_PID
+                else ""
+            )
             claims.append(Claim(
                 claim_type=ClaimType.FACT,
                 statement=(
                     f"On {device}, {leaf['process_name']} (PID {leaf['process_id']}) was "
-                    f"started by {leaf['parent_process_name']} under account "
-                    f"{leaf['user']}."
+                    f"started by {leaf['parent_process_name']}{parent_label} under "
+                    f"account {leaf['user']}."
                 ),
                 evidence_ids=(leaf["event_id"],),
                 source="tool", agent=self.name,
@@ -338,9 +393,20 @@ class EndpointAgent(Specialist):
                     [ancestry[-1]["parent_process_name"]]
                     + [a["process_name"] for a in reversed(ancestry)]
                 )
+                inferred_hops = [
+                    a for a in ancestry if a["resolved_by"] == INFERRED_FROM_PID
+                ]
+                # A chain is only as strong as its weakest hop. One hop that could only
+                # be made on a pid makes the whole chain a chain of slots, and a reader
+                # who is not told that will read it as observed lineage.
+                chain_note = (
+                    f" {len(inferred_hops)} of {len(ancestry)} step(s) in this chain "
+                    f"are {INFERRED_FROM_PID} rather than from a process identity."
+                    if inferred_hops else ""
+                )
                 claims.append(Claim(
                     claim_type=ClaimType.FACT,
-                    statement=f"Execution chain on {device}: {chain}.",
+                    statement=f"Execution chain on {device}: {chain}.{chain_note}",
                     evidence_ids=tuple(a["event_id"] for a in ancestry),
                     source="tool", agent=self.name,
                 ))
@@ -367,13 +433,21 @@ class EndpointAgent(Specialist):
 
             children = tree["children"]
             if children:
+                inferred_children = [
+                    c for c in children if c["resolved_by"] == INFERRED_FROM_PID
+                ]
+                child_note = (
+                    f" {len(inferred_children)} of these are attributed to it "
+                    f"{INFERRED_FROM_PID} rather than from a parent process identity."
+                    if inferred_children else ""
+                )
                 claims.append(Claim(
                     claim_type=ClaimType.FACT,
                     statement=(
                         f"{leaf['process_name']} (PID {leaf['process_id']}) on {device} "
                         f"spawned {len(children)} child process(es): "
                         + ", ".join(sorted({c['process_name'] for c in children}))
-                        + "."
+                        + f".{child_note}"
                     ),
                     evidence_ids=tuple(c["event_id"] for c in children),
                     source="tool", agent=self.name,
