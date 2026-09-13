@@ -227,3 +227,82 @@ single artifact above **50 MB**, prints where the bytes were, and exits non-zero
 `tests/test_artifact_size_guard.py` fails if any file under `reports/` reaches 60 MB
 outside the two named COMISET parquet freezes. Neither is a change to any arm or any
 metric.
+
+## Addendum, 2026-09-13 (M19 Phase 1): the frozen experiment environment
+
+**Nothing in the predictions changes.** §4's seven predictions, §3's metrics and §5's
+decision rule stand exactly as written. This addendum records the architect's rulings on
+everything *outside* the reasoning architecture, so that the sentence "the arms differed
+in one thing" can be checked rather than asserted.
+
+### The architect's rulings, verbatim
+
+> the ablation pins its own model id, claude-opus-5, on ArmConfig for arms B and C (the
+> brief calls arm B "one strong general LLM investigator"; the project's DEFAULT_MODEL in
+> src/ath/config.py is left unchanged and out of scope). Requests send thinking
+> {"type": "adaptive"} explicitly and leave output_config.effort at the provider default
+> (high), recorded as such. max_tokens becomes 8192 for both planner and synthesis calls
+> -- the outputs are short JSON and the model stops at end_turn; the cap exists only to
+> bound cost. No sampling parameters are sent. Timeout 60 s per attempt and the existing
+> retry policy stay. Raw urllib stays (project choice; do not introduce the SDK).
+
+### What the freeze records, and where
+
+`python scripts/m19_ablation.py freeze` writes `ENVIRONMENT.md` and `ENVIRONMENT.json`
+beside this file: the commit, branch and dirty flag; the model id per arm; the request
+configuration (thinking, effort, `max_tokens` per call kind, the absence of sampling
+parameters, the `anthropic-version` header, the endpoint); the timeout and retry policy;
+the sha256 of both system prompts and of both user-message templates; the tool surface
+for arms B and C, asserted identical; the budgets; the manifest hash and the manifest's
+head; the sha256 of `scoring.py` and `arms.py`; the Python and library versions; and the
+name of the credential variable with **presence only** -- the key's value is recorded
+nowhere, not truncated and not hashed.
+
+Every value is read from the code that will run rather than transcribed here. A frozen
+value typed in by hand would record what somebody believed.
+
+### The freeze is a gate
+
+A real run of a model arm refuses to start unless the commit, the prompt hashes, the
+scoring hashes, the manifest hash and the per-arm model ids still match `ENVIRONMENT.json`,
+and unless the working tree is clean outside `reports/` and `data/`. Committing the freeze
+moves HEAD, so a differing commit is accepted only when every path changed since lives
+under `reports/`; one changed line of code, test or script refuses the run. A `--scripted`
+run is exempt: it contains no model output, is written under `scripted/` and is labelled
+`*_SCRIPTED`, so there is no comparison for it to drift out of.
+
+### The two defects Phase 0.5 corrected first
+
+Both would have made a model arm's rows false rather than weak, and neither was visible
+in any output.
+
+1. **A reply cut off at `max_tokens` was read as a reply.** Thinking tokens count against
+   the cap; the planner asked for 256 of them. A response that reaches the cap returns
+   `stop_reason: "max_tokens"` and may contain no text block at all, which parses to
+   `None` -- indistinguishable, to the orchestrator, from a model answering in prose, and
+   the answer to prose is to plan deterministically and continue. `state.llm_errors` stayed
+   empty, so `llm_degraded` stayed False, so the row was labelled as a model arm. Both LLM
+   arms could have collapsed to arm A on every case while reporting themselves as model
+   arms. The client now reads `stop_reason` and the presence of a text block on every call
+   and returns an error naming the cause; both budgets are 8192.
+
+2. **The synthetic rows' label scores came from a second, separate investigation.**
+   `cmd_run` called `run_incident` again -- its own uncapped `ToolBox`, the
+   environment-assembled crew -- and wrote that verdict onto the row. For arm B that was
+   arm C's architecture wearing arm B's label. The label scores are now computed by
+   `ath.evaluation.incidents.score_labels` from the row's own state, one definition shared
+   with the benchmark. Arm A's published figures are unchanged field for field; scripted
+   arm B's `synthetic:INC-001` row moved from `passed: true` to `passed: false`
+   (`conclusions_missed: ["guessed"]`), because arm B's own investigation exhausted its
+   8-step budget without reaching that conclusion and the crew's separate run had been
+   supplying it.
+
+### The detector
+
+`run --arm B|C --check-planner` prints, per row, how many steps offered the planner more
+than one eligible candidate and how many of them the model decided, together with the
+fallbacks by reason, the count of complete-but-unparseable replies, and the degraded flag.
+It exits non-zero if any model-arm row had a multi-candidate step and the model chose none
+of them -- a row that planned deterministically under a model arm's label. A case with no
+multi-candidate step is neither a pass nor a failure: the planner was never asked, and the
+row says nothing either way.

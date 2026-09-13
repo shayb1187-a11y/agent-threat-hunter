@@ -28,9 +28,22 @@ The case set
 Usage::
 
     python scripts/m19_ablation.py build
+    python scripts/m19_ablation.py freeze
     python scripts/m19_ablation.py run --arm A --repeat 2
     python scripts/m19_ablation.py score --arm A
     python scripts/m19_ablation.py run --arm B --scripted   # harness proof, not a result
+    python scripts/m19_ablation.py run --arm C --check-planner
+
+The environment freeze
+-----------------------
+``freeze`` writes ``ENVIRONMENT.md`` and ``ENVIRONMENT.json``: the commit, the model id
+per arm, the request configuration, the prompt hashes, the tool surface, the budgets, the
+scoring code's hash and the library versions -- everything that could differ between the
+arms other than the reasoning architecture. A **real** run of a model arm refuses to
+start unless that file exists and still matches the live values. A ``--scripted`` run is
+exempt: it contains no model output, is written to a separate directory and is labelled
+so it can never be aggregated into an arm, so there is no comparison for it to drift out
+of. See :mod:`ath.evaluation.ablation.environment`.
 
 Scripted runs
 --------------
@@ -46,6 +59,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import re
 import subprocess
@@ -83,6 +97,15 @@ from ath.evaluation.ablation import (  # noqa: E402
     scores_from_dict,
     telemetry_hash,
     telemetry_rows,
+)
+from ath.evaluation.ablation.environment import (  # noqa: E402
+    CREDENTIAL_VARIABLE,
+    ENVIRONMENT_JSON,
+    ENVIRONMENT_MD,
+    capture_environment,
+    check_environment,
+    live_values,
+    render_markdown,
 )
 from ath.evaluation.incidents import Incident, score_labels  # noqa: E402
 from ath.evaluation.suite import standard_suite  # noqa: E402
@@ -683,12 +706,112 @@ def _read_manifest(out_dir: Path) -> tuple[dict[str, Any], list[CaseManifest], s
     return payload, entries, recorded
 
 
+def cmd_freeze(args: argparse.Namespace) -> int:
+    """Write the environment the model arms must run under, before either of them does."""
+    payload, _entries, digest = _read_manifest(args.out_dir)
+    environment = capture_environment(
+        ROOT,
+        manifest_hash=digest,
+        manifest_head=str(payload.get("head", "")),
+        credential_present=bool(os.getenv(CREDENTIAL_VARIABLE)),
+    )
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_artifact(args.out_dir / ENVIRONMENT_JSON, environment)
+    (args.out_dir / ENVIRONMENT_MD).write_text(
+        render_markdown(environment), encoding="utf-8"
+    )
+    print(f"wrote {args.out_dir / ENVIRONMENT_MD}")
+    git = environment["git"]
+    print(
+        f"frozen at {git['short_commit']} on {git['branch']}"
+        + (" (DIRTY WORKING TREE)" if git.get("dirty") else "")
+    )
+    for name, arm in sorted(environment["arms"].items()):
+        print(f"  {name}: model={arm['model']}, tool_call_cap={arm['tool_call_cap']}")
+    return 0
+
+
+def guard_environment(out_dir: Path, digest: str) -> None:
+    """Refuse a model arm's run unless the frozen environment still describes it.
+
+    The freeze is worth exactly as much as this check: an environment file that a run
+    can ignore records what somebody intended at some point, which is not what an
+    ablation needs to claim.
+    """
+    path = out_dir / ENVIRONMENT_JSON
+    if not path.exists():
+        raise SystemExit(
+            f"{path} does not exist. A model arm may not run before the experiment "
+            "environment is frozen: without it nothing afterwards can say whether the "
+            "two arms shared a prompt, a model id, a tool surface or a scoring rule. "
+            "Run `python scripts/m19_ablation.py freeze` first."
+        )
+    recorded = json.loads(path.read_text(encoding="utf-8"))
+    frozen_commit = str(recorded.get("git", {}).get("commit", ""))
+    differences = check_environment(
+        recorded, live_values(ROOT, digest, frozen_commit=frozen_commit),
+    )
+    if differences:
+        raise SystemExit(
+            "the live environment is not the frozen one:\n  "
+            + "\n  ".join(differences)
+            + "\n\nRefusing to run. Either check out the frozen commit, or freeze "
+            "again and say in PREREGISTERED.md what moved and why -- a run under a "
+            "changed prompt or a changed scoring rule is a different experiment, not a "
+            "later measurement of the same one."
+        )
+    print(
+        f"environment: matches the freeze at {frozen_commit[:12]} "
+        f"({path.name} checked: commit, prompts, scoring, manifest, model ids)"
+    )
+
+
+def planner_report(
+    rows: Sequence[Any], requires_model: bool
+) -> tuple[list[str], list[str]]:
+    """Per-row planner accounting, and the rows that fail the N1 detector.
+
+    The failure it detects: a model arm in which *no step the model was actually asked
+    about* was decided by the model. Such a run planned exactly as the deterministic arm
+    did while reporting itself as a model arm -- which is what an undersized
+    ``max_tokens`` produced before M19 Phase 0.5, silently, on every case.
+
+    A case with no multi-candidate step is not a failure and not a pass: the planner was
+    never asked, so the row says nothing either way. That is why the denominator is
+    reported next to the numerator rather than folded into a ratio.
+    """
+    lines: list[str] = []
+    failures: list[str] = []
+    for row in rows:
+        state = row.state if isinstance(row.state, dict) else {}
+        llm = state.get("llm") or {}
+        planner = llm.get("planner") or {}
+        multi = int(planner.get("multi_candidate_steps", 0))
+        chosen = int(planner.get("chosen_by_model", 0))
+        fallbacks = planner.get("fallbacks") or {}
+        unparseable = int(llm.get("unparseable_responses", 0))
+        lines.append(
+            f"{row.corpus}/{row.case_id}: planner chose {chosen} of {multi} "
+            f"multi-candidate step(s); fallbacks {dict(fallbacks) or '{}'}; "
+            f"unparseable {unparseable}; degraded {bool(row.llm_degraded)}"
+        )
+        if requires_model and multi > 0 and chosen == 0:
+            failures.append(
+                f"{row.corpus}/{row.case_id}: {multi} step(s) offered the planner more "
+                "than one eligible candidate and the model chose none of them; this "
+                "row planned deterministically"
+            )
+    return lines, failures
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     payload, entries, digest = _read_manifest(args.out_dir)
     arm = ARM_BUILDERS[_arm_name(args.arm)]()
     scripted = bool(getattr(args, "scripted", False))
     if scripted:
         print(SCRIPTED_WARNING)
+    if arm.requires_model and not scripted:
+        guard_environment(args.out_dir, digest)
 
     wanted = set(args.corpus) if args.corpus else None
     by_corpus: dict[str, list[CaseManifest]] = defaultdict(list)
@@ -778,6 +901,21 @@ def cmd_run(args: argparse.Namespace) -> int:
             else f"reproducibility: {len(differences)} DIFFERENCE(S): {differences[:5]}"
         )
     _write_scores(args, runs[0], digest, scripted=scripted)
+
+    if getattr(args, "check_planner", False):
+        lines, failures = planner_report(runs[0], arm.requires_model)
+        print("planner accounting:")
+        for line in lines:
+            print(f"  {line}")
+        if failures:
+            print(
+                f"PLANNER CHECK FAILED: {len(failures)} row(s) labelled as a model arm "
+                "planned deterministically:"
+            )
+            for failure in failures:
+                print(f"  {failure}")
+            return 1
+        print("planner check: no model-arm row planned deterministically")
     return 0
 
 
@@ -890,6 +1028,12 @@ def main() -> int:
     p_build.add_argument("--out-dir", type=Path, default=OUT_DIR)
     p_build.set_defaults(func=cmd_build)
 
+    p_freeze = sub.add_parser(
+        "freeze", help="write the frozen experiment environment (ENVIRONMENT.md/.json)",
+    )
+    p_freeze.add_argument("--out-dir", type=Path, default=OUT_DIR)
+    p_freeze.set_defaults(func=cmd_freeze)
+
     p_run = sub.add_parser("run", help="run one arm over the frozen manifest")
     p_run.add_argument("--arm", default="A")
     p_run.add_argument("--repeat", type=int, default=1)
@@ -900,6 +1044,11 @@ def main() -> int:
         help="Run a model arm against canned ScriptedLLM responses. Proves the path "
              "executes; says nothing about any model. Rows are labelled *_SCRIPTED and "
              f"written under {SCRIPTED_DIR_NAME}/.",
+    )
+    p_run.add_argument(
+        "--check-planner", action="store_true",
+        help="after the run, print each row's planner accounting and exit non-zero if "
+             "any model-arm row chose nothing on a case that offered a choice",
     )
     p_run.set_defaults(func=cmd_run)
 
