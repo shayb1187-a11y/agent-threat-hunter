@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T13:43:59.426542+00:00",
-  "head": "fec708d",
+  "generated_at": "2026-09-13T14:19:12.340046+00:00",
+  "head": "30b8b48",
   "arm": {
     "name": "A_deterministic",
     "model": null,
@@ -39,9 +39,9 @@
       "corpus_cases": 2
     },
     "comiset": {
-      "load_seconds": 0.9,
-      "pipeline_seconds": 45.1,
-      "arm_seconds_all_repeats": 42.6,
+      "load_seconds": 0.8,
+      "pipeline_seconds": 45.2,
+      "arm_seconds_all_repeats": 45.3,
       "cases": 2,
       "findings": 5,
       "corpus_cases": 2
@@ -72,16 +72,16 @@
     },
     "synthetic:INC-004": {
       "load_seconds": 0.0,
-      "pipeline_seconds": 0.6,
+      "pipeline_seconds": 0.7,
       "arm_seconds_all_repeats": 0.2,
       "cases": 1,
       "findings": 4,
       "corpus_cases": 1
     },
     "flaws_cloud": {
-      "load_seconds": 174.3,
-      "pipeline_seconds": 127.8,
-      "arm_seconds_all_repeats": 147.2,
+      "load_seconds": 190.5,
+      "pipeline_seconds": 142.6,
+      "arm_seconds_all_repeats": 147.7,
       "cases": 14,
       "findings": 1476,
       "corpus_cases": 281
@@ -99,7 +99,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.011,
+      "wall_seconds": 0.012,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -159,7 +159,7 @@
           "facts": 40,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.011,
+          "wall_seconds": 0.012,
           "tokens": null
         },
         "identity_hygiene": {
@@ -175,7 +175,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:34:57.693250+00:00",
+        "started_at": "2026-09-13T14:09:36.593119+00:00",
         "counts": {
           "facts": 40,
           "inferences": 4,
@@ -1182,7 +1182,7 @@
                   "cloudtrail-control-002326",
                   "cloudtrail-control-002337"
                 ],
-                "called_at": "2026-09-13T13:34:57.699278+00:00"
+                "called_at": "2026-09-13T14:09:36.598934+00:00"
               },
               {
                 "tool": "get_events",
@@ -1224,7 +1224,7 @@
                   "cloudtrail-control-002326",
                   "cloudtrail-control-002337"
                 ],
-                "called_at": "2026-09-13T13:34:57.703294+00:00"
+                "called_at": "2026-09-13T14:09:36.600943+00:00"
               }
             ],
             "follow_up": [],
@@ -1372,7 +1372,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:34:57.703294+00:00"
+                "called_at": "2026-09-13T14:09:36.600943+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -1382,7 +1382,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:34:57.703294+00:00"
+                "called_at": "2026-09-13T14:09:36.600943+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -1392,7 +1392,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:34:57.703294+00:00"
+                "called_at": "2026-09-13T14:09:36.600943+00:00"
               }
             ],
             "follow_up": [],
@@ -1448,7 +1448,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.012,
+      "wall_seconds": 0.005,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -1508,7 +1508,7 @@
           "facts": 5,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.012,
+          "wall_seconds": 0.005,
           "tokens": null
         },
         "identity_hygiene": {
@@ -1524,7 +1524,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:34:57.703294+00:00",
+        "started_at": "2026-09-13T14:09:36.600943+00:00",
         "counts": {
           "facts": 5,
           "inferences": 2,
@@ -1711,7 +1711,7 @@
                   "cloudtrail-control-001222",
                   "cloudtrail-control-001224"
                 ],
-                "called_at": "2026-09-13T13:34:57.716373+00:00"
+                "called_at": "2026-09-13T14:09:36.608710+00:00"
               }
             ],
             "follow_up": [],
@@ -1759,7 +1759,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:34:57.716373+00:00"
+                "called_at": "2026-09-13T14:09:36.608710+00:00"
               }
             ],
             "follow_up": [],
@@ -1788,7 +1788,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.223,
+      "wall_seconds": 0.247,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -1842,7 +1842,7 @@
           "facts": 6,
           "inferences": 5,
           "hypotheses": 0,
-          "wall_seconds": 0.223,
+          "wall_seconds": 0.247,
           "tokens": null
         },
         "identity_hygiene": {
@@ -1858,7 +1858,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:04.819750+00:00",
+        "started_at": "2026-09-13T14:10:45.168088+00:00",
         "counts": {
           "facts": 6,
           "inferences": 5,
@@ -2088,7 +2088,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353"
                 ],
-                "called_at": "2026-09-13T13:36:04.843618+00:00"
+                "called_at": "2026-09-13T14:10:45.216138+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2105,7 +2105,7 @@
                   "comiset_slice.jsonl:b9a5cb4bdabc2fe887d9224d6c42056e5b64ff90",
                   "comiset_slice.jsonl:8487d362bc1639789fb06e87f0689008f8ab7c5e"
                 ],
-                "called_at": "2026-09-13T13:36:04.945704+00:00"
+                "called_at": "2026-09-13T14:10:45.330467+00:00"
               },
               {
                 "tool": "get_events",
@@ -2119,7 +2119,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
                 ],
-                "called_at": "2026-09-13T13:36:04.986053+00:00"
+                "called_at": "2026-09-13T14:10:45.359678+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2136,7 +2136,7 @@
                   "comiset_slice.jsonl:b9a5cb4bdabc2fe887d9224d6c42056e5b64ff90",
                   "comiset_slice.jsonl:140e90ade0416549e11a5801f44565c39b8d2585"
                 ],
-                "called_at": "2026-09-13T13:36:05.033700+00:00"
+                "called_at": "2026-09-13T14:10:45.423064+00:00"
               }
             ],
             "follow_up": [],
@@ -2207,7 +2207,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:05.033700+00:00"
+                "called_at": "2026-09-13T14:10:45.423064+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2217,7 +2217,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:05.033700+00:00"
+                "called_at": "2026-09-13T14:10:45.423064+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2227,7 +2227,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:05.033700+00:00"
+                "called_at": "2026-09-13T14:10:45.423064+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2237,7 +2237,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:05.033700+00:00"
+                "called_at": "2026-09-13T14:10:45.423064+00:00"
               }
             ],
             "follow_up": [],
@@ -2267,7 +2267,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.082,
+      "wall_seconds": 0.088,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -2318,7 +2318,7 @@
           "facts": 2,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.082,
+          "wall_seconds": 0.088,
           "tokens": null
         },
         "identity_hygiene": {
@@ -2334,7 +2334,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:05.033700+00:00",
+        "started_at": "2026-09-13T14:10:45.423064+00:00",
         "counts": {
           "facts": 2,
           "inferences": 2,
@@ -2447,7 +2447,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
                 ],
-                "called_at": "2026-09-13T13:36:05.065357+00:00"
+                "called_at": "2026-09-13T14:10:45.465641+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2462,7 +2462,7 @@
                   "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b",
                   "comiset_slice.jsonl:2123df97130430b012740761f3c88c0bbe4bc345"
                 ],
-                "called_at": "2026-09-13T13:36:05.120546+00:00"
+                "called_at": "2026-09-13T14:10:45.513642+00:00"
               }
             ],
             "follow_up": [],
@@ -2502,7 +2502,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:05.120546+00:00"
+                "called_at": "2026-09-13T14:10:45.513642+00:00"
               }
             ],
             "follow_up": [],
@@ -2528,7 +2528,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.287,
+      "wall_seconds": 0.296,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -2646,7 +2646,7 @@
           "facts": 20,
           "inferences": 28,
           "hypotheses": 2,
-          "wall_seconds": 0.287,
+          "wall_seconds": 0.296,
           "tokens": null
         },
         "identity_hygiene": {
@@ -2664,7 +2664,7 @@
           "network",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:27.599490+00:00",
+        "started_at": "2026-09-13T14:11:09.045169+00:00",
         "counts": {
           "facts": 20,
           "inferences": 28,
@@ -3584,7 +3584,7 @@
                 "event_ids": [
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:36:27.599490+00:00"
+                "called_at": "2026-09-13T14:11:09.060941+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3600,7 +3600,7 @@
                   "evt-000002",
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:36:27.629666+00:00"
+                "called_at": "2026-09-13T14:11:09.076769+00:00"
               },
               {
                 "tool": "get_events",
@@ -3614,7 +3614,7 @@
                 "event_ids": [
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:36:27.631518+00:00"
+                "called_at": "2026-09-13T14:11:09.092882+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3634,7 +3634,7 @@
                   "evt-000374",
                   "evt-000381"
                 ],
-                "called_at": "2026-09-13T13:36:27.659835+00:00"
+                "called_at": "2026-09-13T14:11:09.108762+00:00"
               },
               {
                 "tool": "get_events",
@@ -3648,7 +3648,7 @@
                 "event_ids": [
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:36:27.672168+00:00"
+                "called_at": "2026-09-13T14:11:09.124548+00:00"
               },
               {
                 "tool": "get_events",
@@ -3666,7 +3666,7 @@
                   "evt-000370",
                   "evt-000374"
                 ],
-                "called_at": "2026-09-13T13:36:27.683546+00:00"
+                "called_at": "2026-09-13T14:11:09.124548+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3682,7 +3682,7 @@
                   "evt-000357",
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:36:27.702285+00:00"
+                "called_at": "2026-09-13T14:11:09.156278+00:00"
               },
               {
                 "tool": "get_events",
@@ -3696,7 +3696,7 @@
                 "event_ids": [
                   "evt-000381"
                 ],
-                "called_at": "2026-09-13T13:36:27.719940+00:00"
+                "called_at": "2026-09-13T14:11:09.172114+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3712,7 +3712,7 @@
                   "evt-000357",
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:36:27.743484+00:00"
+                "called_at": "2026-09-13T14:11:09.187898+00:00"
               },
               {
                 "tool": "get_events",
@@ -3749,7 +3749,7 @@
                   "evt-000444",
                   "evt-000457"
                 ],
-                "called_at": "2026-09-13T13:36:27.749497+00:00"
+                "called_at": "2026-09-13T14:11:09.206475+00:00"
               },
               {
                 "tool": "get_events",
@@ -3763,7 +3763,7 @@
                 "event_ids": [
                   "evt-000457"
                 ],
-                "called_at": "2026-09-13T13:36:27.774916+00:00"
+                "called_at": "2026-09-13T14:11:09.207596+00:00"
               },
               {
                 "tool": "get_events",
@@ -3777,7 +3777,7 @@
                 "event_ids": [
                   "evt-000461"
                 ],
-                "called_at": "2026-09-13T13:36:27.777233+00:00"
+                "called_at": "2026-09-13T14:11:09.231969+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3792,7 +3792,7 @@
                   "evt-000461",
                   "evt-000469"
                 ],
-                "called_at": "2026-09-13T13:36:27.790886+00:00"
+                "called_at": "2026-09-13T14:11:09.245566+00:00"
               },
               {
                 "tool": "get_events",
@@ -3806,7 +3806,7 @@
                 "event_ids": [
                   "evt-000469"
                 ],
-                "called_at": "2026-09-13T13:36:27.806675+00:00"
+                "called_at": "2026-09-13T14:11:09.251323+00:00"
               },
               {
                 "tool": "process_tree",
@@ -3821,7 +3821,7 @@
                   "evt-000469",
                   "evt-000461"
                 ],
-                "called_at": "2026-09-13T13:36:27.829190+00:00"
+                "called_at": "2026-09-13T14:11:09.283102+00:00"
               }
             ],
             "follow_up": [
@@ -4051,7 +4051,7 @@
                   "evt-001074",
                   "evt-001103"
                 ],
-                "called_at": "2026-09-13T13:36:27.838416+00:00"
+                "called_at": "2026-09-13T14:11:09.290321+00:00"
               },
               {
                 "tool": "user_auth_history",
@@ -4082,7 +4082,7 @@
                   "evt-001016",
                   "evt-001081"
                 ],
-                "called_at": "2026-09-13T13:36:27.845101+00:00"
+                "called_at": "2026-09-13T14:11:09.298968+00:00"
               }
             ],
             "follow_up": [
@@ -4173,7 +4173,7 @@
                 "event_ids": [
                   "evt-000481"
                 ],
-                "called_at": "2026-09-13T13:36:27.854253+00:00"
+                "called_at": "2026-09-13T14:11:09.314777+00:00"
               },
               {
                 "tool": "host_network_activity",
@@ -4192,7 +4192,7 @@
                   "evt-000454",
                   "evt-000486"
                 ],
-                "called_at": "2026-09-13T13:36:27.877589+00:00"
+                "called_at": "2026-09-13T14:11:09.335239+00:00"
               },
               {
                 "tool": "analyse_beacon",
@@ -4205,7 +4205,7 @@
                 "event_ids": [
                   "evt-000481"
                 ],
-                "called_at": "2026-09-13T13:36:27.883247+00:00"
+                "called_at": "2026-09-13T14:11:09.335239+00:00"
               },
               {
                 "tool": "analyse_beacon",
@@ -4224,7 +4224,7 @@
                   "evt-000454",
                   "evt-000486"
                 ],
-                "called_at": "2026-09-13T13:36:27.886218+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               }
             ],
             "follow_up": [
@@ -4562,7 +4562,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.886218+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4572,7 +4572,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.886218+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4582,7 +4582,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4592,7 +4592,7 @@
                 "agent": "attack",
                 "result_summary": "LSASS Memory",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4602,7 +4602,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4612,7 +4612,7 @@
                 "agent": "attack",
                 "result_summary": "Service Execution",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4622,7 +4622,7 @@
                 "agent": "attack",
                 "result_summary": "Archive via Utility",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4632,7 +4632,7 @@
                 "agent": "attack",
                 "result_summary": "Malicious File",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4642,7 +4642,7 @@
                 "agent": "attack",
                 "result_summary": "Malicious File",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4652,7 +4652,7 @@
                 "agent": "attack",
                 "result_summary": "Ingress Tool Transfer",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4662,7 +4662,7 @@
                 "agent": "attack",
                 "result_summary": "Web Protocols",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4672,7 +4672,7 @@
                 "agent": "attack",
                 "result_summary": "Ingress Tool Transfer",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4682,7 +4682,7 @@
                 "agent": "attack",
                 "result_summary": "System Owner/User Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4692,7 +4692,7 @@
                 "agent": "attack",
                 "result_summary": "Domain Groups",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4702,7 +4702,7 @@
                 "agent": "attack",
                 "result_summary": "Domain Trust Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.887831+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4712,7 +4712,7 @@
                 "agent": "attack",
                 "result_summary": "Rundll32",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4722,7 +4722,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4732,7 +4732,7 @@
                 "agent": "attack",
                 "result_summary": "SMB/Windows Admin Shares",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4742,7 +4742,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4752,7 +4752,7 @@
                 "agent": "attack",
                 "result_summary": "SMB/Windows Admin Shares",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4762,7 +4762,7 @@
                 "agent": "attack",
                 "result_summary": "Local Data Staging",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4772,7 +4772,7 @@
                 "agent": "attack",
                 "result_summary": "Web Protocols",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:27.888297+00:00"
+                "called_at": "2026-09-13T14:11:09.343427+00:00"
               }
             ],
             "follow_up": [],
@@ -4877,7 +4877,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.01,
+      "wall_seconds": 0.007,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -4951,7 +4951,7 @@
           "facts": 2,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.01,
+          "wall_seconds": 0.007,
           "tokens": null
         },
         "identity_hygiene": {
@@ -4967,7 +4967,7 @@
           "identity",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:28.315547+00:00",
+        "started_at": "2026-09-13T14:11:09.760767+00:00",
         "counts": {
           "facts": 2,
           "inferences": 4,
@@ -5229,7 +5229,7 @@
                   "cloudtrail-logon-000014",
                   "cloudtrail-logon-000015"
                 ],
-                "called_at": "2026-09-13T13:36:28.315547+00:00"
+                "called_at": "2026-09-13T14:11:09.776565+00:00"
               }
             ],
             "follow_up": [
@@ -5317,7 +5317,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:28.331372+00:00"
+                "called_at": "2026-09-13T14:11:09.776565+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5327,7 +5327,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:28.331372+00:00"
+                "called_at": "2026-09-13T14:11:09.776565+00:00"
               }
             ],
             "follow_up": [],
@@ -5365,7 +5365,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.021,
+      "wall_seconds": 0.034,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -5436,7 +5436,7 @@
           "facts": 3,
           "inferences": 5,
           "hypotheses": 0,
-          "wall_seconds": 0.021,
+          "wall_seconds": 0.034,
           "tokens": null
         },
         "identity_hygiene": {
@@ -5452,7 +5452,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:28.433689+00:00",
+        "started_at": "2026-09-13T14:11:09.855505+00:00",
         "counts": {
           "facts": 3,
           "inferences": 5,
@@ -5628,7 +5628,7 @@
                 "event_ids": [
                   "k8s-control-000003"
                 ],
-                "called_at": "2026-09-13T13:36:28.442349+00:00"
+                "called_at": "2026-09-13T14:11:09.873987+00:00"
               },
               {
                 "tool": "get_events",
@@ -5644,7 +5644,7 @@
                   "k8s-control-000003",
                   "k8s-control-000004"
                 ],
-                "called_at": "2026-09-13T13:36:28.459307+00:00"
+                "called_at": "2026-09-13T14:11:09.899121+00:00"
               }
             ],
             "follow_up": [],
@@ -5709,7 +5709,7 @@
                 "agent": "attack",
                 "result_summary": "Additional Container Cluster Roles",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:28.459307+00:00"
+                "called_at": "2026-09-13T14:11:09.899121+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5719,7 +5719,7 @@
                 "agent": "attack",
                 "result_summary": "Additional Container Cluster Roles",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:28.459307+00:00"
+                "called_at": "2026-09-13T14:11:09.899121+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5729,7 +5729,7 @@
                 "agent": "attack",
                 "result_summary": "Container Administration Command",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:28.459307+00:00"
+                "called_at": "2026-09-13T14:11:09.899121+00:00"
               }
             ],
             "follow_up": [],
@@ -5755,7 +5755,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.052,
+      "wall_seconds": 0.047,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -5826,7 +5826,7 @@
           "facts": 2,
           "inferences": 3,
           "hypotheses": 0,
-          "wall_seconds": 0.052,
+          "wall_seconds": 0.047,
           "tokens": null
         },
         "identity_hygiene": {
@@ -5842,7 +5842,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:36:29.188983+00:00",
+        "started_at": "2026-09-13T14:11:10.633850+00:00",
         "counts": {
           "facts": 2,
           "inferences": 3,
@@ -5976,7 +5976,7 @@
                   "evt-000905",
                   "evt-000909"
                 ],
-                "called_at": "2026-09-13T13:36:29.190789+00:00"
+                "called_at": "2026-09-13T14:11:10.646388+00:00"
               },
               {
                 "tool": "process_tree",
@@ -5990,7 +5990,7 @@
                 "event_ids": [
                   "evt-000901"
                 ],
-                "called_at": "2026-09-13T13:36:29.207129+00:00"
+                "called_at": "2026-09-13T14:11:10.650028+00:00"
               },
               {
                 "tool": "get_events",
@@ -6008,7 +6008,7 @@
                   "evt-000925",
                   "evt-000927"
                 ],
-                "called_at": "2026-09-13T13:36:29.219767+00:00"
+                "called_at": "2026-09-13T14:11:10.665818+00:00"
               },
               {
                 "tool": "process_tree",
@@ -6022,7 +6022,7 @@
                 "event_ids": [
                   "evt-000922"
                 ],
-                "called_at": "2026-09-13T13:36:29.239337+00:00"
+                "called_at": "2026-09-13T14:11:10.681910+00:00"
               }
             ],
             "follow_up": [],
@@ -6081,7 +6081,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:29.239337+00:00"
+                "called_at": "2026-09-13T14:11:10.681910+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -6091,7 +6091,7 @@
                 "agent": "attack",
                 "result_summary": "Inhibit System Recovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:36:29.239337+00:00"
+                "called_at": "2026-09-13T14:11:10.681910+00:00"
               }
             ],
             "follow_up": [],
@@ -6194,7 +6194,7 @@
           "identity",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:42.846488+00:00",
+        "started_at": "2026-09-13T14:17:54.790475+00:00",
         "counts": {
           "facts": 2,
           "inferences": 4,
@@ -29201,7 +29201,7 @@
                   "cloudtrail-logon-007194",
                   "cloudtrail-logon-007195"
                 ],
-                "called_at": "2026-09-13T13:42:43.273510+00:00"
+                "called_at": "2026-09-13T14:17:55.216944+00:00"
               }
             ],
             "follow_up": [
@@ -29412,7 +29412,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.281554+00:00"
+                "called_at": "2026-09-13T14:17:55.224659+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -29422,7 +29422,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.281554+00:00"
+                "called_at": "2026-09-13T14:17:55.224659+00:00"
               }
             ],
             "follow_up": [],
@@ -33968,7 +33968,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.221,
+      "wall_seconds": 0.238,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -34022,7 +34022,7 @@
           "facts": 10,
           "inferences": 3,
           "hypotheses": 0,
-          "wall_seconds": 0.221,
+          "wall_seconds": 0.238,
           "tokens": null
         },
         "identity_hygiene": {
@@ -34038,7 +34038,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:43.316663+00:00",
+        "started_at": "2026-09-13T14:17:55.252635+00:00",
         "counts": {
           "facts": 10,
           "inferences": 3,
@@ -34364,7 +34364,7 @@
                   "cloudtrail-control-110356",
                   "cloudtrail-control-110357"
                 ],
-                "called_at": "2026-09-13T13:42:43.535050+00:00"
+                "called_at": "2026-09-13T14:17:55.491703+00:00"
               }
             ],
             "follow_up": [],
@@ -34441,7 +34441,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.535050+00:00"
+                "called_at": "2026-09-13T14:17:55.491703+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -34451,7 +34451,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.535050+00:00"
+                "called_at": "2026-09-13T14:17:55.491703+00:00"
               }
             ],
             "follow_up": [],
@@ -34485,7 +34485,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.452,
+      "wall_seconds": 0.405,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -34539,7 +34539,7 @@
           "facts": 40,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.452,
+          "wall_seconds": 0.405,
           "tokens": null
         },
         "identity_hygiene": {
@@ -34555,7 +34555,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:43.541897+00:00",
+        "started_at": "2026-09-13T14:17:55.495737+00:00",
         "counts": {
           "facts": 40,
           "inferences": 4,
@@ -35564,7 +35564,7 @@
                   "cloudtrail-control-189370",
                   "cloudtrail-control-189378"
                 ],
-                "called_at": "2026-09-13T13:42:43.798371+00:00"
+                "called_at": "2026-09-13T14:17:55.705662+00:00"
               },
               {
                 "tool": "get_events",
@@ -35606,7 +35606,7 @@
                   "cloudtrail-control-189304",
                   "cloudtrail-control-189305"
                 ],
-                "called_at": "2026-09-13T13:42:43.992909+00:00"
+                "called_at": "2026-09-13T14:17:55.894189+00:00"
               }
             ],
             "follow_up": [],
@@ -35756,7 +35756,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.992909+00:00"
+                "called_at": "2026-09-13T14:17:55.894189+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -35766,7 +35766,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.992909+00:00"
+                "called_at": "2026-09-13T14:17:55.894189+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -35776,7 +35776,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:43.992909+00:00"
+                "called_at": "2026-09-13T14:17:55.894189+00:00"
               }
             ],
             "follow_up": [],
@@ -35834,7 +35834,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.339,
+      "wall_seconds": 0.331,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -35888,7 +35888,7 @@
           "facts": 33,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.339,
+          "wall_seconds": 0.331,
           "tokens": null
         },
         "identity_hygiene": {
@@ -35904,7 +35904,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:43.996937+00:00",
+        "started_at": "2026-09-13T14:17:55.894189+00:00",
         "counts": {
           "facts": 33,
           "inferences": 4,
@@ -36761,7 +36761,7 @@
                   "cloudtrail-control-225236",
                   "cloudtrail-control-225366"
                 ],
-                "called_at": "2026-09-13T13:42:44.205071+00:00"
+                "called_at": "2026-09-13T14:17:56.096453+00:00"
               },
               {
                 "tool": "get_events",
@@ -36796,7 +36796,7 @@
                   "cloudtrail-control-225652",
                   "cloudtrail-control-225659"
                 ],
-                "called_at": "2026-09-13T13:42:44.334686+00:00"
+                "called_at": "2026-09-13T14:17:56.235489+00:00"
               }
             ],
             "follow_up": [],
@@ -36934,7 +36934,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.336696+00:00"
+                "called_at": "2026-09-13T14:17:56.235489+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -36944,7 +36944,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.336696+00:00"
+                "called_at": "2026-09-13T14:17:56.235489+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -36954,7 +36954,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.336696+00:00"
+                "called_at": "2026-09-13T14:17:56.235489+00:00"
               }
             ],
             "follow_up": [],
@@ -37007,7 +37007,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.081,
+      "wall_seconds": 0.082,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -37058,7 +37058,7 @@
           "facts": 1,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.081,
+          "wall_seconds": 0.082,
           "tokens": null
         },
         "identity_hygiene": {
@@ -37074,7 +37074,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.340224+00:00",
+        "started_at": "2026-09-13T14:17:56.235489+00:00",
         "counts": {
           "facts": 1,
           "inferences": 2,
@@ -37165,7 +37165,7 @@
                 "event_ids": [
                   "cloudtrail-control-226796"
                 ],
-                "called_at": "2026-09-13T13:42:44.422027+00:00"
+                "called_at": "2026-09-13T14:17:56.320560+00:00"
               }
             ],
             "follow_up": [],
@@ -37205,7 +37205,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.422027+00:00"
+                "called_at": "2026-09-13T14:17:56.320560+00:00"
               }
             ],
             "follow_up": [],
@@ -37230,7 +37230,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.083,
+      "wall_seconds": 0.082,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -37281,7 +37281,7 @@
           "facts": 1,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.083,
+          "wall_seconds": 0.082,
           "tokens": null
         },
         "identity_hygiene": {
@@ -37297,7 +37297,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.426057+00:00",
+        "started_at": "2026-09-13T14:17:56.320560+00:00",
         "counts": {
           "facts": 1,
           "inferences": 2,
@@ -37388,7 +37388,7 @@
                 "event_ids": [
                   "cloudtrail-control-226797"
                 ],
-                "called_at": "2026-09-13T13:42:44.507691+00:00"
+                "called_at": "2026-09-13T14:17:56.399603+00:00"
               }
             ],
             "follow_up": [],
@@ -37428,7 +37428,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.507691+00:00"
+                "called_at": "2026-09-13T14:17:56.399603+00:00"
               }
             ],
             "follow_up": [],
@@ -37453,7 +37453,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.152,
+      "wall_seconds": 0.151,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -37504,7 +37504,7 @@
           "facts": 15,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.152,
+          "wall_seconds": 0.151,
           "tokens": null
         },
         "identity_hygiene": {
@@ -37520,7 +37520,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.511721+00:00",
+        "started_at": "2026-09-13T14:17:56.399603+00:00",
         "counts": {
           "facts": 15,
           "inferences": 2,
@@ -37942,7 +37942,7 @@
                   "cloudtrail-control-238987",
                   "cloudtrail-control-239755"
                 ],
-                "called_at": "2026-09-13T13:42:44.663731+00:00"
+                "called_at": "2026-09-13T14:17:56.558578+00:00"
               }
             ],
             "follow_up": [],
@@ -38010,7 +38010,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.663731+00:00"
+                "called_at": "2026-09-13T14:17:56.558578+00:00"
               }
             ],
             "follow_up": [],
@@ -38049,7 +38049,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.199,
+      "wall_seconds": 0.175,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -38100,7 +38100,7 @@
           "facts": 5,
           "inferences": 3,
           "hypotheses": 0,
-          "wall_seconds": 0.199,
+          "wall_seconds": 0.175,
           "tokens": null
         },
         "identity_hygiene": {
@@ -38116,7 +38116,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.667328+00:00",
+        "started_at": "2026-09-13T14:17:56.558578+00:00",
         "counts": {
           "facts": 5,
           "inferences": 3,
@@ -38331,7 +38331,7 @@
                   "cloudtrail-control-323942",
                   "cloudtrail-control-323974"
                 ],
-                "called_at": "2026-09-13T13:42:44.864910+00:00"
+                "called_at": "2026-09-13T14:17:56.733399+00:00"
               }
             ],
             "follow_up": [],
@@ -38379,7 +38379,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.866920+00:00"
+                "called_at": "2026-09-13T14:17:56.733399+00:00"
               }
             ],
             "follow_up": [],
@@ -38408,7 +38408,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.092,
+      "wall_seconds": 0.083,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -38459,7 +38459,7 @@
           "facts": 1,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.092,
+          "wall_seconds": 0.083,
           "tokens": null
         },
         "identity_hygiene": {
@@ -38475,7 +38475,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.870887+00:00",
+        "started_at": "2026-09-13T14:17:56.733399+00:00",
         "counts": {
           "facts": 1,
           "inferences": 2,
@@ -38566,7 +38566,7 @@
                 "event_ids": [
                   "cloudtrail-control-1576322"
                 ],
-                "called_at": "2026-09-13T13:42:44.962193+00:00"
+                "called_at": "2026-09-13T14:17:56.812867+00:00"
               }
             ],
             "follow_up": [],
@@ -38606,7 +38606,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:44.962193+00:00"
+                "called_at": "2026-09-13T14:17:56.812867+00:00"
               }
             ],
             "follow_up": [],
@@ -38631,7 +38631,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.149,
+      "wall_seconds": 0.131,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -38682,7 +38682,7 @@
           "facts": 13,
           "inferences": 2,
           "hypotheses": 0,
-          "wall_seconds": 0.149,
+          "wall_seconds": 0.131,
           "tokens": null
         },
         "identity_hygiene": {
@@ -38698,7 +38698,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:44.966225+00:00",
+        "started_at": "2026-09-13T14:17:56.830782+00:00",
         "counts": {
           "facts": 13,
           "inferences": 2,
@@ -39074,7 +39074,7 @@
                   "cloudtrail-control-1649394",
                   "cloudtrail-control-1649395"
                 ],
-                "called_at": "2026-09-13T13:42:45.104714+00:00"
+                "called_at": "2026-09-13T14:17:56.955371+00:00"
               }
             ],
             "follow_up": [],
@@ -39138,7 +39138,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.104714+00:00"
+                "called_at": "2026-09-13T14:17:56.955371+00:00"
               }
             ],
             "follow_up": [],
@@ -39175,7 +39175,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.397,
+      "wall_seconds": 0.382,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -39229,7 +39229,7 @@
           "facts": 40,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.397,
+          "wall_seconds": 0.382,
           "tokens": null
         },
         "identity_hygiene": {
@@ -39245,7 +39245,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:45.117248+00:00",
+        "started_at": "2026-09-13T14:17:56.955371+00:00",
         "counts": {
           "facts": 40,
           "inferences": 4,
@@ -40251,7 +40251,7 @@
                   "cloudtrail-control-1678097",
                   "cloudtrail-control-1678099"
                 ],
-                "called_at": "2026-09-13T13:42:45.323141+00:00"
+                "called_at": "2026-09-13T14:17:57.149846+00:00"
               },
               {
                 "tool": "get_events",
@@ -40293,7 +40293,7 @@
                   "cloudtrail-control-1678092",
                   "cloudtrail-control-1678093"
                 ],
-                "called_at": "2026-09-13T13:42:45.513735+00:00"
+                "called_at": "2026-09-13T14:17:57.336616+00:00"
               }
             ],
             "follow_up": [],
@@ -40440,7 +40440,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.513735+00:00"
+                "called_at": "2026-09-13T14:17:57.348207+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -40450,7 +40450,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.513735+00:00"
+                "called_at": "2026-09-13T14:17:57.348207+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -40460,7 +40460,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.513735+00:00"
+                "called_at": "2026-09-13T14:17:57.348207+00:00"
               }
             ],
             "follow_up": [],
@@ -40515,7 +40515,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.383,
+      "wall_seconds": 0.398,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -40569,7 +40569,7 @@
           "facts": 17,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.383,
+          "wall_seconds": 0.398,
           "tokens": null
         },
         "identity_hygiene": {
@@ -40585,7 +40585,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:45.520968+00:00",
+        "started_at": "2026-09-13T14:17:57.352315+00:00",
         "counts": {
           "facts": 17,
           "inferences": 4,
@@ -41080,7 +41080,7 @@
                   "cloudtrail-control-1760670",
                   "cloudtrail-control-1760846"
                 ],
-                "called_at": "2026-09-13T13:42:45.674370+00:00"
+                "called_at": "2026-09-13T14:17:57.498324+00:00"
               },
               {
                 "tool": "get_events",
@@ -41098,7 +41098,7 @@
                   "cloudtrail-control-1760670",
                   "cloudtrail-control-1760671"
                 ],
-                "called_at": "2026-09-13T13:42:45.903613+00:00"
+                "called_at": "2026-09-13T14:17:57.750033+00:00"
               }
             ],
             "follow_up": [],
@@ -41200,7 +41200,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.903613+00:00"
+                "called_at": "2026-09-13T14:17:57.750033+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -41210,7 +41210,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.903613+00:00"
+                "called_at": "2026-09-13T14:17:57.750033+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -41220,7 +41220,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:45.903613+00:00"
+                "called_at": "2026-09-13T14:17:57.750033+00:00"
               }
             ],
             "follow_up": [],
@@ -41259,7 +41259,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.398,
+      "wall_seconds": 0.506,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -41313,7 +41313,7 @@
           "facts": 40,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.398,
+          "wall_seconds": 0.506,
           "tokens": null
         },
         "identity_hygiene": {
@@ -41329,7 +41329,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:45.907430+00:00",
+        "started_at": "2026-09-13T14:17:57.755163+00:00",
         "counts": {
           "facts": 40,
           "inferences": 4,
@@ -42332,7 +42332,7 @@
                   "cloudtrail-control-1776597",
                   "cloudtrail-control-1776608"
                 ],
-                "called_at": "2026-09-13T13:42:46.108352+00:00"
+                "called_at": "2026-09-13T14:17:58.023862+00:00"
               },
               {
                 "tool": "get_events",
@@ -42374,7 +42374,7 @@
                   "cloudtrail-control-1776531",
                   "cloudtrail-control-1776532"
                 ],
-                "called_at": "2026-09-13T13:42:46.304555+00:00"
+                "called_at": "2026-09-13T14:17:58.259448+00:00"
               }
             ],
             "follow_up": [],
@@ -42518,7 +42518,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.304555+00:00"
+                "called_at": "2026-09-13T14:17:58.259448+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -42528,7 +42528,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.304555+00:00"
+                "called_at": "2026-09-13T14:17:58.259448+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -42538,7 +42538,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.304555+00:00"
+                "called_at": "2026-09-13T14:17:58.259448+00:00"
               }
             ],
             "follow_up": [],
@@ -42590,7 +42590,7 @@
       "scripted": false,
       "llm_degraded": false,
       "llm_status": "deterministic mode (no model requested)",
-      "wall_seconds": 0.469,
+      "wall_seconds": 0.378,
       "tokens": null,
       "budgets": {
         "max_steps": 8,
@@ -42644,7 +42644,7 @@
           "facts": 37,
           "inferences": 4,
           "hypotheses": 0,
-          "wall_seconds": 0.469,
+          "wall_seconds": 0.378,
           "tokens": null
         },
         "identity_hygiene": {
@@ -42660,7 +42660,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:42:46.310153+00:00",
+        "started_at": "2026-09-13T14:17:58.265494+00:00",
         "counts": {
           "facts": 37,
           "inferences": 4,
@@ -43604,7 +43604,7 @@
                   "cloudtrail-control-1817365",
                   "cloudtrail-control-1817368"
                 ],
-                "called_at": "2026-09-13T13:42:46.605177+00:00"
+                "called_at": "2026-09-13T14:17:58.473151+00:00"
               },
               {
                 "tool": "get_events",
@@ -43643,7 +43643,7 @@
                   "cloudtrail-control-1817378",
                   "cloudtrail-control-1817466"
                 ],
-                "called_at": "2026-09-13T13:42:46.773149+00:00"
+                "called_at": "2026-09-13T14:17:58.641705+00:00"
               }
             ],
             "follow_up": [],
@@ -43788,7 +43788,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.773149+00:00"
+                "called_at": "2026-09-13T14:17:58.641705+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -43798,7 +43798,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.773149+00:00"
+                "called_at": "2026-09-13T14:17:58.641705+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -43808,7 +43808,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:42:46.773149+00:00"
+                "called_at": "2026-09-13T14:17:58.641705+00:00"
               }
             ],
             "follow_up": [],

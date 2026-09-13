@@ -145,9 +145,14 @@ prediction was right about the corpus it was drawn from and wrong as a general c
   `labelled_technique_asserted: true`). `CASE-001` spans two captures
   (`T1526__aws_security_scanner`, `T1580__aws_iam_accessdenied_discovery_events`) and is
   therefore left unlabelled rather than given one of the two arbitrarily.
-* The four synthetic cases carry `run_incident`'s own fields, reused rather than
-  re-implemented: all four passed, event recall 1.0 / 0.93 / 1.0 / 1.0, all trustworthy,
-  0 fabricated citations.
+* The four synthetic cases carry the label-based fields `ath.evaluation.incidents.
+  score_labels` computes **from the row's own investigation state** -- one definition,
+  shared with the benchmark: all four passed, event recall 1.0 / 0.93 / 1.0 / 1.0, all
+  trustworthy, 0 fabricated citations. Until M19 Phase 1 these were lifted from a
+  *second* `run_incident` call made after the arm had already investigated the case;
+  for arm A that second call is the same deterministic run, so every figure above is
+  unchanged, and for a model arm it would not have been. See the Phase 1 addendum in
+  PREREGISTERED.md.
 * `flaws_cloud` and `comiset` carry no labels and are scored label-free only. That is the
   point of the label-free metrics existing.
 

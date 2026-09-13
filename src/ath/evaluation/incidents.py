@@ -629,8 +629,9 @@ def run_incident(
 
     hunt = run_hunt(telemetry, config=config or HuntConfig())
 
-    # Benign discrimination, measured per finding against the answer key -- inside
-    # score_labels, along with everything else the answer key decides.
+    # The deterministic layer every arm shares: the environment model, then a triage
+    # assessment per finding. Both are inputs to score_labels, which is the one place
+    # the answer key is applied.
     environment = build_environment_model(telemetry)
     assessments = assess_findings(hunt.findings, environment)
 

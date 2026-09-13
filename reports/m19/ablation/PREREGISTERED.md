@@ -254,8 +254,9 @@ configuration (thinking, effort, `max_tokens` per call kind, the absence of samp
 parameters, the `anthropic-version` header, the endpoint); the timeout and retry policy;
 the sha256 of both system prompts and of both user-message templates; the tool surface
 for arms B and C, asserted identical; the budgets; the manifest hash and the manifest's
-head; the sha256 of `scoring.py` and `arms.py`; the Python and library versions; and the
-name of the credential variable with **presence only** -- the key's value is recorded
+head; the sha256 of `scoring.py`, `arms.py` and `incidents.py` -- the three files that turn a
+run into numbers; the Python and library versions; and the name of the credential
+variable with **presence only** -- the key's value is recorded
 nowhere, not truncated and not hashed.
 
 Every value is read from the code that will run rather than transcribed here. A frozen

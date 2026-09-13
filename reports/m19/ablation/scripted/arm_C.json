@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T13:59:41.732409+00:00",
-  "head": "fec708d",
+  "generated_at": "2026-09-13T14:34:38.122059+00:00",
+  "head": "30b8b48",
   "arm": {
     "name": "C_crew_llm",
     "model": "claude-opus-5",
@@ -39,9 +39,9 @@
       "corpus_cases": 2
     },
     "comiset": {
-      "load_seconds": 0.7,
-      "pipeline_seconds": 47.7,
-      "arm_seconds_all_repeats": 21.1,
+      "load_seconds": 0.8,
+      "pipeline_seconds": 45.3,
+      "arm_seconds_all_repeats": 22.1,
       "cases": 2,
       "findings": 5,
       "corpus_cases": 2
@@ -49,7 +49,7 @@
     "synthetic:INC-001": {
       "load_seconds": 0.0,
       "pipeline_seconds": 0.8,
-      "arm_seconds_all_repeats": 0.4,
+      "arm_seconds_all_repeats": 0.3,
       "cases": 1,
       "findings": 13,
       "corpus_cases": 1
@@ -72,16 +72,16 @@
     },
     "synthetic:INC-004": {
       "load_seconds": 0.0,
-      "pipeline_seconds": 0.7,
+      "pipeline_seconds": 0.6,
       "arm_seconds_all_repeats": 0.1,
       "cases": 1,
       "findings": 4,
       "corpus_cases": 1
     },
     "flaws_cloud": {
-      "load_seconds": 174.5,
-      "pipeline_seconds": 127.6,
-      "arm_seconds_all_repeats": 74.0,
+      "load_seconds": 168.4,
+      "pipeline_seconds": 130.0,
+      "arm_seconds_all_repeats": 73.2,
       "cases": 14,
       "findings": 1476,
       "corpus_cases": 281
@@ -177,7 +177,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:52:12.940710+00:00",
+        "started_at": "2026-09-13T14:27:15.123696+00:00",
         "counts": {
           "facts": 40,
           "inferences": 5,
@@ -1204,7 +1204,7 @@
                   "cloudtrail-control-002326",
                   "cloudtrail-control-002337"
                 ],
-                "called_at": "2026-09-13T13:52:12.940710+00:00"
+                "called_at": "2026-09-13T14:27:15.123696+00:00"
               },
               {
                 "tool": "get_events",
@@ -1246,7 +1246,7 @@
                   "cloudtrail-control-002326",
                   "cloudtrail-control-002337"
                 ],
-                "called_at": "2026-09-13T13:52:12.940710+00:00"
+                "called_at": "2026-09-13T14:27:15.123696+00:00"
               }
             ],
             "follow_up": [],
@@ -1394,7 +1394,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:52:12.940710+00:00"
+                "called_at": "2026-09-13T14:27:15.123696+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -1404,7 +1404,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:52:12.940710+00:00"
+                "called_at": "2026-09-13T14:27:15.123696+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -1414,7 +1414,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:52:12.940710+00:00"
+                "called_at": "2026-09-13T14:27:15.123696+00:00"
               }
             ],
             "follow_up": [],
@@ -1548,7 +1548,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:52:12.940710+00:00",
+        "started_at": "2026-09-13T14:27:15.123696+00:00",
         "counts": {
           "facts": 5,
           "inferences": 3,
@@ -1755,7 +1755,7 @@
                   "cloudtrail-control-001222",
                   "cloudtrail-control-001224"
                 ],
-                "called_at": "2026-09-13T13:52:12.956497+00:00"
+                "called_at": "2026-09-13T14:27:15.139466+00:00"
               }
             ],
             "follow_up": [],
@@ -1803,7 +1803,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:52:12.956497+00:00"
+                "called_at": "2026-09-13T14:27:15.139466+00:00"
               }
             ],
             "follow_up": [],
@@ -1904,7 +1904,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:53:22.094104+00:00",
+        "started_at": "2026-09-13T14:28:23.069894+00:00",
         "counts": {
           "facts": 6,
           "inferences": 6,
@@ -2154,7 +2154,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353"
                 ],
-                "called_at": "2026-09-13T13:53:22.133921+00:00"
+                "called_at": "2026-09-13T14:28:23.117654+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2171,7 +2171,7 @@
                   "comiset_slice.jsonl:b9a5cb4bdabc2fe887d9224d6c42056e5b64ff90",
                   "comiset_slice.jsonl:8487d362bc1639789fb06e87f0689008f8ab7c5e"
                 ],
-                "called_at": "2026-09-13T13:53:22.232400+00:00"
+                "called_at": "2026-09-13T14:28:23.194843+00:00"
               },
               {
                 "tool": "get_events",
@@ -2185,7 +2185,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
                 ],
-                "called_at": "2026-09-13T13:53:22.272282+00:00"
+                "called_at": "2026-09-13T14:28:23.242658+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2202,7 +2202,7 @@
                   "comiset_slice.jsonl:b9a5cb4bdabc2fe887d9224d6c42056e5b64ff90",
                   "comiset_slice.jsonl:140e90ade0416549e11a5801f44565c39b8d2585"
                 ],
-                "called_at": "2026-09-13T13:53:22.316722+00:00"
+                "called_at": "2026-09-13T14:28:23.300020+00:00"
               }
             ],
             "follow_up": [],
@@ -2273,7 +2273,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:22.316722+00:00"
+                "called_at": "2026-09-13T14:28:23.308291+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2283,7 +2283,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:22.316722+00:00"
+                "called_at": "2026-09-13T14:28:23.308291+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2293,7 +2293,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:22.316722+00:00"
+                "called_at": "2026-09-13T14:28:23.308291+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -2303,7 +2303,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:22.316722+00:00"
+                "called_at": "2026-09-13T14:28:23.308291+00:00"
               }
             ],
             "follow_up": [],
@@ -2333,7 +2333,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.087,
+      "wall_seconds": 0.085,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -2386,7 +2386,7 @@
           "facts": 2,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.087,
+          "wall_seconds": 0.085,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -2402,7 +2402,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:53:22.332577+00:00",
+        "started_at": "2026-09-13T14:28:23.308291+00:00",
         "counts": {
           "facts": 2,
           "inferences": 3,
@@ -2535,7 +2535,7 @@
                 "event_ids": [
                   "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
                 ],
-                "called_at": "2026-09-13T13:53:22.364671+00:00"
+                "called_at": "2026-09-13T14:28:23.341642+00:00"
               },
               {
                 "tool": "process_tree",
@@ -2550,7 +2550,7 @@
                   "comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b",
                   "comiset_slice.jsonl:2123df97130430b012740761f3c88c0bbe4bc345"
                 ],
-                "called_at": "2026-09-13T13:53:22.412886+00:00"
+                "called_at": "2026-09-13T14:28:23.385515+00:00"
               }
             ],
             "follow_up": [],
@@ -2590,7 +2590,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:22.412886+00:00"
+                "called_at": "2026-09-13T14:28:23.393741+00:00"
               }
             ],
             "follow_up": [],
@@ -2616,7 +2616,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; the planner chose 3 of 3 step(s) that had more than one candidate",
-      "wall_seconds": 0.288,
+      "wall_seconds": 0.246,
       "tokens": 600,
       "budgets": {
         "max_steps": 8,
@@ -2734,7 +2734,7 @@
           "facts": 16,
           "inferences": 29,
           "hypotheses": 3,
-          "wall_seconds": 0.288,
+          "wall_seconds": 0.246,
           "tokens": 600
         },
         "identity_hygiene": {
@@ -2752,7 +2752,7 @@
           "identity",
           "endpoint"
         ],
-        "started_at": "2026-09-13T13:53:23.714787+00:00",
+        "started_at": "2026-09-13T14:28:24.675661+00:00",
         "counts": {
           "facts": 16,
           "inferences": 29,
@@ -3554,7 +3554,7 @@
                 "event_ids": [
                   "evt-000481"
                 ],
-                "called_at": "2026-09-13T13:53:23.737326+00:00"
+                "called_at": "2026-09-13T14:28:24.701015+00:00"
               },
               {
                 "tool": "host_network_activity",
@@ -3573,7 +3573,7 @@
                   "evt-000454",
                   "evt-000486"
                 ],
-                "called_at": "2026-09-13T13:53:23.761954+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "analyse_beacon",
@@ -3586,7 +3586,7 @@
                 "event_ids": [
                   "evt-000481"
                 ],
-                "called_at": "2026-09-13T13:53:23.772150+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "analyse_beacon",
@@ -3605,7 +3605,7 @@
                   "evt-000454",
                   "evt-000486"
                 ],
-                "called_at": "2026-09-13T13:53:23.778923+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               }
             ],
             "follow_up": [
@@ -3943,7 +3943,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -3953,7 +3953,7 @@
                 "agent": "attack",
                 "result_summary": "Command Obfuscation",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -3963,7 +3963,7 @@
                 "agent": "attack",
                 "result_summary": "PowerShell",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -3973,7 +3973,7 @@
                 "agent": "attack",
                 "result_summary": "LSASS Memory",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -3983,7 +3983,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -3993,7 +3993,7 @@
                 "agent": "attack",
                 "result_summary": "Service Execution",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4003,7 +4003,7 @@
                 "agent": "attack",
                 "result_summary": "Archive via Utility",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4013,7 +4013,7 @@
                 "agent": "attack",
                 "result_summary": "Malicious File",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4023,7 +4023,7 @@
                 "agent": "attack",
                 "result_summary": "Malicious File",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.779682+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4033,7 +4033,7 @@
                 "agent": "attack",
                 "result_summary": "Ingress Tool Transfer",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4043,7 +4043,7 @@
                 "agent": "attack",
                 "result_summary": "Web Protocols",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4053,7 +4053,7 @@
                 "agent": "attack",
                 "result_summary": "Ingress Tool Transfer",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4063,7 +4063,7 @@
                 "agent": "attack",
                 "result_summary": "System Owner/User Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4073,7 +4073,7 @@
                 "agent": "attack",
                 "result_summary": "Domain Groups",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4083,7 +4083,7 @@
                 "agent": "attack",
                 "result_summary": "Domain Trust Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4093,7 +4093,7 @@
                 "agent": "attack",
                 "result_summary": "Rundll32",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4103,7 +4103,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4113,7 +4113,7 @@
                 "agent": "attack",
                 "result_summary": "SMB/Windows Admin Shares",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4123,7 +4123,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4133,7 +4133,7 @@
                 "agent": "attack",
                 "result_summary": "SMB/Windows Admin Shares",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4143,7 +4143,7 @@
                 "agent": "attack",
                 "result_summary": "Local Data Staging",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -4153,7 +4153,7 @@
                 "agent": "attack",
                 "result_summary": "Web Protocols",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:23.780789+00:00"
+                "called_at": "2026-09-13T14:28:24.722147+00:00"
               }
             ],
             "follow_up": [],
@@ -4382,7 +4382,7 @@
                   "evt-001074",
                   "evt-001103"
                 ],
-                "called_at": "2026-09-13T13:53:23.793930+00:00"
+                "called_at": "2026-09-13T14:28:24.738023+00:00"
               },
               {
                 "tool": "user_auth_history",
@@ -4413,7 +4413,7 @@
                   "evt-001016",
                   "evt-001081"
                 ],
-                "called_at": "2026-09-13T13:53:23.805592+00:00"
+                "called_at": "2026-09-13T14:28:24.738023+00:00"
               }
             ],
             "follow_up": [
@@ -4560,7 +4560,7 @@
                 "event_ids": [
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:53:23.809745+00:00"
+                "called_at": "2026-09-13T14:28:24.769649+00:00"
               },
               {
                 "tool": "process_tree",
@@ -4576,7 +4576,7 @@
                   "evt-000002",
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:53:23.841386+00:00"
+                "called_at": "2026-09-13T14:28:24.785531+00:00"
               },
               {
                 "tool": "get_events",
@@ -4590,7 +4590,7 @@
                 "event_ids": [
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:53:23.848459+00:00"
+                "called_at": "2026-09-13T14:28:24.785531+00:00"
               },
               {
                 "tool": "process_tree",
@@ -4610,7 +4610,7 @@
                   "evt-000374",
                   "evt-000381"
                 ],
-                "called_at": "2026-09-13T13:53:23.875857+00:00"
+                "called_at": "2026-09-13T14:28:24.817161+00:00"
               },
               {
                 "tool": "get_events",
@@ -4624,7 +4624,7 @@
                 "event_ids": [
                   "evt-000357"
                 ],
-                "called_at": "2026-09-13T13:53:23.879005+00:00"
+                "called_at": "2026-09-13T14:28:24.822327+00:00"
               },
               {
                 "tool": "get_events",
@@ -4642,7 +4642,7 @@
                   "evt-000370",
                   "evt-000374"
                 ],
-                "called_at": "2026-09-13T13:53:23.889646+00:00"
+                "called_at": "2026-09-13T14:28:24.832995+00:00"
               },
               {
                 "tool": "process_tree",
@@ -4658,7 +4658,7 @@
                   "evt-000357",
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:53:23.921327+00:00"
+                "called_at": "2026-09-13T14:28:24.864690+00:00"
               },
               {
                 "tool": "get_events",
@@ -4672,7 +4672,7 @@
                 "event_ids": [
                   "evt-000381"
                 ],
-                "called_at": "2026-09-13T13:53:23.938237+00:00"
+                "called_at": "2026-09-13T14:28:24.864690+00:00"
               },
               {
                 "tool": "process_tree",
@@ -4688,7 +4688,7 @@
                   "evt-000357",
                   "evt-000355"
                 ],
-                "called_at": "2026-09-13T13:53:23.952909+00:00"
+                "called_at": "2026-09-13T14:28:24.880555+00:00"
               },
               {
                 "tool": "get_events",
@@ -4725,7 +4725,7 @@
                   "evt-000444",
                   "evt-000457"
                 ],
-                "called_at": "2026-09-13T13:53:23.968700+00:00"
+                "called_at": "2026-09-13T14:28:24.908295+00:00"
               },
               {
                 "tool": "get_events",
@@ -4739,7 +4739,7 @@
                 "event_ids": [
                   "evt-000457"
                 ],
-                "called_at": "2026-09-13T13:53:23.984518+00:00"
+                "called_at": "2026-09-13T14:28:24.922574+00:00"
               },
               {
                 "tool": "get_events",
@@ -4753,7 +4753,7 @@
                 "event_ids": [
                   "evt-000461"
                 ],
-                "called_at": "2026-09-13T13:53:24.000327+00:00"
+                "called_at": "2026-09-13T14:28:24.932408+00:00"
               },
               {
                 "tool": "process_tree",
@@ -4765,7 +4765,7 @@
                 "agent": "endpoint",
                 "result_summary": "tool budget exhausted (40 calls)",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.000327+00:00",
+                "called_at": "2026-09-13T14:28:24.932408+00:00",
                 "refused": true
               },
               {
@@ -4778,7 +4778,7 @@
                 "agent": "endpoint",
                 "result_summary": "tool budget exhausted (40 calls)",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.000327+00:00",
+                "called_at": "2026-09-13T14:28:24.932408+00:00",
                 "refused": true
               },
               {
@@ -4791,7 +4791,7 @@
                 "agent": "endpoint",
                 "result_summary": "tool budget exhausted (40 calls)",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.000327+00:00",
+                "called_at": "2026-09-13T14:28:24.932408+00:00",
                 "refused": true
               }
             ],
@@ -4902,7 +4902,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.011,
+      "wall_seconds": 0.01,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -4978,7 +4978,7 @@
           "facts": 2,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.011,
+          "wall_seconds": 0.01,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -4994,7 +4994,7 @@
           "identity",
           "attack"
         ],
-        "started_at": "2026-09-13T13:53:24.079623+00:00",
+        "started_at": "2026-09-13T14:28:24.993051+00:00",
         "counts": {
           "facts": 2,
           "inferences": 5,
@@ -5276,7 +5276,7 @@
                   "cloudtrail-logon-000014",
                   "cloudtrail-logon-000015"
                 ],
-                "called_at": "2026-09-13T13:53:24.079623+00:00"
+                "called_at": "2026-09-13T14:28:24.993051+00:00"
               }
             ],
             "follow_up": [
@@ -5364,7 +5364,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.079623+00:00"
+                "called_at": "2026-09-13T14:28:24.993051+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5374,7 +5374,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.079623+00:00"
+                "called_at": "2026-09-13T14:28:24.993051+00:00"
               }
             ],
             "follow_up": [],
@@ -5412,7 +5412,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.021,
+      "wall_seconds": 0.023,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -5485,7 +5485,7 @@
           "facts": 3,
           "inferences": 6,
           "hypotheses": 1,
-          "wall_seconds": 0.021,
+          "wall_seconds": 0.023,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -5501,7 +5501,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:53:24.175534+00:00",
+        "started_at": "2026-09-13T14:28:25.073983+00:00",
         "counts": {
           "facts": 3,
           "inferences": 6,
@@ -5697,7 +5697,7 @@
                 "event_ids": [
                   "k8s-control-000003"
                 ],
-                "called_at": "2026-09-13T13:53:24.184044+00:00"
+                "called_at": "2026-09-13T14:28:25.086142+00:00"
               },
               {
                 "tool": "get_events",
@@ -5713,7 +5713,7 @@
                   "k8s-control-000003",
                   "k8s-control-000004"
                 ],
-                "called_at": "2026-09-13T13:53:24.191709+00:00"
+                "called_at": "2026-09-13T14:28:25.104103+00:00"
               }
             ],
             "follow_up": [],
@@ -5778,7 +5778,7 @@
                 "agent": "attack",
                 "result_summary": "Additional Container Cluster Roles",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.191709+00:00"
+                "called_at": "2026-09-13T14:28:25.104103+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5788,7 +5788,7 @@
                 "agent": "attack",
                 "result_summary": "Additional Container Cluster Roles",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.191709+00:00"
+                "called_at": "2026-09-13T14:28:25.104103+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -5798,7 +5798,7 @@
                 "agent": "attack",
                 "result_summary": "Container Administration Command",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.191709+00:00"
+                "called_at": "2026-09-13T14:28:25.104103+00:00"
               }
             ],
             "follow_up": [],
@@ -5824,7 +5824,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.056,
+      "wall_seconds": 0.047,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -5897,7 +5897,7 @@
           "facts": 2,
           "inferences": 4,
           "hypotheses": 1,
-          "wall_seconds": 0.056,
+          "wall_seconds": 0.047,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -5913,7 +5913,7 @@
           "endpoint",
           "attack"
         ],
-        "started_at": "2026-09-13T13:53:24.910146+00:00",
+        "started_at": "2026-09-13T14:28:25.785992+00:00",
         "counts": {
           "facts": 2,
           "inferences": 4,
@@ -6067,7 +6067,7 @@
                   "evt-000905",
                   "evt-000909"
                 ],
-                "called_at": "2026-09-13T13:53:24.922790+00:00"
+                "called_at": "2026-09-13T14:28:25.801919+00:00"
               },
               {
                 "tool": "process_tree",
@@ -6081,7 +6081,7 @@
                 "event_ids": [
                   "evt-000901"
                 ],
-                "called_at": "2026-09-13T13:53:24.940546+00:00"
+                "called_at": "2026-09-13T14:28:25.801919+00:00"
               },
               {
                 "tool": "get_events",
@@ -6099,7 +6099,7 @@
                   "evt-000925",
                   "evt-000927"
                 ],
-                "called_at": "2026-09-13T13:53:24.954696+00:00"
+                "called_at": "2026-09-13T14:28:25.824248+00:00"
               },
               {
                 "tool": "process_tree",
@@ -6113,7 +6113,7 @@
                 "event_ids": [
                   "evt-000922"
                 ],
-                "called_at": "2026-09-13T13:53:24.954696+00:00"
+                "called_at": "2026-09-13T14:28:25.833960+00:00"
               }
             ],
             "follow_up": [],
@@ -6172,7 +6172,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.954696+00:00"
+                "called_at": "2026-09-13T14:28:25.833960+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -6182,7 +6182,7 @@
                 "agent": "attack",
                 "result_summary": "Inhibit System Recovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:53:24.954696+00:00"
+                "called_at": "2026-09-13T14:28:25.833960+00:00"
               }
             ],
             "follow_up": [],
@@ -6212,7 +6212,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.305,
+      "wall_seconds": 0.36,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -6271,7 +6271,7 @@
           "facts": 2,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.305,
+          "wall_seconds": 0.36,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -6287,7 +6287,7 @@
           "identity",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:37.954304+00:00",
+        "started_at": "2026-09-13T14:34:33.802525+00:00",
         "counts": {
           "facts": 2,
           "inferences": 5,
@@ -29314,7 +29314,7 @@
                   "cloudtrail-logon-007194",
                   "cloudtrail-logon-007195"
                 ],
-                "called_at": "2026-09-13T13:59:38.247773+00:00"
+                "called_at": "2026-09-13T14:34:34.153247+00:00"
               }
             ],
             "follow_up": [
@@ -29525,7 +29525,7 @@
                 "agent": "attack",
                 "result_summary": "Password Guessing",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.251711+00:00"
+                "called_at": "2026-09-13T14:34:34.153247+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -29535,7 +29535,7 @@
                 "agent": "attack",
                 "result_summary": "Valid Accounts",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.251711+00:00"
+                "called_at": "2026-09-13T14:34:34.153247+00:00"
               }
             ],
             "follow_up": [],
@@ -34081,7 +34081,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.213,
+      "wall_seconds": 0.227,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -34137,7 +34137,7 @@
           "facts": 10,
           "inferences": 4,
           "hypotheses": 1,
-          "wall_seconds": 0.213,
+          "wall_seconds": 0.227,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -34153,7 +34153,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:38.291198+00:00",
+        "started_at": "2026-09-13T14:34:34.201579+00:00",
         "counts": {
           "facts": 10,
           "inferences": 4,
@@ -34499,7 +34499,7 @@
                   "cloudtrail-control-110356",
                   "cloudtrail-control-110357"
                 ],
-                "called_at": "2026-09-13T13:59:38.494406+00:00"
+                "called_at": "2026-09-13T14:34:34.422721+00:00"
               }
             ],
             "follow_up": [],
@@ -34576,7 +34576,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.494406+00:00"
+                "called_at": "2026-09-13T14:34:34.422721+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -34586,7 +34586,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.494406+00:00"
+                "called_at": "2026-09-13T14:34:34.422721+00:00"
               }
             ],
             "follow_up": [],
@@ -34620,7 +34620,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.405,
+      "wall_seconds": 0.488,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -34676,7 +34676,7 @@
           "facts": 40,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.405,
+          "wall_seconds": 0.488,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -34692,7 +34692,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:38.494406+00:00",
+        "started_at": "2026-09-13T14:34:34.435854+00:00",
         "counts": {
           "facts": 40,
           "inferences": 5,
@@ -35721,7 +35721,7 @@
                   "cloudtrail-control-189370",
                   "cloudtrail-control-189378"
                 ],
-                "called_at": "2026-09-13T13:59:38.700351+00:00"
+                "called_at": "2026-09-13T14:34:34.677270+00:00"
               },
               {
                 "tool": "get_events",
@@ -35763,7 +35763,7 @@
                   "cloudtrail-control-189304",
                   "cloudtrail-control-189305"
                 ],
-                "called_at": "2026-09-13T13:59:38.907563+00:00"
+                "called_at": "2026-09-13T14:34:34.915064+00:00"
               }
             ],
             "follow_up": [],
@@ -35913,7 +35913,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.907563+00:00"
+                "called_at": "2026-09-13T14:34:34.924372+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -35923,7 +35923,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.907563+00:00"
+                "called_at": "2026-09-13T14:34:34.924372+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -35933,7 +35933,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:38.907563+00:00"
+                "called_at": "2026-09-13T14:34:34.924372+00:00"
               }
             ],
             "follow_up": [],
@@ -35991,7 +35991,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.384,
+      "wall_seconds": 0.401,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -36047,7 +36047,7 @@
           "facts": 33,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.384,
+          "wall_seconds": 0.401,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -36063,7 +36063,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:38.907563+00:00",
+        "started_at": "2026-09-13T14:34:34.926167+00:00",
         "counts": {
           "facts": 33,
           "inferences": 5,
@@ -36940,7 +36940,7 @@
                   "cloudtrail-control-225236",
                   "cloudtrail-control-225366"
                 ],
-                "called_at": "2026-09-13T13:59:39.118096+00:00"
+                "called_at": "2026-09-13T14:34:35.170808+00:00"
               },
               {
                 "tool": "get_events",
@@ -36975,7 +36975,7 @@
                   "cloudtrail-control-225652",
                   "cloudtrail-control-225659"
                 ],
-                "called_at": "2026-09-13T13:59:39.299633+00:00"
+                "called_at": "2026-09-13T14:34:35.327528+00:00"
               }
             ],
             "follow_up": [],
@@ -37113,7 +37113,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.299633+00:00"
+                "called_at": "2026-09-13T14:34:35.327528+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -37123,7 +37123,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.299633+00:00"
+                "called_at": "2026-09-13T14:34:35.327528+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -37133,7 +37133,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.299633+00:00"
+                "called_at": "2026-09-13T14:34:35.327528+00:00"
               }
             ],
             "follow_up": [],
@@ -37186,7 +37186,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.1,
+      "wall_seconds": 0.089,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -37239,7 +37239,7 @@
           "facts": 1,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.1,
+          "wall_seconds": 0.089,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -37255,7 +37255,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.306760+00:00",
+        "started_at": "2026-09-13T14:34:35.327528+00:00",
         "counts": {
           "facts": 1,
           "inferences": 3,
@@ -37366,7 +37366,7 @@
                 "event_ids": [
                   "cloudtrail-control-226796"
                 ],
-                "called_at": "2026-09-13T13:59:39.397158+00:00"
+                "called_at": "2026-09-13T14:34:35.423122+00:00"
               }
             ],
             "follow_up": [],
@@ -37406,7 +37406,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.397158+00:00"
+                "called_at": "2026-09-13T14:34:35.423122+00:00"
               }
             ],
             "follow_up": [],
@@ -37431,7 +37431,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.082,
+      "wall_seconds": 0.089,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -37484,7 +37484,7 @@
           "facts": 1,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.082,
+          "wall_seconds": 0.089,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -37500,7 +37500,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.409222+00:00",
+        "started_at": "2026-09-13T14:34:35.423122+00:00",
         "counts": {
           "facts": 1,
           "inferences": 3,
@@ -37611,7 +37611,7 @@
                 "event_ids": [
                   "cloudtrail-control-226797"
                 ],
-                "called_at": "2026-09-13T13:59:39.492316+00:00"
+                "called_at": "2026-09-13T14:34:35.504439+00:00"
               }
             ],
             "follow_up": [],
@@ -37651,7 +37651,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.492316+00:00"
+                "called_at": "2026-09-13T14:34:35.504439+00:00"
               }
             ],
             "follow_up": [],
@@ -37676,7 +37676,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.16,
+      "wall_seconds": 0.169,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -37729,7 +37729,7 @@
           "facts": 15,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.16,
+          "wall_seconds": 0.169,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -37745,7 +37745,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.492316+00:00",
+        "started_at": "2026-09-13T14:34:35.518231+00:00",
         "counts": {
           "facts": 15,
           "inferences": 3,
@@ -38187,7 +38187,7 @@
                   "cloudtrail-control-238987",
                   "cloudtrail-control-239755"
                 ],
-                "called_at": "2026-09-13T13:59:39.653479+00:00"
+                "called_at": "2026-09-13T14:34:35.683014+00:00"
               }
             ],
             "follow_up": [],
@@ -38255,7 +38255,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.653479+00:00"
+                "called_at": "2026-09-13T14:34:35.683014+00:00"
               }
             ],
             "follow_up": [],
@@ -38294,7 +38294,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.177,
+      "wall_seconds": 0.209,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -38347,7 +38347,7 @@
           "facts": 5,
           "inferences": 4,
           "hypotheses": 1,
-          "wall_seconds": 0.177,
+          "wall_seconds": 0.209,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -38363,7 +38363,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.653479+00:00",
+        "started_at": "2026-09-13T14:34:35.692198+00:00",
         "counts": {
           "facts": 5,
           "inferences": 4,
@@ -38598,7 +38598,7 @@
                   "cloudtrail-control-323942",
                   "cloudtrail-control-323974"
                 ],
-                "called_at": "2026-09-13T13:59:39.832525+00:00"
+                "called_at": "2026-09-13T14:34:35.898378+00:00"
               }
             ],
             "follow_up": [],
@@ -38646,7 +38646,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.832525+00:00"
+                "called_at": "2026-09-13T14:34:35.898378+00:00"
               }
             ],
             "follow_up": [],
@@ -38675,7 +38675,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.086,
+      "wall_seconds": 0.132,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -38728,7 +38728,7 @@
           "facts": 1,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.086,
+          "wall_seconds": 0.132,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -38744,7 +38744,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.832525+00:00",
+        "started_at": "2026-09-13T14:34:35.905119+00:00",
         "counts": {
           "facts": 1,
           "inferences": 3,
@@ -38855,7 +38855,7 @@
                 "event_ids": [
                   "cloudtrail-control-1576322"
                 ],
-                "called_at": "2026-09-13T13:59:39.925176+00:00"
+                "called_at": "2026-09-13T14:34:36.032397+00:00"
               }
             ],
             "follow_up": [],
@@ -38895,7 +38895,7 @@
                 "agent": "attack",
                 "result_summary": "Disable or Modify Tools",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:39.925176+00:00"
+                "called_at": "2026-09-13T14:34:36.032397+00:00"
               }
             ],
             "follow_up": [],
@@ -38920,7 +38920,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.128,
+      "wall_seconds": 0.163,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -38973,7 +38973,7 @@
           "facts": 13,
           "inferences": 3,
           "hypotheses": 1,
-          "wall_seconds": 0.128,
+          "wall_seconds": 0.163,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -38989,7 +38989,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:39.925176+00:00",
+        "started_at": "2026-09-13T14:34:36.042139+00:00",
         "counts": {
           "facts": 13,
           "inferences": 3,
@@ -39385,7 +39385,7 @@
                   "cloudtrail-control-1649394",
                   "cloudtrail-control-1649395"
                 ],
-                "called_at": "2026-09-13T13:59:40.054778+00:00"
+                "called_at": "2026-09-13T14:34:36.200411+00:00"
               }
             ],
             "follow_up": [],
@@ -39449,7 +39449,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.054778+00:00"
+                "called_at": "2026-09-13T14:34:36.200411+00:00"
               }
             ],
             "follow_up": [],
@@ -39486,7 +39486,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.394,
+      "wall_seconds": 0.516,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -39542,7 +39542,7 @@
           "facts": 40,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.394,
+          "wall_seconds": 0.516,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -39558,7 +39558,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:40.054778+00:00",
+        "started_at": "2026-09-13T14:34:36.205634+00:00",
         "counts": {
           "facts": 40,
           "inferences": 5,
@@ -40584,7 +40584,7 @@
                   "cloudtrail-control-1678097",
                   "cloudtrail-control-1678099"
                 ],
-                "called_at": "2026-09-13T13:59:40.255387+00:00"
+                "called_at": "2026-09-13T14:34:36.443991+00:00"
               },
               {
                 "tool": "get_events",
@@ -40626,7 +40626,7 @@
                   "cloudtrail-control-1678092",
                   "cloudtrail-control-1678093"
                 ],
-                "called_at": "2026-09-13T13:59:40.453802+00:00"
+                "called_at": "2026-09-13T14:34:36.723849+00:00"
               }
             ],
             "follow_up": [],
@@ -40773,7 +40773,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.455342+00:00"
+                "called_at": "2026-09-13T14:34:36.723849+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -40783,7 +40783,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.455342+00:00"
+                "called_at": "2026-09-13T14:34:36.723849+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -40793,7 +40793,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.455342+00:00"
+                "called_at": "2026-09-13T14:34:36.723849+00:00"
               }
             ],
             "follow_up": [],
@@ -40848,7 +40848,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.303,
+      "wall_seconds": 0.372,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -40904,7 +40904,7 @@
           "facts": 17,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.303,
+          "wall_seconds": 0.372,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -40920,7 +40920,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:40.460926+00:00",
+        "started_at": "2026-09-13T14:34:36.723849+00:00",
         "counts": {
           "facts": 17,
           "inferences": 5,
@@ -41435,7 +41435,7 @@
                   "cloudtrail-control-1760670",
                   "cloudtrail-control-1760846"
                 ],
-                "called_at": "2026-09-13T13:59:40.603939+00:00"
+                "called_at": "2026-09-13T14:34:36.877336+00:00"
               },
               {
                 "tool": "get_events",
@@ -41453,7 +41453,7 @@
                   "cloudtrail-control-1760670",
                   "cloudtrail-control-1760671"
                 ],
-                "called_at": "2026-09-13T13:59:40.764500+00:00"
+                "called_at": "2026-09-13T14:34:37.094207+00:00"
               }
             ],
             "follow_up": [],
@@ -41555,7 +41555,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.764500+00:00"
+                "called_at": "2026-09-13T14:34:37.094207+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -41565,7 +41565,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.764500+00:00"
+                "called_at": "2026-09-13T14:34:37.094207+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -41575,7 +41575,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:40.764500+00:00"
+                "called_at": "2026-09-13T14:34:37.094207+00:00"
               }
             ],
             "follow_up": [],
@@ -41614,7 +41614,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.39,
+      "wall_seconds": 0.475,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -41670,7 +41670,7 @@
           "facts": 40,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.39,
+          "wall_seconds": 0.475,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -41686,7 +41686,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:40.764500+00:00",
+        "started_at": "2026-09-13T14:34:37.094207+00:00",
         "counts": {
           "facts": 40,
           "inferences": 5,
@@ -42709,7 +42709,7 @@
                   "cloudtrail-control-1776597",
                   "cloudtrail-control-1776608"
                 ],
-                "called_at": "2026-09-13T13:59:40.985696+00:00"
+                "called_at": "2026-09-13T14:34:37.343870+00:00"
               },
               {
                 "tool": "get_events",
@@ -42751,7 +42751,7 @@
                   "cloudtrail-control-1776531",
                   "cloudtrail-control-1776532"
                 ],
-                "called_at": "2026-09-13T13:59:41.166216+00:00"
+                "called_at": "2026-09-13T14:34:37.566191+00:00"
               }
             ],
             "follow_up": [],
@@ -42895,7 +42895,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.166216+00:00"
+                "called_at": "2026-09-13T14:34:37.566191+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -42905,7 +42905,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.166216+00:00"
+                "called_at": "2026-09-13T14:34:37.566191+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -42915,7 +42915,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.166216+00:00"
+                "called_at": "2026-09-13T14:34:37.566191+00:00"
               }
             ],
             "follow_up": [],
@@ -42967,7 +42967,7 @@
       "scripted": true,
       "llm_degraded": false,
       "llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
-      "wall_seconds": 0.481,
+      "wall_seconds": 0.461,
       "tokens": 150,
       "budgets": {
         "max_steps": 8,
@@ -43023,7 +43023,7 @@
           "facts": 37,
           "inferences": 5,
           "hypotheses": 1,
-          "wall_seconds": 0.481,
+          "wall_seconds": 0.461,
           "tokens": 150
         },
         "identity_hygiene": {
@@ -43039,7 +43039,7 @@
           "control_plane",
           "attack"
         ],
-        "started_at": "2026-09-13T13:59:41.171339+00:00",
+        "started_at": "2026-09-13T14:34:37.582016+00:00",
         "counts": {
           "facts": 37,
           "inferences": 5,
@@ -44003,7 +44003,7 @@
                   "cloudtrail-control-1817365",
                   "cloudtrail-control-1817368"
                 ],
-                "called_at": "2026-09-13T13:59:41.443547+00:00"
+                "called_at": "2026-09-13T14:34:37.819403+00:00"
               },
               {
                 "tool": "get_events",
@@ -44042,7 +44042,7 @@
                   "cloudtrail-control-1817378",
                   "cloudtrail-control-1817466"
                 ],
-                "called_at": "2026-09-13T13:59:41.652670+00:00"
+                "called_at": "2026-09-13T14:34:38.041652+00:00"
               }
             ],
             "follow_up": [],
@@ -44187,7 +44187,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Service Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.652670+00:00"
+                "called_at": "2026-09-13T14:34:38.041652+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -44197,7 +44197,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.652670+00:00"
+                "called_at": "2026-09-13T14:34:38.041652+00:00"
               },
               {
                 "tool": "lookup_technique",
@@ -44207,7 +44207,7 @@
                 "agent": "attack",
                 "result_summary": "Cloud Infrastructure Discovery",
                 "event_ids": [],
-                "called_at": "2026-09-13T13:59:41.652670+00:00"
+                "called_at": "2026-09-13T14:34:38.041652+00:00"
               }
             ],
             "follow_up": [],

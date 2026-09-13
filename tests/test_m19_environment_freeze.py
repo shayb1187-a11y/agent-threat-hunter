@@ -101,7 +101,7 @@ def test_the_record_carries_what_the_run_depends_on(frozen) -> None:
         "planner_system", "synthesis_system",
         "planner_user_template", "synthesis_user_template",
     }
-    assert set(frozen["scoring"]) == {"scoring.py", "arms.py"}
+    assert set(frozen["scoring"]) == {"scoring.py", "arms.py", "incidents.py"}
     assert frozen["runtime"]["packages"]["pandas"] != "absent"
     assert frozen["manifest_hash"] == "manifest-hash"
 

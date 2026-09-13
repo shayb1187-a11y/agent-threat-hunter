@@ -220,9 +220,9 @@ class InvestigationOrchestrator:
 
         Returns:
             ``(choice, decision)``. ``choice`` is ``None`` whenever the deterministic
-            order must answer instead; ``decision`` is the :data:`~ath.agent.state.
-            PLANNER_DECISIONS` name saying *why*, which is the part an aggregate can
-            read. The four ways to end up back on the deterministic path are not the
+            order must answer instead; ``decision`` is one of the names in
+            :data:`ath.agent.state.PLANNER_DECISIONS`, saying *why* -- which is the
+            part an aggregate can read. The four ways to end up back on the deterministic path are not the
             same event, and a row that records only "fell back" cannot tell a model
             outage from a model that declined.
         """

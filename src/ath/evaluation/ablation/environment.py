@@ -55,6 +55,7 @@ from typing import Any, Callable, Sequence
 from ath.agent import llm as llm_module
 from ath.agent import orchestrator as orchestrator_module
 from ath.agent.tools import ToolBox
+from ath.evaluation import incidents as incidents_module
 from ath.evaluation.ablation import arms as arms_module
 from ath.evaluation.ablation import scoring as scoring_module
 
@@ -170,10 +171,17 @@ def prompt_hashes() -> dict[str, str]:
 
 
 def scoring_hashes() -> dict[str, str]:
-    """The code that turns a run into numbers, hashed file by file."""
+    """The code that turns a run into numbers, hashed file by file.
+
+    Three files, not two: the label-based scores moved into
+    :func:`ath.evaluation.incidents.score_labels` in M19 Phase 1, so the file that
+    decides ``passed``, ``event_recall`` and the trust gate is hashed alongside the
+    label-free scoring and the arm definitions.
+    """
     return {
         "scoring.py": sha256_file(Path(scoring_module.__file__)),
         "arms.py": sha256_file(Path(arms_module.__file__)),
+        "incidents.py": sha256_file(Path(incidents_module.__file__)),
     }
 
 

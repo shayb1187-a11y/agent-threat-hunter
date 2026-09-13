@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T13:43:59.520820+00:00",
-  "head": "fec708d",
+  "generated_at": "2026-09-13T14:19:12.430126+00:00",
+  "head": "30b8b48",
   "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
   "summary": {
     "cases": 22,
@@ -19,7 +19,7 @@
             "hypotheses": 0.0909,
             "tool_calls": 5.5909,
             "steps": 2.0909,
-            "wall_seconds": 0.2067
+            "wall_seconds": 0.205
           },
           "total": {
             "facts": 335,
@@ -34,7 +34,7 @@
             "case_evidence_touched": 361,
             "tool_calls": 123,
             "steps": 46,
-            "wall_seconds": 4.548,
+            "wall_seconds": 4.51,
             "facts_inferred_from_pid": 3,
             "ambiguous_pid_inferences": 0,
             "tokens": null
@@ -58,7 +58,7 @@
               "hypotheses": 0.0,
               "tool_calls": 3.5,
               "steps": 2.0,
-              "wall_seconds": 0.0116
+              "wall_seconds": 0.0081
             },
             "total": {
               "facts": 45,
@@ -73,7 +73,7 @@
               "case_evidence_touched": 37,
               "tool_calls": 7,
               "steps": 4,
-              "wall_seconds": 0.023,
+              "wall_seconds": 0.016,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -96,7 +96,7 @@
               "hypotheses": 0.0,
               "tool_calls": 5.5,
               "steps": 2.0,
-              "wall_seconds": 0.1529
+              "wall_seconds": 0.1676
             },
             "total": {
               "facts": 8,
@@ -111,7 +111,7 @@
               "case_evidence_touched": 3,
               "tool_calls": 11,
               "steps": 4,
-              "wall_seconds": 0.306,
+              "wall_seconds": 0.335,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -134,7 +134,7 @@
               "hypotheses": 0.0,
               "tool_calls": 3.4286,
               "steps": 2.0,
-              "wall_seconds": 0.2749
+              "wall_seconds": 0.2697
             },
             "total": {
               "facts": 255,
@@ -149,7 +149,7 @@
               "case_evidence_touched": 269,
               "tool_calls": 48,
               "steps": 28,
-              "wall_seconds": 3.849,
+              "wall_seconds": 3.776,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -172,7 +172,7 @@
               "hypotheses": 2.0,
               "tool_calls": 43.0,
               "steps": 4.0,
-              "wall_seconds": 0.2868
+              "wall_seconds": 0.2959
             },
             "total": {
               "facts": 20,
@@ -187,7 +187,7 @@
               "case_evidence_touched": 31,
               "tool_calls": 43,
               "steps": 4,
-              "wall_seconds": 0.287,
+              "wall_seconds": 0.296,
               "facts_inferred_from_pid": 1,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -210,7 +210,7 @@
               "hypotheses": 0.0,
               "tool_calls": 3.0,
               "steps": 2.0,
-              "wall_seconds": 0.0102
+              "wall_seconds": 0.0067
             },
             "total": {
               "facts": 2,
@@ -225,7 +225,7 @@
               "case_evidence_touched": 13,
               "tool_calls": 3,
               "steps": 2,
-              "wall_seconds": 0.01,
+              "wall_seconds": 0.007,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -248,7 +248,7 @@
               "hypotheses": 0.0,
               "tool_calls": 6.0,
               "steps": 2.0,
-              "wall_seconds": 0.0522
+              "wall_seconds": 0.0467
             },
             "total": {
               "facts": 2,
@@ -263,7 +263,7 @@
               "case_evidence_touched": 6,
               "tool_calls": 6,
               "steps": 2,
-              "wall_seconds": 0.052,
+              "wall_seconds": 0.047,
               "facts_inferred_from_pid": 2,
               "ambiguous_pid_inferences": 0,
               "tokens": null
@@ -286,7 +286,7 @@
               "hypotheses": 0.0,
               "tool_calls": 5.0,
               "steps": 2.0,
-              "wall_seconds": 0.0209
+              "wall_seconds": 0.0339
             },
             "total": {
               "facts": 3,
@@ -301,7 +301,7 @@
               "case_evidence_touched": 2,
               "tool_calls": 5,
               "steps": 2,
-              "wall_seconds": 0.021,
+              "wall_seconds": 0.034,
               "facts_inferred_from_pid": 0,
               "ambiguous_pid_inferences": 0,
               "tokens": null
