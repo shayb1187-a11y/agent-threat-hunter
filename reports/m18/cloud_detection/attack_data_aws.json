@@ -1,0 +1,904 @@
+{
+  "corpus": "attack_data_aws",
+  "preregistered": "reports/m18/cloud_detection/PREREGISTERED.md",
+  "thresholds": {
+    "cloud_discovery_min_services": 10,
+    "cloud_discovery_window_minutes": 10.0,
+    "cloud_denial_min_count": 25,
+    "cloud_denial_window_minutes": 10.0,
+    "cloud_identity_change_window_minutes": 60.0,
+    "cloud_identity_failed_min_count": 5
+  },
+  "per_capture": {
+    "T1078.004__aws_login_sfa__cloudtrail.json": {
+      "labelled_technique": "T1078.004",
+      "control_rows": 0,
+      "logon_rows": 2,
+      "actors": [],
+      "findings_new": [],
+      "findings_pre_existing": [],
+      "by_rule": {},
+      "techniques_asserted": [],
+      "caught_any": false,
+      "caught_with_labelled_technique": false
+    },
+    "T1098__aws_iam_delete_policy__aws_iam_delete_policy.json": {
+      "labelled_technique": "T1098",
+      "control_rows": 116,
+      "logon_rows": 0,
+      "actors": [
+        "bhavin_cli",
+        "bpatel@contoso.local",
+        "jose_cli",
+        "mhart_cli",
+        "patrick_cli"
+      ],
+      "findings_new": [
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 6,
+          "evidence_truncated": false,
+          "window_start": "2020-08-05 20:29:10+00:00",
+          "window_end": "2020-08-05 21:21:31+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 6
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 3,
+          "evidence_truncated": false,
+          "window_start": "2020-08-05 22:10:28+00:00",
+          "window_end": "2020-08-05 22:10:28+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 3
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "jose_cli",
+          "user": "jose_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2020-10-20 00:59:11+00:00",
+          "window_end": "2020-10-20 00:59:11+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "mhart_cli",
+          "user": "mhart_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-11 02:31:47+00:00",
+          "window_end": "2021-02-11 03:30:38+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "patrick_cli",
+          "user": "patrick_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-18 13:19:19+00:00",
+          "window_end": "2021-02-18 14:06:20+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 7,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 21:19:30+00:00",
+          "window_end": "2021-02-24 22:10:21+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 7
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-006",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 5,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 21:20:55+00:00",
+          "window_end": "2021-02-24 22:09:34+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "rejected_count": 5
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "low"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 7,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 22:23:25+00:00",
+          "window_end": "2021-02-24 22:59:03+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 7
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-006",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 6,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 22:25:18+00:00",
+          "window_end": "2021-02-24 22:55:54+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "rejected_count": 6
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "low"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 3,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 23:24:57+00:00",
+          "window_end": "2021-02-25 00:08:48+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 3
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bpatel@contoso.local",
+          "user": "bpatel@contoso.local",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 5,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 00:31:26+00:00",
+          "window_end": "2021-02-25 00:57:54+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 5
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 00:38:49+00:00",
+          "window_end": "2021-02-25 00:38:49+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "patrick_cli",
+          "user": "patrick_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 09:37:27+00:00",
+          "window_end": "2021-02-25 10:07:08+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "patrick_cli",
+          "user": "patrick_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 11:42:24+00:00",
+          "window_end": "2021-02-25 12:20:44+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "patrick_cli",
+          "user": "patrick_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 13:49:46+00:00",
+          "window_end": "2021-02-25 13:57:35+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 3,
+          "evidence_truncated": false,
+          "window_start": "2021-02-25 21:37:20+00:00",
+          "window_end": "2021-02-25 22:09:11+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 3
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-02-26 02:27:16+00:00",
+          "window_end": "2021-02-26 02:27:18+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 11,
+          "evidence_truncated": false,
+          "window_start": "2021-03-02 20:40:40+00:00",
+          "window_end": "2021-03-02 21:19:09+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 11
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-10 23:54:25+00:00",
+          "window_end": "2021-03-10 23:54:25+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-03-16 15:38:46+00:00",
+          "window_end": "2021-03-16 15:56:20+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-16 16:52:27+00:00",
+          "window_end": "2021-03-16 16:52:27+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-16 19:55:01+00:00",
+          "window_end": "2021-03-16 19:55:01+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-03-17 18:29:24+00:00",
+          "window_end": "2021-03-17 18:35:10+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 2,
+          "evidence_truncated": false,
+          "window_start": "2021-03-17 23:46:09+00:00",
+          "window_end": "2021-03-17 23:47:36+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 2
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-22 18:30:39+00:00",
+          "window_end": "2021-03-22 18:30:39+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 6,
+          "evidence_truncated": false,
+          "window_start": "2021-03-22 20:50:55+00:00",
+          "window_end": "2021-03-22 21:45:36+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 6
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bpatel@contoso.local",
+          "user": "bpatel@contoso.local",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-22 21:08:07+00:00",
+          "window_end": "2021-03-22 21:08:07+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-22 21:51:03+00:00",
+          "window_end": "2021-03-22 21:51:03+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-005",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:151521547504/us-east-1",
+          "evidence_count": 1,
+          "evidence_truncated": false,
+          "window_start": "2021-03-23 19:23:57+00:00",
+          "window_end": "2021-03-23 19:23:57+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "removal_count": 1
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "medium"
+            }
+          ]
+        }
+      ],
+      "findings_pre_existing": [],
+      "by_rule": {
+        "AWS-005": 27,
+        "AWS-006": 2
+      },
+      "techniques_asserted": [
+        "T1098"
+      ],
+      "caught_any": true,
+      "caught_with_labelled_technique": true
+    },
+    "T1526__aws_security_scanner__aws_security_scanner.json": {
+      "labelled_technique": "T1526",
+      "control_rows": 1071,
+      "logon_rows": 0,
+      "actors": [
+        "cloudsploit"
+      ],
+      "findings_new": [
+        {
+          "rule_id": "AWS-003",
+          "severity": "HIGH",
+          "actor": "cloudsploit",
+          "user": "cloudsploit",
+          "device": "aws:111111111111/us-east-1",
+          "evidence_count": 19,
+          "evidence_truncated": true,
+          "window_start": "2021-04-13 11:32:52+00:00",
+          "window_end": "2021-04-13 11:35:44+00:00",
+          "magnitude": {
+            "call_count": 1071,
+            "distinct_services": 19,
+            "distinct_resource_types": 54,
+            "denied_count": 979,
+            "denied_fraction": 0.9141
+          },
+          "techniques": [
+            {
+              "technique_id": "T1526",
+              "confidence": "high"
+            },
+            {
+              "technique_id": "T1580",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-004",
+          "severity": "HIGH",
+          "actor": "cloudsploit",
+          "user": "cloudsploit",
+          "device": "aws:111111111111/us-east-1",
+          "evidence_count": 20,
+          "evidence_truncated": true,
+          "window_start": "2021-04-13 11:32:52+00:00",
+          "window_end": "2021-04-13 11:35:44+00:00",
+          "magnitude": {
+            "distinct_services": 15,
+            "distinct_resource_types": 49,
+            "denied_count": 979
+          },
+          "techniques": [
+            {
+              "technique_id": "T1580",
+              "confidence": "medium"
+            }
+          ]
+        }
+      ],
+      "findings_pre_existing": [],
+      "by_rule": {
+        "AWS-003": 1,
+        "AWS-004": 1
+      },
+      "techniques_asserted": [
+        "T1526",
+        "T1580"
+      ],
+      "caught_any": true,
+      "caught_with_labelled_technique": true
+    },
+    "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json": {
+      "labelled_technique": "T1580",
+      "control_rows": 1150,
+      "logon_rows": 0,
+      "actors": [
+        "cloudmapper",
+        "cloudsploit"
+      ],
+      "findings_new": [
+        {
+          "rule_id": "AWS-003",
+          "severity": "HIGH",
+          "actor": "cloudsploit",
+          "user": "cloudsploit",
+          "device": "aws:731544447609/eu-central-1",
+          "evidence_count": 20,
+          "evidence_truncated": true,
+          "window_start": "2021-04-13 11:32:51+00:00",
+          "window_end": "2021-04-13 11:36:44+00:00",
+          "magnitude": {
+            "call_count": 1093,
+            "distinct_services": 45,
+            "distinct_resource_types": 77,
+            "denied_count": 1093,
+            "denied_fraction": 1.0
+          },
+          "techniques": [
+            {
+              "technique_id": "T1526",
+              "confidence": "high"
+            },
+            {
+              "technique_id": "T1580",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-004",
+          "severity": "HIGH",
+          "actor": "cloudsploit",
+          "user": "cloudsploit",
+          "device": "aws:731544447609/eu-central-1",
+          "evidence_count": 20,
+          "evidence_truncated": true,
+          "window_start": "2021-04-13 11:32:51+00:00",
+          "window_end": "2021-04-13 11:36:44+00:00",
+          "magnitude": {
+            "distinct_services": 45,
+            "distinct_resource_types": 78,
+            "denied_count": 1113
+          },
+          "techniques": [
+            {
+              "technique_id": "T1580",
+              "confidence": "medium"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-004",
+          "severity": "HIGH",
+          "actor": "cloudmapper",
+          "user": "cloudmapper",
+          "device": "aws:731544447609/us-east-1",
+          "evidence_count": 5,
+          "evidence_truncated": true,
+          "window_start": "2021-04-13 13:30:36+00:00",
+          "window_end": "2021-04-13 13:35:20+00:00",
+          "magnitude": {
+            "distinct_services": 3,
+            "distinct_resource_types": 5,
+            "denied_count": 37
+          },
+          "techniques": [
+            {
+              "technique_id": "T1580",
+              "confidence": "medium"
+            }
+          ]
+        }
+      ],
+      "findings_pre_existing": [],
+      "by_rule": {
+        "AWS-003": 1,
+        "AWS-004": 2
+      },
+      "techniques_asserted": [
+        "T1526",
+        "T1580"
+      ],
+      "caught_any": true,
+      "caught_with_labelled_technique": true
+    },
+    "T1580__aws_iam_assume_role_policy_brute_force__aws_iam_assume_role_policy_brute_force.json": {
+      "labelled_technique": "T1580",
+      "control_rows": 10,
+      "logon_rows": 0,
+      "actors": [
+        "bhavin_cli",
+        "mhart_cli"
+      ],
+      "findings_new": [
+        {
+          "rule_id": "AWS-006",
+          "severity": "MEDIUM",
+          "actor": "bhavin_cli",
+          "user": "bhavin_cli",
+          "device": "aws:174313347505/us-east-1",
+          "evidence_count": 5,
+          "evidence_truncated": false,
+          "window_start": "2021-02-24 21:07:35+00:00",
+          "window_end": "2021-02-24 21:07:35+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "rejected_count": 5
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "low"
+            }
+          ]
+        },
+        {
+          "rule_id": "AWS-006",
+          "severity": "MEDIUM",
+          "actor": "mhart_cli",
+          "user": "mhart_cli",
+          "device": "aws:174313347505/us-east-1",
+          "evidence_count": 5,
+          "evidence_truncated": false,
+          "window_start": "2021-03-13 02:49:24+00:00",
+          "window_end": "2021-03-13 02:49:24+00:00",
+          "magnitude": {
+            "distinct_resource_types": 1,
+            "rejected_count": 5
+          },
+          "techniques": [
+            {
+              "technique_id": "T1098",
+              "confidence": "low"
+            }
+          ]
+        }
+      ],
+      "findings_pre_existing": [],
+      "by_rule": {
+        "AWS-006": 2
+      },
+      "techniques_asserted": [
+        "T1098"
+      ],
+      "caught_any": true,
+      "caught_with_labelled_technique": false
+    }
+  },
+  "recall": {
+    "captures": 5,
+    "caught_any": 4,
+    "caught_any_recall": 0.8,
+    "caught_with_labelled_technique": 3,
+    "labelled_technique_recall": 0.6,
+    "missed_any": [
+      "T1078.004__aws_login_sfa__cloudtrail.json"
+    ],
+    "missed_labelled": [
+      "T1078.004__aws_login_sfa__cloudtrail.json",
+      "T1580__aws_iam_assume_role_policy_brute_force__aws_iam_assume_role_policy_brute_force.json"
+    ]
+  },
+  "cost": {
+    "load_seconds": 0.1,
+    "measure_seconds": 0.1
+  }
+}

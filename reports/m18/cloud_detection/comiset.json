@@ -1,0 +1,31 @@
+{
+  "corpus": "comiset",
+  "preregistered": "reports/m18/cloud_detection/PREREGISTERED.md",
+  "thresholds": {
+    "cloud_discovery_min_services": 10,
+    "cloud_discovery_window_minutes": 10.0,
+    "cloud_denial_min_count": 25,
+    "cloud_denial_window_minutes": 10.0,
+    "cloud_identity_change_window_minutes": 60.0,
+    "cloud_identity_failed_min_count": 5
+  },
+  "rows": {
+    "process": 15095,
+    "network": 589477,
+    "logon": 6063,
+    "control": 0
+  },
+  "findings_before": 5,
+  "findings_after": 5,
+  "new_findings": 0,
+  "by_rule_before": {
+    "ATH-012": 1,
+    "ATH-010": 1,
+    "ATH-002": 3
+  },
+  "new_by_rule": {},
+  "cost": {
+    "load_seconds": 0.6,
+    "measure_seconds": 2.6
+  }
+}

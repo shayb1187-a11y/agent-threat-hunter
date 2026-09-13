@@ -1,0 +1,29 @@
+{
+  "corpus": "k8s_ci",
+  "preregistered": "reports/m18/cloud_detection/PREREGISTERED.md",
+  "thresholds": {
+    "cloud_discovery_min_services": 10,
+    "cloud_discovery_window_minutes": 10.0,
+    "cloud_denial_min_count": 25,
+    "cloud_denial_window_minutes": 10.0,
+    "cloud_identity_change_window_minutes": 60.0,
+    "cloud_identity_failed_min_count": 5
+  },
+  "rows": {
+    "process": 0,
+    "network": 0,
+    "logon": 0,
+    "control": 7951
+  },
+  "findings_before": 0,
+  "findings_after": 1,
+  "new_findings": 1,
+  "by_rule_before": {},
+  "new_by_rule": {
+    "AWS-006": 1
+  },
+  "cost": {
+    "load_seconds": 13.9,
+    "measure_seconds": 0.2
+  }
+}

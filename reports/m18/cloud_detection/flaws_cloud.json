@@ -1,0 +1,340 @@
+{
+  "corpus": "flaws_cloud",
+  "preregistered": "reports/m18/cloud_detection/PREREGISTERED.md",
+  "thresholds": {
+    "cloud_discovery_min_services": 10,
+    "cloud_discovery_window_minutes": 10.0,
+    "cloud_denial_min_count": 25,
+    "cloud_denial_window_minutes": 10.0,
+    "cloud_identity_change_window_minutes": 60.0,
+    "cloud_identity_failed_min_count": 5
+  },
+  "span_days": 1333.05,
+  "findings_before": 39,
+  "findings_after": 1476,
+  "by_rule_before": {
+    "ATH-005": 36,
+    "AWS-002": 3
+  },
+  "by_rule_after": {
+    "ATH-005": 36,
+    "AWS-002": 3,
+    "AWS-004": 1142,
+    "AWS-003": 278,
+    "AWS-005": 17
+  },
+  "severity_before": {
+    "CRITICAL": 4,
+    "MEDIUM": 35
+  },
+  "severity_after": {
+    "CRITICAL": 4,
+    "HIGH": 351,
+    "MEDIUM": 1121
+  },
+  "new_rules": {
+    "AWS-003": {
+      "findings": 278,
+      "episodes": 278,
+      "distinct_actors": 7,
+      "episodes_per_day": 0.2085,
+      "severity": {
+        "HIGH": 108,
+        "MEDIUM": 170
+      },
+      "top_actors": [
+        {
+          "actor": "Level6",
+          "episodes": 164,
+          "identity_types": {
+            "IAMUser": 899736,
+            "AssumedRole": 4192
+          }
+        },
+        {
+          "actor": "backup",
+          "episodes": 84,
+          "identity_types": {
+            "IAMUser": 904084
+          }
+        },
+        {
+          "actor": "i-aa2d3b42e5c6e801a",
+          "episodes": 17,
+          "identity_types": {
+            "AssumedRole": 19769
+          }
+        },
+        {
+          "actor": "secmonkey",
+          "episodes": 10,
+          "identity_types": {
+            "AssumedRole": 12354
+          }
+        },
+        {
+          "actor": "cloudsploit_scan",
+          "episodes": 1,
+          "identity_types": {
+            "AssumedRole": 568
+          }
+        }
+      ]
+    },
+    "AWS-004": {
+      "findings": 1142,
+      "episodes": 1142,
+      "distinct_actors": 3,
+      "episodes_per_day": 0.8567,
+      "severity": {
+        "HIGH": 243,
+        "MEDIUM": 899
+      },
+      "top_actors": [
+        {
+          "actor": "backup",
+          "episodes": 601,
+          "identity_types": {
+            "IAMUser": 904084
+          }
+        },
+        {
+          "actor": "Level6",
+          "episodes": 507,
+          "identity_types": {
+            "IAMUser": 899736,
+            "AssumedRole": 4192
+          }
+        },
+        {
+          "actor": "i-aa2d3b42e5c6e801a",
+          "episodes": 34,
+          "identity_types": {
+            "AssumedRole": 19769
+          }
+        }
+      ]
+    },
+    "AWS-005": {
+      "findings": 17,
+      "episodes": 17,
+      "distinct_actors": 3,
+      "episodes_per_day": 0.0128,
+      "severity": {
+        "MEDIUM": 17
+      },
+      "top_actors": [
+        {
+          "actor": "arn:aws:iam::811596193553:root",
+          "episodes": 11,
+          "identity_types": {
+            "Root": 7530
+          }
+        },
+        {
+          "actor": "flaws",
+          "episodes": 5,
+          "identity_types": {
+            "Root": 3346
+          }
+        },
+        {
+          "actor": "piper",
+          "episodes": 1,
+          "identity_types": {
+            "IAMUser": 142
+          }
+        }
+      ]
+    },
+    "AWS-006": {
+      "findings": 0,
+      "episodes": 0,
+      "distinct_actors": 0,
+      "episodes_per_day": 0.0,
+      "severity": {},
+      "top_actors": []
+    }
+  },
+  "triage_before": {
+    "likely_malicious": 4,
+    "needs_review": 35
+  },
+  "triage_after": {
+    "likely_malicious": 355,
+    "needs_review": 1121
+  },
+  "cases_before": 4,
+  "cases_after": 281,
+  "singleton_cases_after": 97,
+  "aws006_denied_inclusive_report_only": {
+    "episodes": 32,
+    "distinct_actors": 3,
+    "top": [
+      {
+        "actor": "backup",
+        "count": 940,
+        "window_start": "2017-10-17 13:44:45+00:00",
+        "window_end": "2017-10-17 14:16:24+00:00"
+      },
+      {
+        "actor": "backup",
+        "count": 667,
+        "window_start": "2017-10-17 11:47:16+00:00",
+        "window_end": "2017-10-17 12:11:59+00:00"
+      },
+      {
+        "actor": "backup",
+        "count": 135,
+        "window_start": "2020-08-18 21:56:14+00:00",
+        "window_end": "2020-08-18 22:00:41+00:00"
+      },
+      {
+        "actor": "backup",
+        "count": 94,
+        "window_start": "2019-07-22 21:08:11+00:00",
+        "window_end": "2019-07-22 21:16:38+00:00"
+      },
+      {
+        "actor": "i-aa2d3b42e5c6e801a",
+        "count": 72,
+        "window_start": "2018-11-08 17:01:14+00:00",
+        "window_end": "2018-11-08 17:03:24+00:00"
+      }
+    ]
+  },
+  "agent_deterministic": {
+    "totals": {
+      "cases": 10,
+      "facts": 203,
+      "inferences": 34,
+      "hypotheses": 0,
+      "rejected_claims": 0,
+      "tool_calls": 172,
+      "steps": 20,
+      "agent_control_plane": 9,
+      "agent_attack": 10,
+      "agent_identity": 1
+    },
+    "example_case": {
+      "case_id": "CASE-001",
+      "rules": [
+        "AWS-004"
+      ],
+      "findings": 1,
+      "agents_run": [
+        "control_plane",
+        "attack"
+      ],
+      "counts": {
+        "facts": 8,
+        "inferences": 2,
+        "hypotheses": 0,
+        "rejected": 0,
+        "tool_calls": 2
+      },
+      "tool_calls": [
+        "control_plane::get_events(event_ids=['cloudtrail-control-008401', 'cloudtrail-control-008402', 'cloudtrail-control-008417', 'cloudtrail-control-008418', 'cloudtrail-control-008419', 'cloudtrail-control-008421', 'cloudtrail-control-008422', 'cloudtrail-control-008423']) -> 8/8 found",
+        "attack::lookup_technique(technique_id='T1580') -> Cloud Infrastructure Discovery"
+      ],
+      "plan_log": [
+        "step 1: control_plane -- only eligible specialist; case evidence rests on cloud_management_activity telemetry (from AWS-004)",
+        "step 2: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+        "step 3: stop -- no specialist has further useful work on the available evidence"
+      ],
+      "claims": [
+        {
+          "type": "FACT",
+          "statement": "'backup' performed get on iam:user '?'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008401"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed list on iam:instance-profile '?'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008402"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed get on s3:bucket-acl 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008417"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed get on s3:bucket-versioning 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008418"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed get on s3:bucket-request-payment 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008419"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed get on s3:bucket-logging 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008421"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed list on iam:mfa-device '?'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008422"
+          ]
+        },
+        {
+          "type": "FACT",
+          "statement": "'backup' performed list on iam:access-key '?'.",
+          "source": "tool",
+          "evidence_ids": [
+            "cloudtrail-control-008423"
+          ]
+        },
+        {
+          "type": "INFERENCE",
+          "statement": "Behaviour cited by AWS-004 is consistent with T1580 Cloud Infrastructure Discovery (Discovery). One identity accumulated many authorization refusals in a short window, which is consistent with probing what a credential can reach while mappi",
+          "source": "mitre",
+          "evidence_ids": [
+            "cloudtrail-control-008401",
+            "cloudtrail-control-008402",
+            "cloudtrail-control-008417",
+            "cloudtrail-control-008418"
+          ]
+        },
+        {
+          "type": "INFERENCE",
+          "statement": "The case spans 1 ATT&CK tactics (Discovery). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+          "source": "mitre",
+          "evidence_ids": [
+            "cloudtrail-control-008401",
+            "cloudtrail-control-008402",
+            "cloudtrail-control-008417",
+            "cloudtrail-control-008418"
+          ]
+        }
+      ],
+      "rejected_claims": []
+    }
+  },
+  "cost": {
+    "load_seconds": 59.5,
+    "measure_seconds": 118.2
+  }
+}
