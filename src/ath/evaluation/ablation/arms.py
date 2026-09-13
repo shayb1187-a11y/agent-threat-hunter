@@ -477,6 +477,7 @@ def run_arm(
     environment: EnvironmentModel | None = None,
     llm: LLMClient | None = None,
     scripted: bool = False,
+    label_scorer: Callable[[Any], dict[str, Any]] | None = None,
 ) -> list[CaseResult]:
     """Run one arm over the manifest entries belonging to this corpus.
 
@@ -499,6 +500,18 @@ def run_arm(
         scripted: Mark every row as produced by canned responses. Labels the rows
             ``*_SCRIPTED`` so they cannot be aggregated into the arm they imitate, and
             is the only way an arm requiring a model may run without one.
+        label_scorer: Grades a corpus that has an answer key, from **this row's own
+            state**. Called once per case with the live
+            :class:`~ath.agent.state.InvestigationState` the row was built from, and its
+            result is merged into ``label_scores`` along with the row's own identity.
+
+            It takes the state rather than the finished row because the row carries a
+            serialised, id-capped copy. The caller supplies the answer key; this
+            function supplies the run. That division is the point: M19-2 obtained these
+            figures by running a *second* investigation of the same incident -- its own
+            uncapped toolbox, the environment-assembled crew -- and attaching the result
+            to a row produced by something else. For arm B that was arm C's architecture
+            wearing arm B's label, and its tokens were counted nowhere.
 
     Raises:
         NotImplementedError: for a declared-but-unbuilt arm.
@@ -575,7 +588,7 @@ def run_arm(
             wall_seconds=elapsed,
             tokens=tokens,
         )
-        results.append(CaseResult(
+        result = CaseResult(
             arm=arm.name,
             corpus=entry.corpus,
             case_id=entry.case_id,
@@ -592,7 +605,21 @@ def run_arm(
             label_scores=capture_label_scores(entry.labels, case_scores),
             budgets=budgets_of(tools, arm, state),
             scripted=scripted,
-        ))
+        )
+        graded = label_scorer(state) if label_scorer is not None else {}
+        if graded:
+            # The row says which arm these figures belong to. Before M19 Phase 1 the
+            # label scores carried the configuration of a separate run, so a scripted
+            # arm B row and a scripted arm C row could name the same thing.
+            result.label_scores = {
+                **result.label_scores,
+                "incident_id": graded.get("incident_id"),
+                "arm": result.labelled_arm,
+                "configuration": result.configuration,
+                "llm_degraded": result.llm_degraded,
+                **{k: v for k, v in graded.items() if k != "incident_id"},
+            }
+        results.append(result)
         logger.info(
             "%s %s: %d fact(s), %d inference(s), %d hypothesis(es) in %.2fs",
             arm.name, entry.key, results[-1].scores.facts,

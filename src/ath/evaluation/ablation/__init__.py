@@ -14,6 +14,7 @@ independently readable:
 """
 
 from ath.evaluation.ablation.arms import (
+    ABLATION_MODEL,
     ARM_A,
     ARM_B,
     ARM_C,
@@ -29,6 +30,7 @@ from ath.evaluation.ablation.arms import (
     arm_c,
     begin_token_accounting,
     budgets_of,
+    build_client,
     identical,
     run_arm,
     tokens_spent,
@@ -48,7 +50,6 @@ from ath.evaluation.ablation.scoring import (
     CaseScores,
     aggregate,
     capture_label_scores,
-    label_scores_from_outcome,
     score_case,
     scores_from_dict,
     techniques_in,
@@ -56,12 +57,13 @@ from ath.evaluation.ablation.scoring import (
 )
 
 __all__ = [
-    "ARM_A", "ARM_B", "ARM_C", "ARM_BUILDERS", "STEP_BUDGET", "TOOL_CALL_CAP",
+    "ABLATION_MODEL", "ARM_A", "ARM_B", "ARM_C", "ARM_BUILDERS", "STEP_BUDGET", "TOOL_CALL_CAP",
     "ArmConfig", "ArmUnavailable",
     "ByConstructionViolation", "CaseManifest", "CaseResult", "CaseScores",
     "ManifestMismatch", "aggregate", "arm_a", "arm_b", "arm_c",
-    "begin_token_accounting", "budgets_of", "build_manifest", "capture_label_scores",
-    "identical", "label_scores_from_outcome", "leading_rule_of", "load_manifest",
+    "begin_token_accounting", "budgets_of", "build_client", "build_manifest",
+    "capture_label_scores",
+    "identical", "leading_rule_of", "load_manifest",
     "manifest_hash", "run_arm", "score_case", "scores_from_dict", "table_digest",
     "techniques_in", "techniques_looked_up", "tokens_spent",
     "telemetry_hash", "telemetry_rows",

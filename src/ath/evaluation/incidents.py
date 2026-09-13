@@ -49,21 +49,39 @@ LLM arm's figures are recorded rather than reproduced, because they cannot be. T
 criteria under which the LLM arm counts as an improvement are fixed in
 ``docs/m14-data-acquisition-plan.md`` section 5.1, before any run: more claims, longer
 output and more tool calls are reported, never credited.
+
+One definition of each label-based figure
+------------------------------------------
+:func:`score_labels` computes everything the answer key can decide -- event recall, the
+techniques and conclusions the run was supposed to reach, the trust gate and the pass
+condition -- from *one investigation*: the findings, the triage assessments, and the
+state that investigation produced. :func:`run_incident` calls it, and so does the M19
+ablation, on the state of the row it is scoring.
+
+That second caller is why the function exists. The ablation used to obtain its synthetic
+rows' label scores by calling :func:`run_incident` a second time, which ran a *different*
+investigation -- its own toolbox, uncapped, with the environment-assembled crew -- and
+attached the result to a row produced by something else. For arm B that was arm C's
+architecture wearing arm B's label, and the tokens it spent were counted nowhere. A
+row's label-based scores must describe the same investigation as the row's other scores:
+same state, same budgets, same architecture.
 """
 
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping, Sequence
 
 from ath.agent.claims import ClaimType, ClaimVerifier
 from ath.agent.llm import LLMClient, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
+from ath.agent.state import InvestigationState
 from ath.agent.tools import ToolBox
 from ath.correlation import correlate
 from ath.environment import build_environment_model
 from ath.hunting import HuntConfig, run_hunt
+from ath.hunting.finding import Finding
 from ath.logging_setup import get_logger
 from ath.mitre.mapper import map_findings
 from ath.reporting.language import audit_calibration
@@ -71,6 +89,73 @@ from ath.telemetry.loader import Telemetry
 from ath.triage import Disposition, assess_findings, set_aside_ids
 
 logger = get_logger(__name__)
+
+
+def event_recall_of(surfaced: int, total: int) -> float:
+    """Fraction of an incident's events that any finding surfaced.
+
+    A benign scenario has no malicious events, so the fraction is vacuously 1.0 rather
+    than a division by zero -- "found all nothing of it" is the correct reading, and the
+    benign scenario is graded on ``findings_after_triage`` instead.
+    """
+    if not total:
+        return 1.0
+    return surfaced / total
+
+
+def is_trustworthy(
+    *,
+    hallucinated_citations: int,
+    overclaimed_as_fact: Sequence[str],
+    calibration_warnings: int,
+    malicious_findings_called_benign: int,
+) -> bool:
+    """No fabricated citation, no unevidenced fact, no overclaim, no dismissed attack.
+
+    A hard gate rather than a score: these are correctness failures, and one is enough
+    to make the output unusable regardless of how good the metrics look.
+    """
+    return (
+        hallucinated_citations == 0
+        and not overclaimed_as_fact
+        and calibration_warnings == 0
+        and malicious_findings_called_benign == 0
+    )
+
+
+def incident_passed(
+    *,
+    is_benign: bool,
+    detected: bool,
+    findings_after_triage: int,
+    techniques_missing: Sequence[str],
+    conclusions_missed: Sequence[str],
+    trustworthy: bool,
+) -> bool:
+    """Whether one incident met its success condition.
+
+    The benign condition was originally ``cases == 0`` and is now
+    ``findings_after_triage == 0``. That is a deliberate change of bar, not a relaxation
+    of one, and it is worth stating plainly because moving a goalpost after building the
+    thing that clears it deserves scrutiny.
+
+    The question a quiet-day scenario asks is "was the analyst made to investigate
+    anything". A case every one of whose findings carries an explicit, cited benign
+    verdict does not cost an investigation -- but a *single* unexplained finding does,
+    whether or not it correlated into anything. So the condition is stricter in the place
+    that matters: it requires the triage layer to account for every false positive
+    individually, where the old one could be satisfied merely by the correlator declining
+    to group them. ``noise_cases`` stays reported either way, so the case that is still
+    formed remains visible rather than hidden by the change.
+    """
+    if is_benign:
+        return findings_after_triage == 0 and trustworthy
+    return (
+        detected
+        and not techniques_missing
+        and not conclusions_missed
+        and trustworthy
+    )
 
 
 @dataclass(frozen=True)
@@ -175,9 +260,9 @@ class IncidentOutcome:
     @property
     def event_recall(self) -> float:
         """Fraction of the incident's events that any finding surfaced."""
-        if not self.malicious_events_total:
-            return 1.0
-        return self.malicious_events_surfaced / self.malicious_events_total
+        return event_recall_of(
+            self.malicious_events_surfaced, self.malicious_events_total
+        )
 
     @property
     def triage_reduction(self) -> float:
@@ -216,42 +301,25 @@ class IncidentOutcome:
     def trustworthy(self) -> bool:
         """No fabricated citation, no unevidenced fact, no overclaim.
 
-        A hard gate rather than a score: these are correctness failures, and one is
-        enough to make the output unusable regardless of how good the metrics look.
+        One definition, shared with :func:`score_labels` -- see :func:`is_trustworthy`.
         """
-        return (
-            self.hallucinated_citations == 0
-            and not self.overclaimed_as_fact
-            and self.calibration_warnings == 0
-            and self.malicious_findings_called_benign == 0
+        return is_trustworthy(
+            hallucinated_citations=self.hallucinated_citations,
+            overclaimed_as_fact=self.overclaimed_as_fact,
+            calibration_warnings=self.calibration_warnings,
+            malicious_findings_called_benign=self.malicious_findings_called_benign,
         )
 
     @property
     def passed(self) -> bool:
-        """Whether this incident met its success condition.
-
-        The benign condition was originally ``cases == 0`` and is now
-        ``findings_after_triage == 0``. That is a deliberate change of bar, not a
-        relaxation of one, and it is worth stating plainly because moving a goalpost
-        after building the thing that clears it deserves scrutiny.
-
-        The question a quiet-day scenario asks is "was the analyst made to investigate
-        anything". A case every one of whose findings carries an explicit, cited benign
-        verdict does not cost an investigation -- but a *single* unexplained finding
-        does, whether or not it correlated into anything. So the new condition is
-        stricter in the place that matters: it requires the triage layer to account for
-        every false positive individually, where the old one could be satisfied merely
-        by the correlator declining to group them. ``noise_cases`` stays reported either
-        way, so the case that is still formed remains visible rather than hidden by the
-        change.
-        """
-        if self.incident.is_benign:
-            return self.findings_after_triage == 0 and self.trustworthy
-        return (
-            self.detected
-            and not self.techniques_missing
-            and not self.conclusions_missed
-            and self.trustworthy
+        """Whether this incident met its success condition. See :func:`incident_passed`."""
+        return incident_passed(
+            is_benign=self.incident.is_benign,
+            detected=self.detected,
+            findings_after_triage=self.findings_after_triage,
+            techniques_missing=self.techniques_missing,
+            conclusions_missed=self.conclusions_missed,
+            trustworthy=self.trustworthy,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -312,6 +380,227 @@ class IncidentOutcome:
         }
 
 
+@dataclass(frozen=True)
+class LabelScores:
+    """Everything the answer key can decide about one investigation.
+
+    Computed by :func:`score_labels` from one investigation's own inputs and its own
+    state, so that the figures on a row describe the run that produced the row. Two
+    callers: :func:`run_incident`, which copies them into its :class:`IncidentOutcome`,
+    and the M19 ablation, which writes :meth:`to_dict` into the row's ``label_scores``.
+
+    ``investigated`` is False when no case was raised. That is not a benign outcome for
+    a malicious incident -- every conclusion requirement is then unmet rather than
+    vacuously satisfied, because an incident that produced no case ran no investigation
+    and must not report a clean pass.
+    """
+
+    incident_id: str
+    is_benign: bool
+    investigated: bool
+
+    # -- detection ------------------------------------------------------------------
+    detected: bool
+    malicious_events_surfaced: int
+    malicious_events_total: int
+
+    # -- analyst load ---------------------------------------------------------------
+    findings: int
+    findings_after_triage: int
+    benign_findings_total: int
+    benign_findings_identified: int
+    malicious_findings_called_benign: int
+
+    # -- conclusions ----------------------------------------------------------------
+    techniques_found: tuple
+    techniques_missing: tuple
+    conclusions_hit: tuple
+    conclusions_missed: tuple
+    overclaimed_as_fact: tuple
+
+    # -- trustworthiness ------------------------------------------------------------
+    hallucinated_citations: int
+    calibration_warnings: int
+    rejected_claims: int
+    facts: int
+    inferences: int
+    hypotheses: int
+    tool_calls: int
+
+    @property
+    def event_recall(self) -> float:
+        return event_recall_of(
+            self.malicious_events_surfaced, self.malicious_events_total
+        )
+
+    @property
+    def trustworthy(self) -> bool:
+        return is_trustworthy(
+            hallucinated_citations=self.hallucinated_citations,
+            overclaimed_as_fact=self.overclaimed_as_fact,
+            calibration_warnings=self.calibration_warnings,
+            malicious_findings_called_benign=self.malicious_findings_called_benign,
+        )
+
+    @property
+    def passed(self) -> bool:
+        return incident_passed(
+            is_benign=self.is_benign,
+            detected=self.detected,
+            findings_after_triage=self.findings_after_triage,
+            techniques_missing=self.techniques_missing,
+            conclusions_missed=self.conclusions_missed,
+            trustworthy=self.trustworthy,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """The label-based column, as an ablation row records it.
+
+        ``computed_from`` is part of the record rather than a comment: these figures
+        were once lifted from a second, separate investigation of the same incident, and
+        a reader of an older results file has no way to tell the two apart unless the
+        file says which it is.
+        """
+        return {
+            "incident_id": self.incident_id,
+            "passed": self.passed,
+            "event_recall": round(self.event_recall, 4),
+            "trustworthy": self.trustworthy,
+            "hallucinated_citations": self.hallucinated_citations,
+            "calibration_warnings": self.calibration_warnings,
+            "overclaimed_as_fact": list(self.overclaimed_as_fact),
+            "techniques_missing": list(self.techniques_missing),
+            "conclusions_missed": list(self.conclusions_missed),
+            "investigated": self.investigated,
+            "computed_from": "this row's own investigation state",
+        }
+
+
+def score_labels(
+    incident: Incident,
+    findings: Sequence[Finding],
+    assessments: Mapping[str, Any],
+    state: InvestigationState | None,
+) -> LabelScores:
+    """Grade one investigation against its incident's answer key.
+
+    Args:
+        incident: The labelled scenario, carrying the answer key.
+        findings: Every finding the hunt produced for this incident's telemetry.
+        assessments: The triage assessment per finding id.
+        state: The investigation's own state, or ``None`` when no case was raised and
+            therefore nothing was investigated.
+
+    The whole function is a pure reading of its four arguments: there is no pipeline in
+    here, and nothing it returns can describe a run other than the one it was handed.
+    """
+    malicious = set(incident.malicious_event_ids)
+    surfaced = {event_id for f in findings for event_id in f.event_ids}
+
+    benign_total = 0
+    benign_identified = 0
+    malicious_called_benign = 0
+    after_triage = 0
+    for finding in findings:
+        is_malicious = bool(set(finding.event_ids) & malicious)
+        called_benign = (
+            assessments[finding.finding_id].disposition is Disposition.LIKELY_BENIGN
+        )
+        if is_malicious:
+            malicious_called_benign += int(called_benign)
+        else:
+            benign_total += 1
+            benign_identified += int(called_benign)
+        after_triage += int(not called_benign)
+
+    techniques = {
+        m.technique_id
+        for mappings in map_findings(list(findings)).values()
+        for m in mappings
+    }
+
+    if state is None:
+        # No case, no investigation: every conclusion requirement is unmet. Leaving
+        # `conclusions_missed` empty here let an incident that produced no case at all
+        # report a clean pass -- exactly the "passed for the wrong reason" failure this
+        # harness exists to catch.
+        conclusions_hit: tuple = ()
+        conclusions_missed: tuple = tuple(incident.must_conclude)
+        overclaimed: tuple = ()
+        hallucinated = 0
+        calibration = 0
+        rejected = 0
+        facts = inferences = hypotheses = tool_calls = 0
+    else:
+        statements = " ".join(c.statement for c in state.claims).lower()
+        hit = [c for c in incident.must_conclude if c.lower() in statements]
+        conclusions_hit = tuple(hit)
+        conclusions_missed = tuple(c for c in incident.must_conclude if c not in hit)
+        fact_text = " ".join(c.statement for c in state.facts).lower()
+        overclaimed = tuple(
+            phrase for phrase in incident.never_as_fact if phrase.lower() in fact_text
+        )
+        hallucinated = sum(
+            1 for r in state.rejected_claims if "do not exist" in r.reason
+        )
+        calibration = len(audit_calibration(state.claims))
+        rejected = len(state.rejected_claims)
+        facts = len(state.facts)
+        inferences = len(state.inferences)
+        hypotheses = len(state.hypotheses)
+        tool_calls = len(state.tool_calls)
+
+    return LabelScores(
+        incident_id=incident.incident_id,
+        is_benign=incident.is_benign,
+        investigated=state is not None,
+        detected=bool(surfaced & malicious),
+        malicious_events_surfaced=len(surfaced & malicious),
+        malicious_events_total=len(malicious),
+        findings=len(findings),
+        findings_after_triage=after_triage,
+        benign_findings_total=benign_total,
+        benign_findings_identified=benign_identified,
+        malicious_findings_called_benign=malicious_called_benign,
+        techniques_found=tuple(sorted(techniques & incident.expected_techniques)),
+        techniques_missing=tuple(sorted(incident.expected_techniques - techniques)),
+        conclusions_hit=conclusions_hit,
+        conclusions_missed=conclusions_missed,
+        overclaimed_as_fact=overclaimed,
+        hallucinated_citations=hallucinated,
+        calibration_warnings=calibration,
+        rejected_claims=rejected,
+        facts=facts,
+        inferences=inferences,
+        hypotheses=hypotheses,
+        tool_calls=tool_calls,
+    )
+
+
+def _apply_labels(outcome: IncidentOutcome, labels: LabelScores) -> None:
+    """Copy the graded figures onto the outcome. The only place they are set."""
+    outcome.detected = labels.detected
+    outcome.malicious_events_surfaced = labels.malicious_events_surfaced
+    outcome.malicious_events_total = labels.malicious_events_total
+    outcome.findings = labels.findings
+    outcome.findings_after_triage = labels.findings_after_triage
+    outcome.benign_findings_total = labels.benign_findings_total
+    outcome.benign_findings_identified = labels.benign_findings_identified
+    outcome.malicious_findings_called_benign = labels.malicious_findings_called_benign
+    outcome.techniques_found = labels.techniques_found
+    outcome.techniques_missing = labels.techniques_missing
+    outcome.conclusions_hit = labels.conclusions_hit
+    outcome.conclusions_missed = labels.conclusions_missed
+    outcome.overclaimed_as_fact = labels.overclaimed_as_fact
+    outcome.hallucinated_citations = labels.hallucinated_citations
+    outcome.calibration_warnings = labels.calibration_warnings
+    outcome.rejected_claims = labels.rejected_claims
+    outcome.facts = labels.facts
+    outcome.inferences = labels.inferences
+    outcome.hypotheses = labels.hypotheses
+    outcome.tool_calls = labels.tool_calls
+
+
 def run_incident(
     incident: Incident,
     config: HuntConfig | None = None,
@@ -337,33 +626,17 @@ def run_incident(
         configuration=llm.name if llm.available else "deterministic",
     )
     malicious = set(incident.malicious_event_ids)
-    outcome.malicious_events_total = len(malicious)
 
     hunt = run_hunt(telemetry, config=config or HuntConfig())
-    outcome.findings = len(hunt.findings)
 
-    surfaced = {eid for f in hunt.findings for eid in f.event_ids}
-    outcome.malicious_events_surfaced = len(surfaced & malicious)
-    outcome.detected = bool(surfaced & malicious)
-
-    # Benign discrimination, measured per finding against the answer key.
+    # Benign discrimination, measured per finding against the answer key -- inside
+    # score_labels, along with everything else the answer key decides.
     environment = build_environment_model(telemetry)
     assessments = assess_findings(hunt.findings, environment)
-    for finding in hunt.findings:
-        is_malicious = bool(set(finding.event_ids) & malicious)
-        called_benign = (
-            assessments[finding.finding_id].disposition is Disposition.LIKELY_BENIGN
-        )
-        if is_malicious:
-            outcome.malicious_findings_called_benign += int(called_benign)
-        else:
-            outcome.benign_findings_total += 1
-            outcome.benign_findings_identified += int(called_benign)
-        outcome.findings_after_triage += int(not called_benign)
 
     # A group of findings every one of which triage explained is not raised as a case
-    # (M15-4): the findings stay counted above, the investigation they would have cost
-    # does not happen.
+    # (M15-4): the findings stay counted, the investigation they would have cost does
+    # not happen.
     cases = correlate(hunt.findings, telemetry, set_aside=set_aside_ids(assessments))
     outcome.cases = len(cases)
     outcome.noise_cases = sum(
@@ -379,20 +652,8 @@ def run_incident(
         outcome.primary_case_recall = len(hit) / len(malicious)
         outcome.primary_case_purity = len(hit) / len(primary_events) if primary_events else 0.0
 
-    techniques = {
-        m.technique_id
-        for mappings in map_findings(hunt.findings).values()
-        for m in mappings
-    }
-    outcome.techniques_found = tuple(sorted(techniques & incident.expected_techniques))
-    outcome.techniques_missing = tuple(sorted(incident.expected_techniques - techniques))
-
     if not cases:
-        # Every conclusion requirement is unmet, not vacuously satisfied. Leaving
-        # `conclusions_missed` empty here let an incident that produced no case at all
-        # -- and therefore ran no investigation -- report a clean pass: exactly the
-        # "passed for the wrong reason" failure this harness exists to catch.
-        outcome.conclusions_missed = tuple(incident.must_conclude)
+        _apply_labels(outcome, score_labels(incident, hunt.findings, assessments, None))
         set_aside = outcome.findings - outcome.findings_after_triage
         outcome.notes.append(
             "no case was raised, so no investigation ran: this incident produced "
@@ -421,28 +682,7 @@ def run_incident(
 
     outcome.llm_degraded = bool(state.llm_degraded)
     outcome.llm_status = str(state.llm_status)
-    outcome.facts = len(state.facts)
-    outcome.inferences = len(state.inferences)
-    outcome.hypotheses = len(state.hypotheses)
-    outcome.rejected_claims = len(state.rejected_claims)
-    outcome.tool_calls = len(state.tool_calls)
-    outcome.hallucinated_citations = sum(
-        1 for r in state.rejected_claims if "do not exist" in r.reason
-    )
-
-    statements = " ".join(c.statement for c in state.claims).lower()
-    hit_conclusions = [c for c in incident.must_conclude if c.lower() in statements]
-    outcome.conclusions_hit = tuple(hit_conclusions)
-    outcome.conclusions_missed = tuple(
-        c for c in incident.must_conclude if c not in hit_conclusions
-    )
-
-    fact_text = " ".join(c.statement for c in state.facts).lower()
-    outcome.overclaimed_as_fact = tuple(
-        phrase for phrase in incident.never_as_fact if phrase.lower() in fact_text
-    )
-
-    outcome.calibration_warnings = len(audit_calibration(state.claims))
+    _apply_labels(outcome, score_labels(incident, hunt.findings, assessments, state))
 
     outcome.runtime_seconds = time.perf_counter() - started
     return outcome

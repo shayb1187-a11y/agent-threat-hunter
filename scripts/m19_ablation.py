@@ -65,7 +65,7 @@ from m18_cloud_detection import NEW_RULES  # noqa: E402
 from m18_cloud_detection import load_corpus as _cloud_corpus  # noqa: E402
 from pre_schema_parquet import read_canonical_table  # noqa: E402
 
-from ath.agent.llm import NullLLM, ScriptedLLM  # noqa: E402
+from ath.agent.llm import ScriptedLLM  # noqa: E402
 from ath.correlation import correlate  # noqa: E402
 from ath.correlation.chain import InvestigationCase  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
@@ -76,7 +76,6 @@ from ath.evaluation.ablation import (  # noqa: E402
     aggregate,
     build_manifest,
     identical,
-    label_scores_from_outcome,
     leading_rule_of,
     load_manifest,
     manifest_hash,
@@ -85,7 +84,7 @@ from ath.evaluation.ablation import (  # noqa: E402
     telemetry_hash,
     telemetry_rows,
 )
-from ath.evaluation.incidents import Incident, run_incident  # noqa: E402
+from ath.evaluation.incidents import Incident, score_labels  # noqa: E402
 from ath.evaluation.suite import standard_suite  # noqa: E402
 from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.hunting.finding import Finding  # noqa: E402
@@ -378,6 +377,9 @@ class Bundle:
     findings: list[Finding]
     cases: list[InvestigationCase]
     environment: Any
+    assessments: dict[str, Any] = field(default_factory=dict)
+    """The triage assessment per finding id -- part of the deterministic layer, and an
+    input to the label scores, which are graded per finding rather than per case."""
     labels: dict[str, dict[str, Any]] = field(default_factory=dict)
     incident: Incident | None = None
     load_seconds: float = 0.0
@@ -397,15 +399,22 @@ def _load_telemetry(corpus: str) -> Telemetry:
     return _cloud_corpus(corpus)
 
 
-def _pipeline(telemetry: Telemetry) -> tuple[list[Finding], list[InvestigationCase], Any]:
-    """Hunt, triage, correlate -- exactly as ``run_incident`` and the M18 scripts do."""
+def _pipeline(
+    telemetry: Telemetry,
+) -> tuple[list[Finding], list[InvestigationCase], Any, dict[str, Any]]:
+    """Hunt, triage, correlate -- exactly as ``run_incident`` and the M18 scripts do.
+
+    Returns the assessments as well as the cases: they are what the label scores grade
+    benign discrimination against, and re-deriving them beside the row would be a second
+    copy of the triage layer for the scoring path to drift from.
+    """
     hunt = run_hunt(telemetry, config=HuntConfig())
     environment = build_environment_model(telemetry)
     assessments = assess_findings(hunt.findings, environment)
     cases = correlate(
         hunt.findings, telemetry, set_aside=set_aside_ids(assessments)
     )
-    return list(hunt.findings), list(cases), environment
+    return list(hunt.findings), list(cases), environment, dict(assessments)
 
 
 def _capture_labels(telemetry: Telemetry, cases: Sequence[InvestigationCase]) -> dict:
@@ -521,11 +530,12 @@ def load_bundles(names: Iterable[str]) -> Iterator[Bundle]:
                 ROOT / "tests" / "fixtures" / "k8s_audit",
             ):
                 started = time.perf_counter()
-                findings, cases, environment = _pipeline(incident.telemetry)
+                findings, cases, environment, assessments = _pipeline(incident.telemetry)
                 yield Bundle(
                     name=f"synthetic:{incident.incident_id}",
                     telemetry=incident.telemetry,
                     findings=findings, cases=cases, environment=environment,
+                    assessments=assessments,
                     incident=incident,
                     labels={
                         c.case_id: {"incident_id": incident.incident_id} for c in cases
@@ -538,14 +548,14 @@ def load_bundles(names: Iterable[str]) -> Iterator[Bundle]:
         telemetry = _load_telemetry(name)
         load_seconds = time.perf_counter() - started
         started = time.perf_counter()
-        findings, cases, environment = _pipeline(telemetry)
+        findings, cases, environment, assessments = _pipeline(telemetry)
         pipeline_seconds = time.perf_counter() - started
         labels = (
             _capture_labels(telemetry, cases) if name == "attack_data_aws" else {}
         )
         yield Bundle(
             name=name, telemetry=telemetry, findings=findings, cases=cases,
-            environment=environment, labels=labels,
+            environment=environment, assessments=assessments, labels=labels,
             load_seconds=load_seconds, pipeline_seconds=pipeline_seconds,
         )
 
@@ -702,12 +712,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                 environment=bundle.environment,
                 llm=ScriptedArmLLM() if scripted else None,
                 scripted=scripted,
+                label_scorer=_label_scorer(bundle),
             )
-            if bundle.incident is not None:
-                outcome = run_incident(bundle.incident, llm=_arm_llm(arm, scripted))
-                labelled = label_scores_from_outcome(outcome)
-                for result in results:
-                    result.label_scores = labelled
             runs[index] += results
         timing[bundle.name] = {
             "load_seconds": round(bundle.load_seconds, 1),
@@ -775,16 +781,34 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _label_scorer(bundle: Bundle):
+    """Grade this corpus's rows against its answer key, or nothing if it has none.
+
+    The closure carries the answer key and the corpus's deterministic layer -- the
+    incident, its findings, its triage assessments -- and is handed the row's own
+    investigation state by ``run_arm``. One investigation per row, graded where it ran.
+
+    Until M19 Phase 1 this was ``run_incident(bundle.incident, llm=...)``: a second,
+    separate investigation with its own uncapped toolbox and the environment-assembled
+    crew, whose verdict was then written onto every row of whatever arm was running. For
+    arm B that was arm C's architecture wearing arm B's label, and the tokens that second
+    investigation spent appeared in no cost column at all.
+    """
+    incident = bundle.incident
+    if incident is None:
+        return None
+
+    def scorer(state: Any) -> dict[str, Any]:
+        return score_labels(
+            incident, bundle.findings, bundle.assessments, state,
+        ).to_dict()
+
+    return scorer
+
+
 def _families(by_corpus: dict[str, list[CaseManifest]]) -> list[str]:
     """Corpus names to load: the family name, because synthetic loads as a suite."""
     return list(dict.fromkeys(name.split(":", 1)[0] for name in by_corpus))
-
-
-def _arm_llm(arm: Any, scripted: bool = False) -> Any:
-    """The client an arm's label-based benchmark row must be produced with."""
-    if not arm.requires_model:
-        return NullLLM()
-    return ScriptedArmLLM() if scripted else arm.llm_factory()
 
 
 def _arm_name(letter: str) -> str:

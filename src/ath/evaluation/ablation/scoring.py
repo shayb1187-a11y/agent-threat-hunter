@@ -11,7 +11,7 @@ it did not, a technique either appears in the deterministic mapper's output or i
 not. **Nothing is scored by another model**, and nothing is scored by reading prose for
 quality. Where labels *do* exist (the synthetic ground truth, the attack_data_aws
 capture technique) they are used as an additional, clearly separated column -- see
-:func:`label_scores_from_outcome`.
+:func:`ath.evaluation.incidents.score_labels`, called on the row's own state.
 
 What is deliberately not here
 ------------------------------
@@ -447,29 +447,6 @@ def capture_label_scores(labels: dict[str, Any], scores: CaseScores) -> dict[str
         "labelled_technique": technique,
         "labelled_technique_mapped": technique in scores.techniques_mapped,
         "labelled_technique_asserted": technique in scores.techniques_asserted,
-    }
-
-
-def label_scores_from_outcome(outcome: Any) -> dict[str, Any]:
-    """The label-based columns, lifted from an :class:`IncidentOutcome` unchanged.
-
-    Reused rather than re-implemented: event recall and the trust gate already exist in
-    :mod:`ath.evaluation.incidents`, have been the benchmark's definition of those words
-    since M14, and a second definition here would make the ablation's synthetic rows
-    incomparable with every benchmark row this project has published.
-    """
-    return {
-        "incident_id": outcome.incident.incident_id,
-        "configuration": outcome.configuration,
-        "llm_degraded": bool(outcome.llm_degraded),
-        "passed": bool(outcome.passed),
-        "event_recall": round(outcome.event_recall, 4),
-        "trustworthy": bool(outcome.trustworthy),
-        "hallucinated_citations": outcome.hallucinated_citations,
-        "calibration_warnings": outcome.calibration_warnings,
-        "overclaimed_as_fact": list(outcome.overclaimed_as_fact),
-        "techniques_missing": list(outcome.techniques_missing),
-        "conclusions_missed": list(outcome.conclusions_missed),
     }
 
 
