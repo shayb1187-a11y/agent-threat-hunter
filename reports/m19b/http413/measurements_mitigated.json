@@ -1,0 +1,964 @@
+{
+  "generated_at": "2026-09-13T22:05:22.281052+00:00",
+  "head": "41c0d97",
+  "method": {
+    "network": "none for the reconstruction; the planner replays the committed M19 plan log and synthesis always answers with an empty claim list",
+    "request_bytes": "ath.agent.llm.build_request_body + encode_request_body, the same functions AnthropicLLM.complete sends",
+    "input_tokens": "POST /v1/messages/count_tokens with the frozen headers and model where the request fits under 400000 bytes; otherwise a 200000-byte prefix is counted and scaled linearly (labelled projected-from-prefix)",
+    "approximation": "chars / 4.0 is reported beside every measured count as the documented fallback, never instead of one"
+  },
+  "cases": [
+    {
+      "arm": "B_single_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "tool_output_budget": 4096,
+      "m19_llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+      "m19_llm_degraded": true,
+      "fidelity": {
+        "recorded_claims": 8,
+        "rebuilt_claims": 8,
+        "identical": true,
+        "differences": [],
+        "plan_log_steps_replayed": 5
+      },
+      "wall_seconds": 13.04,
+      "calls": [
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1663,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 1097,
+          "user_bytes": 1097,
+          "messages": 1,
+          "envelope_bytes": 171,
+          "kind": "planner",
+          "call_index": 1,
+          "state_at_call": {
+            "step": 0,
+            "agents_run": [],
+            "claims": 0,
+            "tool_calls": 0,
+            "accumulated_evidence_ids": 0,
+            "accumulated_evidence_id_bytes": 0
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 373
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1521,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 956,
+          "user_bytes": 956,
+          "messages": 1,
+          "envelope_bytes": 170,
+          "kind": "planner",
+          "call_index": 2,
+          "state_at_call": {
+            "step": 1,
+            "agents_run": [
+              "generalist:case"
+            ],
+            "claims": 1,
+            "tool_calls": 1,
+            "accumulated_evidence_ids": 2,
+            "accumulated_evidence_id_bytes": 122
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 337
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1398,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 834,
+          "user_bytes": 834,
+          "messages": 1,
+          "envelope_bytes": 169,
+          "kind": "planner",
+          "call_index": 3,
+          "state_at_call": {
+            "step": 2,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding"
+            ],
+            "claims": 3,
+            "tool_calls": 3,
+            "accumulated_evidence_ids": 2,
+            "accumulated_evidence_id_bytes": 122
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 307
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1284,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 721,
+          "user_bytes": 721,
+          "messages": 1,
+          "envelope_bytes": 168,
+          "kind": "planner",
+          "call_index": 4,
+          "state_at_call": {
+            "step": 3,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline"
+            ],
+            "claims": 4,
+            "tool_calls": 4,
+            "accumulated_evidence_ids": 2,
+            "accumulated_evidence_id_bytes": 122
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 279
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1161,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 599,
+          "user_bytes": 599,
+          "messages": 1,
+          "envelope_bytes": 167,
+          "kind": "planner",
+          "call_index": 5,
+          "state_at_call": {
+            "step": 4,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline",
+              "generalist:host"
+            ],
+            "claims": 5,
+            "tool_calls": 5,
+            "accumulated_evidence_ids": 589478,
+            "accumulated_evidence_id_bytes": 36547634
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 248
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 11512,
+          "system_chars": 787,
+          "system_bytes": 787,
+          "user_chars": 10549,
+          "user_bytes": 10549,
+          "messages": 1,
+          "envelope_bytes": 176,
+          "kind": "synthesis",
+          "call_index": 6,
+          "state_at_call": {
+            "step": 6,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline",
+              "generalist:host",
+              "generalist:account",
+              "generalist:technique"
+            ],
+            "claims": 8,
+            "tool_calls": 8,
+            "accumulated_evidence_ids": 593936,
+            "accumulated_evidence_id_bytes": 36824030
+          },
+          "decomposition": {
+            "claims": 8,
+            "describes": "the claims as they stand on the state, before any rendering bound. With a budget set these figures are what the prompt *would* have carried unbounded; what it actually carried is the call's request_bytes.",
+            "rendered_under_budget": 4096,
+            "tool_output_bytes": 36824512,
+            "claim_statement_bytes": 1482,
+            "scaffolding_bytes": 184,
+            "conversation_history_bytes": 0,
+            "conversation_history_note": "structurally zero: every request is {system, one user message} built from the state; no earlier request or reply is ever resent",
+            "largest_claim": {
+              "agent": "generalist:host",
+              "type": "FACT",
+              "statement_bytes": 297,
+              "evidence_ids": 589476,
+              "evidence_id_bytes": 36547510,
+              "line_bytes": 36547829
+            },
+            "per_claim": [
+              {
+                "agent": "generalist:case",
+                "type": "FACT",
+                "statement_bytes": 128,
+                "evidence_ids": 2,
+                "evidence_id_bytes": 122,
+                "line_bytes": 272
+              },
+              {
+                "agent": "generalist:finding",
+                "type": "FACT",
+                "statement_bytes": 303,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 385
+              },
+              {
+                "agent": "generalist:finding",
+                "type": "FACT",
+                "statement_bytes": 303,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 385
+              },
+              {
+                "agent": "generalist:timeline",
+                "type": "FACT",
+                "statement_bytes": 125,
+                "evidence_ids": 2,
+                "evidence_id_bytes": 122,
+                "line_bytes": 269
+              },
+              {
+                "agent": "generalist:host",
+                "type": "FACT",
+                "statement_bytes": 297,
+                "evidence_ids": 589476,
+                "evidence_id_bytes": 36547510,
+                "line_bytes": 36547829
+              },
+              {
+                "agent": "generalist:account",
+                "type": "FACT",
+                "statement_bytes": 137,
+                "evidence_ids": 4458,
+                "evidence_id_bytes": 276394,
+                "line_bytes": 276553
+              },
+              {
+                "agent": "generalist:technique",
+                "type": "FACT",
+                "statement_bytes": 98,
+                "evidence_ids": 2,
+                "evidence_id_bytes": 122,
+                "line_bytes": 242
+              },
+              {
+                "agent": "generalist:technique",
+                "type": "FACT",
+                "statement_bytes": 91,
+                "evidence_ids": 2,
+                "evidence_id_bytes": 122,
+                "line_bytes": 235
+              }
+            ]
+          },
+          "tools": {
+            "tool_calls": 8,
+            "largest_tool_result": {
+              "tool": "host_network_activity",
+              "agent": "generalist:host",
+              "arguments": {
+                "device": "desktop-4pvps6e",
+                "remote_ip": "None"
+              },
+              "event_ids": 589476,
+              "event_id_bytes": 36547510,
+              "refused": false
+            },
+            "calls": [
+              {
+                "tool": "get_case",
+                "agent": "generalist:case",
+                "arguments": {
+                  "case_id": "CASE-001"
+                },
+                "event_ids": 2,
+                "event_id_bytes": 122,
+                "refused": false
+              },
+              {
+                "tool": "get_finding",
+                "agent": "generalist:finding",
+                "arguments": {
+                  "finding_id": "ATH-002:comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "get_finding",
+                "agent": "generalist:finding",
+                "arguments": {
+                  "finding_id": "ATH-002:comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "get_events",
+                "agent": "generalist:timeline",
+                "arguments": {
+                  "event_ids": "['comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353', 'comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4']"
+                },
+                "event_ids": 2,
+                "event_id_bytes": 122,
+                "refused": false
+              },
+              {
+                "tool": "host_network_activity",
+                "agent": "generalist:host",
+                "arguments": {
+                  "device": "desktop-4pvps6e",
+                  "remote_ip": "None"
+                },
+                "event_ids": 589476,
+                "event_id_bytes": 36547510,
+                "refused": false
+              },
+              {
+                "tool": "user_auth_history",
+                "agent": "generalist:account",
+                "arguments": {
+                  "user": "system"
+                },
+                "event_ids": 4458,
+                "event_id_bytes": 276394,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "generalist:technique",
+                "arguments": {
+                  "technique_id": "T1027.010"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "generalist:technique",
+                "arguments": {
+                  "technique_id": "T1059.001"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              }
+            ]
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 2834
+        }
+      ],
+      "largest_request_bytes": 11512,
+      "total_request_bytes": 18539
+    },
+    {
+      "arm": "B_single_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-002",
+      "tool_output_budget": 4096,
+      "m19_llm_status": "DEGRADED -- model requested but 1 call(s) failed (HTTP 413); ran deterministically; the planner chose 5 of 5 step(s) that had more than one candidate",
+      "m19_llm_degraded": true,
+      "fidelity": {
+        "recorded_claims": 6,
+        "rebuilt_claims": 6,
+        "identical": true,
+        "differences": [],
+        "plan_log_steps_replayed": 5
+      },
+      "wall_seconds": 12.56,
+      "calls": [
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1663,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 1097,
+          "user_bytes": 1097,
+          "messages": 1,
+          "envelope_bytes": 171,
+          "kind": "planner",
+          "call_index": 1,
+          "state_at_call": {
+            "step": 0,
+            "agents_run": [],
+            "claims": 0,
+            "tool_calls": 0,
+            "accumulated_evidence_ids": 0,
+            "accumulated_evidence_id_bytes": 0
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 373
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1521,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 956,
+          "user_bytes": 956,
+          "messages": 1,
+          "envelope_bytes": 170,
+          "kind": "planner",
+          "call_index": 2,
+          "state_at_call": {
+            "step": 1,
+            "agents_run": [
+              "generalist:case"
+            ],
+            "claims": 1,
+            "tool_calls": 1,
+            "accumulated_evidence_ids": 1,
+            "accumulated_evidence_id_bytes": 60
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 337
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1398,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 834,
+          "user_bytes": 834,
+          "messages": 1,
+          "envelope_bytes": 169,
+          "kind": "planner",
+          "call_index": 3,
+          "state_at_call": {
+            "step": 2,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding"
+            ],
+            "claims": 2,
+            "tool_calls": 2,
+            "accumulated_evidence_ids": 1,
+            "accumulated_evidence_id_bytes": 60
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 307
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1284,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 721,
+          "user_bytes": 721,
+          "messages": 1,
+          "envelope_bytes": 168,
+          "kind": "planner",
+          "call_index": 4,
+          "state_at_call": {
+            "step": 3,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline"
+            ],
+            "claims": 3,
+            "tool_calls": 3,
+            "accumulated_evidence_ids": 1,
+            "accumulated_evidence_id_bytes": 60
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 279
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 1161,
+          "system_chars": 395,
+          "system_bytes": 395,
+          "user_chars": 599,
+          "user_bytes": 599,
+          "messages": 1,
+          "envelope_bytes": 167,
+          "kind": "planner",
+          "call_index": 5,
+          "state_at_call": {
+            "step": 4,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline",
+              "generalist:host"
+            ],
+            "claims": 4,
+            "tool_calls": 4,
+            "accumulated_evidence_ids": 589477,
+            "accumulated_evidence_id_bytes": 36547572
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 248
+        },
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 10739,
+          "system_chars": 787,
+          "system_bytes": 787,
+          "user_chars": 9778,
+          "user_bytes": 9778,
+          "messages": 1,
+          "envelope_bytes": 174,
+          "kind": "synthesis",
+          "call_index": 6,
+          "state_at_call": {
+            "step": 6,
+            "agents_run": [
+              "generalist:case",
+              "generalist:finding",
+              "generalist:timeline",
+              "generalist:host",
+              "generalist:technique",
+              "generalist:account"
+            ],
+            "claims": 6,
+            "tool_calls": 6,
+            "accumulated_evidence_ids": 593935,
+            "accumulated_evidence_id_bytes": 36823968
+          },
+          "decomposition": {
+            "claims": 6,
+            "describes": "the claims as they stand on the state, before any rendering bound. With a budget set these figures are what the prompt *would* have carried unbounded; what it actually carried is the call's request_bytes.",
+            "rendered_under_budget": 4096,
+            "tool_output_bytes": 36824144,
+            "claim_statement_bytes": 1125,
+            "scaffolding_bytes": 138,
+            "conversation_history_bytes": 0,
+            "conversation_history_note": "structurally zero: every request is {system, one user message} built from the state; no earlier request or reply is ever resent",
+            "largest_claim": {
+              "agent": "generalist:host",
+              "type": "FACT",
+              "statement_bytes": 297,
+              "evidence_ids": 589476,
+              "evidence_id_bytes": 36547510,
+              "line_bytes": 36547829
+            },
+            "per_claim": [
+              {
+                "agent": "generalist:case",
+                "type": "FACT",
+                "statement_bytes": 128,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 210
+              },
+              {
+                "agent": "generalist:finding",
+                "type": "FACT",
+                "statement_bytes": 329,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 411
+              },
+              {
+                "agent": "generalist:timeline",
+                "type": "FACT",
+                "statement_bytes": 125,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 207
+              },
+              {
+                "agent": "generalist:host",
+                "type": "FACT",
+                "statement_bytes": 297,
+                "evidence_ids": 589476,
+                "evidence_id_bytes": 36547510,
+                "line_bytes": 36547829
+              },
+              {
+                "agent": "generalist:technique",
+                "type": "FACT",
+                "statement_bytes": 109,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 191
+              },
+              {
+                "agent": "generalist:account",
+                "type": "FACT",
+                "statement_bytes": 137,
+                "evidence_ids": 4458,
+                "evidence_id_bytes": 276394,
+                "line_bytes": 276553
+              }
+            ]
+          },
+          "tools": {
+            "tool_calls": 6,
+            "largest_tool_result": {
+              "tool": "host_network_activity",
+              "agent": "generalist:host",
+              "arguments": {
+                "device": "desktop-4pvps6e",
+                "remote_ip": "None"
+              },
+              "event_ids": 589476,
+              "event_id_bytes": 36547510,
+              "refused": false
+            },
+            "calls": [
+              {
+                "tool": "get_case",
+                "agent": "generalist:case",
+                "arguments": {
+                  "case_id": "CASE-002"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "get_finding",
+                "agent": "generalist:finding",
+                "arguments": {
+                  "finding_id": "ATH-012:comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "get_events",
+                "agent": "generalist:timeline",
+                "arguments": {
+                  "event_ids": "['comiset_slice.jsonl:4bdb0f0e83e0a62d3ca40b33ef0d892801fd4d3b']"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "host_network_activity",
+                "agent": "generalist:host",
+                "arguments": {
+                  "device": "desktop-4pvps6e",
+                  "remote_ip": "None"
+                },
+                "event_ids": 589476,
+                "event_id_bytes": 36547510,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "generalist:technique",
+                "arguments": {
+                  "technique_id": "T1685"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              },
+              {
+                "tool": "user_auth_history",
+                "agent": "generalist:account",
+                "arguments": {
+                  "user": "system"
+                },
+                "event_ids": 4458,
+                "event_id_bytes": 276394,
+                "refused": false
+              }
+            ]
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 2641
+        }
+      ],
+      "largest_request_bytes": 10739,
+      "total_request_bytes": 17766
+    },
+    {
+      "arm": "C_crew_llm",
+      "corpus": "comiset",
+      "case_id": "CASE-001",
+      "tool_output_budget": 4096,
+      "m19_llm_status": "model available and used for planning/synthesis; no step had more than one eligible candidate, so the planner was never asked",
+      "m19_llm_degraded": false,
+      "fidelity": {
+        "recorded_claims": 11,
+        "rebuilt_claims": 11,
+        "identical": true,
+        "differences": [],
+        "plan_log_steps_replayed": 0
+      },
+      "wall_seconds": 0.24,
+      "calls": [
+        {
+          "model": "claude-opus-5",
+          "max_tokens": 8192,
+          "request_bytes": 3984,
+          "system_chars": 787,
+          "system_bytes": 787,
+          "user_chars": 3018,
+          "user_bytes": 3018,
+          "messages": 1,
+          "envelope_bytes": 179,
+          "kind": "synthesis",
+          "call_index": 1,
+          "state_at_call": {
+            "step": 2,
+            "agents_run": [
+              "endpoint",
+              "attack"
+            ],
+            "claims": 11,
+            "tool_calls": 8,
+            "accumulated_evidence_ids": 6,
+            "accumulated_evidence_id_bytes": 370
+          },
+          "decomposition": {
+            "claims": 11,
+            "describes": "the claims as they stand on the state, before any rendering bound. With a budget set these figures are what the prompt *would* have carried unbounded; what it actually carried is the call's request_bytes.",
+            "rendered_under_budget": 4096,
+            "tool_output_bytes": 970,
+            "claim_statement_bytes": 1739,
+            "scaffolding_bytes": 278,
+            "conversation_history_bytes": 0,
+            "conversation_history_note": "structurally zero: every request is {system, one user message} built from the state; no earlier request or reply is ever resent",
+            "largest_claim": {
+              "agent": "endpoint",
+              "type": "FACT",
+              "statement_bytes": 95,
+              "evidence_ids": 3,
+              "evidence_id_bytes": 184,
+              "line_bytes": 301
+            },
+            "per_claim": [
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 93,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 175
+              },
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 95,
+                "evidence_ids": 3,
+                "evidence_id_bytes": 184,
+                "line_bytes": 301
+              },
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 86,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 168
+              },
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 93,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 175
+              },
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 95,
+                "evidence_ids": 3,
+                "evidence_id_bytes": 184,
+                "line_bytes": 301
+              },
+              {
+                "agent": "endpoint",
+                "type": "FACT",
+                "statement_bytes": 86,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 168
+              },
+              {
+                "agent": "attack",
+                "type": "INFERENCE",
+                "statement_bytes": 358,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 445
+              },
+              {
+                "agent": "attack",
+                "type": "INFERENCE",
+                "statement_bytes": 158,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 245
+              },
+              {
+                "agent": "attack",
+                "type": "INFERENCE",
+                "statement_bytes": 358,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 445
+              },
+              {
+                "agent": "attack",
+                "type": "INFERENCE",
+                "statement_bytes": 158,
+                "evidence_ids": 1,
+                "evidence_id_bytes": 60,
+                "line_bytes": 245
+              },
+              {
+                "agent": "attack",
+                "type": "INFERENCE",
+                "statement_bytes": 159,
+                "evidence_ids": 2,
+                "evidence_id_bytes": 122,
+                "line_bytes": 308
+              }
+            ]
+          },
+          "tools": {
+            "tool_calls": 8,
+            "largest_tool_result": {
+              "tool": "process_tree",
+              "agent": "endpoint",
+              "arguments": {
+                "device": "desktop-4pvps6e",
+                "pid": "5100",
+                "process_guid": "sysmon:4fd6b357-6967-6377-8001-000000002900"
+              },
+              "event_ids": 4,
+              "event_id_bytes": 246,
+              "refused": false
+            },
+            "calls": [
+              {
+                "tool": "get_events",
+                "agent": "endpoint",
+                "arguments": {
+                  "event_ids": "['comiset_slice.jsonl:41ece3af25e0f38cccc6d27422a388c739761353']"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "process_tree",
+                "agent": "endpoint",
+                "arguments": {
+                  "device": "desktop-4pvps6e",
+                  "pid": "5100",
+                  "process_guid": "sysmon:4fd6b357-6967-6377-8001-000000002900"
+                },
+                "event_ids": 4,
+                "event_id_bytes": 246,
+                "refused": false
+              },
+              {
+                "tool": "get_events",
+                "agent": "endpoint",
+                "arguments": {
+                  "event_ids": "['comiset_slice.jsonl:574dffe7a299a4ad9d2b1150574e2cff72b4efb4']"
+                },
+                "event_ids": 1,
+                "event_id_bytes": 60,
+                "refused": false
+              },
+              {
+                "tool": "process_tree",
+                "agent": "endpoint",
+                "arguments": {
+                  "device": "desktop-4pvps6e",
+                  "pid": "1764",
+                  "process_guid": "sysmon:4fd6b357-69ca-6377-8601-000000002900"
+                },
+                "event_ids": 4,
+                "event_id_bytes": 246,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "attack",
+                "arguments": {
+                  "technique_id": "T1027.010"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "attack",
+                "arguments": {
+                  "technique_id": "T1059.001"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "attack",
+                "arguments": {
+                  "technique_id": "T1027.010"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              },
+              {
+                "tool": "lookup_technique",
+                "agent": "attack",
+                "arguments": {
+                  "technique_id": "T1059.001"
+                },
+                "event_ids": 0,
+                "event_id_bytes": 0,
+                "refused": false
+              }
+            ]
+          },
+          "input_tokens": null,
+          "input_tokens_source": "unavailable (no ATH_LLM_API_KEY)",
+          "approx_input_tokens_chars_over_4": 951
+        }
+      ],
+      "largest_request_bytes": 3984,
+      "total_request_bytes": 3984
+    }
+  ]
+}

@@ -41,6 +41,7 @@ the system to produce evidence-backed conclusions.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
 from ath.agent.llm import LLMClient, NullLLM
@@ -121,6 +122,96 @@ SYNTHESIS_SYSTEM = (
 )
 
 
+# -- the synthesis prompt's evidence, and the one bound that can be put on it ----------
+
+ELISION = "+{dropped} more of {total} not shown"
+"""How a bounded evidence list says what it left out.
+
+A count, not an ellipsis. The model is being asked to reason about relationships between
+claims, and "this host made 589,476 connections, of which here are 66 ids" is a
+different premise from "this host made these 66 connections". The second is a lie the
+prompt would be telling on the system's behalf.
+"""
+
+
+def render_synthesis_claims(claims: Sequence[Claim], budget: int | None = None) -> str:
+    """The claim block of the synthesis user message.
+
+    With ``budget`` unset this is byte-for-byte what the orchestrator has always
+    rendered -- the whole point of the flag is that an unset flag changes nothing, and
+    ``tests/test_llm_request_size.py`` asserts the two are identical on the
+    reconstructed cases.
+
+    With ``budget`` set, each claim contributes at most that many bytes of evidence ids,
+    chosen in two passes:
+
+    1. **Ids another claim also cites** come first. Those are the ids that tie two
+       facets, or two specialists, to the same event, and they are the only ids in a
+       long list whose loss can cost a *relationship* -- which is the only thing
+       synthesis is asked to find. An id cited once, in a list of half a million, cannot
+       be part of a cross-claim link the model could state.
+    2. **Then the rest, in the order the tool returned them**, until the budget is spent.
+
+    Both passes are inside the budget, so a pathological case where two huge claims cite
+    the same half-million ids is bounded exactly like one huge claim: the preference is
+    a preference, not an exemption. What is never dropped is the *count* -- a truncated
+    list ends with :data:`ELISION`, so the model is told how much it is not being shown.
+
+    The bound is per claim rather than per prompt because the claims are what the
+    prompt is made of: with ``n`` claims the evidence can contribute at most
+    ``n * budget`` bytes, and ``n`` is already bounded by the step budget.
+    """
+    if budget is not None and budget <= 0:
+        raise ValueError(f"tool_output_budget must be positive or None, got {budget}")
+    shared = _shared_evidence(claims) if budget is not None else frozenset()
+    lines = []
+    for claim in claims:
+        evidence = (
+            ", ".join(claim.evidence_ids) if budget is None
+            else _bounded_evidence(claim.evidence_ids, budget, shared)
+        )
+        lines.append(
+            f"- [{claim.claim_type.value}] {claim.statement} (evidence: {evidence})"
+        )
+    return "\n".join(lines)
+
+
+def _shared_evidence(claims: Sequence[Claim]) -> frozenset[str]:
+    """Ids more than one claim cites -- the cross-claim links worth protecting."""
+    seen: set[str] = set()
+    shared: set[str] = set()
+    for claim in claims:
+        for event_id in set(claim.evidence_ids):
+            (shared if event_id in seen else seen).add(event_id)
+    return frozenset(shared)
+
+
+def _bounded_evidence(ids: Sequence[str], budget: int, shared: frozenset[str]) -> str:
+    """At most ``budget`` bytes of ids, preferring shared ones, then what is left out.
+
+    At least one id is always rendered: a budget too small for a single id is a
+    misconfiguration, and answering it with a claim citing nothing would turn a size
+    problem into an evidence problem.
+    """
+    ordered = [e for e in ids if e in shared] + [e for e in ids if e not in shared]
+    kept: list[str] = []
+    used = 0
+    for event_id in ordered:
+        cost = len(event_id.encode("utf-8")) + (2 if kept else 0)
+        if kept and used + cost > budget:
+            break
+        kept.append(event_id)
+        used += cost
+    dropped = len(ids) - len(kept)
+    if not dropped:
+        return ", ".join(ids)
+    # Rendered in the tool's own order, so a reader diffing a bounded prompt against an
+    # unbounded one sees a prefix with holes rather than a reshuffle.
+    keep = set(kept)
+    shown = [e for e in ids if e in keep]
+    return ", ".join(shown) + ", " + ELISION.format(dropped=dropped, total=len(ids))
+
+
 @dataclass
 class InvestigationConfig:
     """Orchestrator settings.
@@ -132,12 +223,29 @@ class InvestigationConfig:
         use_llm_synthesis: Let the model propose additional INFERENCE/HYPOTHESIS claims.
         max_synthesis_claims: Cap on accepted model claims, so synthesis cannot drown
             the deterministic evidence.
+        tool_output_budget: Bytes of evidence ids one claim may contribute to the
+            synthesis prompt, or ``None`` -- the default -- for no bound at all.
+
+            **Off by default, deliberately.** M19's arm B and arm C ran with no bound
+            and their results are frozen; a default that changed the prompt would change
+            what a rerun of that experiment means. Setting it is a decision a run has to
+            make and record (see ``reports/m19b/http413/``).
+
+            What it bounds is the one thing here that has ever grown without limit: a
+            claim's ``evidence_ids``, which are not a summary of a tool result but the
+            result itself -- one id per row the tool matched. On the COMISET corpus one
+            ``host_network_activity`` call returns 589,476 of them, and the synthesis
+            request that carries them reaches 33 MB, which the API rejects with a 413
+            (measured; ``reports/m19b/http413/measurements.json``). See
+            :func:`render_synthesis_claims` for what a bounded claim looks like: ids
+            kept, the count preserved, nothing silently vanished.
     """
 
     max_steps: int = 8
     use_llm_planner: bool = True
     use_llm_synthesis: bool = True
     max_synthesis_claims: int = 6
+    tool_output_budget: int | None = None
 
 
 class InvestigationOrchestrator:
@@ -333,9 +441,8 @@ class InvestigationOrchestrator:
             return state
 
         allowed = set(state.evidence_ids)
-        rendered = "\n".join(
-            f"- [{c.claim_type.value}] {c.statement} (evidence: {', '.join(c.evidence_ids)})"
-            for c in state.claims
+        rendered = render_synthesis_claims(
+            state.claims, budget=self.config.tool_output_budget,
         )
         response = self.llm.complete(
             SYNTHESIS_SYSTEM,

@@ -55,7 +55,7 @@ import json
 import os
 import time
 from dataclasses import dataclass, field, replace
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Callable, Protocol, runtime_checkable
 
 from ath.config import DEFAULT_MODEL
 from ath.logging_setup import get_logger
@@ -313,6 +313,81 @@ def _describe_http_error(exc: Any) -> str:
     return f"HTTP {getattr(exc, 'code', '?')}{suffix}"
 
 
+def build_request_body(
+    *,
+    model: str,
+    max_tokens: int,
+    system: str,
+    prompt: str,
+    adaptive_thinking: bool = True,
+) -> dict[str, Any]:
+    """The Messages API body :meth:`AnthropicLLM.complete` sends, as a dict.
+
+    Extracted so a measurement can construct **the same bytes the client would send**
+    without sending them. M19b-T2 had to answer "how large was the request that came
+    back 413", and the only honest answer is one computed by the code that builds the
+    request rather than by a second, similar-looking builder in a script: a
+    reconstruction that differs by a field ordering differs by bytes, and bytes are the
+    quantity under investigation.
+
+    Key ordering is load-bearing and therefore fixed here: ``json.dumps`` preserves
+    insertion order, so ``thinking`` is appended last exactly as it was when it was
+    added conditionally at the call site.
+    """
+    body: dict[str, Any] = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if adaptive_thinking:
+        body["thinking"] = dict(ADAPTIVE_THINKING)
+    return body
+
+
+def encode_request_body(body: dict[str, Any]) -> bytes:
+    """The exact payload bytes for a body from :func:`build_request_body`."""
+    return json.dumps(body).encode("utf-8")
+
+
+def request_measurement(
+    body: dict[str, Any], payload: bytes | None = None
+) -> dict[str, Any]:
+    """Sizes of one request, in the units the provider's limits are stated in.
+
+    Characters and bytes are reported separately rather than one standing in for the
+    other: an id list is ASCII and the two coincide, a hostname in another script is
+    not, and the whole question M19b-T2 asks is whether the limit that rejected a
+    request counts bytes or tokens. Reporting only ``len(text)`` would make that
+    question unanswerable from the artifact.
+
+    ``envelope_bytes`` is the payload minus the raw UTF-8 size of the system and user
+    text, so it carries the JSON scaffolding *and* whatever escaping those two strings
+    needed. It is a residual, not a constant, and the artifact treats it as one.
+    """
+    if payload is None:
+        payload = encode_request_body(body)
+    system = str(body.get("system", ""))
+    messages = body.get("messages") or []
+    user = "".join(
+        str(message.get("content", "")) for message in messages
+        if isinstance(message, dict)
+    )
+    return {
+        "model": body.get("model"),
+        "max_tokens": body.get("max_tokens"),
+        "request_bytes": len(payload),
+        "system_chars": len(system),
+        "system_bytes": len(system.encode("utf-8")),
+        "user_chars": len(user),
+        "user_bytes": len(user.encode("utf-8")),
+        "messages": len(messages),
+        "envelope_bytes": len(payload) - len(system.encode("utf-8")) - len(
+            user.encode("utf-8")
+        ),
+    }
+
+
 class AnthropicLLM(TokenAccounting):
     """Calls the Anthropic Messages API.
 
@@ -359,6 +434,7 @@ class AnthropicLLM(TokenAccounting):
         max_attempts: int = 3,
         backoff_seconds: float = 1.0,
         adaptive_thinking: bool = True,
+        request_observer: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         super().__init__()
         self._api_key = api_key
@@ -368,20 +444,29 @@ class AnthropicLLM(TokenAccounting):
         self.backoff_seconds = backoff_seconds
         self.adaptive_thinking = adaptive_thinking
         """Send ``thinking`` explicitly. Off only for a provider that rejects it."""
+        self.request_observer = request_observer
+        """Measurement-only callback, handed :func:`request_measurement` per call.
+
+        Called once per :meth:`complete`, before the first attempt, and never consulted
+        afterwards: it cannot alter the payload, the headers, the retry policy or the
+        response. It exists because "what did we send" is a question this project had
+        no way to answer without either sending the request or re-deriving it in a
+        script that could be wrong. Exceptions raised by an observer are deliberately
+        **not** caught -- a measurement hook that can silently fail measures nothing --
+        so production code leaves it ``None``, which is the default.
+        """
 
     def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
         import urllib.error
         import urllib.request
 
-        body_sent: dict[str, Any] = {
-            "model": self.model,
-            "max_tokens": max_tokens,
-            "system": system,
-            "messages": [{"role": "user", "content": prompt}],
-        }
-        if self.adaptive_thinking:
-            body_sent["thinking"] = dict(ADAPTIVE_THINKING)
-        payload = json.dumps(body_sent).encode("utf-8")
+        body_sent = build_request_body(
+            model=self.model, max_tokens=max_tokens, system=system, prompt=prompt,
+            adaptive_thinking=self.adaptive_thinking,
+        )
+        payload = encode_request_body(body_sent)
+        if self.request_observer is not None:
+            self.request_observer(request_measurement(body_sent, payload))
 
         last_error = "no attempt made"
         # Accumulated over the attempts of this one call, not over the client's life.
