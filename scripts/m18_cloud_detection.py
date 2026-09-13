@@ -447,6 +447,23 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
     library API rather than the command. Nothing is tuned here and no model is called:
     what is reported is how many claims of each type the deterministic planner produced,
     how many tool calls it made, and whether every FACT verified.
+
+    One ToolBox per case (corrected 2026-09-13, M19-2)
+    --------------------------------------------------
+    This function used to build **one** :class:`~ath.agent.tools.ToolBox` and reuse it
+    for every case. ``ToolBox.calls_by`` returns every call made since the toolbox was
+    constructed, and ``Specialist._result`` attaches exactly that, so case *n*'s recorded
+    tool calls included every call made for cases 1..n-1. Summing that column over ten
+    cases accumulates, and the M18 report published the accumulation: **172 tool calls**
+    for the first ten flaws.cloud cases, against **39** actually made.
+
+    Facts, inferences, hypotheses and rejections were never affected -- those come from
+    the investigation state, which is per case.
+
+    The fix is structural rather than arithmetical: a fresh toolbox per case, which is
+    what ``ath.evaluation.ablation.arms.run_arm`` already does and documents. A
+    subtraction of the previous case's count would have produced the same numbers today
+    and re-broken the moment anything else read ``calls_by``.
     """
     from ath.agent.claims import ClaimVerifier  # noqa: PLC0415
     from ath.agent.llm import NullLLM  # noqa: PLC0415
@@ -462,17 +479,17 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
     if not cases:
         return {"cases": 0}
 
-    tools = ToolBox(telemetry, hunt.findings, cases)
     verifier = ClaimVerifier(telemetry)
-    orchestrator = InvestigationOrchestrator(
-        tools, verifier, llm=NullLLM(),
-        config=InvestigationConfig(use_llm_planner=False, use_llm_synthesis=False),
-        environment=environment,
-    )
-
     totals: Counter = Counter()
+    per_case: list[dict[str, Any]] = []
     example: dict[str, Any] | None = None
     for case in cases[:limit]:
+        tools = ToolBox(telemetry, hunt.findings, cases)
+        orchestrator = InvestigationOrchestrator(
+            tools, verifier, llm=NullLLM(),
+            config=InvestigationConfig(use_llm_planner=False, use_llm_synthesis=False),
+            environment=environment,
+        )
         state = orchestrator.investigate(case)
         payload = state.to_dict()
         counts = payload["counts"]
@@ -489,6 +506,19 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
         totals["steps"] += payload["steps"]
         for agent in payload["agents_run"]:
             totals[f"agent_{agent}"] += 1
+        per_case.append({
+            "case_id": case.case_id,
+            "rules": sorted({f.rule_id for f in case.findings}),
+            "findings": len(case.findings),
+            "agents_run": list(payload["agents_run"]),
+            "steps": payload["steps"],
+            "tool_calls": counts["tool_calls"],
+            "toolbox_calls": tools.call_count,
+            "facts": counts["facts"],
+            "inferences": counts["inferences"],
+            "hypotheses": counts["hypotheses"],
+            "rejected_claims": counts["rejected"],
+        })
         if example is None:
             example = {
                 "case_id": case.case_id,
@@ -509,7 +539,12 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
                 ],
                 "rejected_claims": list(payload["rejected_claims"]),
             }
-    return {"totals": dict(totals), "example_case": example}
+    return {
+        "toolbox_scope": "one ToolBox per case (corrected 2026-09-13; see the docstring)",
+        "totals": dict(totals),
+        "per_case": per_case,
+        "example_case": example,
+    }
 
 
 # --------------------------------------------------------------------------------------

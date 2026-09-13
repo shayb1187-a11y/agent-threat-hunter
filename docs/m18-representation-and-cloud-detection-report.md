@@ -294,10 +294,50 @@ Deterministic (NullLLM) investigation over the first ten flaws.cloud cases. Noth
 no model called. Source: `reports/m18/cloud_detection/flaws_cloud.json`
 `agent_deterministic`.
 
-* 10 cases, **20** specialist steps, **172** tool calls
+* 10 cases, **20** specialist steps, ~~**172** tool calls~~ **39** tool calls ¹
 * **203 FACT**, **34 INFERENCE**, **0 HYPOTHESIS**
 * **0 claims rejected by the verifier** -- the construction-time guarantee, not a lucky run
 * Specialists dispatched: `control_plane` 9, `attack` 10, `identity` 1
+
+¹ **Corrected after publication, 2026-09-13 (M19-2).** This row originally read **172**,
+which was *cumulative across cases rather than per case*. `scripts/m18_cloud_detection.py`
+built one `ToolBox` and reused it for all ten investigations; `ToolBox.calls_by` returns
+every call made since the toolbox was constructed and `Specialist._result` attaches
+exactly that, so case *n* recorded cases 1..n-1's calls as its own and the total is the
+accumulation. The same ten cases, re-run with **one toolbox per case**, make **39** tool
+calls. Everything else in this section is unchanged: facts, inferences, hypotheses,
+rejections and steps are read from the investigation state, which was always per case, and
+they re-measure identically (203 / 34 / 0 / 0 / 20). The fix is structural rather than
+arithmetical -- a fresh toolbox per case, which `ath.evaluation.ablation.arms.run_arm`
+already did and documented -- because subtracting the previous case's count would have
+produced the same numbers today and re-broken the moment anything else read `calls_by`.
+The old cumulative figure is kept beside the corrected one in
+`reports/m18/cloud_detection/flaws_cloud.json` under
+`agent_deterministic.cumulative_pre_correction`, with the per-case table under
+`agent_deterministic.per_case`. Reproduce with
+`python scripts/m18_cloud_detection.py flaws_cloud --investigate`; pinned by
+`tests/test_m18_cloud_detection_per_case.py`, which fails against the pre-correction
+script.
+
+Per case, corrected:
+
+| case | rules | findings | tool calls | FACT | INFERENCE | steps | specialists |
+|---|---|---:|---:|---:|---:|---:|---|
+| CASE-001 | AWS-004 | 1 | 2 | 8 | 2 | 2 | control_plane, attack |
+| CASE-002 | AWS-004 | 1 | 2 | 11 | 2 | 2 | control_plane, attack |
+| CASE-003 | AWS-004 | 1 | 2 | 11 | 2 | 2 | control_plane, attack |
+| CASE-004 | AWS-003, AWS-004 | 2 | 5 | 33 | 4 | 2 | control_plane, attack |
+| CASE-005 | ATH-005 | 1 | 3 | 2 | 4 | 2 | identity, attack |
+| CASE-006 | AWS-003, AWS-004 | 2 | 5 | 26 | 4 | 2 | control_plane, attack |
+| CASE-007 | AWS-003, AWS-004 | 2 | 5 | 28 | 4 | 2 | control_plane, attack |
+| CASE-008 | AWS-003, AWS-004 | 2 | 5 | 28 | 4 | 2 | control_plane, attack |
+| CASE-009 | AWS-003, AWS-004 | 2 | 5 | 28 | 4 | 2 | control_plane, attack |
+| CASE-010 | AWS-003, AWS-004 | 2 | 5 | 28 | 4 | 2 | control_plane, attack |
+| **total** | | **16** | **39** | **203** | **34** | **20** | |
+
+The correction makes the section's own conclusion sharper rather than softer: **3.9 tool
+calls per case**, not 17.2. The layer was doing even less asking than the published
+number suggested.
 
 For scale: `H4_FROZEN.json` records that across *every* real external corpus before this
 milestone, the investigation layer had produced 3 facts, 2 inferences and 4 tool calls in

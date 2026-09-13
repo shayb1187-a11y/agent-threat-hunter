@@ -210,18 +210,346 @@
     ]
   },
   "agent_deterministic": {
+    "correction": {
+      "corrected_on": "2026-09-13",
+      "milestone": "M19-2",
+      "what": "tool_calls was cumulative across cases, not per case: 172 published, 39 actually made across the same ten cases",
+      "cause": "scripts/m18_cloud_detection.py built one ToolBox and reused it for every case. ToolBox.calls_by returns every call since construction and Specialist._result attaches exactly that, so case n reported cases 1..n-1's calls as its own and the published total is the accumulation.",
+      "unaffected": "facts, inferences, hypotheses, rejected_claims and steps come from the investigation state, which is per case; they are unchanged",
+      "fix": "one ToolBox per case, as ath.evaluation.ablation.arms.run_arm already does",
+      "reproduce": "python scripts/m18_cloud_detection.py flaws_cloud --investigate"
+    },
+    "cumulative_pre_correction": {
+      "totals": {
+        "cases": 10,
+        "facts": 203,
+        "inferences": 34,
+        "hypotheses": 0,
+        "rejected_claims": 0,
+        "tool_calls": 172,
+        "steps": 20,
+        "agent_control_plane": 9,
+        "agent_attack": 10,
+        "agent_identity": 1
+      },
+      "example_case": {
+        "case_id": "CASE-001",
+        "rules": [
+          "AWS-004"
+        ],
+        "findings": 1,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "counts": {
+          "facts": 8,
+          "inferences": 2,
+          "hypotheses": 0,
+          "rejected": 0,
+          "tool_calls": 2
+        },
+        "tool_calls": [
+          "control_plane::get_events(event_ids=['cloudtrail-control-008401', 'cloudtrail-control-008402', 'cloudtrail-control-008417', 'cloudtrail-control-008418', 'cloudtrail-control-008419', 'cloudtrail-control-008421', 'cloudtrail-control-008422', 'cloudtrail-control-008423']) -> 8/8 found",
+          "attack::lookup_technique(technique_id='T1580') -> Cloud Infrastructure Discovery"
+        ],
+        "plan_log": [
+          "step 1: control_plane -- only eligible specialist; case evidence rests on cloud_management_activity telemetry (from AWS-004)",
+          "step 2: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+          "step 3: stop -- no specialist has further useful work on the available evidence"
+        ],
+        "claims": [
+          {
+            "type": "FACT",
+            "statement": "'backup' performed get on iam:user '?'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008401"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed list on iam:instance-profile '?'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008402"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed get on s3:bucket-acl 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008417"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed get on s3:bucket-versioning 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008418"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed get on s3:bucket-request-payment 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008419"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed get on s3:bucket-logging 'level2-295510a051f3fcd006ae345973478972.flaws.cloud'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008421"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed list on iam:mfa-device '?'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008422"
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "'backup' performed list on iam:access-key '?'.",
+            "source": "tool",
+            "evidence_ids": [
+              "cloudtrail-control-008423"
+            ]
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Behaviour cited by AWS-004 is consistent with T1580 Cloud Infrastructure Discovery (Discovery). One identity accumulated many authorization refusals in a short window, which is consistent with probing what a credential can reach while mappi",
+            "source": "mitre",
+            "evidence_ids": [
+              "cloudtrail-control-008401",
+              "cloudtrail-control-008402",
+              "cloudtrail-control-008417",
+              "cloudtrail-control-008418"
+            ]
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "The case spans 1 ATT&CK tactics (Discovery). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+            "source": "mitre",
+            "evidence_ids": [
+              "cloudtrail-control-008401",
+              "cloudtrail-control-008402",
+              "cloudtrail-control-008417",
+              "cloudtrail-control-008418"
+            ]
+          }
+        ],
+        "rejected_claims": []
+      }
+    },
+    "toolbox_scope": "one ToolBox per case (corrected 2026-09-13; see the docstring)",
     "totals": {
       "cases": 10,
       "facts": 203,
       "inferences": 34,
       "hypotheses": 0,
       "rejected_claims": 0,
-      "tool_calls": 172,
+      "tool_calls": 39,
       "steps": 20,
       "agent_control_plane": 9,
       "agent_attack": 10,
       "agent_identity": 1
     },
+    "per_case": [
+      {
+        "case_id": "CASE-001",
+        "rules": [
+          "AWS-004"
+        ],
+        "findings": 1,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 2,
+        "toolbox_calls": 2,
+        "facts": 8,
+        "inferences": 2,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-002",
+        "rules": [
+          "AWS-004"
+        ],
+        "findings": 1,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 2,
+        "toolbox_calls": 2,
+        "facts": 11,
+        "inferences": 2,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-003",
+        "rules": [
+          "AWS-004"
+        ],
+        "findings": 1,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 2,
+        "toolbox_calls": 2,
+        "facts": 11,
+        "inferences": 2,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-004",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 33,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-005",
+        "rules": [
+          "ATH-005"
+        ],
+        "findings": 1,
+        "agents_run": [
+          "identity",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 3,
+        "toolbox_calls": 3,
+        "facts": 2,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-006",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 26,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-007",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 28,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-008",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 28,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-009",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 28,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      },
+      {
+        "case_id": "CASE-010",
+        "rules": [
+          "AWS-003",
+          "AWS-004"
+        ],
+        "findings": 2,
+        "agents_run": [
+          "control_plane",
+          "attack"
+        ],
+        "steps": 2,
+        "tool_calls": 5,
+        "toolbox_calls": 5,
+        "facts": 28,
+        "inferences": 4,
+        "hypotheses": 0,
+        "rejected_claims": 0
+      }
+    ],
     "example_case": {
       "case_id": "CASE-001",
       "rules": [
