@@ -36,7 +36,17 @@ def _eid(prefix: str) -> str:
 def proc(name: str, cmd: str, parent: str, *, device: str = "PC01", user: str = "jdoe",
          when: datetime | None = None, pid: int | None = None, ppid: int = 1000,
          path: str | None = None, sha256: str = "", signer: str = "",
-         signature_status: str = SIG_UNKNOWN, source: str = "test") -> dict[str, Any]:
+         signature_status: str = SIG_UNKNOWN, source: str = "test",
+         guid: str = "", parent_guid: str = "") -> dict[str, Any]:
+    """One canonical process row.
+
+    ``guid`` / ``parent_guid`` are this instance's and its creator's
+    :mod:`process-instance identities <ath.instance_identity>`, already minted (by
+    ``start_identity`` or ``sysmon_identity``) so a test can say exactly which authority
+    asserted them. They default to ``""`` -- the honest default, because most sources
+    assert nothing, and because it keeps every test written before identities existed
+    exercising the same pid fallback it always did.
+    """
     pid = pid if pid is not None else 4000 + _counter["n"]
     return {
         "event_id": _eid("p"), "timestamp": when or at(), "event_type": EVENT_PROCESS,
@@ -45,17 +55,27 @@ def proc(name: str, cmd: str, parent: str, *, device: str = "PC01", user: str = 
         "parent_process_name": parent, "parent_process_id": ppid,
         "file_path": path or f"C:\\Windows\\System32\\{name}", "sha256": sha256,
         "signer": signer, "signature_status": signature_status,
+        "process_guid": guid, "parent_process_guid": parent_guid,
     }
 
 
 def net(process: str, remote_ip: str, port: int = 443, *, device: str = "PC01",
         user: str = "jdoe", when: datetime | None = None, pid: int = 4000,
-        protocol: str = "tcp", direction: str = "outbound", url: str = "") -> dict[str, Any]:
+        protocol: str = "tcp", direction: str = "outbound", url: str = "",
+        guid: str = "") -> dict[str, Any]:
+    """One canonical network row.
+
+    ``guid`` is the identity of the instance that opened the connection, where the
+    source asserted one (Sysmon writes ``ProcessGuid`` on event 3 as well as event 1).
+    Never derived here from the row's own timestamp: a connection's time is when the
+    socket opened, not when the process started.
+    """
     return {
         "event_id": _eid("n"), "timestamp": when or at(), "event_type": EVENT_NETWORK,
         "device": device, "user": user, "source": "test", "source_ref": "",
         "process_name": process, "process_id": pid, "remote_ip": remote_ip,
-        "remote_port": port, "protocol": protocol, "direction": direction, "remote_url": url,
+        "remote_port": port, "protocol": protocol, "direction": direction,
+        "remote_url": url, "process_guid": guid,
     }
 
 

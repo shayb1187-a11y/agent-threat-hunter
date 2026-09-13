@@ -30,6 +30,13 @@ class FindingLink:
             process, parent/child, host-to-host movement, auth-then-execute) as opposed
             to circumstantial ones (same host, close in time). A link with no structural
             signal is refused -- see :mod:`ath.correlation.correlator`.
+        inferred_from_pid: Whether at least one of this link's *process* signals rested
+            on ``(device, pid)`` rather than on an instance identity -- because a row
+            asserted no identity, or the two rows' identities came from different
+            authorities. Such a link is a statement about a PID slot, which the
+            operating system reissues, and not about a process instance. The signal text
+            says so too (``process_lineage(+3, inferred from pid)``); this flag exists so
+            a run can be *counted* without parsing prose.
     """
 
     left_id: str
@@ -37,6 +44,7 @@ class FindingLink:
     score: int
     signals: tuple[str, ...]
     structural: bool
+    inferred_from_pid: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -45,6 +53,7 @@ class FindingLink:
             "score": self.score,
             "signals": list(self.signals),
             "structural": self.structural,
+            "inferred_from_pid": self.inferred_from_pid,
         }
 
     def __str__(self) -> str:

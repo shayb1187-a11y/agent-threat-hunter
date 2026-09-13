@@ -36,8 +36,11 @@ from ath.instance_identity import (
     IDENTITY_SCHEMES,
     SCHEME_START,
     SCHEME_SYSMON,
+    InstanceKey,
     UnknownIdentityScheme,
     instance_identity,
+    instance_key,
+    match_keys,
     scheme_of,
     start_identity,
     sysmon_identity,
@@ -676,3 +679,100 @@ def test_a_source_with_no_endpoint_telemetry_still_emits_the_columns() -> None:
     assert list(tables[EVENT_PROCESS].columns) == list(PROCESS_COLUMNS)
     assert list(tables[EVENT_NETWORK].columns) == list(NETWORK_COLUMNS)
     assert tables[EVENT_PROCESS].empty and tables[EVENT_NETWORK].empty
+
+
+# ======================================================================================
+# M18b-2: the key two rows are joined on, and when the join is only a pid
+# ======================================================================================
+
+
+def test_an_identity_key_can_never_collide_with_a_pid_fallback() -> None:
+    """The fallback is tagged, so no ``(device, pid)`` can impersonate an identity.
+
+    Would catch: a fallback rendered as a bare string (``"pc01|4444"``) that a source
+    could, in principle, emit as an identity -- silently joining a slot to an instance.
+    """
+    identity = InstanceKey(identity="start:pc01|4444|t", device="pc01", process_id=4444)
+    fallback = InstanceKey(identity="", device="pc01", process_id=4444)
+
+    assert identity != fallback
+    assert len({identity, fallback}) == 2
+    assert fallback.tag[0] == "pid" and identity.tag[0] == "identity"
+
+
+def test_equality_is_the_identity_and_not_the_slot_it_ran_in() -> None:
+    """One instance seen through two rows is one key, whatever pid those rows carry.
+
+    A Sysmon GUID is globally unique by construction, so the device and pid on the row
+    are the fallback's raw material and never part of the identity.
+    """
+    left = InstanceKey(identity="sysmon:abc", device="pc01", process_id=4444)
+    right = InstanceKey(identity="sysmon:abc", device="pc02", process_id=10)
+
+    assert left == right
+    assert len({left, right}) == 1
+
+
+def test_two_identities_of_one_scheme_never_fall_back_to_the_pid() -> None:
+    """The correctness half: two named instances on one slot are two processes.
+
+    Would catch: a "try identity, then try pid" implementation, which is the obvious
+    one, resurrects every false attribution this work removed, and still passes every
+    test that only checks a join *succeeds*.
+    """
+    first = instance_key("start:pc01|4444|09:00", "pc01", 4444)
+    second = instance_key("start:pc01|4444|10:00", "pc01", 4444)
+
+    assert first.joins(second) == (False, False)
+    assert match_keys({first}, {second}) == (False, False)
+
+
+def test_a_missing_identity_falls_back_to_the_slot_and_says_so() -> None:
+    identified = instance_key("sysmon:abc", "pc01", 4444)
+    silent = instance_key("", "pc01", 4444)
+
+    assert identified.joins(silent) == (True, True)
+    assert silent.joins(silent) == (True, True)
+    assert match_keys({identified}, {silent}) == (True, True)
+
+
+def test_two_authorities_are_compared_as_slots_and_never_as_text() -> None:
+    """``sysmon:X`` and ``start:X`` are two answers, not one agreement."""
+    sysmon = instance_key(f"{SCHEME_SYSMON}:X", "pc01", 4444)
+    start = instance_key(f"{SCHEME_START}:X", "pc01", 4444)
+    elsewhere = instance_key(f"{SCHEME_START}:X", "pc02", 10)
+
+    assert sysmon.joins(start) == (True, True), "same slot, so the fallback joins them"
+    assert sysmon.joins(elsewhere) == (False, True), "different slot, nothing to join"
+
+
+def test_one_identity_backed_match_is_not_downgraded_by_a_weaker_one() -> None:
+    """A finding whose evidence spans several rows keeps its strongest witness."""
+    identity = instance_key("sysmon:abc", "pc01", 4444)
+    slot = instance_key("", "pc01", 4444)
+
+    assert match_keys({identity, slot}, {identity}) == (True, False)
+    assert match_keys({slot}, {slot}) == (True, True)
+
+
+def test_a_row_that_names_no_instance_at_all_has_no_key() -> None:
+    """Neither an identity nor a pid is not a weak witness; it is not a witness.
+
+    Would catch: a key of ``("pid", device, None)``, which joins every other pid-less
+    row on the host and inflates every attribution count downstream.
+    """
+    assert instance_key("", "pc01", None) is None
+    assert instance_key(None, "pc01", pd.NA) is None
+    assert instance_key("", "pc01", 4444) is not None
+
+
+def test_a_value_of_no_known_scheme_is_treated_as_absent() -> None:
+    """An identity nothing minted would compare equal to nothing and join nothing.
+
+    Better to fall back to the slot and label it than to hold a value that silently
+    matches no row anywhere -- which looks, in a population count, exactly like success.
+    """
+    key = instance_key("4fd6b357-no-scheme-prefix", "pc01", 4444)
+
+    assert key.has_identity is False
+    assert key.joins(instance_key("", "pc01", 4444)) == (True, True)

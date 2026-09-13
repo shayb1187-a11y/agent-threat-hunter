@@ -49,6 +49,8 @@ back apart by anything downstream.
 
 from __future__ import annotations
 
+from collections.abc import Collection
+from dataclasses import dataclass
 from typing import Any, Final
 
 import pandas as pd
@@ -192,3 +194,142 @@ def _iso_milliseconds(value: Any) -> str:
         return ""
     stamp = stamp.tz_localize("UTC") if stamp.tzinfo is None else stamp.tz_convert("UTC")
     return f"{stamp.strftime('%Y-%m-%dT%H:%M:%S')}.{stamp.microsecond // 1000:03d}Z"
+
+
+# ======================================================================================
+# Joining on identity, and saying so when the join is not on identity
+# ======================================================================================
+
+INFERRED_FROM_PID: Final[str] = "inferred from pid"
+"""The label every surface uses for a join that fell back to ``(device, pid)``.
+
+One string, so a reader who greps for it finds every claim in the system that rests on a
+slot rather than on an instance -- and so no surface can invent a softer phrasing.
+"""
+
+RESOLVED_BY_IDENTITY: Final[str] = "identity"
+"""The label for a join both sides asserted an identity for, under one scheme."""
+
+
+@dataclass(frozen=True)
+class InstanceKey:
+    """What one telemetry row says about *which process instance* it is about.
+
+    Attributes:
+        identity: The row's :mod:`instance identity <ath.instance_identity>`, or ``""``
+            when the source asserted none.
+        device: Host the row was observed on, used only by the fallback.
+        process_id: The OS PID, used only by the fallback. ``None`` when absent.
+
+    Equality is *exact key* equality, over :attr:`tag`: an identity key is the tagged
+    pair ``("identity", <identity>)`` and a fallback key the tagged triple
+    ``("pid", <device>, <pid>)``, so no identity can ever collide with a fallback, and
+    two identities minted under different schemes cannot collide either (the scheme is
+    inside the identity string). That is what makes this safe as a ``dict`` key.
+
+    Equality is **not** the join relation -- see :meth:`joins`. The join is deliberately
+    not an equivalence: an identified row and an unidentified row on the same slot join
+    by pid, while two *identified* rows on that slot do not join at all. That relation
+    is not transitive, so it cannot be ``__eq__`` without corrupting every dictionary
+    this key is used in. Keeping them separate is the point: grouping uses equality,
+    evidence uses :meth:`joins`, and the caller can always see which it asked for.
+    """
+
+    identity: str
+    device: str
+    process_id: int | None
+
+    @property
+    def scheme(self) -> str:
+        """The authority that minted :attr:`identity`, or ``""`` when there is none."""
+        return scheme_of(self.identity)
+
+    @property
+    def has_identity(self) -> bool:
+        return bool(self.identity)
+
+    @property
+    def tag(self) -> tuple[Any, ...]:
+        """The exact-equality key: identity when there is one, else device and pid."""
+        if self.identity:
+            return ("identity", self.identity)
+        return ("pid", self.device, self.process_id)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, InstanceKey) and self.tag == other.tag
+
+    def __hash__(self) -> int:
+        return hash(self.tag)
+
+    def __str__(self) -> str:
+        return self.identity or f"{self.device}|{self.process_id} ({INFERRED_FROM_PID})"
+
+    def joins(self, other: "InstanceKey") -> tuple[bool, bool]:
+        """Whether these two rows describe the same process instance, and how we know.
+
+        Returns:
+            ``(joined, inferred)``.
+
+            * Both sides carry an identity under **the same scheme**: the answer is the
+              identity comparison and nothing else, and ``inferred`` is ``False``. Two
+              different identities on one ``(device, pid)`` are two different processes,
+              and no amount of pid agreement makes them one -- that is exactly the
+              silent false attribution this key exists to stop.
+            * Either side asserted no identity, or the two came from different
+              authorities (a Sysmon GUID and a creation-time key are answers to the same
+              question from sources that cannot confirm each other): the comparison
+              falls back to ``(device, pid)`` and ``inferred`` is ``True``. The join is
+              still made -- refusing it would discard every cross-channel attribution on
+              a corpus whose network rows carry no GUID -- but the caller is now *told*,
+              and must say so wherever the result surfaces.
+        """
+        if self.identity and other.identity and self.scheme == other.scheme:
+            return self.identity == other.identity, False
+        if self.process_id is None or other.process_id is None or not self.device:
+            return False, False
+        return (
+            self.device == other.device and self.process_id == other.process_id,
+            True,
+        )
+
+
+def instance_key(identity: Any, device: Any, process_id: Any) -> InstanceKey | None:
+    """The :class:`InstanceKey` of one row, or ``None`` when the row names no instance.
+
+    ``None`` -- rather than a key that joins to nothing -- because a row with neither an
+    identity nor a PID is not a weak witness about a process, it is not a witness at all,
+    and counting it as one inflates every denominator downstream.
+    """
+    text = "" if identity is None else str(identity).strip()
+    if text and scheme_of(text) == "":
+        # A value shaped like nothing this module mints. Treat it as absent rather than
+        # as an identity that would never compare equal to anything.
+        text = ""
+    pid_text = _pid(process_id)
+    pid = int(pid_text) if pid_text else None
+    if not text and pid is None:
+        return None
+    return InstanceKey(identity=text, device=str(device or "").strip(), process_id=pid)
+
+
+def match_keys(
+    left: Collection["InstanceKey"], right: Collection["InstanceKey"]
+) -> tuple[bool, bool]:
+    """Whether any key on the left names the same instance as any key on the right.
+
+    Returns:
+        ``(joined, inferred)``. ``inferred`` is ``True`` only when the join was made and
+        **every** matching pair fell back to ``(device, pid)``. One identity-backed
+        match is enough to make the relationship an observed one, so a single honest
+        witness is never downgraded by the presence of a weaker one.
+    """
+    joined = False
+    identity_backed = False
+    for a in left:
+        for b in right:
+            ok, inferred = a.joins(b)
+            if ok:
+                joined = True
+                if not inferred:
+                    identity_backed = True
+    return joined, joined and not identity_backed

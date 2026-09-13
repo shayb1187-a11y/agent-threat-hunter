@@ -27,7 +27,7 @@ Structural signals describe a concrete relationship recorded in the telemetry:
 Signal                Weight Meaning
 ===================== ====== ===========================================================
 shared_evidence         +3   The same telemetry event supports both findings.
-same_process            +3   Both cite activity by the same (host, PID).
+same_process            +3   Both cite activity by the same process *instance*.
 process_lineage         +3   A process in one finding is the parent of one in the other.
 sibling_lineage         +2   Both findings' processes were started by the *same parent
                              instance*, and that parent looks like a single session
@@ -136,9 +136,18 @@ What could still cause false correlation -- stated honestly
 * **Shared infrastructure.** A jump box or terminal server legitimately produces
   ``host_movement`` and ``auth_then_exec`` signals between unrelated sessions. Without
   an exclusion list this correlator would chain them.
-* **PID reuse.** Windows recycles PIDs. Over a long enough window, ``same_process`` can
-  join two genuinely different processes. Mitigated by ``max_gap`` but not eliminated;
-  a real implementation would key on a process GUID, which our telemetry lacks.
+* **PID reuse, where the telemetry cannot see past it.** Every process signal here
+  keys on :class:`~ath.instance_identity.InstanceKey`, so where both rows carry an
+  instance identity from the same authority the join *is* the identity comparison and
+  PID reuse cannot produce a link at all. Where a row asserts no identity -- or the two
+  identities come from different authorities, which cannot confirm each other -- the
+  comparison falls back to ``(device, pid)``, which names a slot the operating system
+  reissues. Those links are still made, because refusing them would discard every
+  attribution on a corpus that records no identity, and they are labelled
+  ``inferred from pid`` in the signal text and counted in
+  :class:`CorrelationStats`. A labelled fallback is bounded by ``max_gap`` exactly as
+  before; what has changed is that it is no longer indistinguishable, in the output,
+  from an observation.
 * **Transitive drift.** Cases are connected components, so A-B and B-C put A and C in
   one case even if A and C share nothing. That is usually correct for intrusions --
   which are chains -- but it means one bad link can merge two cases.
@@ -149,9 +158,16 @@ What could still cause false correlation -- stated honestly
   in one ``cmd.exe`` inside ten minutes. Both are genuinely "one session", and the
   correlator groups them. That is a deliberate trade: the session is the unit of human
   intent, and separating them would need intent, which the telemetry does not carry.
-* **PID reuse, again.** The sibling relation keys on ``(device, parent_pid)`` and
-  inherits the same recycling weakness as ``same_process``, bounded by the same
-  ``max_gap``.
+* **A parent nobody identified.** The sibling relation keys on the parent's
+  :class:`~ath.instance_identity.InstanceKey`, which is the parent's identity when the
+  child row names one and ``(device, parent_pid)`` when it does not. Sources differ
+  sharply here: Sysmon writes ``ParentProcessGuid`` on every process-creation event,
+  while this project's own generated corpus names a parent instance on 7 of 462 rows,
+  so on that corpus nearly every sibling relation is a slot comparison and says so.
+  Where it is a slot comparison, two runs that reused one parent PID inside
+  ``sibling_window`` are indistinguishable, and the fan-out and span bounds are measured
+  over the pooled children of both -- which can only make the pair *less* likely to read
+  as one session, so the fallback errs towards refusing the link.
 """
 
 from __future__ import annotations
@@ -165,6 +181,12 @@ import pandas as pd
 
 from ath.correlation.chain import FindingLink, InvestigationCase
 from ath.hunting.finding import Finding, Severity
+from ath.instance_identity import (
+    INFERRED_FROM_PID,
+    InstanceKey,
+    instance_key,
+    match_keys,
+)
 from ath.logging_setup import get_logger
 from ath.mitre.mapper import map_finding
 from ath.telemetry.loader import Telemetry
@@ -259,51 +281,81 @@ class CorrelationConfig:
 class _ProcessIndex:
     """Look-ups from telemetry needed for process-level correlation.
 
-    Built once per correlation run. Maps each telemetry event id to the
-    ``(device, pid)`` it ran as, and to the ``(device, parent_pid)`` that started it,
-    which is what lets us assert process lineage between two findings.
+    Built once per correlation run. Maps each telemetry event id to the process
+    *instance* it was produced by -- an :class:`~ath.instance_identity.InstanceKey` --
+    and to the instance that started it, which is what lets us assert process lineage
+    between two findings.
 
-    It also records, for every parent observed, how many distinct children it started
-    and over what span. Those two numbers are what separate a shell an operator is
-    typing into from a launcher that starts things all day -- see
+    Why a key object and not ``(device, pid)``
+    ------------------------------------------
+    A PID is a slot the operating system reissues, so ``(device, pid)`` names a slot and
+    not a process. Keyed that way, a lineage link between two findings can rest on two
+    *different* runs that happened to hold the same number, and nothing in the output
+    says so. :class:`~ath.instance_identity.InstanceKey` carries the source's own
+    instance identity when there is one and falls back to the slot when there is not,
+    and :meth:`~ath.instance_identity.InstanceKey.joins` reports which of the two
+    answered -- so a link that rested on the slot is labelled rather than silent.
+
+    It also records, for every parent instance observed, how many distinct children it
+    started and over what span. Those two numbers are what separate a shell an operator
+    is typing into from a launcher that starts things all day -- see
     :meth:`session_parents`.
     """
 
     def __init__(self, telemetry: Telemetry) -> None:
-        self.pid_of: dict[str, tuple[str, int]] = {}
-        self.parent_of: dict[str, tuple[str, int]] = {}
-        self._children: dict[tuple[str, int], set[int]] = {}
-        self._spawned_at: dict[tuple[str, int], list[Any]] = {}
+        self.key_of: dict[str, InstanceKey] = {}
+        self.parent_key_of: dict[str, InstanceKey] = {}
+        self._children: dict[InstanceKey, set[InstanceKey]] = {}
+        self._spawned_at: dict[InstanceKey, list[Any]] = {}
 
         procs = telemetry.processes
+        has_identity = "process_guid" in procs.columns
+        has_parent_identity = "parent_process_guid" in procs.columns
         for row in procs.itertuples(index=False):
-            if pd.notna(row.process_id):
-                self.pid_of[row.event_id] = (row.device, int(row.process_id))
-            if pd.notna(row.parent_process_id):
-                parent = (row.device, int(row.parent_process_id))
-                self.parent_of[row.event_id] = parent
-                if pd.notna(row.process_id):
-                    self._children.setdefault(parent, set()).add(int(row.process_id))
-                self._spawned_at.setdefault(parent, []).append(row.timestamp)
+            identity = getattr(row, "process_guid", "") if has_identity else ""
+            key = instance_key(identity, row.device, row.process_id)
+            if key is not None:
+                self.key_of[row.event_id] = key
+            parent_identity = (
+                getattr(row, "parent_process_guid", "") if has_parent_identity else ""
+            )
+            parent = instance_key(parent_identity, row.device, row.parent_process_id)
+            if parent is None:
+                continue
+            self.parent_key_of[row.event_id] = parent
+            if key is not None:
+                self._children.setdefault(parent, set()).add(key)
+            self._spawned_at.setdefault(parent, []).append(row.timestamp)
 
-        # Network events inherit the PID of the process that opened the connection,
-        # which is what links a PowerShell execution to its own outbound traffic.
+        # Network events inherit the identity of the process that opened the connection,
+        # which is what links a PowerShell execution to its own outbound traffic. Where
+        # the source wrote no identity on the connection -- a Sysmon 3 without a
+        # ProcessGuid -- the key falls back to the slot, and every link built on it is
+        # labelled, because that attribution is the one M18b-1 measured as 94.8%
+        # ambiguous on real telemetry.
         net = telemetry.network
+        net_has_identity = "process_guid" in net.columns
         for row in net.itertuples(index=False):
-            if pd.notna(row.process_id):
-                self.pid_of[row.event_id] = (row.device, int(row.process_id))
+            identity = getattr(row, "process_guid", "") if net_has_identity else ""
+            key = instance_key(identity, row.device, row.process_id)
+            if key is not None:
+                self.key_of[row.event_id] = key
 
-    def pids(self, finding: Finding) -> set[tuple[str, int]]:
-        return {self.pid_of[e] for e in finding.event_ids if e in self.pid_of}
+    def keys(self, finding: Finding) -> set[InstanceKey]:
+        """The process instances this finding's evidence was produced by."""
+        return {self.key_of[e] for e in finding.event_ids if e in self.key_of}
 
-    def parents(self, finding: Finding) -> set[tuple[str, int]]:
-        return {self.parent_of[e] for e in finding.event_ids if e in self.parent_of}
+    def parent_keys(self, finding: Finding) -> set[InstanceKey]:
+        """The instances that started this finding's processes."""
+        return {
+            self.parent_key_of[e] for e in finding.event_ids if e in self.parent_key_of
+        }
 
-    def fan_out(self, parent: tuple[str, int]) -> int:
-        """How many distinct child processes this parent was observed to start."""
+    def fan_out(self, parent: InstanceKey) -> int:
+        """How many distinct child instances this parent was observed to start."""
         return len(self._children.get(parent, ()))
 
-    def spawn_span(self, parent: tuple[str, int]) -> timedelta:
+    def spawn_span(self, parent: InstanceKey) -> timedelta:
         """Wall-clock time between this parent's first and last observed child."""
         times = self._spawned_at.get(parent)
         if not times:
@@ -312,7 +364,7 @@ class _ProcessIndex:
 
     def session_parents(
         self, finding: Finding, config: CorrelationConfig
-    ) -> set[tuple[str, int]]:
+    ) -> set[InstanceKey]:
         """Those of the finding's parents that look like a single session.
 
         A parent qualifies when it started few enough children, closely enough
@@ -320,13 +372,43 @@ class _ProcessIndex:
         things all day. Both bounds come off the telemetry, so no process is named here
         and there is no allow-list to keep up to date -- a renamed shell is measured
         exactly like any other.
+
+        The bounds are measured per *key*, which is per instance where the rows carry
+        identities and per slot where they do not. Pooling two runs of one slot can only
+        raise the fan-out and lengthen the span, so the fallback errs towards refusing
+        the sibling relation rather than towards asserting it.
         """
         return {
             parent
-            for parent in self.parents(finding)
+            for parent in self.parent_keys(finding)
             if self.fan_out(parent) <= config.max_session_fan_out
             and self.spawn_span(parent) <= config.max_session_span
         }
+
+
+def _signal(name: str, weight: int, inferred: bool) -> str:
+    """One signal's rendering, carrying its weight and how the join was made.
+
+    ``process_lineage(+3)`` is an observation about two process instances;
+    ``process_lineage(+3, inferred from pid)`` is an observation about two PID slots
+    that may or may not be the same instances. An analyst arguing with a case needs to
+    see which one they are reading, so the distinction is in the text and not only in a
+    counter.
+    """
+    suffix = f", {INFERRED_FROM_PID}" if inferred else ""
+    return f"{name}(+{weight}{suffix})"
+
+
+def _stronger(left: tuple[bool, bool], right: tuple[bool, bool]) -> tuple[bool, bool]:
+    """Combine two answers to one question, preferring the identity-backed one.
+
+    A lineage relation is asked in both directions. If either direction can evidence it
+    by identity, the relation is evidenced by identity; reporting it as inferred because
+    the other direction could only reach a slot would understate what was actually seen.
+    """
+    joined = left[0] or right[0]
+    identity_backed = (left[0] and not left[1]) or (right[0] and not right[1])
+    return joined, joined and not identity_backed
 
 
 def _hosts_of(finding: Finding) -> set[str]:
@@ -365,22 +447,34 @@ def score_pair(
         score += W_SHARED_EVIDENCE
         signals.append(f"shared_evidence(+{W_SHARED_EVIDENCE})")
 
-    pids_a, pids_b = index.pids(a), index.pids(b)
-    if pids_a & pids_b:
+    keys_a, keys_b = index.keys(a), index.keys(b)
+    same_process, same_process_inferred = match_keys(keys_a, keys_b)
+    if same_process:
         score += W_SAME_PROCESS
-        signals.append(f"same_process(+{W_SAME_PROCESS})")
+        signals.append(_signal("same_process", W_SAME_PROCESS, same_process_inferred))
 
-    if (pids_a & index.parents(b)) or (pids_b & index.parents(a)):
+    # Lineage in either direction: a process in one finding is the parent of one in the
+    # other. Both directions are asked and the stronger answer wins, so a relationship
+    # one direction evidences by identity is not reported as inferred because the other
+    # direction could only reach a slot.
+    lineage, lineage_inferred = _stronger(
+        match_keys(keys_a, index.parent_keys(b)),
+        match_keys(keys_b, index.parent_keys(a)),
+    )
+    if lineage:
         score += W_PROCESS_LINEAGE
-        signals.append(f"process_lineage(+{W_PROCESS_LINEAGE})")
+        signals.append(_signal("process_lineage", W_PROCESS_LINEAGE, lineage_inferred))
 
     # Siblings: neither finding is the other's parent, but the same parent instance
     # started both, and that parent reads as one session rather than a launcher.
-    if _time_gap(a, b) <= config.sibling_window and (
-        index.session_parents(a, config) & index.session_parents(b, config)
-    ):
+    sibling, sibling_inferred = False, False
+    if _time_gap(a, b) <= config.sibling_window:
+        sibling, sibling_inferred = match_keys(
+            index.session_parents(a, config), index.session_parents(b, config)
+        )
+    if sibling:
         score += W_SIBLING_LINEAGE
-        signals.append(f"sibling_lineage(+{W_SIBLING_LINEAGE})")
+        signals.append(_signal("sibling_lineage", W_SIBLING_LINEAGE, sibling_inferred))
 
     # Directed host relationship: one finding's host is the other's auth source/target.
     hosts_a, hosts_b = _hosts_of(a), _hosts_of(b)
@@ -425,6 +519,60 @@ def _auth_then_exec(auth: Finding, exec_: Finding, config: CorrelationConfig) ->
     return timedelta(0) <= delta <= config.auth_exec_window
 
 
+@dataclass(frozen=True)
+class CorrelationStats:
+    """What one correlation run did, and how much of it rested on a PID slot.
+
+    Why this is reported at the run and not only on the case
+    --------------------------------------------------------
+    A case carries the links between its own members, so a link inside a component that
+    was never raised -- too small, or entirely set aside by triage -- is invisible from
+    the cases alone. "How many of this run's attributions rested on a slot" is a
+    property of the run, and answering it from the cases would quietly exclude exactly
+    the links nobody looked at.
+
+    Attributes:
+        findings: Findings offered to this run.
+        cases: Cases raised.
+        links: Links made, including those inside components no case was raised for.
+        links_by_signal: How many links carried each signal.
+        inferred_links_by_signal: How many of those rested on ``(device, pid)`` rather
+            than on an instance identity. Only process signals can appear here; a
+            ``host_movement`` link has no process join to infer.
+    """
+
+    findings: int
+    cases: int
+    links: int
+    links_by_signal: dict[str, int]
+    inferred_links_by_signal: dict[str, int]
+
+    @property
+    def inferred_links(self) -> int:
+        """Links with at least one process signal that rested on a PID slot."""
+        return self.inferred_links_by_signal.get("any", 0)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "findings": self.findings,
+            "cases": self.cases,
+            "links": self.links,
+            "links_by_signal": dict(sorted(self.links_by_signal.items())),
+            "inferred_links_by_signal": dict(
+                sorted(self.inferred_links_by_signal.items())
+            ),
+        }
+
+
+def _signal_name(signal: str) -> str:
+    """``"process_lineage(+3, inferred from pid)"`` -> ``"process_lineage"``."""
+    return signal.split("(")[0]
+
+
+def _is_inferred(signal: str) -> bool:
+    return INFERRED_FROM_PID in signal
+
+
 class _UnionFind:
     """Minimal disjoint-set structure for grouping linked findings."""
 
@@ -467,6 +615,24 @@ def correlate(
 ) -> list[InvestigationCase]:
     """Group findings into investigation cases using deterministic evidence.
 
+    The cases half of :func:`correlate_with_stats`, kept as the name every caller
+    already uses. Callers that need to report how much of a run rested on a PID slot
+    call that function instead.
+    """
+    return correlate_with_stats(
+        findings, telemetry, config, set_aside=set_aside
+    )[0]
+
+
+def correlate_with_stats(
+    findings: Sequence[Finding],
+    telemetry: Telemetry,
+    config: CorrelationConfig | None = None,
+    *,
+    set_aside: Collection[str] = (),
+) -> tuple[list[InvestigationCase], CorrelationStats]:
+    """Group findings into investigation cases, and report what the run rested on.
+
     Args:
         findings: Findings to correlate.
         telemetry: Source telemetry, needed for process-lineage look-ups.
@@ -478,13 +644,15 @@ def correlate(
             findings are never affected, only whether a case is raised.
 
     Returns:
-        Cases of at least ``config.min_case_size`` findings, ordered by start time.
-        Findings that link to nothing are omitted -- an isolated finding is an alert,
-        not a chain, and inventing single-finding "chains" would overstate the output.
+        ``(cases, stats)``. Cases of at least ``config.min_case_size`` findings, ordered
+        by start time; findings that link to nothing are omitted -- an isolated finding
+        is an alert, not a chain, and inventing single-finding "chains" would overstate
+        the output. :class:`CorrelationStats` covers every link the run made, including
+        links inside components no case was raised for.
     """
     config = config or CorrelationConfig()
     if not findings:
-        return []
+        return [], CorrelationStats(0, 0, 0, {}, {})
 
     ordered = sorted(findings, key=lambda f: (f.first_seen, f.rule_id))
 
@@ -526,6 +694,7 @@ def correlate(
                     score=score,
                     signals=tuple(signals),
                     structural=structural,
+                    inferred_from_pid=any(_is_inferred(s) for s in signals),
                 )
             )
             union.union(left.finding_id, right.finding_id)
@@ -566,8 +735,24 @@ def correlate(
     for number, case in enumerate(cases, start=1):
         case.case_id = f"CASE-{number:03d}"
 
-    logger.info(
-        "Correlated %d findings into %d case(s) via %d link(s)",
-        len(findings), len(cases), len(links),
+    by_signal: dict[str, int] = {}
+    inferred_by_signal: dict[str, int] = {}
+    for link in links:
+        for signal in link.signals:
+            name = _signal_name(signal)
+            by_signal[name] = by_signal.get(name, 0) + 1
+            if _is_inferred(signal):
+                inferred_by_signal[name] = inferred_by_signal.get(name, 0) + 1
+        if link.inferred_from_pid:
+            inferred_by_signal["any"] = inferred_by_signal.get("any", 0) + 1
+
+    stats = CorrelationStats(
+        findings=len(findings), cases=len(cases), links=len(links),
+        links_by_signal=by_signal, inferred_links_by_signal=inferred_by_signal,
     )
-    return cases
+    logger.info(
+        "Correlated %d findings into %d case(s) via %d link(s); "
+        "%d link(s) rested on a PID slot rather than a process identity",
+        len(findings), len(cases), len(links), stats.inferred_links,
+    )
+    return cases, stats

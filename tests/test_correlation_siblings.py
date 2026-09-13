@@ -38,6 +38,7 @@ from ath.correlation.correlator import _ProcessIndex, score_pair
 from ath.evaluation.incidents import run_incident
 from ath.evaluation.suite import quiet_day, ransomware_preparation, windows_intrusion
 from ath.hunting import Evidence, Finding, Severity, run_hunt
+from ath.instance_identity import instance_key
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import Telemetry, load_ground_truth, load_telemetry
 
@@ -260,7 +261,9 @@ def test_a_parent_with_a_large_fan_out_is_not_a_session(telemetry) -> None:
     data = _telemetry(rows, telemetry)
     a, b = _finding("R-1", "e1", 0), _finding("R-2", "e2", 30)
 
-    fan_out = _ProcessIndex(data).fan_out(("PC09", 4242))
+    # These rows carry no instance identity, so the parent's key is the PID slot --
+    # which is the shape this bound was written for and the one it still has to hold on.
+    fan_out = _ProcessIndex(data).fan_out(instance_key("", "PC09", 4242))
     assert fan_out > CorrelationConfig().max_session_fan_out
     assert "sibling_lineage" not in _signals(a, b, data)
     assert not _linked(a, b, data)
