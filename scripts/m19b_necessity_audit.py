@@ -1050,7 +1050,14 @@ def _structural_section(payload: dict[str, Any]) -> str:
     two files, which matters: a shortage that follows from the rule catalogue and the
     correlator's link predicates cannot be fixed by fetching more data.
     """
-    from ath.correlation.correlator import _AUTH_RULES, _REMOTE_EXEC_RULES
+    # Quoted, not imported. These two constants were the correlator's cross-domain
+    # allowlist at 41c0d97, the commit this audit measured; the M19b link task deleted
+    # them and replaced them with a channel-family predicate. The audit is a statement
+    # about the code as it stood, so the values it prints are frozen here rather than
+    # read from a module that no longer defines them -- which also keeps
+    # `--render-only` able to reproduce `AUDIT.md` byte for byte.
+    _AUTH_RULES = frozenset({"ATH-005", "ATH-006"})
+    _REMOTE_EXEC_RULES = frozenset({"ATH-007"})
     from ath.environment.coverage import channels_for_fields
     from ath.evaluation.necessity import channel_domains
     from ath.hunting import all_detectors

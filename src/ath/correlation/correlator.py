@@ -35,8 +35,14 @@ sibling_lineage         +2   Both findings' processes were started by the *same 
                              see below -- and deliberately worth less than the others.
 host_movement           +3   One finding's host is the other's authentication source or
                              target -- a directed host-to-host relationship.
-auth_then_exec          +3   A successful authentication to a host, followed shortly by
-                             service-based execution on that same host.
+auth_then_exec          +3   An authentication landing on a host, followed shortly by
+                             execution on that same host -- the named special case of
+                             the cross-channel link below.
+shared_principal        +3   Two findings resting on *different kinds* of telemetry
+                             whose evidence names the same principal, inside
+                             ``cross_domain_window``. The only signal that can put two
+                             specialist domains in one case on evidence neither of them
+                             shares.
 ===================== ====== ===========================================================
 
 and circumstantial signals, which can support a link but never create one:
@@ -120,6 +126,50 @@ What stops unrelated findings from grouping
 * Directionality. ``host_movement`` is asserted only where an authentication actually
   connects two hosts, not merely because two hosts appear in the same case.
 
+How two domains are joined at all
+----------------------------------
+Four of the signals above (``shared_evidence``, ``same_process``, ``process_lineage``,
+``sibling_lineage``) need the two findings to cite one telemetry event or one process
+instance, which rows in two different canonical tables cannot do. ``host_movement`` needs
+a directed host relationship, which no cloud or cluster finding carries. So the only
+signals that can put an *identity* finding and a *control-plane* finding -- or an
+endpoint and a network finding -- in one case are the last two, and until M19b they were
+one signal gated by a list of three rule ids::
+
+    _AUTH_RULES = frozenset({"ATH-005", "ATH-006"})
+    _REMOTE_EXEC_RULES = frozenset({"ATH-007"})
+
+``reports/m19b/necessity/AUDIT.md`` measured the consequence: on flaws.cloud, 79,424
+authentication rows and 1,857,154 control-plane rows produced 280 control-plane cases and
+one identity case, and never a case containing both -- not because the evidence was
+absent but because no pair of rule ids outside that product could produce a link. The
+same failure mode ``ath.agent.specialists.Specialist`` documents removing from the
+specialist gates, one layer down.
+
+What replaced it is a property of the *findings*, not of their rule ids. Every finding
+declares the telemetry channels it rests on (``Finding.channels``, else its
+``fields_used``), every channel belongs to one domain family
+(:data:`CHANNEL_FAMILY`, exhaustive over ``ath.channels.TelemetryChannel``), and two
+findings are candidates for a cross-channel link when their families are **disjoint** --
+different kinds of telemetry, not two readings of one kind. A candidate pair links when
+either
+
+* it names the same principal (:data:`PRINCIPAL_COLUMNS`, compared as the adapters
+  canonicalised it) inside ``cross_domain_window`` -- ``shared_principal``; or
+* the identity half landed on the host the endpoint half then ran on, inside
+  ``auth_exec_window`` -- ``auth_then_exec``, which keeps its name and its meaning and
+  loses only the rule ids. It stays a separate case because it is the one cross-family
+  relationship that does *not* need a shared principal name: a service-launched shell
+  runs as the service account, not as the account that authenticated.
+
+A rule written tomorrow is classified the moment it declares its fields. Nothing in this
+module names a rule.
+
+``shared_principal`` is worth 3 and ``min_score`` is 5, so the principal alone never
+makes a link: something circumstantial -- the same host, the same account, or ten minutes
+-- has to agree with it. That is the same arithmetic that stops ``same_device`` +
+``same_user`` + ``temporal_close`` from linking on their own, applied from the other side.
+
 What the triage verdict does here
 ---------------------------------
 Nothing to the links. A finding the benign layer set aside (``likely_benign``, with cited
@@ -153,6 +203,12 @@ What could still cause false correlation -- stated honestly
   which are chains -- but it means one bad link can merge two cases.
 * **Busy service accounts.** An account used by automation across many hosts generates
   ``same_user`` plus ``host_movement`` broadly, and would over-group.
+* **A principal that is not a person.** ``shared_principal`` joins two domains' findings
+  that name one principal, and ``SYSTEM``, a CI service account or an AWS service
+  principal names itself on unrelated activity all day. ``cross_domain_window`` and the
+  score bar are the only bounds on that; what it actually did to each corpus in this
+  repository is measured in ``reports/m19b/link/BEFORE_AFTER.md`` rather than asserted
+  here.
 * **A shell used for two unrelated things.** ``sibling_lineage`` cannot tell an operator
   who ran two stages of one attack from an administrator who ran two unrelated commands
   in one ``cmd.exe`` inside ten minutes. Both are genuinely "one session", and the
@@ -175,10 +231,12 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
+from functools import lru_cache
 from typing import Any
 
 import pandas as pd
 
+from ath.channels import TelemetryChannel
 from ath.correlation.chain import FindingLink, InvestigationCase
 from ath.hunting.finding import Finding, Severity
 from ath.instance_identity import (
@@ -189,6 +247,7 @@ from ath.instance_identity import (
 )
 from ath.logging_setup import get_logger
 from ath.mitre.mapper import map_finding
+from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
 from ath.telemetry.loader import Telemetry
 
 logger = get_logger(__name__)
@@ -200,6 +259,7 @@ W_PROCESS_LINEAGE = 3
 W_SIBLING_LINEAGE = 2
 W_HOST_MOVEMENT = 3
 W_AUTH_THEN_EXEC = 3
+W_SHARED_PRINCIPAL = 3
 W_SAME_DEVICE = 2
 W_SAME_USER = 2
 W_TEMPORAL_CLOSE = 2
@@ -213,13 +273,88 @@ STRUCTURAL_SIGNALS = frozenset(
         "sibling_lineage",
         "host_movement",
         "auth_then_exec",
+        "shared_principal",
     }
 )
 
-# Rules whose findings represent a successful authentication landing on a host.
-_AUTH_RULES = frozenset({"ATH-005", "ATH-006"})
-# Rules whose findings represent execution driven from elsewhere.
-_REMOTE_EXEC_RULES = frozenset({"ATH-007"})
+# --------------------------------------------------------------------------------------
+# Cross-channel linking: which *kind* of telemetry a finding rests on.
+#
+# This table is what replaced the rule-id allowlist described above. It is keyed on the
+# channel vocabulary every rule already declares, so a rule written tomorrow is
+# classified the moment it declares its fields and nothing here has to be kept current.
+# It is exhaustive over ``TelemetryChannel`` and
+# ``tests/test_correlation_cross_domain.py`` asserts that it stays so: a channel nobody
+# classified is then a failing test rather than a link that quietly stops firing, which
+# is the failure mode the allowlist had.
+# --------------------------------------------------------------------------------------
+
+FAMILY_ENDPOINT = "endpoint"
+FAMILY_IDENTITY = "identity"
+FAMILY_NETWORK = "network"
+FAMILY_CONTROL_PLANE = "control_plane"
+
+CHANNEL_FAMILY: dict[TelemetryChannel, str] = {
+    # Endpoint: what ran on a host, and what started it.
+    TelemetryChannel.PROCESS_EXECUTION: FAMILY_ENDPOINT,
+    TelemetryChannel.PROCESS_COMMAND_LINE: FAMILY_ENDPOINT,
+    TelemetryChannel.PROCESS_LINEAGE: FAMILY_ENDPOINT,
+    TelemetryChannel.HANDLE_ACCESS: FAMILY_ENDPOINT,
+    TelemetryChannel.FILE_EVENTS: FAMILY_ENDPOINT,
+    TelemetryChannel.REGISTRY: FAMILY_ENDPOINT,
+    TelemetryChannel.SCRIPT_BLOCK: FAMILY_ENDPOINT,
+    # Identity: who authenticated, from where, and how it was proven.
+    TelemetryChannel.AUTHENTICATION: FAMILY_IDENTITY,
+    TelemetryChannel.AUTH_SOURCE_ATTRIBUTION: FAMILY_IDENTITY,
+    TelemetryChannel.AUTH_FACTOR: FAMILY_IDENTITY,
+    # Network: who a host talked to.
+    TelemetryChannel.NETWORK_FLOW: FAMILY_NETWORK,
+    TelemetryChannel.NETWORK_INBOUND: FAMILY_NETWORK,
+    TelemetryChannel.NETWORK_URL: FAMILY_NETWORK,
+    TelemetryChannel.DNS_QUERY: FAMILY_NETWORK,
+    # Control plane: what an identity did to a cloud or cluster resource. Cloud
+    # *authentication* sits here rather than under identity because a console login is
+    # an action on the control plane; no rule in this repository declares that channel
+    # today, so the placement changes no measurement, and it is stated rather than
+    # omitted so this table stays total over the vocabulary.
+    TelemetryChannel.CLOUD_CONTROL_PLANE: FAMILY_CONTROL_PLANE,
+    TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY: FAMILY_CONTROL_PLANE,
+    TelemetryChannel.CONTAINER_AUDIT: FAMILY_CONTROL_PLANE,
+}
+
+CHANNELS_WITHOUT_FAMILY: frozenset[TelemetryChannel] = frozenset({
+    # Message delivery metadata belongs to none of the four domain specialists, so a
+    # finding resting only on it has no family and forms no cross-channel link. Listed
+    # rather than left out, so "unclassified" is a decision and not an oversight.
+    TelemetryChannel.EMAIL,
+})
+
+PRINCIPAL_COLUMNS: dict[str, tuple[str, ...]] = {
+    EVENT_PROCESS: ("user",),
+    EVENT_NETWORK: ("user",),
+    EVENT_LOGON: ("user",),
+    # Both columns, deliberately. ``actor`` is who called; ``target_actor`` is whose
+    # authority the call changed, and an escalation chain is exactly the case where they
+    # differ -- the principal a grant created is the principal whose later activity
+    # belongs in the same case. ``ath.schema`` documents why conflating them is the
+    # mistake that would match the wrong identity.
+    EVENT_CONTROL: ("actor", "target_actor"),
+}
+
+CROSS_DOMAIN_WINDOW = timedelta(minutes=15)
+"""Default :attr:`CorrelationConfig.cross_domain_window`: how far apart two findings from
+different channel families may be and still be read as one principal's activity.
+
+Chosen from the windows already in this file rather than invented, so a pre-registration
+can quote it by name. ``tight_window``, ``sibling_window`` and ``max_session_span`` are
+all ten minutes and all describe activity *within* one host or one process tree, which is
+a tighter question than this one. ``max_gap`` (sixty minutes) is not a causal claim at
+all -- it is the horizon beyond which :func:`correlate` does not compare two findings, so
+it bounds this window rather than supplying it. That leaves ``auth_exec_window``, fifteen
+minutes, the one existing window that already answers "did A plausibly cause B *across
+two different kinds of telemetry*". This window answers the same question for every other
+pair of families, so it takes the same value.
+"""
 
 
 @dataclass(frozen=True)
@@ -235,6 +370,10 @@ class CorrelationConfig:
         tight_window: Gap qualifying for the stronger temporal signal.
         auth_exec_window: How long after an authentication a remote execution on the
             same host still counts as caused by it.
+        cross_domain_window: How far apart two findings resting on *different* channel
+            families may be and still be linked by ``shared_principal``. Bounded by
+            ``max_gap``, which is the horizon beyond which no pair is compared at all;
+            see :data:`CROSS_DOMAIN_WINDOW` for why it takes the value it does.
         sibling_window: How far apart two findings sharing a parent process may be and
             still be treated as siblings. Separate from ``tight_window`` so the sibling
             relation can be tightened without changing what ``temporal_close`` means.
@@ -272,10 +411,25 @@ class CorrelationConfig:
     tight_window: timedelta = timedelta(minutes=10)
     singleton_min_severity: Severity = Severity.HIGH
     auth_exec_window: timedelta = timedelta(minutes=15)
+    cross_domain_window: timedelta = CROSS_DOMAIN_WINDOW
     sibling_window: timedelta = timedelta(minutes=10)
     max_session_fan_out: int = 12
     max_session_span: timedelta = timedelta(minutes=10)
     min_case_size: int = 2
+
+    def __post_init__(self) -> None:
+        """Refuse a cross-domain window that could not mean what it says.
+
+        :func:`correlate` skips any pair further apart than ``max_gap`` before scoring
+        it, so a ``cross_domain_window`` beyond that silently collapses to ``max_gap``.
+        A setting that is quietly ignored is worse than one that is refused.
+        """
+        if self.cross_domain_window > self.max_gap:
+            raise ValueError(
+                f"cross_domain_window ({self.cross_domain_window}) exceeds max_gap "
+                f"({self.max_gap}): pairs further apart than max_gap are never "
+                "compared, so the wider window would silently mean max_gap."
+            )
 
 
 class _ProcessIndex:
@@ -430,15 +584,156 @@ def _time_gap(a: Finding, b: Finding) -> timedelta:
     )
 
 
+@lru_cache(maxsize=None)
+def _declared_channels_of_rule(rule_id: str) -> frozenset[TelemetryChannel]:
+    """The channels a rule declares, for a finding that declares none of its own.
+
+    Every finding a detector in this repository emits carries that detector's
+    ``fields_used``, so this path is reached only by a :class:`Finding` assembled by
+    hand -- in a test, or by a caller building one from an external alert. The rule's own
+    declaration is then the last *declared* answer available, and it is read off the rule
+    exactly as ``ath.environment.coverage`` reads it, never from a table of rule ids kept
+    in this module. An unknown rule id classifies as nothing rather than raising: a
+    finding this repository did not produce is not a reason to refuse to correlate.
+    """
+    from ath.environment.coverage import channels_for_fields  # noqa: PLC0415
+    from ath.hunting.base import get_detector  # noqa: PLC0415
+
+    try:
+        detector = get_detector(rule_id)
+    except KeyError:
+        return frozenset()
+    return frozenset(detector.channels or channels_for_fields(detector.fields_used))
+
+
+def channel_families(finding: Finding) -> frozenset[str]:
+    """Which domain families this finding's telemetry belongs to.
+
+    Usually one. A finding naming process execution, command line and lineage is three
+    views of one endpoint observation, and they are one family. ``ATH-003`` is the single
+    rule that spans two families on its own (network flow *and* process execution), and
+    it is why :func:`_cross_channel_link` requires the two findings' families to be
+    **disjoint** rather than merely different: a finding the endpoint specialist also
+    reads is not a second domain's stage, which is the same judgement
+    ``ath.evaluation.necessity`` makes when it calls such a case redundant.
+    """
+    from ath.environment.coverage import channels_for_fields  # noqa: PLC0415
+
+    channels = set(finding.channels) or channels_for_fields(finding.fields_used)
+    if not channels:
+        channels = set(_declared_channels_of_rule(finding.rule_id))
+    return frozenset(CHANNEL_FAMILY[c] for c in channels if c in CHANNEL_FAMILY)
+
+
+def _principal_name(value: Any) -> str:
+    """One identity column's value, as the adapters already canonicalised it.
+
+    No case folding, no stripping of domain prefixes, no shortening of
+    ``system:serviceaccount:<ns>:<name>``. The adapters decided what a principal's
+    canonical name is (``cloudtrail_source._principal``, ``k8s_audit_source._principal``)
+    and a second opinion here would be an identity rule nothing else in the pipeline
+    applies -- which is how two systems come to disagree about whether two rows are the
+    same person. Only whitespace and pandas' spellings of "missing" are removed, because
+    those are absence rather than a name.
+    """
+    if value is None:
+        return ""
+    text = str(value).strip()
+    return "" if text.lower() in {"", "nan", "none", "<na>", "nat"} else text
+
+
+class _CrossChannelIndex:
+    """What a run needs to ask whether two findings are one principal's activity.
+
+    Two look-ups, both built once per correlation run and both keyed by ``finding_id``:
+
+    ``families``
+        the channel families a finding rests on. Cached because
+        :func:`channel_families` is asked once per *pair*, and a corpus with 1,476
+        findings is a million pairs.
+    ``principals``
+        the principals a finding's evidence rows name. Built by one vectorised pass per
+        table over the ids the findings actually cite -- not an index over every row,
+        because flaws.cloud is 1.86M control rows and the cases cite tens of thousands.
+
+    An index built with no telemetry answers "no principals", which is what a caller of
+    :func:`score_pair` that supplies none gets: ``auth_then_exec`` still fires, because
+    it rests on channel families and a device that the findings themselves carry, and
+    ``shared_principal`` cannot, because it rests on rows this index was not given.
+    """
+
+    def __init__(
+        self,
+        telemetry: Telemetry | None = None,
+        findings: Sequence[Finding] = (),
+    ) -> None:
+        self._families: dict[str, frozenset[str]] = {}
+        self._principals: dict[str, frozenset[str]] = {}
+        self._by_event: dict[str, frozenset[str]] = {}
+        if telemetry is None or not findings:
+            return
+        cited = {str(e) for f in findings for e in f.event_ids}
+        if not cited:
+            return
+        for event_type, columns in PRINCIPAL_COLUMNS.items():
+            frame = telemetry.table(event_type)
+            if frame.empty or "event_id" not in frame.columns:
+                continue
+            present = [c for c in columns if c in frame.columns]
+            if not present:
+                continue
+            matched = frame[frame["event_id"].astype("string").isin(cited)]
+            if matched.empty:
+                continue
+            for record in matched[["event_id", *present]].to_dict("records"):
+                names = frozenset(
+                    _principal_name(record[c]) for c in present
+                ) - {""}
+                if names:
+                    self._by_event[str(record["event_id"])] = names
+
+    def families(self, finding: Finding) -> frozenset[str]:
+        cached = self._families.get(finding.finding_id)
+        if cached is None:
+            cached = channel_families(finding)
+            self._families[finding.finding_id] = cached
+        return cached
+
+    def principals(self, finding: Finding) -> frozenset[str]:
+        cached = self._principals.get(finding.finding_id)
+        if cached is None:
+            names: set[str] = set()
+            for event_id in finding.event_ids:
+                names |= self._by_event.get(str(event_id), frozenset())
+            cached = frozenset(names)
+            self._principals[finding.finding_id] = cached
+        return cached
+
+
 def score_pair(
-    a: Finding, b: Finding, index: _ProcessIndex, config: CorrelationConfig
+    a: Finding,
+    b: Finding,
+    index: _ProcessIndex,
+    config: CorrelationConfig,
+    cross: _CrossChannelIndex | None = None,
 ) -> tuple[int, list[str], bool]:
     """Score the relationship between two findings.
+
+    Args:
+        a: One finding.
+        b: The other.
+        index: The run's process-instance look-ups.
+        config: Correlation parameters.
+        cross: The run's cross-channel look-ups. Omitting it does not change any signal
+            the findings themselves can evidence -- ``auth_then_exec`` included -- but
+            ``shared_principal`` needs telemetry rows and cannot fire without one.
+            :func:`correlate_with_stats` always supplies one.
 
     Returns:
         ``(score, signal_names, has_structural_signal)``. Signal names carry their
         weight so the reasoning is legible in output, e.g. ``"same_process(+3)"``.
     """
+    cross = cross if cross is not None else _CrossChannelIndex()
     signals: list[str] = []
     score = 0
 
@@ -482,10 +777,12 @@ def score_pair(
         score += W_HOST_MOVEMENT
         signals.append(f"host_movement(+{W_HOST_MOVEMENT})")
 
-    # Authentication landing on a host, then execution on that host shortly after.
-    if _auth_then_exec(a, b, config) or _auth_then_exec(b, a, config):
-        score += W_AUTH_THEN_EXEC
-        signals.append(f"auth_then_exec(+{W_AUTH_THEN_EXEC})")
+    # The only signal that can put two *different* specialist domains in one case.
+    link = _cross_channel_link(a, b, config, cross)
+    if link is not None:
+        signal, weight = link
+        score += weight
+        signals.append(signal)
 
     structural = any(s.split("(")[0] in STRUCTURAL_SIGNALS for s in signals)
 
@@ -509,9 +806,90 @@ def score_pair(
     return score, signals, structural
 
 
-def _auth_then_exec(auth: Finding, exec_: Finding, config: CorrelationConfig) -> bool:
-    """True if ``auth`` is a successful logon that ``exec_`` plausibly followed."""
-    if auth.rule_id not in _AUTH_RULES or exec_.rule_id not in _REMOTE_EXEC_RULES:
+def _cross_channel_link(
+    a: Finding,
+    b: Finding,
+    config: CorrelationConfig,
+    cross: _CrossChannelIndex,
+) -> tuple[str, int] | None:
+    """The structural link between two findings resting on different kinds of telemetry.
+
+    Eligibility is symmetric and has nothing to do with which rule fired: the two
+    findings' channel families must be **disjoint** and non-empty. Disjoint rather than
+    merely different, because a finding both specialists read (``ATH-003``, which
+    declares network flow and process execution at once) is one stage described twice,
+    and joining it to an endpoint finding on that basis would manufacture a second domain
+    out of one observation.
+
+    Two relationships qualify, and order decides only how they read:
+
+    ``auth_then_exec``
+        the identity half landed on the host the endpoint half then ran on, inside
+        ``auth_exec_window``. This is the link the rule-id allowlist used to express,
+        with the rule ids replaced by what they stood for. It is kept distinct because it
+        is the one cross-family relationship that does *not* need a shared principal
+        name -- a service-launched shell runs as the service account, not as the account
+        that authenticated -- so folding it into ``shared_principal`` would drop links
+        this correlator already makes.
+
+    ``shared_principal``
+        the two findings' evidence names one principal, inside ``cross_domain_window``.
+        Asked of every qualifying pair of families, which is what makes an identity
+        finding and a control-plane finding about one AWS principal correlatable at all.
+
+    Returns:
+        ``(signal_text, weight)``, or ``None``. The signal text carries the principal and
+        the direction ("identity then control_plane"), because an analyst arguing with a
+        case needs to see *which* name joined it and in what order, not only that
+        something did.
+    """
+    families_a, families_b = cross.families(a), cross.families(b)
+    if not families_a or not families_b or (families_a & families_b):
+        return None
+
+    # Asked in both directions, exactly as before: whichever finding is the
+    # authentication, the execution has to follow it rather than precede it.
+    if _auth_then_exec(a, b, cross, config) or _auth_then_exec(b, a, cross, config):
+        return f"auth_then_exec(+{W_AUTH_THEN_EXEC})", W_AUTH_THEN_EXEC
+
+    if _time_gap(a, b) > config.cross_domain_window:
+        return None
+    shared = cross.principals(a) & cross.principals(b)
+    if not shared:
+        return None
+
+    earlier, later = (
+        (a, b) if (a.first_seen, a.rule_id) <= (b.first_seen, b.rule_id) else (b, a)
+    )
+    return (
+        "shared_principal(+{}, {}, {} then {})".format(
+            W_SHARED_PRINCIPAL,
+            ", ".join(sorted(shared)),
+            "/".join(sorted(cross.families(earlier))),
+            "/".join(sorted(cross.families(later))),
+        ),
+        W_SHARED_PRINCIPAL,
+    )
+
+
+def _auth_then_exec(
+    auth: Finding,
+    exec_: Finding,
+    cross: _CrossChannelIndex,
+    config: CorrelationConfig,
+) -> bool:
+    """True if ``auth`` is an authentication that ``exec_`` plausibly followed.
+
+    Unchanged in meaning; changed in what decides it. It used to ask whether the two
+    findings' *rule ids* were drawn from ``{ATH-005, ATH-006}`` and ``{ATH-007}``, which
+    made "the identity-to-endpoint link this project can form" a statement about three
+    named rules rather than about telemetry. It now asks what those ids stood for: one
+    finding rests on identity telemetry, the other on endpoint telemetry, and they name
+    the same host inside ``auth_exec_window``.
+    """
+    if FAMILY_IDENTITY not in cross.families(auth):
+        return False
+    if FAMILY_ENDPOINT not in cross.families(exec_):
         return False
     if auth.device != exec_.device:
         return False
@@ -669,6 +1047,7 @@ def correlate_with_stats(
         )
 
     index = _ProcessIndex(telemetry)
+    cross = _CrossChannelIndex(telemetry, ordered)
     union = _UnionFind(f.finding_id for f in ordered)
     links: list[FindingLink] = []
 
@@ -677,7 +1056,9 @@ def correlate_with_stats(
             if _time_gap(left, right) > config.max_gap:
                 continue  # too far apart to be compared at all
 
-            score, signals, structural = score_pair(left, right, index, config)
+            score, signals, structural = score_pair(
+                left, right, index, config, cross
+            )
             if score < config.min_score:
                 continue
             if config.require_structural and not structural:
