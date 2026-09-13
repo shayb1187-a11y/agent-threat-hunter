@@ -1,0 +1,1745 @@
+{
+  "corpus": "comiset_m17_frozen",
+  "rows": {
+    "process": 15095,
+    "network": 589477,
+    "logon": 6063,
+    "control": 0
+  },
+  "events": 610635,
+  "channels": {
+    "process_execution": "available",
+    "process_command_line": "available",
+    "process_lineage": "available",
+    "handle_access": "absent_by_schema",
+    "network_flow": "available",
+    "network_inbound": "absent_in_data",
+    "network_url": "absent_in_data",
+    "dns_query": "absent_by_schema",
+    "authentication": "available",
+    "auth_source_attribution": "partial",
+    "auth_factor": "absent_by_schema",
+    "file_events": "absent_by_schema",
+    "registry": "absent_by_schema",
+    "script_block": "absent_by_schema",
+    "email": "absent_by_schema",
+    "cloud_control_plane": "absent_in_data",
+    "cloud_management_activity": "absent_in_data",
+    "container_audit": "absent_in_data"
+  },
+  "column_populations": {
+    "process.event_id": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.timestamp": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.event_type": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.device": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.user": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.source": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.source_ref": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.process_name": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.process_id": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.command_line": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.parent_process_name": {
+      "rows": 15095,
+      "populated": 15068,
+      "fraction": 0.998211
+    },
+    "process.parent_process_id": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.file_path": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.sha256": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.signer": {
+      "rows": 15095,
+      "populated": 14968,
+      "fraction": 0.991587
+    },
+    "process.signature_status": {
+      "rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0
+    },
+    "process.process_guid": {
+      "rows": 15095,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "process.parent_process_guid": {
+      "rows": 15095,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "network.event_id": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.timestamp": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.event_type": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.device": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.user": {
+      "rows": 589477,
+      "populated": 589471,
+      "fraction": 0.99999
+    },
+    "network.source": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.source_ref": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.process_name": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.process_id": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.process_guid": {
+      "rows": 589477,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "network.remote_ip": {
+      "rows": 589477,
+      "populated": 589477,
+      "fraction": 1.0
+    },
+    "network.remote_port": {
+      "rows": 589477,
+      "populated": 1,
+      "fraction": 2e-06
+    },
+    "network.protocol": {
+      "rows": 589477,
+      "populated": 1,
+      "fraction": 2e-06
+    },
+    "network.direction": {
+      "rows": 589477,
+      "populated": 1,
+      "fraction": 2e-06
+    },
+    "network.remote_url": {
+      "rows": 589477,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "logon.event_id": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.timestamp": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.event_type": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.device": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.user": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.source": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.source_ref": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.logon_type": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.source_ip": {
+      "rows": 6063,
+      "populated": 514,
+      "fraction": 0.372781
+    },
+    "logon.source_device": {
+      "rows": 6063,
+      "populated": 339,
+      "fraction": 0.579882
+    },
+    "logon.action": {
+      "rows": 6063,
+      "populated": 6063,
+      "fraction": 1.0
+    },
+    "logon.failure_reason": {
+      "rows": 6063,
+      "populated": 54,
+      "fraction": 1.0
+    },
+    "control.event_id": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.timestamp": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.event_type": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.device": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.user": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.source": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.source_ref": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.actor": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.actor_groups": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.verb": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.resource_type": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.resource_name": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.resource_namespace": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.target_actor": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.role_ref": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.decision": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    },
+    "control.source_ip": {
+      "rows": 0,
+      "populated": 0,
+      "fraction": 0.0
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "ATH-001",
+      "title": "Office application spawned a script interpreter",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 6 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-002",
+      "title": "Encoded PowerShell command execution",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 3,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-003",
+      "title": "Script interpreter connected to an external host",
+      "declared_tables": {
+        "network": 589477
+      },
+      "eligible_rows": 589477,
+      "verdict": "unusable",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "network_url"
+      ],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "network",
+          "column": "device",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "direction",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "process_id",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "process_name",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "protocol",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
+        },
+        {
+          "table": "network",
+          "column": "remote_ip",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "remote_port",
+          "rows": 589477,
+          "populated": 1,
+          "fraction": 1.7e-06,
+          "raw_fraction": 1.7e-06,
+          "applicable_rows": 589477,
+          "applicable_populated": 1,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "remote_url",
+          "rows": 589477,
+          "populated": 0,
+          "fraction": 0.0,
+          "raw_fraction": 0.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 0,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
+        },
+        {
+          "table": "network",
+          "column": "timestamp",
+          "rows": 589477,
+          "populated": 589477,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 589477,
+          "applicable_populated": 589477,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "network",
+          "column": "user",
+          "rows": 589477,
+          "populated": 589471,
+          "fraction": 0.99998982,
+          "raw_fraction": 0.99998982,
+          "applicable_rows": 589477,
+          "applicable_populated": 589471,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [
+        "direction",
+        "remote_port"
+      ],
+      "sparse_fields": [
+        "direction",
+        "remote_port"
+      ],
+      "sparse_optional_fields": [
+        "protocol",
+        "remote_url"
+      ],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "required field(s) effectively unpopulated: direction 1 of 589477 applicable network rows (0.00%, required); remote_port 1 of 589477 applicable network rows (0.00%, required) -- this rule filters on them, so it runs, matches nothing, and its zero must not be read as clean data; evidence detail reduced: protocol 1 of 589477 applicable network rows (0.00%, optional); remote_url 0 of 589477 applicable network rows (0.00%, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
+    },
+    {
+      "rule_id": "ATH-004",
+      "title": "Possible LSASS credential access",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-005",
+      "title": "Failed logon burst followed by successful authentication",
+      "declared_tables": {
+        "logon": 6063
+      },
+      "eligible_rows": 6063,
+      "verdict": "degraded",
+      "verdict_before": "degraded",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [
+        "auth_source_attribution"
+      ],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "failure_reason",
+          "rows": 6063,
+          "populated": 54,
+          "fraction": 1.0,
+          "raw_fraction": 0.00890648,
+          "applicable_rows": 54,
+          "applicable_populated": 54,
+          "applicable": true,
+          "applicability_reason": "a successful logon has no failure reason",
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 6063,
+          "populated": 339,
+          "fraction": 0.57988166,
+          "raw_fraction": 0.05591291,
+          "applicable_rows": 338,
+          "applicable_populated": 196,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 6063,
+          "populated": 514,
+          "fraction": 0.37278107,
+          "raw_fraction": 0.08477651,
+          "applicable_rows": 338,
+          "applicable_populated": 126,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [
+        "source_ip"
+      ],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "reads sparsely populated field(s): source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, required) -- the rule still fires on its remaining fields"
+    },
+    {
+      "rule_id": "ATH-006",
+      "title": "Account authenticated from a host where it has no session",
+      "declared_tables": {
+        "logon": 6063
+      },
+      "eligible_rows": 6063,
+      "verdict": "degraded",
+      "verdict_before": "degraded",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [
+        "auth_source_attribution"
+      ],
+      "fields": [
+        {
+          "table": "logon",
+          "column": "action",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "device",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "logon_type",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_device",
+          "rows": 6063,
+          "populated": 339,
+          "fraction": 0.57988166,
+          "raw_fraction": 0.05591291,
+          "applicable_rows": 338,
+          "applicable_populated": 196,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source host",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "source_ip",
+          "rows": 6063,
+          "populated": 514,
+          "fraction": 0.37278107,
+          "raw_fraction": 0.08477651,
+          "applicable_rows": 338,
+          "applicable_populated": 126,
+          "applicable": true,
+          "applicability_reason": "an interactive console logon has no source address",
+          "required": false
+        },
+        {
+          "table": "logon",
+          "column": "timestamp",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "logon",
+          "column": "user",
+          "rows": 6063,
+          "populated": 6063,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 6063,
+          "applicable_populated": 6063,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [
+        "source_ip"
+      ],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "reads sparsely populated telemetry (auth_source_attribution); it still fires on its remaining fields, but any grading that depends on these is weakened; evidence detail reduced: source_ip 126 of 338 applicable logon rows (37.28%; 8.48% of all 6063, optional) -- read to phrase or annotate a finding and not to decide or grade one, so every finding this rule would make it still makes"
+    },
+    {
+      "rule_id": "ATH-007",
+      "title": "Remote service execution (PsExec-style)",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 6 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-008",
+      "title": "Bulk data staged into an archive",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-009",
+      "title": "Macro-enabled document opened via email client",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_name",
+          "rows": 15095,
+          "populated": 15068,
+          "fraction": 0.99821133,
+          "raw_fraction": 0.99821133,
+          "applicable_rows": 15095,
+          "applicable_populated": 15068,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-010",
+      "title": "Sequence of discovery commands from one parent process",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "parent_process_id",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 1,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-011",
+      "title": "Windows recovery mechanisms destroyed",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "ATH-012",
+      "title": "Security product disabled or reconfigured",
+      "declared_tables": {
+        "process": 15095
+      },
+      "eligible_rows": 15095,
+      "verdict": "usable",
+      "verdict_before": "supported",
+      "runnable": true,
+      "missing_channels": [],
+      "degraded_channels": [],
+      "fields": [
+        {
+          "table": "process",
+          "column": "command_line",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "device",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "process_name",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "timestamp",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        },
+        {
+          "table": "process",
+          "column": "user",
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "raw_fraction": 1.0,
+          "applicable_rows": 15095,
+          "applicable_populated": 15095,
+          "applicable": true,
+          "applicability_reason": "",
+          "required": true
+        }
+      ],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 1,
+      "detail": "every field this rule filters on is populated on the 5 measured column(s) of its input table(s)"
+    },
+    {
+      "rule_id": "AWS-001",
+      "title": "IAM policy grant followed by access-key creation for the same identity",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-002",
+      "title": "CloudTrail logging disabled or trail deleted",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-003",
+      "title": "Cloud service discovery burst",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-004",
+      "title": "Authorization-denial burst",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-005",
+      "title": "Identity authority removed",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "AWS-006",
+      "title": "Repeated rejected identity authority changes",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "cloud_management_activity"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-001",
+      "title": "RBAC binding grants a maximally-privileged role",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    },
+    {
+      "rule_id": "K8S-002",
+      "title": "Pod exec by an identity shortly after receiving a privileged RBAC grant",
+      "declared_tables": {
+        "control": 0
+      },
+      "eligible_rows": 0,
+      "verdict": "not_eligible",
+      "verdict_before": "unsupported",
+      "runnable": false,
+      "missing_channels": [
+        "container_audit"
+      ],
+      "degraded_channels": [],
+      "fields": [],
+      "unpopulated_fields": [],
+      "sparse_fields": [],
+      "sparse_optional_fields": [],
+      "not_applicable_fields": [],
+      "findings": 0,
+      "detail": "no input: every table this rule reads is empty (control); its silence says nothing about what occurred"
+    }
+  ],
+  "total_findings": 5,
+  "verdict_counts": {
+    "usable": 9,
+    "unusable": 1,
+    "degraded": 2,
+    "not_eligible": 8
+  },
+  "before_counts": {
+    "supported": 9,
+    "unsupported": 9,
+    "degraded": 2
+  },
+  "hunt_seconds": 2.6,
+  "load_seconds": 0.6,
+  "source": {
+    "kind": "canonical_parquet",
+    "path": "reports\\m17\\canonical"
+  }
+}

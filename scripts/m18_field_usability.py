@@ -44,6 +44,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.environment import assess_coverage, build_environment_model  # noqa: E402
+from ath.environment.channels import measure_field_populations  # noqa: E402
 from ath.hunting import run_hunt  # noqa: E402
 from ath.schema import (  # noqa: E402
     EVENT_CONTROL,
@@ -151,6 +152,20 @@ def measure(corpus: str, telemetry: Telemetry) -> dict:
         "channels": {
             channel.value: assessment.state.value
             for channel, assessment in report.environment.channels.items()
+        },
+        # Every column of every table, not only the ones some rule declares today.
+        # `measure_field_populations` was already exhaustive and rule-agnostic -- the
+        # artifact simply threw the rest away, which made a column nothing reads yet
+        # invisible here. M18b-1 added three such columns on purpose ("measure before
+        # consuming"), and a measurement milestone whose artifact cannot show them is
+        # not a measurement.
+        "column_populations": {
+            f"{table}.{column}": {
+                "rows": population.rows,
+                "populated": population.populated,
+                "fraction": round(population.fraction, 6),
+            }
+            for (table, column), population in measure_field_populations(telemetry).items()
         },
         "rules": rules,
         "total_findings": len(hunt.findings),

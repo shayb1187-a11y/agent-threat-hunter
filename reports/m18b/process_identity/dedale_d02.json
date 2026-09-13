@@ -1,0 +1,76 @@
+{
+  "corpus": "dedale_d02",
+  "source": {
+    "path": "data/external/dedale/winlogbeat/D02",
+    "adapter": "WinlogbeatSource",
+    "rows_read": 122978,
+    "unmapped": {
+      "Security:4672": 34598,
+      "Microsoft-Windows-PowerShell/Operational:4103": 6360,
+      "Security:4634": 456,
+      "Security:4648": 198,
+      "Microsoft-Windows-PowerShell/Operational:4104": 120
+    },
+    "issues": 0,
+    "load_seconds": 5.1
+  },
+  "h4_frozen_before": {
+    "artifact": "reports/m17/H4_FROZEN.json",
+    "network_rows": 589477,
+    "pid_matched_rows": 589359,
+    "pid_match_rate": 0.9998,
+    "ambiguous_key_rate": 0.865,
+    "worst_key_instances": 27,
+    "note": "computed by scripts/m17_comiset_eval.py join_report from the RAW slice's process_guid/process_id/host_name fields, because ingestion discarded process_guid at the time (defect M17-3). The numbers below are computed from the canonical tables, which now carry it."
+  },
+  "population": {
+    "process.process_guid": {
+      "total_rows": 46510,
+      "populated": 46510,
+      "fraction": 1.0,
+      "by_scheme": {
+        "sysmon": 46510
+      },
+      "by_source": {
+        "winlogbeat": {
+          "rows": 46510,
+          "populated": 46510,
+          "fraction": 1.0,
+          "by_scheme": {
+            "sysmon": 46510
+          }
+        }
+      }
+    },
+    "process.parent_process_guid": {
+      "total_rows": 46510,
+      "populated": 46510,
+      "fraction": 1.0,
+      "by_scheme": {
+        "sysmon": 46510
+      },
+      "by_source": {
+        "winlogbeat": {
+          "rows": 46510,
+          "populated": 46510,
+          "fraction": 1.0,
+          "by_scheme": {
+            "sysmon": 46510
+          }
+        }
+      }
+    },
+    "network.process_guid": {
+      "total_rows": 0,
+      "populated": 0,
+      "fraction": 0.0,
+      "by_scheme": {},
+      "by_source": {}
+    }
+  },
+  "join": {
+    "process_rows": 46510,
+    "network_rows": 0,
+    "note": "one of the two tables is empty; no join is measurable"
+  }
+}

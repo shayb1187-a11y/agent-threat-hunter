@@ -1,0 +1,124 @@
+{
+  "corpus": "synthetic",
+  "source": {
+    "path": "data/raw",
+    "adapter": "canonical CSV",
+    "load_seconds": 0.0
+  },
+  "h4_frozen_before": {
+    "artifact": "reports/m17/H4_FROZEN.json",
+    "network_rows": 589477,
+    "pid_matched_rows": 589359,
+    "pid_match_rate": 0.9998,
+    "ambiguous_key_rate": 0.865,
+    "worst_key_instances": 27,
+    "note": "computed by scripts/m17_comiset_eval.py join_report from the RAW slice's process_guid/process_id/host_name fields, because ingestion discarded process_guid at the time (defect M17-3). The numbers below are computed from the canonical tables, which now carry it."
+  },
+  "population": {
+    "process.process_guid": {
+      "total_rows": 462,
+      "populated": 462,
+      "fraction": 1.0,
+      "by_scheme": {
+        "start": 462
+      },
+      "by_source": {
+        "synthetic": {
+          "rows": 462,
+          "populated": 462,
+          "fraction": 1.0,
+          "by_scheme": {
+            "start": 462
+          }
+        }
+      }
+    },
+    "process.parent_process_guid": {
+      "total_rows": 462,
+      "populated": 7,
+      "fraction": 0.015152,
+      "by_scheme": {
+        "start": 7
+      },
+      "by_source": {
+        "synthetic": {
+          "rows": 462,
+          "populated": 7,
+          "fraction": 0.015152,
+          "by_scheme": {
+            "start": 7
+          }
+        }
+      }
+    },
+    "network.process_guid": {
+      "total_rows": 389,
+      "populated": 389,
+      "fraction": 1.0,
+      "by_scheme": {
+        "start": 389
+      },
+      "by_source": {
+        "synthetic": {
+          "rows": 389,
+          "populated": 389,
+          "fraction": 1.0,
+          "by_scheme": {
+            "start": 389
+          }
+        }
+      }
+    }
+  },
+  "join": {
+    "process_rows": 462,
+    "network_rows": 389,
+    "pid_join": {
+      "matched": 389,
+      "rate": 1.0
+    },
+    "guid_join": {
+      "carries_identity": 389,
+      "matched": 389,
+      "rate": 1.0,
+      "rate_of_rows_carrying_identity": 1.0
+    },
+    "device_pid_ambiguity": {
+      "all_process_keys": {
+        "keys": 457,
+        "ambiguous": 5,
+        "rate": 0.010941,
+        "worst_key": "pc07|1826",
+        "worst_count": 2,
+        "unit": "instances"
+      },
+      "keys_used_by_network_rows": {
+        "keys": 28,
+        "ambiguous": 0,
+        "rate": 0.0,
+        "worst_key": "pc01|2004",
+        "worst_count": 1,
+        "unit": "instances"
+      }
+    },
+    "process_guid_ambiguity": {
+      "keys": 462,
+      "ambiguous": 0,
+      "rate": 0.0,
+      "worst_key": "start:pc07|1826|2026-08-17T10:22:31.000Z",
+      "worst_count": 1,
+      "unit": "(device, pid) slots"
+    },
+    "process_guid_repeated_rows": {
+      "distinct_identities": 462,
+      "rows_carrying_an_identity": 462,
+      "identities_on_more_than_one_row": 0
+    },
+    "matched_by_pid_not_by_guid": {
+      "count": 0,
+      "rate": 0.0,
+      "examples": []
+    },
+    "matched_by_guid_not_by_pid": 0
+  }
+}

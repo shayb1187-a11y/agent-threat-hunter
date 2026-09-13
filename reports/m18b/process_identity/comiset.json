@@ -1,0 +1,165 @@
+{
+  "corpus": "comiset",
+  "source": {
+    "path": "data/external/comiset/slice",
+    "adapter": "ElasticWinEventSource",
+    "rows_read": 610635,
+    "unmapped_classes": 0,
+    "unmapped_rows": 0,
+    "issues": 1,
+    "load_seconds": 26.3
+  },
+  "h4_frozen_before": {
+    "artifact": "reports/m17/H4_FROZEN.json",
+    "network_rows": 589477,
+    "pid_matched_rows": 589359,
+    "pid_match_rate": 0.9998,
+    "ambiguous_key_rate": 0.865,
+    "worst_key_instances": 27,
+    "note": "computed by scripts/m17_comiset_eval.py join_report from the RAW slice's process_guid/process_id/host_name fields, because ingestion discarded process_guid at the time (defect M17-3). The numbers below are computed from the canonical tables, which now carry it."
+  },
+  "population": {
+    "process.process_guid": {
+      "total_rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0,
+      "by_scheme": {
+        "sysmon": 15095
+      },
+      "by_source": {
+        "elastic_winevent": {
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "by_scheme": {
+            "sysmon": 15095
+          }
+        }
+      }
+    },
+    "process.parent_process_guid": {
+      "total_rows": 15095,
+      "populated": 15095,
+      "fraction": 1.0,
+      "by_scheme": {
+        "sysmon": 15095
+      },
+      "by_source": {
+        "elastic_winevent": {
+          "rows": 15095,
+          "populated": 15095,
+          "fraction": 1.0,
+          "by_scheme": {
+            "sysmon": 15095
+          }
+        }
+      }
+    },
+    "network.process_guid": {
+      "total_rows": 589476,
+      "populated": 589476,
+      "fraction": 1.0,
+      "by_scheme": {
+        "sysmon": 589476
+      },
+      "by_source": {
+        "elastic_winevent": {
+          "rows": 589476,
+          "populated": 589476,
+          "fraction": 1.0,
+          "by_scheme": {
+            "sysmon": 589476
+          }
+        }
+      }
+    }
+  },
+  "join": {
+    "process_rows": 15095,
+    "network_rows": 589476,
+    "pid_join": {
+      "matched": 589359,
+      "rate": 0.999802
+    },
+    "guid_join": {
+      "carries_identity": 589476,
+      "matched": 548365,
+      "rate": 0.930258,
+      "rate_of_rows_carrying_identity": 0.930258
+    },
+    "device_pid_ambiguity": {
+      "all_process_keys": {
+        "keys": 2430,
+        "ambiguous": 2096,
+        "rate": 0.862551,
+        "worst_key": "desktop-4pvps6e|5924",
+        "worst_count": 27,
+        "unit": "instances"
+      },
+      "keys_used_by_network_rows": {
+        "keys": 406,
+        "ambiguous": 385,
+        "rate": 0.948276,
+        "worst_key": "desktop-4pvps6e|5924",
+        "worst_count": 27,
+        "unit": "instances"
+      }
+    },
+    "process_guid_ambiguity": {
+      "keys": 15095,
+      "ambiguous": 0,
+      "rate": 0.0,
+      "worst_key": "sysmon:4fd6b357-9eba-6377-3300-000000002a00",
+      "worst_count": 1,
+      "unit": "(device, pid) slots"
+    },
+    "process_guid_repeated_rows": {
+      "distinct_identities": 15095,
+      "rows_carrying_an_identity": 15095,
+      "identities_on_more_than_one_row": 0
+    },
+    "matched_by_pid_not_by_guid": {
+      "count": 40994,
+      "rate": 0.069543,
+      "examples": [
+        {
+          "event_id": "comiset_slice.jsonl:8ea651c8f487c24391d8f4e65668cdbeff5c041d",
+          "device": "desktop-4pvps6e",
+          "process_name": "lsass.exe",
+          "process_id": 548,
+          "process_guid": "sysmon:4fd6b357-3669-6375-0b00-000000002900",
+          "timestamp": "2022-11-16 20:03:09.227000+00:00",
+          "source_ref": "comiset_slice.jsonl:8ea651c8f487c24391d8f4e65668cdbeff5c041d",
+          "pid_candidates": 3,
+          "distinct_instances_behind_that_pid": 3,
+          "reason": "the identity is present and no process row carries it: the process started before the capture window, so the pid match is a different instance holding the same number"
+        },
+        {
+          "event_id": "comiset_slice.jsonl:d449fe222d01c22b2ceb72ffa3d43b00ef7c795f",
+          "device": "desktop-4pvps6e",
+          "process_name": "lsass.exe",
+          "process_id": 548,
+          "process_guid": "sysmon:4fd6b357-3669-6375-0b00-000000002900",
+          "timestamp": "2022-11-16 19:59:37.706000+00:00",
+          "source_ref": "comiset_slice.jsonl:d449fe222d01c22b2ceb72ffa3d43b00ef7c795f",
+          "pid_candidates": 3,
+          "distinct_instances_behind_that_pid": 3,
+          "reason": "the identity is present and no process row carries it: the process started before the capture window, so the pid match is a different instance holding the same number"
+        },
+        {
+          "event_id": "comiset_slice.jsonl:dfded3451dabadf235b11cedb0031c0d4943c614",
+          "device": "desktop-4pvps6e",
+          "process_name": "lsass.exe",
+          "process_id": 548,
+          "process_guid": "sysmon:4fd6b357-3669-6375-0b00-000000002900",
+          "timestamp": "2022-11-16 19:59:30.960000+00:00",
+          "source_ref": "comiset_slice.jsonl:dfded3451dabadf235b11cedb0031c0d4943c614",
+          "pid_candidates": 3,
+          "distinct_instances_behind_that_pid": 3,
+          "reason": "the identity is present and no process row carries it: the process started before the capture window, so the pid match is a different instance holding the same number"
+        }
+      ]
+    },
+    "matched_by_guid_not_by_pid": 0
+  }
+}
