@@ -787,13 +787,56 @@ def test_aws006_maps_at_low_confidence_because_nothing_was_manipulated() -> None
 
 
 def test_watchlist_techniques_are_now_covered_by_a_rule() -> None:
-    """T1098/T1526/T1580 were OBSERVABLE_UNDETECTED on AWS corpora until these rules.
+    """The mapping table credits a rule for each of the three techniques.
 
-    Failure mode: the coverage report keeps reporting a detection-engineering gap that
-    has been filled, or claims one that has not.
+    Coverage is a property of the rule *set*, read off MAPPING_RULES, and not of whether
+    an attack happened to be in the telemetry on disk -- so this is the half of the
+    check that does not need a corpus.
     """
     from ath.environment.coverage import _rules_covering
 
     assert "AWS-003" in _rules_covering("T1526")
     assert {"AWS-003", "AWS-004"} <= set(_rules_covering("T1580"))
     assert {"AWS-005", "AWS-006"} <= set(_rules_covering("T1098"))
+
+
+def test_watchlist_techniques_flip_to_detectable_on_a_cloud_environment() -> None:
+    """T1098/T1526/T1580 were OBSERVABLE_UNDETECTED wherever a management trail existed.
+
+    The state machine has four states and the distinction that matters here is between
+    "nobody wrote the rule" and "a rule exists and its telemetry is present". Asserted on
+    a real :func:`assess_coverage` run over an environment built from control rows, not
+    on the mapping table alone: OBSERVABLE_UNDETECTED is what you get when a technique
+    has *no* covering rule, and DETECTABLE needs the covering rule to also be runnable on
+    the measured channels. Both halves have to hold, and only one of them is a mapping.
+
+    Failure mode: the coverage report keeps reporting a detection-engineering gap that
+    has been filled -- or reports one filled while the rule is actually unsupported on
+    the channels this environment has.
+    """
+    from ath.environment import build_environment_model
+    from ath.environment.coverage import CoverageState, assess_coverage
+
+    rows = [_read(SCANNER, SERVICES[i], i * 0.25, decision="denied") for i in range(12)]
+    report = assess_coverage(build_environment_model(telemetry(ctrls=rows)))
+    states = {t.entry.technique_id: t.state for t in report.techniques}
+
+    for technique_id in ("T1098", "T1526", "T1580"):
+        assert states[technique_id] is CoverageState.DETECTABLE, (
+            f"{technique_id} is {states[technique_id]} on a cloud control-plane "
+            "environment"
+        )
+
+    # ...and on an environment with no control rows at all the same three techniques are
+    # UNOBSERVABLE, not undetected: a rule cannot help where the telemetry is absent, and
+    # conflating the two is how a visibility gap gets filed as a detection gap.
+    from _builders import proc
+
+    windows = build_environment_model(
+        telemetry(procs=[proc("notepad.exe", "notepad.exe", "explorer.exe")])
+    )
+    windows_states = {
+        t.entry.technique_id: t.state for t in assess_coverage(windows).techniques
+    }
+    for technique_id in ("T1098", "T1526", "T1580"):
+        assert windows_states[technique_id] is CoverageState.UNOBSERVABLE
