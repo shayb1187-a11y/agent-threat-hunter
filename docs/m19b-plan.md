@@ -27,6 +27,15 @@ DEFAULT / DETERMINISTIC DEFAULT. A result that deletes complexity is a success.
    `reports/m19/ablation/ENVIRONMENT.json` (commit may differ; the assertion is the point).
    The one permitted difference is the Phase 2 mitigation, and only in a run whose
    directory says so, after the unmitigated baseline is recorded.
+   *Amended 2026-09-14, before any T8 run:* T6 adds metrics to `scoring.py`, so the
+   M19b freeze asserts equality with M19 on prompts, request configuration, retry policy,
+   budgets, model ids and tool surface, and for scoring requires instead that the M19
+   metrics, recomputed by the new code over `reports/m19/ablation/arm_{A,B,C}.json`,
+   reproduce `GRADING.json` exactly. Two agent-layer defects found by T3/T4 are fixed
+   before the freeze and apply to every arm identically: `NetworkAgent` raising
+   `KeyError('robust_cv')` at exactly three connections, and `AnthropicLLM` discarding
+   the error body (a 400 for an exhausted balance was indistinguishable from a malformed
+   request until an external probe was made).
 3. Cases are constructed or selected before any B/C run and never adjusted after one.
    Where a case is new, its generation logic is committed and hashed first, and at least
    one case is held untouched until final evaluation.
@@ -44,7 +53,7 @@ DEFAULT / DETERMINISTIC DEFAULT. A result that deletes complexity is a success.
 | 3 | T3 robustness harness and runs | `reports/m19b/robustness/` selected-case repeat runs, 3-5 per arm×case, own freeze asserting equality with M19's, reported beside and never averaged into M19 | nothing (uses the unmitigated M19 configuration) |
 | 4-6 | T4 cross-domain corpus audit | `reports/m19b/necessity/AUDIT.md`: every existing corpus and case, domains with materially relevant evidence, redundancy, whether synthesis could change verdict/priority/next action; candidate list ranked by provenance | nothing |
 | 5-6 | T5 benchmark construction | frozen manifest of qualifying cases (existing first; new cases only where necessary, generation hashed, one held out) with a per-case necessity audit | T4 |
-| 7, 9, 10 | T6 necessity metrics and fair-comparison instrumentation | scoring additions: Cross-Domain Evidence Recovery, Unique Cross-Domain Contribution, planner activation, specialists selected, duplicate tool calls, cross-specialist evidence combinations, context size; equal-footing assertions for the three arms | T5 |
+| 7, 9, 10 | T6 necessity metrics, fair-comparison instrumentation, and the two pre-freeze defect fixes | scoring additions: Cross-Domain Evidence Recovery, Unique Cross-Domain Contribution, planner activation, specialists selected, duplicate tool calls, cross-specialist evidence combinations, context size; equal-footing assertions for the three arms | T5 |
 | 8 | T7 pre-registration | `reports/m19b/PREREGISTERED.md` with H1-H7, thresholds, the selection rule, freeze | T5, T6 |
 | 11 | T8 frozen A → B → C → score | `reports/m19b/arm_*.json`, `scores_*.json`, `GRADING.json` | T7 |
 | 12 | T9 architectural report and decision | `docs/m19b-report.md` with the recommendation | T1, T3, T8 |
