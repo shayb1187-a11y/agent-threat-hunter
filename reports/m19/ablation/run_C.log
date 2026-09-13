@@ -1,0 +1,138 @@
+environment: matches the freeze at 5b8c3f2b464d (ENVIRONMENT.json checked: commit, prompts, scoring, manifest, model ids)
+attack_data_aws: 2 case(s) x 1 run(s) in 56.1s
+comiset: 2 case(s) x 1 run(s) in 71.5s
+synthetic:INC-001: 1 case(s) x 1 run(s) in 45.5s
+synthetic:INC-002: 1 case(s) x 1 run(s) in 24.1s
+synthetic:INC-005: 1 case(s) x 1 run(s) in 22.4s
+synthetic:INC-004: 1 case(s) x 1 run(s) in 18.2s
+flaws_cloud: 14 case(s) x 1 run(s) in 463.2s
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\arm_C.json (22 case row(s))
+wrote <local-checkout>\agentic-threat-hunter\reports\m19\ablation\scores_C.json
+{
+  "cases": 22,
+  "arms": {
+    "C_crew_llm": {
+      "overall": {
+        "cases": 22,
+        "mean": {
+          "evidence_correctness": 1.0,
+          "evidence_coverage": 1.0,
+          "technique_jaccard": 0.9972,
+          "specialist_completeness": 1.0,
+          "unsupported_claims": 0.0909,
+          "facts": 15.2273,
+          "inferences": 7.3182,
+          "hypotheses": 2.6818,
+          "tool_calls": 5.5909,
+          "steps": 2.0909,
+          "wall_seconds": 27.7622
+        },
+        "total": {
+          "facts": 335,
+          "inferences": 161,
+          "hypotheses": 59,
+          "unsupported_claims": 2,
+          "rejected_claims": 0,
+          "facts_without_evidence": 0,
+          "cited_event_ids": 4885,
+          "cited_event_ids_existing": 4885,
+          "case_evidence_ids": 361,
+          "case_evidence_touched": 361,
+          "tool_calls": 123,
+          "steps": 46,
+          "wall_seconds": 610.768,
+          "facts_inferred_from_pid": 3,
+          "ambiguous_pid_inferences": 0,
+          "tokens": 214862
+        },
+        "statuses": {
+          "complete": 22
+        },
+        "degraded_runs": 0
+      },
+      "by_corpus": {
+        "attack_data_aws": {
+          "cases": 2,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 22.5,
+            "inferences": 4.5,
+            "hypotheses": 1.5,
+            "tool_calls": 3.5,
+            "steps": 2.0,
+            "wall_seconds": 28.0214
+          },
+          "total": {
+            "facts": 45,
+            "inferences": 9,
+            "hypotheses": 3,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts_without_evidence": 0,
+            "cited_event_ids": 37,
+            "cited_event_ids_existing": 37,
+            "case_evidence_ids": 37,
+            "case_evidence_touched": 37,
+            "tool_calls": 7,
+            "steps": 4,
+            "wall_seconds": 56.043,
+            "facts_inferred_from_pid": 0,
+            "ambiguous_pid_inferences": 0,
+            "tokens": 9250
+          },
+          "statuses": {
+            "complete": 2
+          },
+          "degraded_runs": 0
+        },
+        "comiset": {
+          "cases": 2,
+          "mean": {
+            "evidence_correctness": 1.0,
+            "evidence_coverage": 1.0,
+            "technique_jaccard": 1.0,
+            "specialist_completeness": 1.0,
+            "unsupported_claims": 0.0,
+            "facts": 4.0,
+            "inferences": 6.5,
+            "hypotheses": 3.0,
+            "tool_calls": 5.5,
+            "steps": 2.0,
+            "wall_seconds": 24.8266
+          },
+          "total": {
+            "facts": 8,
+            "inferences": 13,
+            "hypotheses": 6,
+            "unsupported_claims": 0,
+            "rejected_claims": 0,
+            "facts_without_evid
+planner accounting:
+  attack_data_aws/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 1; degraded False
+  attack_data_aws/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  comiset/CASE-002: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-001/CASE-001: planner chose 3 of 3 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-002/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-005/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  synthetic:INC-004/CASE-001: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-005: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-018: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-050: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-065: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-066: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-067: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-077: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-113: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-118: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-122: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-143: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-205: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-219: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+  flaws_cloud/CASE-256: planner chose 0 of 0 multi-candidate step(s); fallbacks {}; unparseable 0; degraded False
+planner check: no model-arm row planned deterministically
+exit=0
