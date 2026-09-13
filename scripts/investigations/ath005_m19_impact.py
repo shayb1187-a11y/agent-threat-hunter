@@ -8,7 +8,7 @@ from __future__ import annotations
 import sys
 from datetime import timedelta
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]  # scripts/investigations/ -> repo root
 sys.path.insert(0, str(ROOT / "src"))
 import pandas as pd  # noqa
 from ath.schema import EVENT_LOGON  # noqa
