@@ -327,11 +327,63 @@ TECHNIQUE_WATCHLIST: tuple[WatchlistEntry, ...] = (
     ),
     WatchlistEntry(
         "T1078.004", "Valid Accounts: Cloud Accounts", Tactic.INITIAL_ACCESS,
-        (_C.CLOUD_CONTROL_PLANE,),
+        (_C.CLOUD_CONTROL_PLANE, _C.AUTH_FACTOR),
+        note=(
+            "ATH sees the login and not the factor. The console login itself is "
+            "represented -- actor, source address, success or failure -- but what "
+            "separates an administrator signing in from a stolen credential being used "
+            "is whether a second factor was presented, and the canonical logon table has "
+            "no column for it. The attack_data_aws capture for this technique is two "
+            "root ConsoleLogins whose entire signal is "
+            "`additionalEventData.MFAUsed`, which reaches no canonical column: this "
+            "technique is unobservable here even on a corpus collected to demonstrate it."
+        ),
     ),
     WatchlistEntry(
         "T1610", "Deploy Container", Tactic.EXECUTION,
         (_C.CONTAINER_AUDIT,),
+    ),
+
+    # -- cloud management activity: observable wherever a management trail is loaded,
+    # and unobservable on every endpoint corpus. Added in M18-7 because the five
+    # attack_data_aws captures are one technique each and three of them were techniques
+    # this watchlist had no opinion about at all -- which made the report silent about
+    # the corpus rather than wrong about it.
+    WatchlistEntry(
+        "T1098", "Account Manipulation", Tactic.PERSISTENCE,
+        (_C.CLOUD_MANAGEMENT_ACTIVITY,),
+        note=(
+            "Policy attach/detach, group membership, access-key creation and their "
+            "deletions are represented in full on the control table, with the "
+            "beneficiary named. No rule reads them as manipulation on its own: AWS-001 "
+            "fires on a grant *followed by* the beneficiary creating a key, so a grant "
+            "that is never used, and every revoke, is visible and uncredited."
+        ),
+    ),
+    WatchlistEntry(
+        "T1526", "Cloud Service Discovery", Tactic.DISCOVERY,
+        (_C.CLOUD_MANAGEMENT_ACTIVITY,),
+        note=(
+            "Enumerating which services an account runs is made of ordinary read calls, "
+            "each of them individually unremarkable; what names it is the breadth and "
+            "the rate. The rows are all here -- the attack_data_aws capture is 1,071 "
+            "calls across 19 services in three minutes by one actor -- and no rule "
+            "reads them. The statistics this needs are measured in "
+            "reports/m18/cloud_behaviour; no threshold is chosen here."
+        ),
+    ),
+    WatchlistEntry(
+        "T1580", "Cloud Infrastructure Discovery", Tactic.DISCOVERY,
+        (_C.CLOUD_MANAGEMENT_ACTIVITY,),
+        note=(
+            "The same shape aimed at infrastructure rather than services, and the "
+            "variant a refused caller produces: 1,150 AccessDenied responses across 45 "
+            "services in two hours is one attack_data_aws capture, and a permission "
+            "brute-force against a role trust policy is another. Both are fully "
+            "represented and uncredited -- and both are only separable from a broken "
+            "script by `decision`, which is why that column had to stop meaning "
+            "\"any error\" first."
+        ),
     ),
 )
 

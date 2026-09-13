@@ -379,6 +379,96 @@ def test_every_watchlist_channel_is_a_known_channel() -> None:
 
 
 # ======================================================================================
+# M18-7: the watchlist says what ATH cannot see about cloud activity, too
+#
+# The five attack_data_aws captures are one ATT&CK technique each, and three of those
+# techniques were techniques this watchlist had no entry for -- so the coverage report was
+# silent about that corpus rather than wrong about it, which is the failure mode this
+# module exists to prevent one level down.
+# ======================================================================================
+
+
+_CLOUD_WATCHLIST = {e.technique_id: e for e in TECHNIQUE_WATCHLIST}
+
+
+@pytest.mark.parametrize("technique_id,name,channel", [
+    ("T1526", "Cloud Service Discovery", TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY),
+    ("T1580", "Cloud Infrastructure Discovery",
+     TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY),
+    ("T1098", "Account Manipulation", TelemetryChannel.CLOUD_MANAGEMENT_ACTIVITY),
+])
+def test_the_cloud_techniques_are_on_the_watchlist(technique_id, name, channel) -> None:
+    """Each with the channel that would actually observe it.
+
+    Fails if an entry is dropped (the corpus becomes invisible to the coverage report
+    again) or filed under a channel it does not need -- CLOUD_CONTROL_PLANE is the
+    authentication subset and would report these as unobservable wherever a management
+    trail is loaded without console logins.
+    """
+    entry = _CLOUD_WATCHLIST.get(technique_id)
+    assert entry is not None, f"{technique_id} is not on the watchlist"
+    assert entry.name == name
+    assert entry.required_channels == (channel,)
+    assert entry.note, f"{technique_id} states no reason for its channel"
+
+
+def test_a_cloud_account_login_is_unobservable_for_want_of_the_factor() -> None:
+    """T1078.004 requires the factor as well as the control plane.
+
+    ATH sees the login -- who, from where, success or failure -- and cannot see whether a
+    second factor was presented, which is the whole of what separates an administrator
+    signing in from a stolen credential being used. Fails if AUTH_FACTOR is dropped from
+    the requirement, which would report this technique as observable on any corpus with a
+    console login in it and quietly credit ATH with a distinction it cannot make.
+    """
+    entry = _CLOUD_WATCHLIST["T1078.004"]
+    assert TelemetryChannel.AUTH_FACTOR in entry.required_channels
+    assert TelemetryChannel.CLOUD_CONTROL_PLANE in entry.required_channels
+    assert "factor" in entry.note
+
+
+def test_the_authentication_factor_channel_is_absent_by_schema() -> None:
+    """No canonical column carries it, so no dataset can make it available.
+
+    ABSENT_BY_SCHEMA rather than ABSENT_IN_DATA is the load-bearing half: the first says
+    "onboarding more logs will not help, this is a schema change", and the second would
+    send an operator to collect telemetry that this project could not represent if they
+    did. Fails if the channel is ever given an evidence column without the schema gaining
+    one.
+    """
+    spec = {s.channel: s for s in CHANNEL_SPECS}[TelemetryChannel.AUTH_FACTOR]
+    assert spec.evidence_columns == ()
+    assert spec.closes_gap_by, "a gap with no remedy is not actionable"
+    assert "schema" in spec.closes_gap_by
+
+    for column_set in TABLE_COLUMNS.values():
+        assert not any("factor" in column or "mfa" in column for column in column_set)
+
+
+def test_the_factor_channel_is_absent_by_schema_on_every_dataset(environment) -> None:
+    """Measured, not asserted from the spec: a Windows dataset and a cloud one.
+
+    The second is the one that matters. A corpus full of console logins is exactly where a
+    reader would expect the factor to be visible, and it is exactly where it is not --
+    ``additionalEventData.MFAUsed`` reaches no canonical column, so the state must stay
+    ABSENT_BY_SCHEMA rather than becoming ABSENT_IN_DATA or PARTIAL. Fails if the channel
+    is ever evidenced by a column that does not carry the factor.
+    """
+    from tests import _builders as build
+
+    assert environment.channels[TelemetryChannel.AUTH_FACTOR].state is (
+        ChannelState.ABSENT_BY_SCHEMA
+    )
+
+    cloud = build.telemetry(logons=[
+        build.logon("wpaulsen", "aws:519204773311/ap-southeast-2", logon_type=None,
+                    source_ip="198.51.100.203"),
+    ])
+    channels = assess_channels(cloud)
+    assert channels[TelemetryChannel.AUTH_FACTOR].state is ChannelState.ABSENT_BY_SCHEMA
+
+
+# ======================================================================================
 # Two environments, two assessments
 #
 # The claim the whole milestone rests on: the same analysis, given different

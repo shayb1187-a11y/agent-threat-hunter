@@ -18,6 +18,7 @@
     "dns_query": "absent_by_schema",
     "authentication": "available",
     "auth_source_attribution": "available",
+    "auth_factor": "absent_by_schema",
     "file_events": "absent_by_schema",
     "registry": "absent_by_schema",
     "script_block": "absent_by_schema",
@@ -561,7 +562,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -574,7 +575,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -779,7 +780,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -792,7 +793,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -915,7 +916,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -928,7 +929,7 @@
           "applicable_rows": 0,
           "applicable_populated": 0,
           "applicable": false,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {

@@ -516,6 +516,16 @@ def test_the_predicate_names_no_resource_family() -> None:
     ("add", "iam:ledger-group"),
     ("associate", "iam:ledger-user"),
     ("ATTACH", " IAM:Quokka-Policy "),
+    # ...and the same permission moving back off the same principal. M18-7's ruling:
+    # `DetachUserPolicy` and `RemoveUserFromGroup` name the beneficiary in exactly the
+    # parameters `AttachUserPolicy` and `AddUserToGroup` name it in, so the guarantee is
+    # the same guarantee and the denominator is the same denominator. Until M18-7 these
+    # two asserted False, which left every revoke on an identity outside the measurement
+    # while the adapter went on filling both columns on them.
+    ("detach", "iam:quokka-policy"),
+    ("remove", "iam:ledger-group"),
+    ("revoke", "iam:ledger-user"),
+    ("disassociate", "iam:ledger-user"),
     # ...and Kubernetes-style: granting is creating a binding object.
     ("create", "rolebindings"),
     ("create", "clusterrolebindings"),
@@ -544,11 +554,9 @@ def test_an_identity_grant_guarantees_a_beneficiary(verb, resource_type) -> None
     # Creating a credential for yourself names no beneficiary in the record; the adapter
     # supplies the caller by convention, which is a fill rule and not a guarantee.
     ("create", "iam:access-key"),
-    # Changes an authority without being a grant. Filled when the record names the
-    # subject -- and outside the denominator, because a revoke of a policy from nobody
-    # in particular is a real shape too.
-    ("detach", "iam:quokka-policy"),
-    ("remove", "iam:ledger-group"),
+    # Changes an authority on an identity object without moving a permission between
+    # principals: `UpdateLoginProfile` resets a password. Filled when the record names
+    # the subject, and outside the denominator -- MODIFY is neither grant nor revoke.
     ("update", "iam:ledger-login-profile"),
     # `put` is a create-class verb in this vocabulary ("creates or replaces the named
     # resource"), so a PutUserPolicy-shaped row is outside the guaranteed set. Stated
@@ -570,6 +578,12 @@ def test_what_guarantees_no_beneficiary(verb, resource_type) -> None:
     Fails if the denominator widens back to ``changes_authority`` (policy creates,
     deletes and login-profile updates return), to ``is_grant`` (a storage volume
     attachment returns), or to the identity service alone (every IAM read returns).
+
+    The paired positive test above holds the M18-7 half of the boundary: a *revoke* on an
+    identity object is inside the denominator, and a create, delete or modify of one is
+    not. ``put`` is listed here for the same reason -- it is a create-class verb in this
+    vocabulary -- so that "PutUserPolicy is outside" stays a consequence of the verb
+    classes rather than of a family list.
     """
     from ath.control_vocab import is_identity_grant
 

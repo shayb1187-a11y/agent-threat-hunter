@@ -50,7 +50,7 @@ from typing import Any
 
 import pandas as pd
 
-from ath.control_vocab import RBAC_BINDING_RESOURCES
+from ath.control_vocab import DECISION_FAILED, RBAC_BINDING_RESOURCES, classify_error
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
@@ -125,22 +125,34 @@ def _timestamp(item: dict[str, Any]) -> pd.Timestamp:
 
 
 def _decision(item: dict[str, Any]) -> str:
-    """``allowed`` for a 2xx response, and for the 101 an exec upgrade succeeds with.
+    """``allowed`` for a 2xx response and for the 101 an exec upgrade succeeds with;
+    ``denied`` for the apiserver's authorization answers; ``failed`` for everything else.
 
     A successful ``pods/exec`` is answered ``101 Switching Protocols``, not ``200``:
     the request became a streaming session. Reading 101 as "denied" -- which the 2xx
     test alone did -- would have recorded every successful shell into a container as a
     refused one, the exact inversion an exec-after-grant rule cannot survive.
+
+    Which non-2xx statuses are a *refusal of authority* is decided by
+    :func:`ath.control_vocab.classify_error`, shared with the CloudTrail adapter: 401 and
+    403, and nothing else. A 404 on a secret, a 409 conflict on a binding and a 500 from
+    the apiserver are real rejections and say nothing about what the caller may do, so
+    since M18-7 they are ``failed`` rather than ``denied``.
+
+    A response with no readable status code is ``failed`` for the same reason. It records
+    an outcome this adapter could not read -- an event captured at a stage before the
+    response, or a malformed status -- which is not the platform refusing an identity, and
+    calling it a denial would manufacture authorization evidence out of a missing field.
     """
     status = item.get("responseStatus") or {}
     code = status.get("code") if isinstance(status, dict) else None
     try:
         code = int(code) if code is not None else None
     except (TypeError, ValueError):
-        return "denied"
+        return DECISION_FAILED
     if code is None:
-        return "denied"
-    return "allowed" if (200 <= code < 300 or code == 101) else "denied"
+        return DECISION_FAILED
+    return classify_error(None, code)
 
 
 def _subject_identity(subject: dict[str, Any], item: dict[str, Any]) -> str:

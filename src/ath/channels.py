@@ -44,6 +44,7 @@ class TelemetryChannel(str, Enum):
     DNS_QUERY = "dns_query"
     AUTHENTICATION = "authentication"
     AUTH_SOURCE_ATTRIBUTION = "auth_source_attribution"
+    AUTH_FACTOR = "auth_factor"
     FILE_EVENTS = "file_events"
     REGISTRY = "registry"
     SCRIPT_BLOCK = "script_block"

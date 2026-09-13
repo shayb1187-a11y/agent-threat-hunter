@@ -18,6 +18,7 @@
     "dns_query": "absent_by_schema",
     "authentication": "absent_in_data",
     "auth_source_attribution": "absent_in_data",
+    "auth_factor": "absent_by_schema",
     "file_events": "absent_by_schema",
     "registry": "absent_by_schema",
     "script_block": "absent_by_schema",
@@ -358,10 +359,10 @@
           "populated": 1989,
           "fraction": 1.0,
           "raw_fraction": 0.25015721,
-          "applicable_rows": 1989,
-          "applicable_populated": 1989,
+          "applicable_rows": 1966,
+          "applicable_populated": 1966,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -369,12 +370,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.99949723,
+          "fraction": 0.99949135,
           "raw_fraction": 0.25003144,
-          "applicable_rows": 1989,
-          "applicable_populated": 1988,
+          "applicable_rows": 1966,
+          "applicable_populated": 1965,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -571,10 +572,10 @@
           "populated": 1989,
           "fraction": 1.0,
           "raw_fraction": 0.25015721,
-          "applicable_rows": 1989,
-          "applicable_populated": 1989,
+          "applicable_rows": 1966,
+          "applicable_populated": 1966,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -582,12 +583,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.99949723,
+          "fraction": 0.99949135,
           "raw_fraction": 0.25003144,
-          "applicable_rows": 1989,
-          "applicable_populated": 1988,
+          "applicable_rows": 1966,
+          "applicable_populated": 1965,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -696,10 +697,10 @@
           "populated": 1989,
           "fraction": 1.0,
           "raw_fraction": 0.25015721,
-          "applicable_rows": 1989,
-          "applicable_populated": 1989,
+          "applicable_rows": 1966,
+          "applicable_populated": 1966,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -707,12 +708,12 @@
           "column": "target_actor",
           "rows": 7951,
           "populated": 1988,
-          "fraction": 0.99949723,
+          "fraction": 0.99949135,
           "raw_fraction": 0.25003144,
-          "applicable_rows": 1989,
-          "applicable_populated": 1988,
+          "applicable_rows": 1966,
+          "applicable_populated": 1965,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -761,7 +762,7 @@
     "supported": 2
   },
   "hunt_seconds": 0.1,
-  "load_seconds": 13.9,
+  "load_seconds": 13.4,
   "source": {
     "kind": "k8s",
     "path": "data\\external\\k8s_ci\\raw"

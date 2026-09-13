@@ -91,14 +91,10 @@
         },
         "AWS-001": {
           "eligible_rows": 2347,
-          "verdict": "unusable",
+          "verdict": "usable",
           "findings": 0,
-          "sparse_fields": [
-            "target_actor"
-          ],
-          "unpopulated_fields": [
-            "target_actor"
-          ]
+          "sparse_fields": [],
+          "unpopulated_fields": []
         },
         "AWS-002": {
           "eligible_rows": 2347,
@@ -112,28 +108,22 @@
           "verdict": "unusable",
           "findings": 0,
           "sparse_fields": [
-            "actor_groups",
-            "target_actor"
+            "actor_groups"
           ],
           "unpopulated_fields": [
-            "actor_groups",
-            "target_actor"
+            "actor_groups"
           ]
         },
         "K8S-002": {
           "eligible_rows": 2347,
           "verdict": "unusable",
           "findings": 0,
-          "sparse_fields": [
-            "target_actor"
-          ],
-          "unpopulated_fields": [
-            "target_actor"
-          ]
+          "sparse_fields": [],
+          "unpopulated_fields": []
         }
       }
     },
-    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_1df2bd9_attack_data_aws.json"
+    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_532bd76_attack_data_aws.json"
   },
   "after": {
     "ledger": {
@@ -296,18 +286,12 @@
       "findings_after_triage": 0,
       "triage_load_reduction": 0.0
     },
-    "findings": [],
-    "raw_records_scope": {
-      "rules_with_a_changed_count": [],
-      "event_ids_requested": 0,
-      "cap": 50
-    },
-    "raw_records": {}
+    "findings": []
   },
   "cost": {
     "load_seconds": 0.1,
-    "measure_seconds": 0.0,
-    "peak_bytes": 93372416,
+    "measure_seconds": 0.1,
+    "peak_bytes": 93257728,
     "peak_gb": 0.087
   }
 }

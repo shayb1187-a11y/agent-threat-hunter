@@ -280,7 +280,7 @@ def is_grant(verb: str, resource_type: str) -> bool:
 
 
 def is_identity_grant(verb: str, resource_type: str) -> bool:
-    """Whether a control row is a grant *of authority to an identity*.
+    """Whether a control row *moves* authority to or from an identity.
 
     The narrower of the two grant predicates, and the one the canonical schema's
     ``target_actor``/``role_ref`` columns are *measured* over: it is the set of rows on
@@ -290,6 +290,23 @@ def is_identity_grant(verb: str, resource_type: str) -> bool:
     Kubernetes RBAC binding creation names its subjects and its ``roleRef``. If such a
     row reaches the canonical table with the columns empty, something was lost, and that
     is what makes this set a fair denominator.
+
+    Both directions, since M18-7. ``DetachUserPolicy`` and ``RemoveUserFromGroup`` name
+    the principal whose authority moved exactly as ``AttachUserPolicy`` and
+    ``AddUserToGroup`` do -- the parameters are the same parameters -- so a revoke on an
+    identity object carries the same guarantee and belongs in the same denominator. The
+    predicate is therefore :data:`GRANT` or :data:`REVOKE` on an identity object, not
+    ``is_grant`` alone; what is still excluded is every *other* authority-changing class,
+    because the guarantee, not the importance, is what this set is made of:
+
+    * :data:`CREATE` and :data:`DELETE` act on the object itself. ``CreatePolicy`` and
+      ``DeletePolicy`` change an authority and can name no principal, because a policy is
+      not a principal. ``put`` is a create-class verb in this vocabulary -- it
+      creates-or-replaces the named resource -- and so ``PutUserPolicy`` stays outside,
+      which is a statement about the verb and not about that one call: the alternative is
+      a list of resource families, which is the allowlist defect M18-3 removed.
+    * :data:`MODIFY` changes a setting on an identity object (``UpdateLoginProfile``)
+      without moving a permission between principals.
 
     Wider predicates cannot be. :func:`is_grant` alone admits attaching a storage volume
     to an instance, which names no identity at all. :func:`changes_authority` admits
@@ -311,12 +328,162 @@ def is_identity_grant(verb: str, resource_type: str) -> bool:
         resource_type: The canonical resource type the row acted on.
 
     Returns:
-        True when the row grants authority to an identity: grant-shaped
-        (:func:`is_grant`) *and* acting on an identity service or an RBAC binding.
+        True when the row moves authority to or from an identity: grant-shaped
+        (:func:`is_grant`) or revoke-class, *and* acting on an identity service or an
+        RBAC binding.
     """
-    if not is_grant(verb, resource_type):
-        return False
-    return (
+    names_an_identity_object = (
         service_of(resource_type) in IDENTITY_SERVICES
         or resource_type.strip().lower() in RBAC_BINDING_RESOURCES
     )
+    if not names_an_identity_object:
+        return False
+    # `is_grant` first, because the Kubernetes half of the guarantee is a *create* of a
+    # binding object and only that function knows it; the revoke class is the AWS half,
+    # where the verb alone says a permission moved.
+    return is_grant(verb, resource_type) or verb_class(verb) == REVOKE
+
+
+# --------------------------------------------------------------------------------------
+# What the platform did with the request: allowed, denied, or failed.
+#
+# `decision` was two-valued -- "denied" meant *any* error -- and that made the column
+# unusable for the one question it exists to answer. On the public flaws.cloud trail the
+# error codes behind "denied" are, in order: Client.RequestLimitExceeded 779,330;
+# Client.UnauthorizedOperation 351,760; AccessDenied 120,988; Client.Unsupported 101,226;
+# Server.InsufficientInstanceCapacity 59,323; Client.InstanceLimitExceeded 43,272;
+# NoSuchBucket 29,170. The largest single contributor is API throttling of one account's
+# RunInstances spam, and a rule counting "denied calls per actor" to find an identity
+# probing its permissions would have been counting a retry loop.
+#
+# So the column takes three values, and the split is on *why* the platform said no:
+#
+#   allowed  the platform performed the action
+#   denied   the platform refused it for authorization or authentication reasons
+#   failed   the platform rejected it for any other reason -- validation, conflict,
+#            not-found, throttling, capacity, an unsupported parameter
+#
+# Only the middle one says anything about a principal's authority, which is what makes it
+# worth separating: a denial is evidence about what an identity may do, a failure is
+# evidence about the request it sent.
+# --------------------------------------------------------------------------------------
+
+DECISION_ALLOWED: Final[str] = "allowed"
+DECISION_DENIED: Final[str] = "denied"
+DECISION_FAILED: Final[str] = "failed"
+
+DECISIONS: Final[tuple[str, ...]] = (DECISION_ALLOWED, DECISION_DENIED, DECISION_FAILED)
+
+# The authorization vocabulary: lower-case substrings that name a refusal *of authority*,
+# whatever service raised it and whatever prefix it carries. Substrings rather than exact
+# codes because one refusal is spelled four ways -- "AccessDenied",
+# "Client.UnauthorizedOperation", "AccessDeniedException", "NotAuthorizedException" -- and
+# a set of exact codes would need an entry per service per spelling, which is the
+# allowlist defect M18-3 removed from the event-name parser, arriving in a new column.
+#
+# Each token, and the authorization semantics it names:
+#
+# * "accessdenied"          -- the caller's policy does not permit this action. The
+#                              canonical refusal, and the prefix of AccessDeniedException,
+#                              which is the same refusal as the newer SDKs spell it.
+# * "unauthorized"          -- the caller is not authorized. Covers EC2's
+#                              Client.UnauthorizedOperation and the HTTP-flavoured
+#                              Unauthorized / UnauthorizedException other services return.
+# * "forbidden"             -- the HTTP-level word for the same refusal; S3 and the
+#                              API-Gateway-fronted services answer with it.
+# * "notauthorized"         -- "user is not authorized to perform", spelled without the
+#                              "un" prefix (NotAuthorized, NotAuthorizedException).
+# * "authfailure"           -- EC2's AuthFailure: the credentials presented did not
+#                              authenticate. An authentication refusal, which belongs
+#                              here because it answers "you may not" rather than "your
+#                              request was wrong".
+# * "invalidclienttokenid"  -- the access key in the signature does not exist, so no
+#                              identity could be established at all.
+# * "expiredtoken"          -- the session credentials have expired (ExpiredToken,
+#                              ExpiredTokenException): authentication that was valid and
+#                              no longer is.
+# * "signaturedoesnotmatch" -- the signature did not verify against the secret for the
+#                              presented key. An authentication failure, not a malformed
+#                              request: the parameters were fine.
+# * "invalididentitytoken"  -- the federated/OIDC token offered to STS is not valid, so
+#                              no identity was assumed.
+# * "unrecognizedclient"    -- "the security token included in the request is invalid":
+#                              the platform did not recognise the presented credential.
+#
+# What is deliberately *not* here, though the corpora are full of it: throttling
+# (RequestLimitExceeded, Throttling), quota and capacity (InstanceLimitExceeded,
+# InsufficientInstanceCapacity), validation (MalformedPolicyDocument, ValidationException,
+# InvalidParameterValue), absence (NoSuchBucket, NoSuchEntity), conflict (DeleteConflict,
+# EntityAlreadyExists) and Client.Unsupported. Not one of them is a statement about what
+# the caller may do.
+AUTHORIZATION_ERROR_TOKENS: Final[tuple[str, ...]] = (
+    "accessdenied",
+    "unauthorized",
+    "forbidden",
+    "notauthorized",
+    "authfailure",
+    "invalidclienttokenid",
+    "expiredtoken",
+    "signaturedoesnotmatch",
+    "invalididentitytoken",
+    "unrecognizedclient",
+)
+
+# The two HTTP statuses that *are* the authorization answer. 401 is "you did not
+# authenticate", 403 is "you authenticated and may not do this"; every other non-2xx
+# status says the request was wrong, missing, conflicting, or that the server broke.
+AUTHORIZATION_HTTP_STATUSES: Final[frozenset[int]] = frozenset({401, 403})
+
+# The non-2xx status a protocol upgrade succeeds with. A `kubectl exec` is answered
+# 101 Switching Protocols, not 200: the request became a streaming session. Reading it as
+# a refusal recorded every successful shell into a container as a blocked one (M14).
+PROTOCOL_UPGRADE_STATUS: Final[int] = 101
+
+
+def classify_error(error_code: str | None, http_status: int | None = None) -> str:
+    """Which of :data:`DECISIONS` the platform's answer to one request was.
+
+    One function for every adapter, and never per API: "did the platform refuse this for
+    authorization reasons" is answered by the vocabulary of authorization errors, which is
+    a property of what those words *mean* rather than of which service emitted them. A
+    per-service table would be tuned to whichever trail was open when it was written, and
+    silent about the next one.
+
+    The order of the tests is the definition:
+
+    1. an :data:`AUTHORIZATION_ERROR_TOKENS` substring in ``error_code``, matched
+       case-insensitively, is ``denied`` -- checked first, so a source that reports both a
+       code and a status cannot have its code overruled by the status;
+    2. an HTTP status in :data:`AUTHORIZATION_HTTP_STATUSES` (401/403) is ``denied``;
+    3. any other error code, and any other non-success status, is ``failed``;
+    4. no error code and a success status -- 2xx, or the 101 of a protocol upgrade -- is
+       ``allowed``.
+
+    Args:
+        error_code: The platform's error code, or ``None``/empty when it reported none.
+            Any spelling: prefixes (``Client.``, ``Server.``, a service name) and suffixes
+            (``Exception``) are tolerated, because the substring carries the meaning.
+        http_status: The response status, when the platform speaks HTTP (Kubernetes'
+            ``responseStatus.code``). ``None`` when the source has no such field, which is
+            CloudTrail: absence is not a failure and never decides anything on its own.
+
+    Returns:
+        One of :data:`DECISIONS`.
+
+    Note:
+        This decides ``denied`` versus ``failed`` and nothing else about a row. A refused
+        request is represented in full either way -- the classification changes what the
+        row says, never whether it exists.
+    """
+    code = (error_code or "").strip().lower()
+    if code and any(token in code for token in AUTHORIZATION_ERROR_TOKENS):
+        return DECISION_DENIED
+    if http_status is not None and http_status in AUTHORIZATION_HTTP_STATUSES:
+        return DECISION_DENIED
+    if code:
+        return DECISION_FAILED
+    if http_status is None:
+        return DECISION_ALLOWED
+    if 200 <= http_status < 300 or http_status == PROTOCOL_UPGRADE_STATUS:
+        return DECISION_ALLOWED
+    return DECISION_FAILED

@@ -111,7 +111,7 @@ LOGON_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
 )
 
 # Cloud/Kubernetes control-plane audit events: an actor performs a verb on a resource,
-# allowed or denied. AWS management-API calls (CreateAccessKey, AttachUserPolicy,
+# allowed, denied or failed. AWS management-API calls (CreateAccessKey, AttachUserPolicy,
 # StopLogging, ...) and Kubernetes audit log entries (create/delete/get on pods, secrets,
 # RBAC objects, pods/exec, ...) are the same shape at this level of abstraction, which is
 # what lets one table -- and one specialist -- serve both. See
@@ -161,7 +161,20 @@ CONTROL_COLUMNS: Final[tuple[str, ...]] = CORE_COLUMNS + (
                             # put into a group -- the group that conferred it. Empty on
                             # the same rows `target_actor` is, and on authority changes
                             # that name no role (CreateAccessKey).
-    "decision",             # "allowed" / "denied"
+    # What the platform did with the request, three-valued (`ath.control_vocab.DECISIONS`):
+    # "allowed" it performed the action, "denied" it refused for authorization or
+    # authentication reasons, "failed" it rejected the request for any other reason --
+    # validation, conflict, not-found, throttling, capacity.
+    #
+    # The third value exists because the second was carrying it. Until M18-7 "denied"
+    # meant *any* error, and on the flaws.cloud trail the largest contributor to it was
+    # API throttling of one account's RunInstances retry loop (Client.RequestLimitExceeded
+    # 779,330 of 1.5M errors). A count of denials per identity -- which is what the column
+    # is for, since only a denial is evidence about what a principal may do -- was
+    # therefore a count of retries. Which error codes name a refusal of *authority* is one
+    # closed vocabulary shared by every adapter
+    # (`ath.control_vocab.AUTHORIZATION_ERROR_TOKENS`), never a per-API table.
+    "decision",
     "source_ip",            # caller's address
 )
 

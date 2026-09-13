@@ -38,11 +38,21 @@ def test_get_verb_exec_maps_to_pods_exec() -> None:
 
 
 def test_switching_protocols_is_a_successful_exec_not_a_denied_one() -> None:
+    """The 101 boundary, and the M18-7 tri-state around it.
+
+    ``{}`` -- a response this adapter could not read a status out of -- asserted "denied"
+    until M18-7 and now asserts "failed": a missing field is not the apiserver refusing an
+    identity, and reading it as one manufactures authorization evidence from an absence.
+    """
     assert _decision({"responseStatus": {"code": 101}}) == "allowed"
     assert _decision({"responseStatus": {"code": 200}}) == "allowed"
     assert _decision({"responseStatus": {"code": 403}}) == "denied"
+    assert _decision({"responseStatus": {"code": 401}}) == "denied"
+    assert _decision({"responseStatus": {"code": 404}}) == "failed"
+    assert _decision({"responseStatus": {"code": 409}}) == "failed"
+    assert _decision({"responseStatus": {"code": 500}}) == "failed"
     assert _decision({"responseStatus": {"code": 101, "status": "Failure"}}) == "allowed"
-    assert _decision({}) == "denied"
+    assert _decision({}) == "failed"
 
 
 def test_a_forbidden_exec_upgrade_is_still_denied() -> None:

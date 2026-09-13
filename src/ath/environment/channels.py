@@ -52,7 +52,7 @@ import pandas as pd
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.channels, which ath.behavior can reach without pulling in the hunting layer.
 from ath.channels import TelemetryChannel
-from ath.control_vocab import is_identity_grant
+from ath.control_vocab import DECISION_ALLOWED, is_identity_grant
 from ath.schema import (
     EVENT_CONTROL,
     EVENT_LOGON,
@@ -206,6 +206,25 @@ CHANNEL_SPECS: tuple[ChannelSpec, ...] = (
         # contradicts observed behaviour is worse than none.
         evidence_columns=((EVENT_LOGON, "source_device"), (EVENT_LOGON, "source_ip")),
         closes_gap_by="ensure the authentication source records originating host or IP",
+    ),
+    ChannelSpec(
+        channel=TelemetryChannel.AUTH_FACTOR,
+        description=(
+            "Authentication factor: whether a second factor was used, and which. "
+            "Distinguishes an account signed into with MFA from one signed into with a "
+            "password alone -- the difference between an administrator at work and a "
+            "stolen credential being used, on an event that otherwise looks identical."
+        ),
+        # No evidence columns: the canonical logon table records that an authentication
+        # happened, who, from where, and whether it succeeded, and has no representation
+        # for *how* it was proven. The attack_data_aws T1078.004 capture is the measured
+        # case -- two root ConsoleLogins whose `additionalEventData.MFAUsed` is the entire
+        # signal, and the canonical row carries it nowhere.
+        closes_gap_by=(
+            "add an authentication-factor column to the canonical logon schema and read "
+            "it from the sources that report it (CloudTrail additionalEventData.MFAUsed, "
+            "Entra ID sign-in logs' authenticationDetails)"
+        ),
     ),
     ChannelSpec(
         channel=TelemetryChannel.FILE_EVENTS,
@@ -423,9 +442,21 @@ which would collide every pair into one."""
 def _identity_grants(df: pd.DataFrame) -> pd.Series:
     """Control rows on which the source model *guarantees* a beneficiary and a role.
 
-    Decided by :func:`ath.control_vocab.is_identity_grant`, evaluated once per distinct
-    ``(verb, resource_type)`` pair rather than once per row: a real trail carries 1.9M
-    rows and a few hundred distinct pairs.
+    Two conditions, both necessary:
+
+    * the action moves authority to or from an identity
+      (:func:`ath.control_vocab.is_identity_grant`), evaluated once per distinct
+      ``(verb, resource_type)`` pair rather than once per row: a real trail carries 1.9M
+      rows and a few hundred distinct pairs;
+    * **and the platform allowed it.** A request the platform refused or rejected carries
+      no guaranteed parameters -- CloudTrail logs no ``requestParameters`` at all on one,
+      which is not this project losing a value but the API answering before it read one.
+      M18-6 measured 33 of the 55 grant-shaped flaws.cloud rows as exactly that shape, and
+      grading them reports AWS-001 as blind on rows where the record itself is empty by
+      construction. The loss stays visible where it can be attributed: the adapter counts
+      every one of them on ``SourceLoadResult.field_gaps``, with the decision in the
+      reason, so "the request was refused before it named anyone" remains a number a
+      reader can see rather than an inference from a population fraction.
 
     A denominator is a claim about what must exist, and only a guarantee can support one.
     Every call by which the identity service moves a permission names the principal it
@@ -454,11 +485,13 @@ def _identity_grants(df: pd.DataFrame) -> pd.Series:
     verbs = df["verb"].astype("string").fillna("")
     resources = df["resource_type"].astype("string").fillna("")
     keys = (verbs + _PAIR_SEPARATOR + resources).astype("string")
-    decisions = {
+    by_shape = {
         key: is_identity_grant(*key.split(_PAIR_SEPARATOR, 1))
         for key in keys.dropna().unique()
     }
-    return keys.map(decisions).fillna(False).astype(bool)
+    shaped = keys.map(by_shape).fillna(False).astype(bool)
+    allowed = df["decision"].astype("string").fillna("") == DECISION_ALLOWED
+    return shaped & allowed
 
 
 def _failed_logon(df: pd.DataFrame) -> pd.Series:
@@ -488,16 +521,18 @@ FIELD_APPLICABILITY: dict[tuple[str, str], FieldApplicability] = {
         applies_to=_identity_grants,
         reason=(
             "the source model guarantees a beneficiary/conferred role only on an "
-            "identity grant; other authority changes may name one and are filled when "
-            "they do"
+            "identity grant the platform allowed; a refused or failed request carries no "
+            "guaranteed parameters, and other authority changes may name one and are "
+            "filled when they do"
         ),
     ),
     (EVENT_CONTROL, "role_ref"): FieldApplicability(
         applies_to=_identity_grants,
         reason=(
             "the source model guarantees a beneficiary/conferred role only on an "
-            "identity grant; other authority changes may name one and are filled when "
-            "they do"
+            "identity grant the platform allowed; a refused or failed request carries no "
+            "guaranteed parameters, and other authority changes may name one and are "
+            "filled when they do"
         ),
     ),
     (EVENT_LOGON, "failure_reason"): FieldApplicability(

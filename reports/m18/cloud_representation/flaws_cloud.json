@@ -137,7 +137,7 @@
         }
       }
     },
-    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_1df2bd9_flaws_cloud.json"
+    "usability_source": "<local-temp>\\claude\\c--local-checkout\\81e9b85c-11bb-4b49-ab2a-6198cbcde0e9\\scratchpad\\field_usability_at_532bd76_flaws_cloud.json"
   },
   "after": {
     "ledger": {
@@ -165,11 +165,11 @@
       "rows_dropped_reported": 2629,
       "rows_dropped_excluding_kept_rows": 2629,
       "field_gaps": {
-        "control.target_actor: not guaranteed on this action (filled when derivable)": 3031,
-        "control.target_actor: request carried no parameters (decision=denied)": 33,
-        "control.role_ref: request carried no parameters (decision=denied)": 33
+        "control.target_actor: not guaranteed on this action (filled when derivable)": 3030,
+        "control.target_actor: request carried no parameters (decision=denied)": 34,
+        "control.role_ref: request carried no parameters (decision=denied)": 34
       },
-      "field_gaps_total": 3097
+      "field_gaps_total": 3098
     },
     "control_table": {
       "rows": 1857154,
@@ -267,13 +267,10 @@
       {
         "rule_id": "AWS-001",
         "eligible_rows": 1857154,
-        "verdict": "degraded",
+        "verdict": "usable",
         "verdict_before": "supported",
         "findings": 0,
-        "sparse_fields": [
-          "role_ref",
-          "target_actor"
-        ],
+        "sparse_fields": [],
         "unpopulated_fields": []
       },
       {
@@ -292,9 +289,7 @@
         "verdict_before": "unsupported",
         "findings": 0,
         "sparse_fields": [
-          "actor_groups",
-          "role_ref",
-          "target_actor"
+          "actor_groups"
         ],
         "unpopulated_fields": [
           "actor_groups"
@@ -306,10 +301,7 @@
         "verdict": "unusable",
         "verdict_before": "unsupported",
         "findings": 0,
-        "sparse_fields": [
-          "role_ref",
-          "target_actor"
-        ],
+        "sparse_fields": [],
         "unpopulated_fields": []
       }
     ],
@@ -7503,9 +7495,9 @@
     "raw_records": {}
   },
   "cost": {
-    "load_seconds": 58.1,
-    "measure_seconds": 12.9,
-    "peak_bytes": 2517987328,
-    "peak_gb": 2.345
+    "load_seconds": 58.8,
+    "measure_seconds": 13.2,
+    "peak_bytes": 2519597056,
+    "peak_gb": 2.347
   }
 }

@@ -76,6 +76,9 @@ INVENTED_EVENT_NAMES = (
     "AddLedgerRoleToApplianceProfile",
     "StopQuokkaLogging", "GetLedgerCatalogAcl", "InvokeApplianceRoutine",
     "DescribeQuokkaVolumes", "RegisterLedgerAlias", "CreateApplianceSnapshot",
+    # M18-7: the three ways a call can end -- performed, refused for want of authority,
+    # rejected for anything else.
+    "RunApplianceFleet", "DeleteLedgerAlias", "CreateQuokkaGrant",
 )
 
 
@@ -1134,3 +1137,135 @@ def test_the_subject_convention_names_no_service_and_no_call() -> None:
     body = source.split('"""', 2)[-1]
     for token in ("iam", "s3", "ec2", "sts", "lambda", "cloudtrail", "Assume", "Bucket"):
         assert token not in body, f"_resource_name names {token!r}"
+
+
+# ======================================================================================
+# M18-7: what the platform did with the request -- allowed, denied, or failed
+#
+# The column was two-valued, and "denied" meant any error at all. The flaws.cloud error
+# histogram is what makes that unusable: Client.RequestLimitExceeded 779,330,
+# Client.UnauthorizedOperation 351,760, AccessDenied 120,988, Client.Unsupported 101,226,
+# Server.InsufficientInstanceCapacity 59,323, Client.InstanceLimitExceeded 43,272,
+# NoSuchBucket 29,170. Counting "denials" per identity counted a retry loop.
+# ======================================================================================
+
+
+@pytest.mark.parametrize("error_code,expected", [
+    # A refusal of authority: the caller's policy does not permit the call.
+    ("AccessDenied", "denied"),
+    ("Client.UnauthorizedOperation", "denied"),
+    # Throttling -- the single largest error on flaws.cloud, and not about the caller.
+    ("Client.RequestLimitExceeded", "failed"),
+    # A malformed request: 10 rows of the attack_data_aws T1580 capture.
+    ("MalformedPolicyDocumentException", "failed"),
+    # Absence and conflict, the other two codes that capture produces.
+    ("NoSuchEntityException", "failed"),
+    ("DeleteConflictException", "failed"),
+    # No error at all.
+    (None, "allowed"),
+])
+def test_the_control_row_records_which_of_the_three_happened(error_code, expected) -> None:
+    """Fails if any rejection that is not about authority is recorded as a denial.
+
+    That is the pre-M18-7 adapter, under which a throttled ``RunInstances`` and a refused
+    ``AttachUserPolicy`` were the same value in the same column.
+    """
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    overrides = {"eventName": "CreateQuokkaGrant", "eventSource": "iam.amazonaws.com"}
+    if error_code is not None:
+        overrides["errorCode"] = error_code
+    row, _ = _normalise_control_record(_record(**overrides), "invented.json", 0)
+
+    assert row is not None, "a refused call is still a row"
+    assert row["decision"] == expected
+
+
+def test_an_error_message_with_no_code_is_a_failure() -> None:
+    """CloudTrail can log an ``errorMessage`` with no ``errorCode``.
+
+    Such a row is ``failed``: an error whose code the trail did not record is not evidence
+    that an identity was refused, and reading free text for the word would put the
+    classification back on prose. Fails if an uncoded message is read as a denial (the
+    pre-M18-7 rule, where message-presence alone meant "denied") or as success.
+    """
+    from ath.telemetry.cloudtrail_source import _normalise_control_record
+
+    row, _ = _normalise_control_record(
+        _record(eventName="RunApplianceFleet", eventSource="panorama.amazonaws.com",
+                errorMessage="the request could not be completed"),
+        "invented.json", 0,
+    )
+    assert row is not None
+    assert row["decision"] == "failed"
+
+
+def test_every_control_row_carries_one_of_the_three_decisions(tmp_path) -> None:
+    """Across a mixed batch: the column is total and takes no fourth value.
+
+    Fails if a record shape this adapter has no opinion about leaves the column empty --
+    an unpopulated decision is a row that says nothing about what the platform did.
+    """
+    from ath.control_vocab import DECISIONS
+
+    records = [
+        _record(eventName="CreateQuokkaGrant", eventSource="iam.amazonaws.com"),
+        _record(eventName="DeleteLedgerAlias", eventSource="iam.amazonaws.com",
+                errorCode="AccessDenied", eventID="invented-0001"),
+        _record(eventName="RunApplianceFleet", eventSource="panorama.amazonaws.com",
+                errorCode="Client.RequestLimitExceeded", eventID="invented-0002"),
+        _record(eventName="RunApplianceFleet", eventSource="panorama.amazonaws.com",
+                errorMessage="rejected", eventID="invented-0003"),
+    ]
+    controls = _load(tmp_path, records).tables[EVENT_CONTROL]
+
+    assert set(controls["decision"]) <= set(DECISIONS)
+    assert list(controls["decision"]) == ["allowed", "denied", "failed", "failed"]
+
+
+def test_ten_denied_grants_are_ten_counted_gaps() -> None:
+    """The numerator side of the applicability ruling, from the adapter's end.
+
+    ``tests/test_decision_tristate.py`` asserts that these ten rows leave the denominator;
+    this asserts that leaving it does not make them disappear. Both columns are counted on
+    every one of them, with the decision in the reason, so a reader can subtract "refused
+    before it named anyone" from "named nobody" without re-running the corpus.
+
+    Fails if the applicability narrowing is ever mirrored into the gap counter, which
+    would turn a narrowed denominator into an excuse: 33 of 55 flaws.cloud grants would
+    stop being counted anywhere.
+    """
+    gaps = _gaps([
+        _record(**_GRANT, requestParameters=None, errorCode="AccessDenied",
+                eventID=f"invented-denied-{index}")
+        for index in range(10)
+    ])
+
+    assert gaps == {
+        "control.target_actor: request carried no parameters (decision=denied)": 10,
+        "control.role_ref: request carried no parameters (decision=denied)": 10,
+    }
+
+
+def test_a_revoke_on_an_identity_is_graded_like_a_grant() -> None:
+    """M18-7's other ruling, from the adapter's end: ``DetachQuokkaPolicy``.
+
+    A detach names the principal whose authority moved in the same parameters an attach
+    names it in, so an empty column on one is the same loss -- a *strong* gap, keyed by
+    column and reason, not the informational "not guaranteed on this action" bucket that
+    a policy create lands in.
+
+    Fails if ``is_identity_grant`` narrows back to grant-shaped rows only: the reason key
+    changes and every revoke stops being graded.
+    """
+    gaps = _gaps([_record(
+        eventSource="iam.amazonaws.com", eventName="DetachQuokkaPolicy",
+        userIdentity={"type": "IAMUser", "userName": "gannet", "accountId": "900000000077"},
+        requestParameters={}, eventID="invented-revoke-1",
+    )])
+
+    assert gaps == {
+        "control.target_actor: request carried no parameters (decision=allowed)": 1,
+        "control.role_ref: request carried no parameters (decision=allowed)": 1,
+    }
+    assert _NOT_GUARANTEED_KEY not in gaps

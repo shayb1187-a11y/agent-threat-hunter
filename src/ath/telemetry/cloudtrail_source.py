@@ -101,7 +101,12 @@ from typing import Any
 
 import pandas as pd
 
-from ath.control_vocab import changes_authority, is_identity_grant
+from ath.control_vocab import (
+    DECISION_FAILED,
+    changes_authority,
+    classify_error,
+    is_identity_grant,
+)
 from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
@@ -641,6 +646,30 @@ def _verdict(record: dict[str, Any]) -> str:
     return "success"
 
 
+def _control_decision(record: dict[str, Any]) -> str:
+    """What the platform did with one management call: allowed, denied or failed.
+
+    Delegates the denied/failed split to :func:`ath.control_vocab.classify_error`, which
+    both adapters share, so that "the platform refused this for authorization reasons"
+    means one thing across CloudTrail and Kubernetes rather than one thing per source.
+
+    The one CloudTrail-specific rule is the record shape: a record can carry an
+    ``errorMessage`` with no ``errorCode``, and an error whose code the trail did not
+    record is **failed**, never denied. Reading an uncoded message as a refusal would put
+    the classification back on free text, and free text is where the thing being measured
+    -- was this identity refused -- stops being decidable.
+
+    ``responseElements.ConsoleLogin`` is deliberately not read here: a console login is an
+    authentication decision and lands in the logon table, whose ``action`` column
+    :func:`_verdict` still answers. The control table records what the *management* API
+    did, and every management call reports that through ``errorCode``.
+    """
+    error_code = str(record.get("errorCode") or "")
+    if not error_code and record.get("errorMessage"):
+        return DECISION_FAILED
+    return classify_error(error_code)
+
+
 _LOGON_ORDER: tuple[str, ...] = TABLE_COLUMNS[EVENT_LOGON]
 _CONTROL_ORDER: tuple[str, ...] = TABLE_COLUMNS[EVENT_CONTROL]
 
@@ -807,8 +836,7 @@ def _normalise_control_record(
 
     account = str(record.get("recipientAccountId") or identity.get("accountId") or "unknown")
     region = str(record.get("awsRegion") or "unknown")
-    verdict = _verdict(record)
-    decision = "denied" if verdict == "failure" else "allowed"
+    decision = _control_decision(record)
 
     # Why a column came back empty, counted here because here is the last place that
     # knows: downstream sees the canonical row and cannot tell a value this adapter

@@ -18,6 +18,7 @@
     "dns_query": "absent_by_schema",
     "authentication": "available",
     "auth_source_attribution": "available",
+    "auth_factor": "absent_by_schema",
     "file_events": "absent_by_schema",
     "registry": "absent_by_schema",
     "script_block": "absent_by_schema",
@@ -517,7 +518,7 @@
         "control": 1857154
       },
       "eligible_rows": 1857154,
-      "verdict": "degraded",
+      "verdict": "usable",
       "verdict_before": "supported",
       "runnable": true,
       "missing_channels": [],
@@ -554,12 +555,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -567,12 +568,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -603,14 +604,11 @@
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "sparse_fields": [],
       "sparse_optional_fields": [],
       "not_applicable_fields": [],
       "findings": 0,
-      "detail": "reads sparsely populated field(s): role_ref 22 of 55 applicable control rows (40.00%; 0.00% of all 1857154, required); target_actor 22 of 55 applicable control rows (40.00%; 0.01% of all 1857154, required) -- the rule still fires on its remaining fields"
+      "detail": "every field this rule filters on is populated on the 6 measured column(s) of its input table(s)"
     },
     {
       "rule_id": "AWS-002",
@@ -772,12 +770,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -785,12 +783,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -824,9 +822,7 @@
         "actor_groups"
       ],
       "sparse_fields": [
-        "actor_groups",
-        "role_ref",
-        "target_actor"
+        "actor_groups"
       ],
       "sparse_optional_fields": [
         "resource_name"
@@ -907,12 +903,12 @@
           "column": "role_ref",
           "rows": 1857154,
           "populated": 85,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 4.577e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -920,12 +916,12 @@
           "column": "target_actor",
           "rows": 1857154,
           "populated": 178,
-          "fraction": 0.4,
+          "fraction": 1.0,
           "raw_fraction": 9.585e-05,
-          "applicable_rows": 55,
-          "applicable_populated": 22,
+          "applicable_rows": 43,
+          "applicable_populated": 43,
           "applicable": true,
-          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant; other authority changes may name one and are filled when they do",
+          "applicability_reason": "the source model guarantees a beneficiary/conferred role only on an identity grant the platform allowed; a refused or failed request carries no guaranteed parameters, and other authority changes may name one and are filled when they do",
           "required": true
         },
         {
@@ -956,10 +952,7 @@
         }
       ],
       "unpopulated_fields": [],
-      "sparse_fields": [
-        "role_ref",
-        "target_actor"
-      ],
+      "sparse_fields": [],
       "sparse_optional_fields": [
         "resource_name",
         "resource_namespace"
@@ -972,16 +965,15 @@
   "total_findings": 39,
   "verdict_counts": {
     "not_eligible": 10,
-    "usable": 2,
-    "unusable": 3,
-    "degraded": 1
+    "usable": 3,
+    "unusable": 3
   },
   "before_counts": {
     "unsupported": 12,
     "supported": 4
   },
   "hunt_seconds": 2.3,
-  "load_seconds": 58.1,
+  "load_seconds": 59.1,
   "source": {
     "kind": "cloudtrail",
     "path": "data\\external\\flaws_cloud\\raw"
