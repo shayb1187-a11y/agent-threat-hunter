@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReportingWide",
+      "Effect": "Allow",
+      "Action": [
+        "ce:*",
+        "cloudwatch:Get*",
+        "cloudwatch:List*",
+        "s3:List*",
+        "ec2:Describe*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
