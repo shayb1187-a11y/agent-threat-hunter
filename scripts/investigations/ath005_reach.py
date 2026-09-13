@@ -40,7 +40,7 @@ def _telemetry(result) -> Telemetry:
 
 
 def rows(label: str, tel: Telemetry) -> list[dict]:
-    det = get_detector("ATH-005")(config=HuntConfig())
+    det = get_detector("ATH-005", config=HuntConfig())
     out = []
     for f in det.detect(tel):
         burst_end = f.metadata["burst_end"]
