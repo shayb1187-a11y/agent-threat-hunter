@@ -1,0 +1,123 @@
+{
+  "dataset": "dedale_injected/H1",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "H1",
+  "seed": 19026,
+  "case_seed": "19026:H1",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D18",
+      "date": "2025-01-09",
+      "host": "CLIENT26",
+      "hour": "16",
+      "file": "CLIENT26_2025-01-09T16.jsonl",
+      "background_records": 191,
+      "injected_records": 0
+    },
+    {
+      "day": "D18",
+      "date": "2025-01-09",
+      "host": "CLIENT28",
+      "hour": "16",
+      "file": "CLIENT28_2025-01-09T16.jsonl",
+      "background_records": 195,
+      "injected_records": 17
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "guessed-credential-then-remote-exec": {
+      "malicious": true,
+      "note": "HELD OUT until the final evaluation",
+      "stages": {
+        "1-credential-guessing": {
+          "note": "sealed",
+          "refs": [
+            "host=CLIENT28.breach.local;channel=Security;record_id=29961",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29962",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29963",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29964",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29965",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29966",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29967",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29968",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29969",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29970",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29971",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29972",
+            "host=CLIENT28.breach.local;channel=Security;record_id=29973"
+          ]
+        },
+        "2-successful-logon": {
+          "note": "sealed",
+          "refs": [
+            "host=CLIENT28.breach.local;channel=Security;record_id=29974"
+          ]
+        },
+        "3-remote-service-execution": {
+          "note": "sealed",
+          "refs": [
+            "host=CLIENT28.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=5784579"
+          ]
+        },
+        "4-discovery": {
+          "note": "sealed",
+          "refs": [
+            "host=CLIENT28.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=5784580",
+            "host=CLIENT28.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=5784581"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "H1-LINK-1",
+      "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT28.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 29974,
+        "ref": "host=CLIENT28.breach.local;channel=Security;record_id=29974"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT28.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 5784579,
+        "ref": "host=CLIENT28.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=5784579"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "H1-LINK-2",
+      "stage_transition": "2-successful-logon -> 4-discovery",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT28.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 29974,
+        "ref": "host=CLIENT28.breach.local;channel=Security;record_id=29974"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT28.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 5784580,
+        "ref": "host=CLIENT28.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=5784580"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

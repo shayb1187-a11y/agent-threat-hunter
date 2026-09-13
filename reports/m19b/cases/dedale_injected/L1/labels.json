@@ -1,0 +1,122 @@
+{
+  "dataset": "dedale_injected/L1",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "L1",
+  "seed": 19026,
+  "case_seed": "19026:L1",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D03",
+      "date": "2024-12-25",
+      "host": "CLIENT9",
+      "hour": "08",
+      "file": "CLIENT9_2024-12-25T08.jsonl",
+      "background_records": 598,
+      "injected_records": 16
+    },
+    {
+      "day": "D03",
+      "date": "2024-12-25",
+      "host": "CLIENT7",
+      "hour": "09",
+      "file": "CLIENT7_2024-12-25T09.jsonl",
+      "background_records": 188,
+      "injected_records": 0
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "administrator-lockout-then-remote-support": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: an account lockout and a PsExec support action -- the same rules at the same severities as M1",
+      "stages": {
+        "1-stale-credential-lockout": {
+          "note": "three bad-password failures, then nine against a locked account",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Security;record_id=22446",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22447",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22448",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22449",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22450",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22451",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22452",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22453",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22454",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22455",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22456",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22457"
+          ]
+        },
+        "2-logon-after-unlock": {
+          "note": "success from the same host after the service desk unlocks it",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Security;record_id=22458"
+          ]
+        },
+        "3-remote-support-action": {
+          "note": "PsExec-style service-launched shell, output to ADMIN$",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=815633"
+          ]
+        },
+        "4-support-commands": {
+          "note": "the print spooler is stopped and started",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=815634",
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=815635"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "L1-LINK-1",
+      "stage_transition": "2-logon-after-unlock -> 3-remote-support-action",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT9.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22458,
+        "ref": "host=CLIENT9.breach.local;channel=Security;record_id=22458"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT9.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 815633,
+        "ref": "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=815633"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "L1-LINK-2",
+      "stage_transition": "2-logon-after-unlock -> 4-support-commands",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT9.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22458,
+        "ref": "host=CLIENT9.breach.local;channel=Security;record_id=22458"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT9.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 815634,
+        "ref": "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=815634"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}
