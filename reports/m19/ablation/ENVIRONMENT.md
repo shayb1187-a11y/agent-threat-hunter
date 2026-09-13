@@ -10,11 +10,9 @@ A `--scripted` run is exempt. It contains no model output, is written under `scr
 
 ## Code
 
-* commit `8891a05aea65c6d1908a3cf3098c86dc57b366fc` on branch `m14-real-data-validation`
+* commit `8a1e7bf3da2fd4f80e8121d515511bc41fde3063` on branch `m14-real-data-validation`
 * working tree: no uncommitted change outside `reports/` and `data/` (the code at this commit is the code that runs)
   * `data/raw/control_events.csv`
-  * `reports/m19/ablation/ENVIRONMENT.json`
-  * `reports/m19/ablation/ENVIRONMENT.md`
 * manifest `1764be3cea5a` (built at `ffc31d5`)
 
 ## The arms
@@ -55,6 +53,7 @@ The model id is pinned by the experiment on `ArmConfig`, not read from configura
 ## Scoring code (sha256)
 
 * `arms.py`: `f6e18fad3812389f27df434e0d7384b6d1dcc6062464443796137ec528c34f40`
+* `incidents.py`: `25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb`
 * `scoring.py`: `a958d692ee7c26f796b09c1bfe83807c12c8e993562beaad1a476d4e416fb806`
 
 ## Tool surface
