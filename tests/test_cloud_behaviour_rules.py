@@ -255,7 +255,8 @@ def test_invented_vocabulary_is_absent_from_both_corpora() -> None:
     """The fixtures below are invented, checked rather than asserted in prose."""
     names, services, actors = _corpus_vocabulary()
     mine = {s.lower() for s in SERVICES} | {
-        SCANNER, PIPELINE, ADMIN, SCRIPT, OTHER_SCANNER
+        SCANNER, PIPELINE, ADMIN, SCRIPT, OTHER_SCANNER,
+        K8S_AUTOMATION, K8S_SUBJECT,
     }
     borrowed = sorted(mine & (names | services | actors))
     assert not borrowed, f"test vocabulary taken from a measured corpus: {borrowed}"
@@ -663,6 +664,89 @@ def test_aws006_denied_inclusive_variant_is_report_only() -> None:
     assert episodes[0]["actor"] == SCRIPT
     assert episodes[0]["count"] == 5
     assert all(not hasattr(e, "rule_id") for e in episodes)
+
+
+# ======================================================================================
+# M18-9: the two identity rules read the channel they declare, and no other
+#
+# `changes_authority` has two clauses, because two platforms model identity differently:
+# AWS' identity service, and Kubernetes RBAC binding objects. That is right for the
+# column it was written for -- `target_actor`, which both adapters fill. It was wrong as
+# the whole predicate of a rule declaring CLOUD_MANAGEMENT_ACTIVITY, which is evidenced
+# by `source == "cloudtrail_mgmt"` and by nothing Kubernetes emits. M18-8's P13 measured
+# the consequence: the coverage model told an operator AWS-006 could not fire on a
+# Kubernetes corpus, and it fired.
+#
+# The Kubernetes shapes below are deliberately the *same behaviour* as the CloudTrail
+# ones beside them -- a binding create rejected six times, a binding delete performed --
+# so these tests say "not claimed here", not "not interesting". The names on either side
+# are disjoint, so neither pair can pass by accidentally matching the other's rows.
+# ======================================================================================
+
+K8S_AUTOMATION = "koala_operator"
+K8S_SUBJECT = "glider_agent"
+
+
+def _k8s_binding_change(
+    actor: str, verb: str, resource: str, minute: float, decision: str,
+) -> dict:
+    """A Kubernetes RBAC authority change: the second clause of ``changes_authority``.
+
+    The binding resource names are real (``rolebindings``, ``clusterrolebindings``)
+    because the predicate is defined by them; everything else is invented.
+    """
+    return ctrl(
+        actor, verb, resource, f"glider-binding-{minute}",
+        target_actor=K8S_SUBJECT, role_ref="view", decision=decision,
+        device="k8s:c1", source="k8s_audit", namespace="glider-ns", when=at(minute),
+    )
+
+
+def test_aws006_stays_quiet_on_rejected_kubernetes_rbac_writes() -> None:
+    """Six rejected ClusterRoleBinding creates are not this rule's subject.
+
+    Failure mode: this is exactly the k8s_ci finding P13 recorded -- an add-on manager
+    re-creating a binding, every attempt a 409. It is real behaviour and a ``K8S-`` rule
+    declaring CONTAINER_AUDIT could claim it; AWS-006 declares cloud management activity
+    and may not. If the identity-service scope is removed, this returns a finding again.
+    """
+    ctrls = [
+        _k8s_binding_change(K8S_AUTOMATION, "create", "clusterrolebindings", i, "failed")
+        for i in range(6)
+    ]
+    assert _findings("AWS-006", ctrls) == []
+    # ...and the identical shape on the identity service still fires, so the test is
+    # discriminating between platforms rather than between fixtures.
+    cloud = [_identity_change(SCRIPT, "create", i, "failed") for i in range(6)]
+    assert len(_findings("AWS-006", cloud)) == 1
+
+
+def test_aws005_stays_quiet_on_a_performed_kubernetes_rbac_removal() -> None:
+    """A RoleBinding the apiserver deleted is not this rule's subject either.
+
+    Failure mode: the same predicate widening, on the removal rule. AWS-005 has no count
+    threshold, so a single Kubernetes binding delete was enough to produce a finding
+    declaring a channel the row does not belong to.
+    """
+    ctrls = [_k8s_binding_change(K8S_AUTOMATION, "delete", "rolebindings", 0, "allowed")]
+    assert _findings("AWS-005", ctrls) == []
+    cloud = [_identity_change(ADMIN, "delete", 0, "allowed")]
+    assert len(_findings("AWS-005", cloud)) == 1
+
+
+def test_aws006_denied_inclusive_variant_carries_the_same_scope() -> None:
+    """The report-only variant is wider in decision only, not in platform.
+
+    Failure mode: the variant keeps measuring a population the rule no longer reads, and
+    the cost it prices is the cost of a rule nobody proposed.
+    """
+    ctrls = [
+        _k8s_binding_change(K8S_AUTOMATION, "create", "clusterrolebindings", i, "denied")
+        for i in range(6)
+    ]
+    assert denied_inclusive_rejected_identity_episodes(
+        telemetry(ctrls=ctrls), 5, timedelta(minutes=60),
+    ) == []
 
 
 # ======================================================================================

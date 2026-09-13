@@ -1,5 +1,5 @@
 {
-  "corpus": "synthetic",
+  "corpus": "k8ntext",
   "preregistered": "reports/m18/cloud_detection/PREREGISTERED.md",
   "thresholds": {
     "cloud_discovery_min_services": 10,
@@ -16,31 +16,18 @@
     "sample": []
   },
   "rows": {
-    "process": 437,
-    "network": 389,
-    "logon": 267,
-    "control": 0
+    "process": 0,
+    "network": 0,
+    "logon": 0,
+    "control": 31
   },
-  "findings_before": 15,
-  "findings_after": 15,
+  "findings_before": 0,
+  "findings_after": 0,
   "new_findings": 0,
-  "by_rule_before": {
-    "ATH-004": 1,
-    "ATH-005": 1,
-    "ATH-012": 1,
-    "ATH-011": 1,
-    "ATH-001": 1,
-    "ATH-002": 2,
-    "ATH-003": 3,
-    "ATH-006": 1,
-    "ATH-007": 1,
-    "ATH-008": 1,
-    "ATH-009": 1,
-    "ATH-010": 1
-  },
+  "by_rule_before": {},
   "new_by_rule": {},
   "cost": {
-    "load_seconds": 0.0,
-    "measure_seconds": 0.1
+    "load_seconds": 1.2,
+    "measure_seconds": 0.0
   }
 }

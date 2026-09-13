@@ -10,6 +10,12 @@
     "cloud_identity_failed_min_count": 5
   },
   "span_days": 1333.05,
+  "channel_violations": {
+    "count": 0,
+    "by_rule": {},
+    "by_reason": {},
+    "sample": []
+  },
   "findings_before": 39,
   "findings_after": 1476,
   "by_rule_before": {
@@ -334,7 +340,7 @@
     }
   },
   "cost": {
-    "load_seconds": 59.5,
-    "measure_seconds": 118.2
+    "load_seconds": 59.8,
+    "measure_seconds": 119.5
   }
 }

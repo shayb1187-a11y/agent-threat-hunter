@@ -9,6 +9,12 @@
     "cloud_identity_change_window_minutes": 60.0,
     "cloud_identity_failed_min_count": 5
   },
+  "channel_violations": {
+    "count": 0,
+    "by_rule": {},
+    "by_reason": {},
+    "sample": []
+  },
   "rows": {
     "process": 15095,
     "network": 589477,

@@ -39,6 +39,7 @@ Usage::
     python scripts/m18_cloud_detection.py attack_data_aws
     python scripts/m18_cloud_detection.py flaws_cloud --investigate
     python scripts/m18_cloud_detection.py k8s_ci
+    python scripts/m18_cloud_detection.py k8ntext
     python scripts/m18_cloud_detection.py synthetic
     python scripts/m18_cloud_detection.py comiset
 """
@@ -59,7 +60,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from ath.correlation import correlate  # noqa: E402
-from ath.environment import build_environment_model  # noqa: E402
+from ath.environment import (  # noqa: E402
+    build_environment_model,
+    findings_respect_declared_channels,
+)
 from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.hunting.rules.cloud_behaviour_rules import (  # noqa: E402
     denied_inclusive_rejected_identity_episodes,
@@ -111,6 +115,16 @@ def load_corpus(corpus: str) -> Telemetry:
         return _telemetry_of(
             K8sAuditSource(ROOT / "data" / "external" / "k8s_ci" / "raw", cluster="ci")
             .load().tables
+        )
+    if corpus == "k8ntext":
+        # The corpus M18-9 added: a Kubernetes audit log these four rules have never run
+        # on. The manifest names no cluster, so the dataset key is the cluster name --
+        # it appears only in the synthesised `device`, which no rule reads.
+        from ath.telemetry.k8s_audit_source import K8sAuditSource
+        return _telemetry_of(
+            K8sAuditSource(
+                ROOT / "data" / "external" / "k8ntext" / "raw", cluster="k8ntext",
+            ).load().tables
         )
     if corpus == "synthetic":
         from ath.telemetry.loader import load_telemetry
@@ -178,6 +192,25 @@ def _split_new_old(findings: list) -> tuple[list, list]:
     return new, old
 
 
+def _violations(findings: list, telemetry: Telemetry) -> dict[str, Any]:
+    """The M18-9 declaration-truth check, recorded on every corpus this script measures.
+
+    The invariant: every evidence row a finding cites belongs to a channel the rule
+    declares, so the coverage model's "this rule cannot fire here" can never be
+    contradicted by a finding. M18-8's P13 is the case it exists for -- AWS-006 declared
+    CLOUD_MANAGEMENT_ACTIVITY and cited twenty ``k8s_audit`` rows on k8s_ci. Recorded as
+    a number in the artifact rather than checked only in the suite, because the suite
+    runs on fixtures and the corpora are where the surprise was.
+    """
+    found = findings_respect_declared_channels(findings, telemetry)
+    return {
+        "count": len(found),
+        "by_rule": dict(Counter(v.rule_id for v in found)),
+        "by_reason": dict(Counter(v.reason for v in found)),
+        "sample": [v.to_dict() for v in found[:10]],
+    }
+
+
 # --------------------------------------------------------------------------------------
 # attack_data_aws: per-capture, label-aware
 # --------------------------------------------------------------------------------------
@@ -199,6 +232,7 @@ def measure_attack_corpus(telemetry: Telemetry) -> dict[str, Any]:
     }) if not telemetry.logons.empty else []
 
     per_capture: dict[str, Any] = {}
+    violations: list = []
     for capture in sorted(set(captures) | set(logon_captures)):
         rows = controls[
             controls["source_ref"].astype("string").fillna("").map(_capture_of) == capture
@@ -221,6 +255,8 @@ def measure_attack_corpus(telemetry: Telemetry) -> dict[str, Any]:
             m.technique_id for finding in new for m in map_finding(finding)
         })
 
+        violations += findings_respect_declared_channels(hunt.findings, slice_)
+
         per_capture[capture] = {
             "labelled_technique": technique,
             "control_rows": int(len(rows)),
@@ -241,6 +277,12 @@ def measure_attack_corpus(telemetry: Telemetry) -> dict[str, Any]:
     )
     return {
         "per_capture": per_capture,
+        "channel_violations": {
+            "count": len(violations),
+            "by_rule": dict(Counter(v.rule_id for v in violations)),
+            "by_reason": dict(Counter(v.reason for v in violations)),
+            "sample": [v.to_dict() for v in violations[:10]],
+        },
         "recall": {
             "captures": total,
             "caught_any": caught_any,
@@ -340,6 +382,7 @@ def measure_background(
 
     return {
         "span_days": round(days, 2),
+        "channel_violations": _violations(hunt.findings, telemetry),
         "findings_before": len(old),
         "findings_after": len(hunt.findings),
         "by_rule_before": dict(Counter(f.rule_id for f in old)),
@@ -373,6 +416,7 @@ def measure_before_after(telemetry: Telemetry) -> dict[str, Any]:
     hunt = run_hunt(telemetry, config=HuntConfig())
     new, old = _split_new_old(hunt.findings)
     return {
+        "channel_violations": _violations(hunt.findings, telemetry),
         "rows": {
             "process": int(len(telemetry.processes)),
             "network": int(len(telemetry.network)),
@@ -471,7 +515,7 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("corpus", choices=(
-        "attack_data_aws", "flaws_cloud", "k8s_ci", "synthetic", "comiset",
+        "attack_data_aws", "flaws_cloud", "k8s_ci", "k8ntext", "synthetic", "comiset",
     ))
     parser.add_argument("--investigate", action="store_true",
                         help="Also run the deterministic (NullLLM) investigation over "
@@ -521,6 +565,14 @@ def main() -> int:
         "load_seconds": round(load_seconds, 1),
         "measure_seconds": round(time.perf_counter() - measure_started, 1),
     }
+
+    violations = record.get("channel_violations", {})
+    print(
+        f"declared-channel violations: {violations.get('count', 'not measured')}"
+        + (f"  {violations.get('by_rule')}" if violations.get("count") else "")
+    )
+    for entry in violations.get("sample", []):
+        print(f"  {entry}")
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out = args.out_dir / f"{args.corpus}.json"

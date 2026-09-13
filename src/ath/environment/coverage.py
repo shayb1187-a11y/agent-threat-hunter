@@ -88,12 +88,19 @@ from ath.environment.channels import (
     ChannelState,
     FieldPopulation,
     TelemetryChannel,
+    channels_of_row,
 )
 from ath.environment.model import EnvironmentModel
 from ath.hunting.base import Detector, all_detectors
 from ath.mitre.attack import TECHNIQUES, Tactic
 from ath.mitre.mapper import MAPPING_RULES
-from ath.schema import TABLE_COLUMNS
+from ath.schema import (
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    TABLE_COLUMNS,
+)
 
 # --------------------------------------------------------------------------------------
 # Where the line between blind, weakened and working is drawn, for a single field.
@@ -1101,3 +1108,154 @@ def assess_coverage(
     return CoverageReport(
         techniques=tuple(verdicts), rules=rules, environment=environment
     )
+
+
+# --------------------------------------------------------------------------------------
+# The declaration-truth check: a rule's findings stay inside the channels it declares.
+#
+# Everything above turns a rule's `channels` declaration into advice for an operator:
+# "AWS-006 is UNUSABLE here, the channel it needs is absent." That sentence is only worth
+# printing if it cannot be contradicted by the rule itself, and in M18-8 it was. AWS-006
+# declares CLOUD_MANAGEMENT_ACTIVITY; its predicate `changes_authority` is deliberately
+# cross-platform and its second clause is Kubernetes RBAC; so on a Kubernetes-only corpus
+# the coverage model said "cannot fire" and the rule fired, citing rows from a channel it
+# had never declared. Nothing was wrong with the finding -- the rows were real and the
+# behaviour was as documented -- and the coverage model was still lying.
+#
+# This is the check that makes that impossible to reintroduce. It compares, per cited
+# evidence row, the channels the row *evidences* (from the catalogue, via
+# `channels_of_row`) against the channels the rule *declares* (via the same
+# `_channels_for_rule` the runnability verdict uses). Disjoint is a violation.
+# --------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ChannelViolation:
+    """One evidence row a finding cites from outside its rule's declared channels.
+
+    Attributes:
+        rule_id: The rule that produced the finding.
+        event_id: The cited row.
+        event_type: The canonical table the row was found in, or ``""`` when the row was
+            not found at all.
+        declared: Channels the rule declares.
+        observed: Channels the row evidences.
+        reason: Which of the three ways this row broke the invariant.
+    """
+
+    rule_id: str
+    event_id: str
+    event_type: str
+    declared: tuple[TelemetryChannel, ...]
+    observed: tuple[TelemetryChannel, ...]
+    reason: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "rule_id": self.rule_id,
+            "event_id": self.event_id,
+            "event_type": self.event_type,
+            "declared": [c.value for c in self.declared],
+            "observed": [c.value for c in self.observed],
+            "reason": self.reason,
+        }
+
+    def __str__(self) -> str:
+        return (
+            f"{self.rule_id} cites {self.event_id} ({self.event_type or 'not found'}): "
+            f"declared {[c.value for c in self.declared]}, "
+            f"row evidences {[c.value for c in self.observed]} -- {self.reason}"
+        )
+
+
+def findings_respect_declared_channels(
+    findings: Iterable[Any],
+    telemetry: Any,
+    detectors: Iterable[Detector] | None = None,
+) -> list[ChannelViolation]:
+    """Check the architectural invariant: every cited row is in a declared channel.
+
+    Runs over findings that already exist, so it is usable in three places with one
+    definition -- a test over every registered rule on a synthetic mixed table, and the
+    two measurement scripts, on every corpus they touch.
+
+    Three ways a finding breaks the invariant, reported as three distinct reasons rather
+    than collapsed, because they have different remedies:
+
+    * ``"rule declares no channels"`` -- the rule made no claim at all, so the coverage
+      model has nothing to gate it on. Vacuous today (every registered rule declares or
+      derives at least one channel) and kept strict so it stays that way.
+    * ``"row evidences no known channel"`` -- the row carries a value for no evidence
+      column in the catalogue. Usually an adapter gap, occasionally a genuinely empty
+      row; either way the finding cannot show that its declared channel is behind it.
+    * ``"row is outside the declared channels"`` -- the P13 case. The row belongs to a
+      channel, and the rule did not declare it.
+
+    A row whose ``event_id`` is not in the telemetry at all is reported too: the
+    claim-verification layer guarantees it cannot happen, and a check that assumed the
+    guarantee would be resting on the thing it is meant to test.
+
+    Args:
+        findings: The findings to check.
+        telemetry: The telemetry they were produced from.
+        detectors: The detectors whose declarations to read; defaults to every
+            registered rule.
+
+    Returns:
+        One :class:`ChannelViolation` per offending (finding, cited row), ordered by
+        rule id then event id. Empty is the passing result.
+    """
+    findings = list(findings)
+    if not findings:
+        return []
+
+    declared_by_rule = {
+        detector.rule_id: tuple(sorted(
+            _channels_for_rule(detector), key=lambda c: c.value,
+        ))
+        for detector in (all_detectors() if detectors is None else detectors)
+    }
+
+    cited = {event_id for finding in findings for event_id in finding.event_ids}
+    # One vectorised pass per table over the cited ids, rather than an index over every
+    # row: flaws.cloud is 1.86M control rows and the findings cite tens of thousands.
+    located: dict[str, tuple[str, dict[str, Any]]] = {}
+    for event_type in (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL):
+        table = telemetry.table(event_type)
+        if table.empty:
+            continue
+        matched = table[table["event_id"].astype("string").isin(cited)]
+        for record in matched.to_dict("records"):
+            located[str(record["event_id"])] = (event_type, record)
+
+    violations: list[ChannelViolation] = []
+    for finding in findings:
+        declared = declared_by_rule.get(finding.rule_id, ())
+        for event_id in finding.event_ids:
+            found = located.get(str(event_id))
+            if found is None:
+                violations.append(ChannelViolation(
+                    rule_id=finding.rule_id, event_id=str(event_id), event_type="",
+                    declared=declared, observed=(),
+                    reason="cited row is not in the telemetry",
+                ))
+                continue
+            event_type, record = found
+            observed = tuple(sorted(
+                channels_of_row(event_type, record), key=lambda c: c.value,
+            ))
+            if not declared:
+                reason = "rule declares no channels"
+            elif not observed:
+                reason = "row evidences no known channel"
+            elif set(observed) & set(declared):
+                continue
+            else:
+                reason = "row is outside the declared channels"
+            violations.append(ChannelViolation(
+                rule_id=finding.rule_id, event_id=str(event_id),
+                event_type=event_type, declared=declared, observed=observed,
+                reason=reason,
+            ))
+
+    return sorted(violations, key=lambda v: (v.rule_id, v.event_id))

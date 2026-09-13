@@ -54,6 +54,7 @@ from ath.control_vocab import (
     DECISION_DENIED,
     DECISION_FAILED,
     DELETE,
+    IDENTITY_SERVICES,
     READ,
     REVOKE,
     changes_authority,
@@ -108,6 +109,14 @@ def _controls_with_service(telemetry: Telemetry) -> pd.DataFrame | None:
     frame["_changes_authority"] = [
         changes_authority(v, r) for v, r in zip(verbs, resources)
     ]
+    # The identity-service half of `changes_authority`, kept separately because two of
+    # these rules (AWS-005, AWS-006) declare CLOUD_MANAGEMENT_ACTIVITY and only that
+    # half is inside that channel. `changes_authority` has a second clause -- Kubernetes
+    # RBAC binding objects -- which is correct for the column it was written for
+    # (`target_actor`, filled by both adapters) and wider than what an AWS- rule with a
+    # cloud-management declaration may cite. M18-9 split the two rather than narrowing
+    # the predicate, because the predicate is right and the rules' use of it was not.
+    frame["_identity_service"] = frame["_service"].isin(IDENTITY_SERVICES)
     return frame
 
 
@@ -462,9 +471,10 @@ class IdentityAuthorityRemoved(Detector):
 
     Detection shape
     ---------------
-    * keep rows that changed an authority (``changes_authority``: AWS' identity service
-      or a Kubernetes RBAC binding) whose verb class is ``delete`` or ``revoke`` -- the
-      classes that take something away;
+    * keep rows that changed an authority on the **identity service**
+      (``changes_authority`` conjoined with ``service_of(resource_type) in
+      IDENTITY_SERVICES``) whose verb class is ``delete`` or ``revoke`` -- the classes
+      that take something away;
     * keep only ``decision == "allowed"``. A removal the platform refused is not a
       removal: it is a probe, and AWS-004 and AWS-006 are where those belong. Counting a
       refused delete here would report authority as gone while it is still in place --
@@ -484,6 +494,19 @@ class IdentityAuthorityRemoved(Detector):
     Count is magnitude, not malice: a decommissioning script legitimately removes forty
     authorities in an afternoon, and an intruder removes one. Grading on volume would
     put the script above the intruder.
+
+    What this rule does not claim (M18-9)
+    --------------------------------------
+    ``changes_authority`` is cross-platform by design: its second clause is a Kubernetes
+    RBAC binding object, because that is how a permission is granted there. This rule is
+    conjoined with the identity-service clause instead, so it reads cloud management
+    activity only -- which is the channel it declares, and the only channel it is
+    entitled to cite rows from. The Kubernetes equivalent (an RBAC binding deleted, a
+    ClusterRoleBinding revoked) is real behaviour and is **not claimed here**: it would
+    be a ``K8S-`` rule declaring ``CONTAINER_AUDIT``, with its own thresholds priced
+    against a Kubernetes background, and no such rule exists. Before M18-9 this rule's
+    predicate admitted those rows while its declaration excluded them, which made the
+    coverage model's "this rule cannot fire here" false on a Kubernetes corpus.
     """
 
     rule_id = "AWS-005"
@@ -530,6 +553,7 @@ class IdentityAuthorityRemoved(Detector):
             return []
         removals = frame[
             frame["_changes_authority"]
+            & frame["_identity_service"]
             & frame["_verb_class"].isin([DELETE, REVOKE])
             & (frame["_decision"] == DECISION_ALLOWED)
         ]
@@ -605,11 +629,12 @@ class RepeatedRejectedIdentityChanges(Detector):
 
     Detection shape
     ---------------
-    * keep rows that changed an authority (``changes_authority``) with
-      ``decision == "failed"`` -- rejected for validation, conflict, absence or anything
-      else that is *not* an authorization answer. The three-valued decision column is
-      what makes this expressible at all: under the old two-valued column these rows and
-      AWS-004's were the same value;
+    * keep rows that changed an authority on the **identity service**
+      (``changes_authority`` conjoined with ``service_of(resource_type) in
+      IDENTITY_SERVICES``) with ``decision == "failed"`` -- rejected for validation,
+      conflict, absence or anything else that is *not* an authorization answer. The
+      three-valued decision column is what makes this expressible at all: under the old
+      two-valued column these rows and AWS-004's were the same value;
     * group by ``actor``; require ``cloud_identity_failed_min_count`` inside
       ``cloud_identity_change_window``;
     * one finding per episode.
@@ -619,6 +644,22 @@ class RepeatedRejectedIdentityChanges(Detector):
     The background trail's maximum, over 55 identities and 3.6 years, is 4 in a window at
     both measured window lengths; 5 is the smallest value it never reaches. That is a
     statement about one trail and not a law, which is why it is a config constant.
+
+    What this rule does not claim (M18-9)
+    --------------------------------------
+    This is the rule the invariant was found on. M18-8's pre-registration predicted zero
+    findings on a Kubernetes CI corpus and got one: ``changes_authority``'s second clause
+    is Kubernetes RBAC bindings, so the rule ran on ``k8s_audit`` rows and reported an
+    add-on manager re-creating a ClusterRoleBinding twenty-one times, every attempt a
+    409 conflict. The finding was true and the behaviour was the second false positive
+    this rule declares -- and the rule had told the coverage model it reads
+    ``CLOUD_MANAGEMENT_ACTIVITY``, which is what made it wrong. The predicate is now
+    conjoined with the identity-service clause, so the declaration and the behaviour say
+    the same thing. Repeated rejected RBAC writes on Kubernetes are real and are **not
+    claimed here**: that would be a ``K8S-`` rule declaring ``CONTAINER_AUDIT``, priced
+    against a Kubernetes background, and no such rule exists. The threshold did not
+    move; ``ath.environment.coverage.findings_respect_declared_channels`` now fails a
+    test if any rule cites a row outside its declaration again.
     """
 
     rule_id = "AWS-006"
@@ -658,7 +699,9 @@ class RepeatedRejectedIdentityChanges(Detector):
         if frame is None:
             return []
         rejected = frame[
-            frame["_changes_authority"] & (frame["_decision"] == DECISION_FAILED)
+            frame["_changes_authority"]
+            & frame["_identity_service"]
+            & (frame["_decision"] == DECISION_FAILED)
         ]
         if rejected.empty:
             return []
@@ -709,6 +752,10 @@ def denied_inclusive_rejected_identity_episodes(
 ) -> list[dict]:
     """AWS-006's wider variant, **report-only**: ``decision in {failed, denied}``.
 
+    Wider only in the one dimension being priced -- the decision value. It carries
+    AWS-006's identity-service scope unchanged (M18-9), because a variant measured over
+    a different population would price a rule nobody proposed.
+
     Not a detector, not registered, and it produces no :class:`Finding`. It exists so
     that the cost of widening AWS-006 to include authorization refusals can be *measured*
     on the background corpus before anyone proposes adopting it -- the same discipline
@@ -728,6 +775,7 @@ def denied_inclusive_rejected_identity_episodes(
         return []
     rejected = frame[
         frame["_changes_authority"]
+        & frame["_identity_service"]
         & frame["_decision"].isin([DECISION_FAILED, DECISION_DENIED])
     ]
     if rejected.empty:

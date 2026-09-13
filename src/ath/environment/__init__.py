@@ -24,6 +24,8 @@ from ath.environment.channels import (
     FieldPopulation,
     TelemetryChannel,
     assess_channels,
+    channel_of_control_row,
+    channels_of_row,
     measure_field_populations,
 )
 from ath.environment.coverage import (
@@ -31,6 +33,7 @@ from ath.environment.coverage import (
     FIELD_TO_CHANNEL,
     TECHNIQUE_WATCHLIST,
     UNUSABLE_BELOW,
+    ChannelViolation,
     CoverageReport,
     CoverageState,
     FieldUsability,
@@ -42,6 +45,7 @@ from ath.environment.coverage import (
     assess_coverage,
     assess_rule,
     channels_for_fields,
+    findings_respect_declared_channels,
     rule_field_usability,
 )
 from ath.environment.model import (
@@ -61,6 +65,7 @@ __all__ = [
     "ChannelAssessment",
     "ChannelSpec",
     "ChannelState",
+    "ChannelViolation",
     "CoverageReport",
     "CoverageState",
     "EnvironmentModel",
@@ -77,8 +82,11 @@ __all__ = [
     "assess_channels",
     "assess_coverage",
     "assess_rule",
+    "channel_of_control_row",
     "channels_for_fields",
+    "channels_of_row",
     "build_environment_model",
+    "findings_respect_declared_channels",
     "measure_field_populations",
     "rule_field_usability",
 ]

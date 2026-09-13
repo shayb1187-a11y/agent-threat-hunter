@@ -42,7 +42,7 @@ analysis in :mod:`ath.environment.coverage`.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -293,6 +293,110 @@ CHANNEL_SPECS: tuple[ChannelSpec, ...] = (
 CHANNEL_SPEC_BY_NAME: dict[TelemetryChannel, ChannelSpec] = {
     spec.channel: spec for spec in CHANNEL_SPECS
 }
+
+
+# --------------------------------------------------------------------------------------
+# Which channels one ROW evidences.
+#
+# The catalogue above answers "is this channel present in this dataset" by counting rows.
+# The same evidence columns answer a second, finer question that nothing asked until
+# M18-9: *which channel does this particular row belong to?* They have to be the same
+# answer. A rule declares channels, the coverage model reads that declaration to tell an
+# operator "this rule cannot fire here, the channel is absent", and a finding that cites
+# a row from some other channel makes that sentence false. M18-8's P13 is the measured
+# case: AWS-006 declares CLOUD_MANAGEMENT_ACTIVITY, the coverage model reported it
+# UNUSABLE on a Kubernetes corpus, and it produced a finding there anyway.
+#
+# Derived from CHANNEL_SPECS and from nothing else, deliberately. A second table mapping
+# source names to channels -- `{"cloudtrail_mgmt": ..., "k8s_audit": ...}` -- is the
+# obvious implementation and the wrong one: it would be a copy of the catalogue held
+# equal to it by nothing, and the day a channel's evidence column changes the two would
+# disagree about what a row is, silently.
+# --------------------------------------------------------------------------------------
+
+
+def _row_carries(row: Mapping[str, Any], column: str) -> bool:
+    """Whether one canonical row carries a usable value for one evidence column.
+
+    The single-row form of :func:`_populated_in`, including its ``"column:value"``
+    variant, so the row view and the table view cannot disagree about what counts as
+    evidence. Split out rather than reusing ``_populated_in`` on a one-row frame because
+    building a DataFrame per row is two orders of magnitude slower and the definition is
+    three lines.
+    """
+    if ":" in column:
+        name, required_value = column.split(":", 1)
+        return name in row and str(row[name]) == required_value
+    if column not in row:
+        return False
+    value = row[column]
+    if value is None or (isinstance(value, float) and value != value):
+        return False
+    return str(value) != "" and str(value) != "NaT"
+
+
+def channels_of_row(
+    event_type: str,
+    row: Mapping[str, Any],
+    specs: Sequence[ChannelSpec] = CHANNEL_SPECS,
+) -> frozenset[TelemetryChannel]:
+    """Every channel one canonical row evidences.
+
+    A set, not a channel: one row can evidence several. A CloudTrail ``ConsoleLogin``
+    lands in the logon table and evidences ``AUTHENTICATION`` (it carries an ``action``),
+    ``AUTH_SOURCE_ATTRIBUTION`` (it carries a ``source_ip``) and
+    ``CLOUD_CONTROL_PLANE`` (its ``source`` is the CloudTrail one) all at once, and a
+    rule that declares any one of the three is entitled to cite it.
+
+    Args:
+        event_type: The canonical table the row came from (``ath.schema`` ``EVENT_*``).
+        row: One canonical row, as a mapping of column name to value.
+        specs: The channel catalogue to read. Defaults to :data:`CHANNEL_SPECS`; the
+            parameter exists so a test can prove the derivation by passing an altered
+            copy, and has no other caller.
+
+    Returns:
+        The channels this row evidences, possibly empty. Empty means the row evidences
+        no channel this project knows how to measure -- which is a real answer, not a
+        failure: a process row with no ``process_name`` evidences no process execution.
+    """
+    return frozenset(
+        spec.channel
+        for spec in specs
+        for evidence_type, column in spec.evidence_columns
+        if evidence_type == event_type and _row_carries(row, column)
+    )
+
+
+def channel_of_control_row(
+    source: str, specs: Sequence[ChannelSpec] = CHANNEL_SPECS,
+) -> TelemetryChannel | None:
+    """The channel a control-plane row belongs to, from its ``source`` value alone.
+
+    Every ``EVENT_CONTROL`` evidence column in the catalogue is a ``"source:<name>"``
+    form -- control rows are separated by provenance, not by which column they fill,
+    because a CloudTrail management row and a Kubernetes audit row populate the same
+    columns. So the row's ``source`` is the whole answer, and this function is
+    :func:`channels_of_row` restricted to that one column plus a deterministic choice
+    when (today: never) two specs claim the same source. A test asserts the restriction
+    holds, so a non-``source:`` control evidence column added later fails loudly rather
+    than being quietly ignored here.
+
+    Args:
+        source: The canonical ``source`` value of a control row.
+        specs: The channel catalogue to read; see :func:`channels_of_row`.
+
+    Returns:
+        The channel, or ``None`` for a source no channel claims -- an adapter this
+        project has not taught the catalogue about.
+    """
+    matched = channels_of_row(
+        EVENT_CONTROL, {"source": "" if source is None else str(source)}, specs=specs,
+    )
+    for spec in specs:
+        if spec.channel in matched:
+            return spec.channel
+    return None
 
 
 @dataclass(frozen=True)

@@ -319,3 +319,110 @@ renders the name as `'?'`.
 * **Anything about the triage benign layer on cloud evidence.** It dispositioned 0 of
   1,476 findings as likely_benign, before and after, which is the known signal gap M15-4
   recorded and not something these rules changed.
+
+---
+
+# POST-REGISTRATION CHANGE (2026-09-13, M18-9)
+
+## What changed
+
+`AWS-005` and `AWS-006` now require `service_of(resource_type) in IDENTITY_SERVICES` in
+addition to `changes_authority`. The report-only denied-inclusive AWS-006 variant carries
+the same scope. Nothing else moved: not a threshold, not a severity, not a grouping, not
+any other rule. `tests/test_cloud_behaviour_rules.py::test_no_threshold_moved_after_the_fact`
+still parses the pre-registration above and still passes.
+
+## Why this is a declaration repair and not tuning
+
+The distinction that matters here is *what the rule already claimed*.
+
+Both rules have declared `channels = {CLOUD_MANAGEMENT_ACTIVITY}` since the commit that
+created them (b8953f2), and that channel is defined by the channel catalogue as
+`source == "cloudtrail_mgmt"` on the control table. Kubernetes audit rows are a different
+channel -- `CONTAINER_AUDIT`, `source == "k8s_audit"` -- and nothing in the catalogue has
+ever said otherwise. So on the k8s_ci corpus the coverage model told the operator AWS-006
+was UNUSABLE (the channel it declares is absent) at the same time as the rule produced a
+finding there. The two statements cannot both be true, and the one that was wrong is the
+predicate, not the declaration: `changes_authority` is deliberately cross-platform,
+because it is the fill condition for the `target_actor` column that *both* adapters
+populate, and a rule declaring one channel borrowed a predicate that spans two.
+
+Tuning would be changing what counts as suspicious after seeing whether the rule caught
+the attack corpus. This changes neither. It restricts each rule to the telemetry it had
+already told the coverage model it reads. The evidence that this is the case rather than
+an argument for it:
+
+* the thresholds are byte-identical, checked by a test that parses this file;
+* recall on attack_data_aws is unchanged -- 4/5 `caught_any`, 3/5 with the labelled
+  technique, and every capture's per-rule finding counts identical to the M18-8 run
+  (`reports/m18/cloud_detection/attack_data_aws.json`);
+* flaws.cloud is unchanged in every measured number -- 1,476 findings, 281 cases, 17
+  AWS-005 episodes, 0 AWS-006 findings, 32 denied-inclusive episodes
+  (`reports/m18/cloud_detection/flaws_cloud.json`);
+* the only corpus whose result moved is the one where the declaration was false.
+
+What this change does *not* do is claim the Kubernetes behaviour is uninteresting. An
+add-on manager re-creating a ClusterRoleBinding twenty-one times is exactly as real after
+this change as before it. It is no longer *claimed* by a rule that reads a different
+channel. Claiming it properly means a `K8S-` rule declaring `CONTAINER_AUDIT` with
+thresholds priced against a Kubernetes background distribution, which is a milestone, not
+an edit.
+
+## The invariant that makes this checkable
+
+`ath.environment.coverage.findings_respect_declared_channels()` now checks, per cited
+evidence row, that the row evidences at least one channel the rule declares. Row-to-
+channel is `ath.environment.channels.channels_of_row()` / `channel_of_control_row()`,
+derived from the same `CHANNEL_SPECS` evidence columns the coverage model measures with
+-- one definition, no second source-name table. It runs in the suite over every
+registered rule on a table holding both platforms' shapes
+(`tests/test_declared_channels.py`), and in both measurement scripts on every corpus.
+
+## Prediction, made before the fresh corpus was opened
+
+The corpus is **K8NTEXT** (`data/external/k8ntext/raw`, CC BY-NC-ND 4.0, a kubeadm
+testbed with one human administrator, benign only). These four rules have never run on
+it: M14 profiled it against K8S-001/K8S-002 only, at a HEAD where AWS-003..006 did not
+exist.
+
+| # | Predicted |
+|---|-----------|
+| P17 | K8NTEXT: **0 findings from AWS-003, AWS-004, AWS-005, AWS-006** |
+| P18 | K8NTEXT: **0 declared-channel violations** |
+| P19 | k8s_ci re-run: **0 findings from AWS-003..006** (was 1), **0 violations** (was 20 cited rows) |
+| P20 | attack_data_aws and flaws_cloud: **every measured number unchanged** from the M18-8 run |
+
+Reasoning stated in advance: after the scope change all four rules read only
+`iam:`-prefixed resource types, K8NTEXT's adapter output is 13 RBAC binding creates and
+18 `pods/exec` rows and no identity-service rows at all, so the predicate matches nothing.
+The violation count is predicted 0 for the same reason -- a rule that produces no finding
+cites no row.
+
+## Measured result
+
+| # | Measured | Grade |
+|---|----------|-------|
+| P17 | **0 findings.** 18,448 records read, 31 kept (0.17%), all control rows; 0 findings before and after; 0 cases | **MATCH** |
+| P18 | **0 violations** | **MATCH** |
+| P19 | k8s_ci: 7,951 control rows, **0 findings** (was 1 AWS-006), **0 violations** (was 20) | **MATCH** |
+| P20 | attack_data_aws and flaws_cloud identical in every field but the new `channel_violations` block; both **0 violations** | **MATCH** |
+
+Artifacts: `reports/m18/cloud_detection/k8ntext.json` and `k8ntext_profile.json` (the
+ingestion counts), `k8s_ci.json`, `attack_data_aws.json`, `flaws_cloud.json`,
+`synthetic.json`, `comiset.json` -- all regenerated at this HEAD, all reporting
+`channel_violations.count == 0`.
+
+## What this change does not establish
+
+* **That every rule now respects its declaration on every possible input.** The test
+  covers every registered rule on one mixed table, and the six corpora report zero. It
+  does not cover shapes none of them contain. One such shape is known and recorded in
+  `docs/m18-representation-and-cloud-detection-report.md`: AWS-004's predicate is
+  `decision == "denied"` with no platform scope, and the Kubernetes adapter emits
+  `denied` on 401/403, so a Kubernetes authorization-denial burst would violate the same
+  way AWS-006 did. No corpus in this repository contains one. It is recorded, not fixed,
+  because fixing it is a rule change and this milestone's remit was the two rules whose
+  declaration was measurably false.
+* **That K8NTEXT is a test of these rules.** It is a test of the *repair*: the rules are
+  silent there because they no longer read that channel, which is the predicted and
+  intended outcome and not evidence that the rules discriminate anything.

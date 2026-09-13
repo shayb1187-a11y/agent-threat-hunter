@@ -883,6 +883,12 @@
       "caught_with_labelled_technique": false
     }
   },
+  "channel_violations": {
+    "count": 0,
+    "by_rule": {},
+    "by_reason": {},
+    "sample": []
+  },
   "recall": {
     "captures": 5,
     "caught_any": 4,
@@ -899,6 +905,6 @@
   },
   "cost": {
     "load_seconds": 0.1,
-    "measure_seconds": 0.1
+    "measure_seconds": 0.2
   }
 }

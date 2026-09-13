@@ -24,7 +24,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
+from ath.environment import findings_respect_declared_channels  # noqa: E402
 from ath.evaluation.profile import profile_telemetry  # noqa: E402
+from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS  # noqa: E402
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.telemetry.source import SourceLoadResult  # noqa: E402
@@ -72,6 +74,23 @@ def to_telemetry(result: SourceLoadResult) -> Telemetry:
         processes=result.tables[EVENT_PROCESS], network=result.tables[EVENT_NETWORK],
         logons=result.tables[EVENT_LOGON], controls=result.tables[EVENT_CONTROL],
     )
+
+
+def _violations(telemetry: Telemetry) -> dict:
+    """Declaration-truth violations on this dataset; ``count`` 0 is the passing result.
+
+    Re-runs the hunt rather than reaching into ``profile_telemetry``: the profile reports
+    counts, not findings, and threading findings out of it to serve one caller would put
+    a measurement's needs inside the thing being measured.
+    """
+    findings = run_hunt(telemetry, config=HuntConfig()).findings
+    found = findings_respect_declared_channels(findings, telemetry)
+    return {
+        "count": len(found),
+        "by_rule": dict(Counter(v.rule_id for v in found)),
+        "by_reason": dict(Counter(v.reason for v in found)),
+        "sample": [v.to_dict() for v in found[:10]],
+    }
 
 
 def prefix(telemetry: Telemetry, fraction: float) -> Telemetry:
@@ -130,6 +149,12 @@ def main() -> int:
             "load_seconds": round(load_seconds, 1),
         },
         "profile_full": profile_telemetry(telemetry).to_dict(),
+        # M18-9's architectural invariant: every evidence row a finding cites belongs to
+        # a channel the rule declares, so the coverage model's "this rule cannot fire
+        # here" can never be contradicted by a finding. Recorded per dataset, because
+        # the one time it was violated (M18-8 P13, AWS-006 on k8s_ci) it was a corpus
+        # that showed it and not a fixture.
+        "channel_violations": _violations(telemetry),
     }
 
     if not args.no_scaling:
@@ -165,6 +190,10 @@ def main() -> int:
     print(f"  cases {pf['correlation']['cases']} (singletons {pf['correlation']['singleton_cases']}, "
           f"links {pf['correlation']['links']})  platforms {pf['telemetry']['platforms']}")
     print(f"  cost {pf['cost_seconds']}")
+    violations = record["channel_violations"]
+    print(f"  declared-channel violations {violations['count']}"
+          + (f" {violations['by_rule']}" if violations["count"] else "")
+          + "".join(f"\n    {entry}" for entry in violations["sample"]))
     if "e8_scaling" in record:
         for row in record["e8_scaling"]:
             print(f"  scaling {row['fraction']:>4}: events {row['events']:>8,} findings {row['findings']:>4} "

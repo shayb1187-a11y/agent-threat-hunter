@@ -9,6 +9,12 @@
     "cloud_identity_change_window_minutes": 60.0,
     "cloud_identity_failed_min_count": 5
   },
+  "channel_violations": {
+    "count": 0,
+    "by_rule": {},
+    "by_reason": {},
+    "sample": []
+  },
   "rows": {
     "process": 0,
     "network": 0,
@@ -16,14 +22,12 @@
     "control": 7951
   },
   "findings_before": 0,
-  "findings_after": 1,
-  "new_findings": 1,
+  "findings_after": 0,
+  "new_findings": 0,
   "by_rule_before": {},
-  "new_by_rule": {
-    "AWS-006": 1
-  },
+  "new_by_rule": {},
   "cost": {
-    "load_seconds": 13.9,
+    "load_seconds": 13.5,
     "measure_seconds": 0.2
   }
 }
