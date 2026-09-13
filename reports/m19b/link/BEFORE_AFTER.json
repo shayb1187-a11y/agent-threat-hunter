@@ -1,0 +1,1493 @@
+{
+  "task": "M19b link: generic cross-channel link replaces the cross-domain allowlist",
+  "generated_at": "2026-09-13T23:42:22.147528+00:00",
+  "head": "ba25e2e",
+  "before_arm": {
+    "head": "ba25e2e",
+    "digest": "96ecf41151d71b716f44406bde093770737fcaadd870a4f37ac597e465124e4f"
+  },
+  "after_arm": {
+    "head": "ba25e2e",
+    "digest": "ae9a6900891eb2e042e71bb7bc351dbecb47a292494cee2474cde8b0920af615"
+  },
+  "contamination_factor": 2.0,
+  "link_definition": {
+    "cross_domain_window_seconds": 900.0,
+    "weight": 3,
+    "channel_family": {
+      "auth_factor": "identity",
+      "auth_source_attribution": "identity",
+      "authentication": "identity",
+      "cloud_control_plane": "control_plane",
+      "cloud_management_activity": "control_plane",
+      "container_audit": "control_plane",
+      "dns_query": "network",
+      "file_events": "endpoint",
+      "handle_access": "endpoint",
+      "network_flow": "network",
+      "network_inbound": "network",
+      "network_url": "network",
+      "process_command_line": "endpoint",
+      "process_execution": "endpoint",
+      "process_lineage": "endpoint",
+      "registry": "endpoint",
+      "script_block": "endpoint"
+    },
+    "principal_columns": {
+      "process": [
+        "user"
+      ],
+      "network": [
+        "user"
+      ],
+      "logon": [
+        "user"
+      ],
+      "control": [
+        "actor",
+        "target_actor"
+      ]
+    }
+  },
+  "benchmark": {
+    "before": {
+      "passed": 5,
+      "total": 5,
+      "all_passed": true,
+      "total_noise_cases": 0
+    },
+    "after": {
+      "passed": 5,
+      "total": 5,
+      "all_passed": true,
+      "total_noise_cases": 0
+    },
+    "per_incident": [
+      {
+        "incident_id": "INC-001",
+        "before": {
+          "passed": true,
+          "findings": 13,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        },
+        "after": {
+          "passed": true,
+          "findings": 13,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        }
+      },
+      {
+        "incident_id": "INC-002",
+        "before": {
+          "passed": true,
+          "findings": 1,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 0.9286,
+          "primary_case_purity": 1.0,
+          "event_recall": 0.9286
+        },
+        "after": {
+          "passed": true,
+          "findings": 1,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 0.9286,
+          "primary_case_purity": 1.0,
+          "event_recall": 0.9286
+        }
+      },
+      {
+        "incident_id": "INC-005",
+        "before": {
+          "passed": true,
+          "findings": 2,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        },
+        "after": {
+          "passed": true,
+          "findings": 2,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        }
+      },
+      {
+        "incident_id": "INC-004",
+        "before": {
+          "passed": true,
+          "findings": 4,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        },
+        "after": {
+          "passed": true,
+          "findings": 4,
+          "cases": 1,
+          "noise_cases": 0,
+          "primary_case_recall": 1.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        }
+      },
+      {
+        "incident_id": "INC-003",
+        "before": {
+          "passed": true,
+          "findings": 2,
+          "cases": 0,
+          "noise_cases": 0,
+          "primary_case_recall": 0.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        },
+        "after": {
+          "passed": true,
+          "findings": 2,
+          "cases": 0,
+          "noise_cases": 0,
+          "primary_case_recall": 0.0,
+          "primary_case_purity": 1.0,
+          "event_recall": 1.0
+        }
+      }
+    ]
+  },
+  "corpora": [
+    {
+      "corpus": "attack_data_aws",
+      "provenance": "real labelled multi-domain",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 2,
+        "control": 2347
+      },
+      "findings": 33,
+      "before": {
+        "cases": 2,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1,
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "T1078.004__aws_login_sfa__cloudtrail.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          },
+          "T1098__aws_iam_delete_policy__aws_iam_delete_policy.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          },
+          "T1526__aws_security_scanner__aws_security_scanner.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0168,
+            "primary_case_purity": 0.5625,
+            "noise_cases": 1
+          },
+          "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0122,
+            "primary_case_purity": 0.4375,
+            "noise_cases": 0
+          },
+          "T1580__aws_iam_assume_role_policy_brute_force__aws_iam_assume_role_policy_brute_force.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          }
+        }
+      },
+      "after": {
+        "cases": 2,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1,
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "T1078.004__aws_login_sfa__cloudtrail.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          },
+          "T1098__aws_iam_delete_policy__aws_iam_delete_policy.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          },
+          "T1526__aws_security_scanner__aws_security_scanner.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0168,
+            "primary_case_purity": 0.5625,
+            "noise_cases": 1
+          },
+          "T1580__aws_iam_accessdenied_discovery_events__aws_iam_accessdenied_discovery_events.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0122,
+            "primary_case_purity": 0.4375,
+            "noise_cases": 0
+          },
+          "T1580__aws_iam_assume_role_policy_brute_force__aws_iam_assume_role_policy_brute_force.json": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 32,
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "noise_cases": 2
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "comiset",
+      "provenance": "real labelled multi-domain",
+      "rows": {
+        "process": 15095,
+        "network": 589476,
+        "logon": 6063,
+        "control": 0
+      },
+      "findings": 5,
+      "before": {
+        "cases": 2,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1,
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "sibling_lineage": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 2,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1,
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "sibling_lineage": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "comiset_m17_freeze",
+      "provenance": "real labelled multi-domain",
+      "rows": {
+        "process": 15095,
+        "network": 589477,
+        "logon": 6063,
+        "control": 0
+      },
+      "findings": 5,
+      "before": {
+        "cases": 1,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1
+        },
+        "max_case_size": 1,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1
+        },
+        "max_case_size": 1,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "flaws_cloud",
+      "provenance": "real, unlabelled (no attack ground truth)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 79424,
+        "control": 1857154
+      },
+      "findings": 1476,
+      "before": {
+        "cases": 281,
+        "singletons": 97,
+        "size_distribution": {
+          "1": 97,
+          "2": 179,
+          "3": 2,
+          "4": 2,
+          "6": 1
+        },
+        "max_case_size": 6,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 194,
+        "links_by_signal": {
+          "same_device": 121,
+          "same_user": 194,
+          "shared_evidence": 194,
+          "temporal_close": 194
+        },
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 279,
+        "singletons": 96,
+        "size_distribution": {
+          "1": 96,
+          "2": 177,
+          "3": 2,
+          "4": 2,
+          "6": 1,
+          "7": 1
+        },
+        "max_case_size": 7,
+        "cases_with_2plus_domain_specialists_at_step0": 2,
+        "cases_with_2plus_domains": 2,
+        "qualifying_cases": 2,
+        "links": 201,
+        "links_by_signal": {
+          "same_device": 128,
+          "same_user": 201,
+          "shared_evidence": 194,
+          "shared_principal": 7,
+          "temporal_close": 197,
+          "temporal_near": 4
+        },
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [
+        {
+          "case_id": "CASE-182",
+          "size": 2,
+          "domains": [
+            "control_plane",
+            "identity"
+          ],
+          "rules": [
+            "ATH-005",
+            "AWS-004"
+          ],
+          "principals": [
+            "backup"
+          ],
+          "devices": [
+            "aws:811596193553/us-east-1"
+          ],
+          "start": "2020-04-11 12:40:01+00:00",
+          "end": "2020-04-11 12:56:50+00:00",
+          "span_seconds": 1009.0,
+          "event_count": 66,
+          "link_signals": {
+            "same_device": 1,
+            "same_user": 1,
+            "shared_principal": 1,
+            "temporal_close": 1
+          },
+          "first_step_domain_specialists": 2,
+          "predecessors_merged": 1,
+          "predecessor_sizes": [
+            1
+          ]
+        },
+        {
+          "case_id": "CASE-256",
+          "size": 7,
+          "domains": [
+            "control_plane",
+            "identity"
+          ],
+          "rules": [
+            "ATH-005",
+            "AWS-003",
+            "AWS-004"
+          ],
+          "principals": [
+            "Level6"
+          ],
+          "devices": [
+            "aws:811596193553/us-east-1"
+          ],
+          "start": "2020-09-21 03:54:58+00:00",
+          "end": "2020-09-21 04:28:35+00:00",
+          "span_seconds": 2017.0,
+          "event_count": 105,
+          "link_signals": {
+            "same_device": 9,
+            "same_user": 9,
+            "shared_evidence": 3,
+            "shared_principal": 6,
+            "temporal_close": 5,
+            "temporal_near": 4
+          },
+          "first_step_domain_specialists": 2,
+          "predecessors_merged": 3,
+          "predecessor_sizes": [
+            2,
+            2,
+            2
+          ]
+        }
+      ],
+      "contamination_candidates": [
+        {
+          "case_id": "CASE-256",
+          "size": 7,
+          "largest_predecessor": 2,
+          "predecessors_merged": 3,
+          "growth": 3.5,
+          "rules": [
+            "ATH-005",
+            "AWS-003",
+            "AWS-004"
+          ],
+          "principals": [
+            "Level6"
+          ],
+          "domains": [
+            "control_plane",
+            "identity"
+          ],
+          "span_seconds": 2017.0
+        }
+      ]
+    },
+    {
+      "corpus": "k8s_ci",
+      "provenance": "real benign, no attack present",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 7951
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "k8ntext",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 31
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "k8s_ingress",
+      "provenance": "real benign, no attack present",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 234
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:cloudtrail",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 15,
+        "control": 6
+      },
+      "findings": 2,
+      "before": {
+        "cases": 2,
+        "singletons": 2,
+        "size_distribution": {
+          "1": 2
+        },
+        "max_case_size": 1,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 1,
+        "cases_with_2plus_domains": 1,
+        "qualifying_cases": 1,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_principal": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [
+        {
+          "case_id": "CASE-001",
+          "size": 2,
+          "domains": [
+            "control_plane",
+            "identity"
+          ],
+          "rules": [
+            "ATH-005",
+            "AWS-002"
+          ],
+          "principals": [
+            "dev_alice"
+          ],
+          "devices": [
+            "aws:123456789012/us-east-1"
+          ],
+          "start": "2026-08-17 09:12:00+00:00",
+          "end": "2026-08-17 09:19:00+00:00",
+          "span_seconds": 420.0,
+          "event_count": 14,
+          "link_signals": {
+            "same_device": 1,
+            "same_user": 1,
+            "shared_principal": 1,
+            "temporal_close": 1
+          },
+          "first_step_domain_specialists": 2,
+          "predecessors_merged": 2,
+          "predecessor_sizes": [
+            1,
+            1
+          ]
+        }
+      ],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:k8s_audit",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 4
+      },
+      "findings": 2,
+      "before": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:defender_export",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 3,
+        "network": 3,
+        "logon": 1,
+        "control": 0
+      },
+      "findings": 4,
+      "before": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "4": 1
+        },
+        "max_case_size": 4,
+        "cases_with_2plus_domain_specialists_at_step0": 1,
+        "cases_with_2plus_domains": 1,
+        "qualifying_cases": 0,
+        "links": 5,
+        "links_by_signal": {
+          "process_lineage": 2,
+          "same_device": 5,
+          "same_process": 3,
+          "same_user": 5,
+          "shared_evidence": 1,
+          "sibling_lineage": 1,
+          "temporal_close": 5
+        },
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "4": 1
+        },
+        "max_case_size": 4,
+        "cases_with_2plus_domain_specialists_at_step0": 1,
+        "cases_with_2plus_domains": 1,
+        "qualifying_cases": 0,
+        "links": 5,
+        "links_by_signal": {
+          "process_lineage": 2,
+          "same_device": 5,
+          "same_process": 3,
+          "same_user": 5,
+          "shared_evidence": 1,
+          "sibling_lineage": 1,
+          "temporal_close": 5
+        },
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:real_shaped/dedale",
+      "provenance": "real-shaped fixture (hand-cut from real data, committed)",
+      "rows": {
+        "process": 19,
+        "network": 0,
+        "logon": 6,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:real_shaped/k8s_ci",
+      "provenance": "real-shaped fixture (hand-cut from real data, committed)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 9
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "fixture:real_shaped/cloudtrail_shaped",
+      "provenance": "real-shaped fixture (hand-cut from real data, committed)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 19,
+        "control": 49
+      },
+      "findings": 1,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "dedale:D02",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 46510,
+        "network": 0,
+        "logon": 34736,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "dedale:D03",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 43994,
+        "network": 0,
+        "logon": 14285,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "dedale:D07",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 1449,
+        "network": 0,
+        "logon": 142,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "dedale:D15",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 44876,
+        "network": 0,
+        "logon": 4400,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "dedale:D18",
+      "provenance": "realistic emulation (labelled testbed attack)",
+      "rows": {
+        "process": 44363,
+        "network": 2,
+        "logon": 4528,
+        "control": 0
+      },
+      "findings": 0,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {}
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "synthetic:INC-001",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 456,
+        "network": 389,
+        "logon": 267,
+        "control": 0
+      },
+      "findings": 13,
+      "before": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "11": 1
+        },
+        "max_case_size": 11,
+        "cases_with_2plus_domain_specialists_at_step0": 1,
+        "cases_with_2plus_domains": 1,
+        "qualifying_cases": 1,
+        "links": 21,
+        "links_by_signal": {
+          "auth_then_exec": 2,
+          "host_movement": 3,
+          "process_lineage": 9,
+          "same_device": 18,
+          "same_process": 5,
+          "same_user": 18,
+          "shared_evidence": 2,
+          "sibling_lineage": 2,
+          "temporal_close": 21
+        },
+        "chain_quality": {
+          "INC-001": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 11,
+            "primary_case_events": 31,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "11": 1
+        },
+        "max_case_size": 11,
+        "cases_with_2plus_domain_specialists_at_step0": 1,
+        "cases_with_2plus_domains": 1,
+        "qualifying_cases": 1,
+        "links": 25,
+        "links_by_signal": {
+          "auth_then_exec": 6,
+          "host_movement": 3,
+          "process_lineage": 9,
+          "same_device": 22,
+          "same_process": 5,
+          "same_user": 22,
+          "shared_evidence": 2,
+          "sibling_lineage": 2,
+          "temporal_close": 25
+        },
+        "chain_quality": {
+          "INC-001": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 11,
+            "primary_case_events": 31,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "synthetic:INC-002",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 15,
+        "control": 0
+      },
+      "findings": 1,
+      "before": {
+        "cases": 1,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1
+        },
+        "max_case_size": 1,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {
+          "INC-002": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 1,
+            "primary_case_events": 13,
+            "primary_case_recall": 0.9286,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 1,
+        "size_distribution": {
+          "1": 1
+        },
+        "max_case_size": 1,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 0,
+        "links_by_signal": {},
+        "chain_quality": {
+          "INC-002": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 1,
+            "primary_case_events": 13,
+            "primary_case_recall": 0.9286,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "synthetic:INC-005",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 0,
+        "network": 0,
+        "logon": 0,
+        "control": 4
+      },
+      "findings": 2,
+      "before": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "INC-005": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 2,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_user": 1,
+          "shared_evidence": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "INC-005": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 2,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "synthetic:INC-004",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 454,
+        "network": 381,
+        "logon": 252,
+        "control": 0
+      },
+      "findings": 4,
+      "before": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 2,
+        "links_by_signal": {
+          "same_device": 2,
+          "same_process": 1,
+          "same_user": 2,
+          "sibling_lineage": 1,
+          "temporal_close": 2
+        },
+        "chain_quality": {
+          "INC-004": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 6,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "after": {
+        "cases": 1,
+        "singletons": 0,
+        "size_distribution": {
+          "2": 1
+        },
+        "max_case_size": 2,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 2,
+        "links_by_signal": {
+          "same_device": 2,
+          "same_process": 1,
+          "same_user": 2,
+          "sibling_lineage": 1,
+          "temporal_close": 2
+        },
+        "chain_quality": {
+          "INC-004": {
+            "primary_case_id": "CASE-001",
+            "primary_case_size": 2,
+            "primary_case_events": 6,
+            "primary_case_recall": 1.0,
+            "primary_case_purity": 1.0,
+            "noise_cases": 0
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    },
+    {
+      "corpus": "synthetic:INC-003",
+      "provenance": "synthetic (generated by this repository)",
+      "rows": {
+        "process": 448,
+        "network": 381,
+        "logon": 252,
+        "control": 0
+      },
+      "findings": 2,
+      "before": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_process": 1,
+          "same_user": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "INC-003": {
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "primary_case_size": 0
+          }
+        }
+      },
+      "after": {
+        "cases": 0,
+        "singletons": 0,
+        "size_distribution": {},
+        "max_case_size": 0,
+        "cases_with_2plus_domain_specialists_at_step0": 0,
+        "cases_with_2plus_domains": 0,
+        "qualifying_cases": 0,
+        "links": 1,
+        "links_by_signal": {
+          "same_device": 1,
+          "same_process": 1,
+          "same_user": 1,
+          "temporal_close": 1
+        },
+        "chain_quality": {
+          "INC-003": {
+            "primary_case_recall": 0.0,
+            "primary_case_purity": 0.0,
+            "primary_case_size": 0
+          }
+        }
+      },
+      "new_cross_domain_cases": [],
+      "contamination_candidates": []
+    }
+  ],
+  "digest": "44bfae63c8a6006ddd0c0e814b1a308fbad3cc535e4f19abd5c4cd7fe44ec1f9"
+}

@@ -1,0 +1,321 @@
+{
+  "passed": 5,
+  "total": 5,
+  "all_passed": true,
+  "total_noise_cases": 0,
+  "incidents": [
+    {
+      "incident_id": "INC-001",
+      "name": "Windows macro-to-collection intrusion",
+      "configuration": "deterministic",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "passed": true,
+      "benign_scenario": false,
+      "detection": {
+        "detected": true,
+        "event_recall": 1.0,
+        "malicious_events_surfaced": 31,
+        "malicious_events_total": 31
+      },
+      "analyst_load": {
+        "findings": 13,
+        "cases": 1,
+        "noise_cases": 0,
+        "triage_reduction": 0.9231,
+        "case_precision": 1.0
+      },
+      "chain_quality": {
+        "primary_case_recall": 1.0,
+        "primary_case_purity": 1.0
+      },
+      "benign_discrimination": {
+        "benign_findings_identified": 2,
+        "benign_findings_total": 2,
+        "benign_recall": 1.0,
+        "malicious_findings_called_benign": 0,
+        "findings_after_triage": 11,
+        "triage_load_reduction": 0.1538
+      },
+      "conclusions": {
+        "techniques_found": [
+          "T1003.001",
+          "T1021.002",
+          "T1027.010",
+          "T1033",
+          "T1059.001",
+          "T1071.001",
+          "T1078",
+          "T1105",
+          "T1110.001",
+          "T1204.002",
+          "T1560.001",
+          "T1569.002"
+        ],
+        "techniques_missing": [],
+        "conclusions_hit": [
+          "WINWORD.EXE",
+          "185.220.101.47",
+          "svc_backup",
+          "guessed"
+        ],
+        "conclusions_missed": [],
+        "overclaimed_as_fact": []
+      },
+      "trust": {
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "rejected_claims": 0,
+        "calibration_warnings": 0,
+        "facts": 20,
+        "inferences": 28,
+        "hypotheses": 2
+      },
+      "cost": {
+        "tool_calls": 43,
+        "runtime_seconds": 0.251
+      },
+      "notes": []
+    },
+    {
+      "incident_id": "INC-002",
+      "name": "Cloud credential stuffing (AWS CloudTrail)",
+      "configuration": "deterministic",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "passed": true,
+      "benign_scenario": false,
+      "detection": {
+        "detected": true,
+        "event_recall": 0.9286,
+        "malicious_events_surfaced": 13,
+        "malicious_events_total": 14
+      },
+      "analyst_load": {
+        "findings": 1,
+        "cases": 1,
+        "noise_cases": 0,
+        "triage_reduction": 0.0,
+        "case_precision": 1.0
+      },
+      "chain_quality": {
+        "primary_case_recall": 0.9286,
+        "primary_case_purity": 1.0
+      },
+      "benign_discrimination": {
+        "benign_findings_identified": 0,
+        "benign_findings_total": 0,
+        "benign_recall": 1.0,
+        "malicious_findings_called_benign": 0,
+        "findings_after_triage": 1,
+        "triage_load_reduction": 0.0
+      },
+      "conclusions": {
+        "techniques_found": [
+          "T1078",
+          "T1110.001"
+        ],
+        "techniques_missing": [],
+        "conclusions_hit": [
+          "dev_alice",
+          "203.0.113.42"
+        ],
+        "conclusions_missed": [],
+        "overclaimed_as_fact": []
+      },
+      "trust": {
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "rejected_claims": 0,
+        "calibration_warnings": 0,
+        "facts": 2,
+        "inferences": 4,
+        "hypotheses": 0
+      },
+      "cost": {
+        "tool_calls": 3,
+        "runtime_seconds": 0.017
+      },
+      "notes": []
+    },
+    {
+      "incident_id": "INC-005",
+      "name": "Kubernetes privilege escalation (RBAC grant then pod exec)",
+      "configuration": "deterministic",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "passed": true,
+      "benign_scenario": false,
+      "detection": {
+        "detected": true,
+        "event_recall": 1.0,
+        "malicious_events_surfaced": 2,
+        "malicious_events_total": 2
+      },
+      "analyst_load": {
+        "findings": 2,
+        "cases": 1,
+        "noise_cases": 0,
+        "triage_reduction": 0.5,
+        "case_precision": 1.0
+      },
+      "chain_quality": {
+        "primary_case_recall": 1.0,
+        "primary_case_purity": 1.0
+      },
+      "benign_discrimination": {
+        "benign_findings_identified": 0,
+        "benign_findings_total": 0,
+        "benign_recall": 1.0,
+        "malicious_findings_called_benign": 0,
+        "findings_after_triage": 2,
+        "triage_load_reduction": 0.0
+      },
+      "conclusions": {
+        "techniques_found": [
+          "T1098.006",
+          "T1609"
+        ],
+        "techniques_missing": [],
+        "conclusions_hit": [
+          "ci-runner",
+          "cluster-admin",
+          "web-1"
+        ],
+        "conclusions_missed": [],
+        "overclaimed_as_fact": []
+      },
+      "trust": {
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "rejected_claims": 0,
+        "calibration_warnings": 0,
+        "facts": 3,
+        "inferences": 5,
+        "hypotheses": 0
+      },
+      "cost": {
+        "tool_calls": 5,
+        "runtime_seconds": 0.027
+      },
+      "notes": []
+    },
+    {
+      "incident_id": "INC-004",
+      "name": "Ransomware preparation (recovery inhibition + defence impairment)",
+      "configuration": "deterministic",
+      "llm_degraded": false,
+      "llm_status": "deterministic mode (no model requested)",
+      "passed": true,
+      "benign_scenario": false,
+      "detection": {
+        "detected": true,
+        "event_recall": 1.0,
+        "malicious_events_surfaced": 6,
+        "malicious_events_total": 6
+      },
+      "analyst_load": {
+        "findings": 4,
+        "cases": 1,
+        "noise_cases": 0,
+        "triage_reduction": 0.75,
+        "case_precision": 1.0
+      },
+      "chain_quality": {
+        "primary_case_recall": 1.0,
+        "primary_case_purity": 1.0
+      },
+      "benign_discrimination": {
+        "benign_findings_identified": 2,
+        "benign_findings_total": 2,
+        "benign_recall": 1.0,
+        "malicious_findings_called_benign": 0,
+        "findings_after_triage": 2,
+        "triage_load_reduction": 0.5
+      },
+      "conclusions": {
+        "techniques_found": [
+          "T1490",
+          "T1685"
+        ],
+        "techniques_missing": [],
+        "conclusions_hit": [
+          "PC03"
+        ],
+        "conclusions_missed": [],
+        "overclaimed_as_fact": []
+      },
+      "trust": {
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "rejected_claims": 0,
+        "calibration_warnings": 0,
+        "facts": 2,
+        "inferences": 3,
+        "hypotheses": 0
+      },
+      "cost": {
+        "tool_calls": 6,
+        "runtime_seconds": 0.173
+      },
+      "notes": []
+    },
+    {
+      "incident_id": "INC-003",
+      "name": "Quiet day (no intrusion present)",
+      "configuration": "deterministic",
+      "llm_degraded": false,
+      "llm_status": "",
+      "passed": true,
+      "benign_scenario": true,
+      "detection": {
+        "detected": false,
+        "event_recall": 1.0,
+        "malicious_events_surfaced": 0,
+        "malicious_events_total": 0
+      },
+      "analyst_load": {
+        "findings": 2,
+        "cases": 0,
+        "noise_cases": 0,
+        "triage_reduction": 1.0,
+        "case_precision": 1.0
+      },
+      "chain_quality": {
+        "primary_case_recall": 0.0,
+        "primary_case_purity": 1.0
+      },
+      "benign_discrimination": {
+        "benign_findings_identified": 2,
+        "benign_findings_total": 2,
+        "benign_recall": 1.0,
+        "malicious_findings_called_benign": 0,
+        "findings_after_triage": 0,
+        "triage_load_reduction": 1.0
+      },
+      "conclusions": {
+        "techniques_found": [],
+        "techniques_missing": [],
+        "conclusions_hit": [],
+        "conclusions_missed": [],
+        "overclaimed_as_fact": []
+      },
+      "trust": {
+        "trustworthy": true,
+        "hallucinated_citations": 0,
+        "rejected_claims": 0,
+        "calibration_warnings": 0,
+        "facts": 0,
+        "inferences": 0,
+        "hypotheses": 0
+      },
+      "cost": {
+        "tool_calls": 0,
+        "runtime_seconds": 0.17
+      },
+      "notes": [
+        "no case was raised, so no investigation ran: this incident produced 2 finding(s), 2 of them set aside by triage as likely benign, and nothing unexplained was severe enough or linked to anything"
+      ]
+    }
+  ]
+}
