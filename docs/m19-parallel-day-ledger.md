@@ -23,3 +23,12 @@ merged into `m14-real-data-validation` before the preregistered experiment is sc
    fetch command) unlike the other four datasets.
 3. M18 §8 P3 "MATCH" is weaker than it reads: one rejected write per actor at the event
    level. The threshold's provenance (flaws.cloud background max 4) is unaffected.
+
+## M19b additions (2026-09-14)
+
+4. `winlogbeat_source._logon_row`: `code = sub_status or status` treats a real lockout's
+   `SubStatus "0x0"` as truthy, so `failure_reason` becomes `"0x0"` instead of
+   `account_locked` (found by T5b; the injected cases carry the code in both fields and do
+   not depend on it). Not fixed during M19b.
+5. `NetworkAgent` `KeyError('robust_cv')` at exactly three connections and `AnthropicLLM`
+   discarding the HTTP error body: both fixed by T6 before the M19b freeze (plan rule 2).
