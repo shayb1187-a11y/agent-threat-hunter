@@ -1,0 +1,122 @@
+{
+  "dataset": "dedale_injected/M1",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "M1",
+  "seed": 19026,
+  "case_seed": "19026:M1",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D03",
+      "date": "2024-12-25",
+      "host": "CLIENT7",
+      "hour": "11",
+      "file": "CLIENT7_2024-12-25T11.jsonl",
+      "background_records": 169,
+      "injected_records": 0
+    },
+    {
+      "day": "D03",
+      "date": "2024-12-25",
+      "host": "CLIENT9",
+      "hour": "11",
+      "file": "CLIENT9_2024-12-25T11.jsonl",
+      "background_records": 145,
+      "injected_records": 16
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "guessed-credential-then-remote-exec": {
+      "malicious": true,
+      "note": "Password guessing from CLIENT7 lands on CLIENT9, then a service-launched shell",
+      "stages": {
+        "1-credential-guessing": {
+          "note": "twelve failed type 3 logons for one account from one host in 234s",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Security;record_id=22515",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22516",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22517",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22518",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22519",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22520",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22521",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22522",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22523",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22524",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22525",
+            "host=CLIENT9.breach.local;channel=Security;record_id=22526"
+          ]
+        },
+        "2-successful-logon": {
+          "note": "the same account, same source, succeeds 43s after the last failure",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Security;record_id=22527"
+          ]
+        },
+        "3-remote-service-execution": {
+          "note": "services.exe starts cmd.exe, output redirected to ADMIN$",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=863740"
+          ]
+        },
+        "4-discovery": {
+          "note": "domain and local group enumeration from that shell",
+          "refs": [
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=863741",
+            "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=863742"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "M1-LINK-1",
+      "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT9.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22527,
+        "ref": "host=CLIENT9.breach.local;channel=Security;record_id=22527"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT9.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 863740,
+        "ref": "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=863740"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "M1-LINK-2",
+      "stage_transition": "2-successful-logon -> 4-discovery",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT9.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22527,
+        "ref": "host=CLIENT9.breach.local;channel=Security;record_id=22527"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT9.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 863741,
+        "ref": "host=CLIENT9.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=863741"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

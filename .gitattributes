@@ -1,3 +1,11 @@
+# The M19b Route A cases are hashed, file by file, in
+# reports/m19b/cases/dedale_injected/MANIFEST.json, and their telemetry is meant to be
+# byte-identical to the DEDALE lines it was cut from. With core.autocrlf on -- the default
+# on Windows, and how this repository is checked out -- git would rewrite every LF to CRLF
+# on checkout, and every digest in that manifest would become a Windows-only digest for
+# files that no longer match their source. `-text` tells git to store and check these paths
+# out verbatim, which is what makes the manifest a claim anyone can check anywhere.
+reports/m19b/cases/dedale_injected/** -text
 reports/m19/ablation/scripted/arm_B.json filter=lfs diff=lfs merge=lfs -text
 reports/m18b/canonical/comiset_network.parquet filter=lfs diff=lfs merge=lfs -text
 reports/m17/canonical/comiset_network.parquet filter=lfs diff=lfs merge=lfs -text

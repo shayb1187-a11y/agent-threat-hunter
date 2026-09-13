@@ -1,0 +1,94 @@
+{
+  "dataset": "dedale_injected/L2",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "L2",
+  "seed": 19026,
+  "case_seed": "19026:L2",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D18",
+      "date": "2025-01-09",
+      "host": "CLIENT3",
+      "hour": "14",
+      "file": "CLIENT3_2025-01-09T14.jsonl",
+      "background_records": 124,
+      "injected_records": 0
+    },
+    {
+      "day": "D18",
+      "date": "2025-01-09",
+      "host": "CLIENT12",
+      "hour": "14",
+      "file": "CLIENT12_2025-01-09T14.jsonl",
+      "background_records": 166,
+      "injected_records": 14
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "scheduled-backup-with-stale-password": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: a scheduled job whose stored password went stale, then that job's own pre-job script",
+      "stages": {
+        "1-stale-scheduled-credential": {
+          "note": "twelve failures at an exact 48s cadence",
+          "refs": [
+            "host=CLIENT12.breach.local;channel=Security;record_id=30258",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30259",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30260",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30261",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30262",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30263",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30264",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30265",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30266",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30267",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30268",
+            "host=CLIENT12.breach.local;channel=Security;record_id=30269"
+          ]
+        },
+        "2-credential-corrected": {
+          "note": "the next scheduled cycle succeeds",
+          "refs": [
+            "host=CLIENT12.breach.local;channel=Security;record_id=30270"
+          ]
+        },
+        "3-service-started-script": {
+          "note": "services.exe starts the backup agent's pre-job script, no ADMIN$ redirect",
+          "refs": [
+            "host=CLIENT12.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=4438849"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "L2-LINK-1",
+      "stage_transition": "2-credential-corrected -> 3-service-started-script",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT12.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 30270,
+        "ref": "host=CLIENT12.breach.local;channel=Security;record_id=30270"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT12.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 4438849,
+        "ref": "host=CLIENT12.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=4438849"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    }
+  ]
+}
