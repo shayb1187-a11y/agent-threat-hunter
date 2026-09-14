@@ -1,0 +1,218 @@
+{
+  "environment": {
+    "git": {
+      "commit": "4e61bf6d5bbc4060df53bd714674fded570a5fc2",
+      "short_commit": "4e61bf6",
+      "branch": "m19b/harness",
+      "dirty": true,
+      "dirty_paths": [
+        "reports/m19b/ablation/ENVIRONMENT.json",
+        "reports/m19b/ablation/ENVIRONMENT.md",
+        "reports/m19b/ablation/ORACLE.json",
+        "reports/m19b/ablation/arm_A_rep1.json",
+        "reports/m19b/ablation/arm_A_rep2.json",
+        "reports/m19b/ablation/scores_A.json"
+      ]
+    },
+    "arms": {
+      "A_deterministic": {
+        "name": "A_deterministic",
+        "model": null,
+        "requires_model": false,
+        "generalist": false,
+        "use_llm_planner": false,
+        "use_llm_synthesis": false,
+        "max_steps": 8,
+        "tool_call_cap": null,
+        "tool_surface": [
+          "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+          "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+          "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+          "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+        ]
+      },
+      "B_single_llm": {
+        "name": "B_single_llm",
+        "model": "claude-opus-5",
+        "requires_model": true,
+        "generalist": true,
+        "use_llm_planner": true,
+        "use_llm_synthesis": true,
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_surface": [
+          "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+          "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+          "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+          "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+        ]
+      },
+      "C_crew_llm": {
+        "name": "C_crew_llm",
+        "model": "claude-opus-5",
+        "requires_model": true,
+        "generalist": false,
+        "use_llm_planner": true,
+        "use_llm_synthesis": true,
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_surface": [
+          "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+          "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+          "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+          "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+          "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+          "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+        ]
+      }
+    },
+    "shared_tool_surface": [
+      "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+      "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+      "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+      "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+      "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+      "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+    ],
+    "request": {
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "anthropic_version_header": "2023-06-01",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "effort": "provider default (high); output_config is not sent",
+      "max_tokens": {
+        "planner": 8192,
+        "synthesis": 8192
+      },
+      "sampling_parameters": "none sent; temperature, top_p and top_k are rejected with a 400 by the models this experiment runs",
+      "body_fields": [
+        "model",
+        "max_tokens",
+        "system",
+        "messages",
+        "thinking"
+      ],
+      "transport": "urllib (stdlib); no SDK, by project choice"
+    },
+    "retry": {
+      "timeout_seconds_per_attempt": 60,
+      "max_attempts": 3,
+      "backoff_seconds": 1.0,
+      "backoff": "exponential: backoff_seconds * 2**attempt",
+      "retryable_statuses": [
+        408,
+        409,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "note": "a non-retryable status (400/401/403/404) fails immediately; a truncated or textless reply is not retried either -- it is returned as an error so the row degrades rather than spending the budget again on the same cap"
+    },
+    "prompts": {
+      "planner_system": "c8bca1694a015878e05751c9a5c9b5f0e841d0be360c204e30a67ad07f629bf6",
+      "synthesis_system": "9d1a547b0006abd87fb2c8764194ad1174546491038e91f91cd50f680f7f3d6f",
+      "planner_user_template": "9136d5d63c5ad470b756fc7797d659468047ce5992640752a39649a6b302b67d",
+      "synthesis_user_template": "e15896466418b847e8f7357fbd76edcfe5090fe3cc05db820e521a1568bf4d31"
+    },
+    "scoring": {
+      "scoring.py": "3b8e8bb2d76c65af36105e33305c9e3f391f0c61d4153bb1ad7bb09c0bea0ec8",
+      "arms.py": "37daf4df704b0c4500e9278f048729d6d40fe2c1d2ac8f4816e605264405a06f",
+      "incidents.py": "25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb"
+    },
+    "manifest_hash": "0ced14fb387c7752fe1435c876e19fbe4a8bfd3f52a830049844c31718143263",
+    "manifest_head": "49c0980",
+    "runtime": {
+      "python": "3.9.2",
+      "implementation": "CPython",
+      "platform": "Windows-10-10.0.26100-SP0",
+      "executable": "python.exe",
+      "packages": {
+        "pandas": "2.2.3",
+        "numpy": "2.0.2",
+        "pyarrow": "21.0.0",
+        "python-dotenv": "1.2.1"
+      }
+    },
+    "credential": {
+      "variable": "ATH_LLM_API_KEY",
+      "present": false,
+      "note": "presence only; the value is never recorded anywhere"
+    }
+  },
+  "m19": {
+    "environment": "reports/m19/ablation/ENVIRONMENT.json",
+    "commit": "5b8c3f2b464d781c4cb3b1b383d7e1f55a949aa4",
+    "compared": [
+      "prompts",
+      "request",
+      "retry",
+      "budgets",
+      "model_ids",
+      "tool_surface"
+    ],
+    "equal": true,
+    "differences": []
+  },
+  "scoring": {
+    "instead_of": "a hash of scoring.py, which T6 changed by adding the necessity metrics",
+    "reproduces_grading": true,
+    "grading": "reports/m19/ablation/GRADING.json",
+    "sections_reproduced": [
+      "arms"
+    ],
+    "sections_not_reproduced": [
+      "planner (parsed from run_*.log, not from any score)",
+      "vii_decision_rule (joins claim and tool-call ids across arms; grader logic)",
+      "i..vi, labels, degraded, identity_hygiene (row fields the grader re-counts; the scores they count are covered by the per-row round trip)"
+    ],
+    "differences": [],
+    "files": {
+      "scoring.py": "3b8e8bb2d76c65af36105e33305c9e3f391f0c61d4153bb1ad7bb09c0bea0ec8",
+      "arms.py": "37daf4df704b0c4500e9278f048729d6d40fe2c1d2ac8f4816e605264405a06f",
+      "incidents.py": "25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb"
+    }
+  },
+  "divergence": {
+    "count": 1,
+    "field": "InvestigationConfig.tool_output_budget",
+    "m19_value": null,
+    "m19b_value": {
+      "A_deterministic": null,
+      "B_single_llm": 4096,
+      "C_crew_llm": 4096
+    },
+    "pre_registered": {
+      "A_deterministic": null,
+      "B_single_llm": 4096,
+      "C_crew_llm": 4096
+    },
+    "applies_to": [
+      "B_single_llm",
+      "C_crew_llm"
+    ],
+    "source": "reports/m19b/PREREGISTERED.md section 1; reports/m19b/http413/",
+    "reason": "the T2 mitigation. Without it arm B degrades on any case whose tool results are large; flaws_cloud/CASE-256 carries 108 deterministic facts from 17 tool calls. The bound changes only how already-verified claim evidence is rendered for synthesis. Arm A never synthesises and is unaffected; B and C receive the same bound.",
+    "default_unchanged": true,
+    "agrees_with_live_arms": true
+  }
+}
