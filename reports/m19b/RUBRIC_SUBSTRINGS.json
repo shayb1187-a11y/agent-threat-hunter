@@ -1,0 +1,219 @@
+{
+  "generated_at": "2026-09-14T01:11:50.422314+00:00",
+  "head": "4452b19",
+  "manifest_hash": "0ced14fb387c7752fe1435c876e19fbe4a8bfd3f52a830049844c31718143263",
+  "benchmark_hash": "e381e387db4c5d56dfd067f7391b6e9c698f4d895bc42f73c4e6d9e31fda18b6",
+  "derived_from": "reports/m19b/MANIFEST.json, the `rubric` block only, fields ['stages', 'stage_notes', 'next_action']",
+  "mechanism": "ath.evaluation.incidents.Incident.must_conclude / never_as_fact: a case-insensitive substring of the joined claim statements, and of the FACT statements respectively",
+  "vocabularies": {
+    "malicious_phrases": [
+      "ADMIN$",
+      "LSASS",
+      "services.exe",
+      "group enumeration",
+      "mapped-drive",
+      "type 3 logons",
+      "service-launched shell"
+    ],
+    "benign_phrases": [
+      "lock",
+      "unlock",
+      "scheduled",
+      "backup",
+      "stale"
+    ],
+    "malicious_reading": [
+      "brute",
+      "compromis",
+      "guess"
+    ],
+    "identifier_patterns": {
+      "asset": "\\b[A-Z][A-Z0-9]*[0-9]+\\b",
+      "account": "\\b(?:[a-z][a-z0-9]*_[a-z0-9_]+|[a-z]+[0-9]+)\\b",
+      "address": "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b",
+      "quoted": "`([^`]+)`"
+    }
+  },
+  "written_before_any_run": true,
+  "cases": {
+    "synthetic:INC-001/CASE-001": {
+      "corpus": "synthetic:INC-001",
+      "case_id": "CASE-001",
+      "verdict": "malicious",
+      "must_conclude": [
+        "185.220.101.47",
+        "LSASS",
+        "PC01",
+        "svc_backup"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers the rubric names plus the distinguishing phrases it uses",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-initial-access 2-execution 3-payload-download 4-command-and-control 5-discovery 6-credential-access 7-brute-force 8-lateral-movement 9-collection 10-exfiltration Isolate PC01 and the file server the svc_backup logons reached, reset svc_backup and jdoe, and block 185.220.101.47 at the perimeter -- the LSASS dump plus the guessed credential plus the staged archive is a live operator with a working credential, not three separate alerts."
+    },
+    "dedale_injected:M1/CASE-001": {
+      "corpus": "dedale_injected:M1",
+      "case_id": "CASE-001",
+      "verdict": "malicious",
+      "must_conclude": [
+        "ADMIN$",
+        "CLIENT7",
+        "CLIENT9",
+        "client9",
+        "group enumeration",
+        "services.exe",
+        "type 3 logons"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers the rubric names plus the distinguishing phrases it uses",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-credential-guessing 2-successful-logon 3-remote-service-execution 4-discovery twelve failed type 3 logons for one account from one host in 234s the same account, same source, succeeds 43s after the last failure services.exe starts cmd.exe, output redirected to ADMIN$ domain and local group enumeration from that shell Contain CLIENT7 before CLIENT9: it is the operator's foothold, it appears only in the identity rows, and resetting client9's password without it leaves whoever guessed the password free to guess the next one."
+    },
+    "dedale_injected:M2/CASE-001": {
+      "corpus": "dedale_injected:M2",
+      "case_id": "CASE-001",
+      "verdict": "malicious",
+      "must_conclude": [
+        "client3",
+        "group enumeration",
+        "service-launched shell",
+        "type 3 logons"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers the rubric names plus the distinguishing phrases it uses",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-credential-guessing 2-successful-logon 3-remote-service-execution 4-discovery fourteen failed type 3 logons over 570s, just inside the 10-minute window success 130s after the last failure the service-launched shell arrives 760s later, near the 15-minute edge local and domain group enumeration from that shell Reset client3's credential and then sweep the twelve minutes between the successful logon and the service-launched shell for anything else that credential touched, because at this spacing what else it reached is the open question and not what it did on the target."
+    },
+    "dedale_injected:M3/CASE-001": {
+      "corpus": "dedale_injected:M3",
+      "case_id": "CASE-001",
+      "verdict": "malicious",
+      "must_conclude": [
+        "ADMIN$",
+        "CLIENT7",
+        "CLIENT9",
+        "client9",
+        "group enumeration",
+        "mapped-drive",
+        "services.exe",
+        "type 3 logons"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers the rubric names plus the distinguishing phrases it uses",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-credential-guessing 2-successful-logon 3-remote-service-execution 4-discovery eleven failed type 3 logons for client9 on CLIENT9 from CLIENT7 success from a host where the account has no interactive session services.exe starts cmd.exe with an ADMIN$ redirect domain group enumeration and a mapped-drive listing Ask why CLIENT7 is authenticating as an account that has no session on it, and treat the CLIENT9 shell as the answer that turns an unusual origin into a confirmed foothold worth containing."
+    },
+    "dedale_injected:M4/CASE-001": {
+      "corpus": "dedale_injected:M4",
+      "case_id": "CASE-001",
+      "verdict": "malicious",
+      "must_conclude": [
+        "ADMIN$",
+        "CLIENT3",
+        "group enumeration",
+        "service-launched shell",
+        "type 3 logons"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers the rubric names plus the distinguishing phrases it uses",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-credential-guessing 3-remote-service-execution 4-discovery eleven failed type 3 logons and no success from that source a service-launched shell with an ADMIN$ redirect 105s later local and domain group enumeration from that shell Widen collection rather than contain: execution reached CLIENT3 without a successful logon this telemetry can show, so the next action is to find the authentication that is missing -- a host already compromised, or a logon path this collection does not cover."
+    },
+    "dedale_injected:L1/CASE-001": {
+      "corpus": "dedale_injected:L1",
+      "case_id": "CASE-001",
+      "verdict": "benign",
+      "must_conclude": [
+        "lock",
+        "stale",
+        "unlock"
+      ],
+      "never_as_fact": [
+        "brute",
+        "compromis",
+        "guess"
+      ],
+      "rule": "benign explanation only; never_as_fact is the malicious reading",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-stale-credential-lockout 2-logon-after-unlock 3-remote-support-action 4-support-commands three bad-password failures, then nine against a locked account success from the same host after the service desk unlocks it PsExec-style service-launched shell, output to ADMIN$ the print spooler is stopped and started Close it as a service-desk action and ask why CLIENT7 still held client9's old password, because a lockout cascade, an account that owns the target host and a spooler restart are a ticket rather than an intrusion."
+    },
+    "dedale_injected:L2/CASE-001": {
+      "corpus": "dedale_injected:L2",
+      "case_id": "CASE-001",
+      "verdict": "benign",
+      "must_conclude": [
+        "backup",
+        "scheduled",
+        "stale"
+      ],
+      "never_as_fact": [
+        "brute",
+        "compromis",
+        "guess"
+      ],
+      "rule": "benign explanation only; never_as_fact is the malicious reading",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "1-stale-scheduled-credential 2-credential-corrected 3-service-started-script twelve failures at an exact 48s cadence the next scheduled cycle succeeds services.exe starts the backup agent's pre-job script, no ADMIN$ redirect Close it as an operational finding, fix the stored credential on the nightly backup job, and check whether anything else on the estate is still authenticating with the old password."
+    },
+    "flaws_cloud/CASE-182": {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-182",
+      "verdict": "unknown",
+      "must_conclude": [
+        "backup"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers only: this corpus is real and unlabelled, so no reading is pre-registered as right or wrong",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "Failed logon burst followed by successful authentication Authorization-denial burst If the two findings are one actor, rotate the `backup` principal's credentials and review every management call it made in the window; if they are not, the denials are a policy bug and the logins are a person, and the case should be split rather than escalated."
+    },
+    "flaws_cloud/CASE-256": {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-256",
+      "verdict": "unknown",
+      "must_conclude": [
+        "Level6"
+      ],
+      "never_as_fact": [],
+      "rule": "identifiers only: this corpus is real and unlabelled, so no reading is pre-registered as right or wrong",
+      "rubric_fields": [
+        "stages",
+        "stage_notes",
+        "next_action"
+      ],
+      "rubric_text": "Failed logon burst followed by successful authentication Cloud service discovery burst Authorization-denial burst If the two findings are one actor, rotate `Level6`'s credentials and review what it reached on the control plane during the 34 minutes the case spans, starting with the calls that were allowed rather than the ones that were refused."
+    }
+  }
+}
