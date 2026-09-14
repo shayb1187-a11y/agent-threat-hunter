@@ -122,7 +122,8 @@ python scripts/m19b_ablation.py run --arm C --check-planner
 python scripts/m19b_ablation.py score --arm A; ... --arm B; ... --arm C
 python scripts/m19b_ablation.py grade
 ```
- the pre-registered predictions are that H1 and
+
+The pre-registered predictions are that H1 and
 H2 are false, H3 true, H4 true for duplication and false for latency, H5 true, H6 true.
 
 ## 7. Architectural decision (Phase 12)
