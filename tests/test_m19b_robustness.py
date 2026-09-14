@@ -98,7 +98,6 @@ def test_a_mutated_prompt_hash_fails_the_freeze_assertion(
 @pytest.mark.parametrize(
     ("field_name", "mutate"),
     [
-        ("scoring", lambda p: p["scoring"].__setitem__("scoring.py", "0" * 64)),
         ("prompts", lambda p: p["prompts"].__setitem__("synthesis_system", "0" * 64)),
         ("manifest_hash", lambda p: p.__setitem__("manifest_hash", "0" * 64)),
         ("arms", lambda p: p["arms"]["B_single_llm"].__setitem__("model", "other")),
@@ -122,6 +121,41 @@ def test_every_asserted_field_refuses_when_it_moves(
     assert any(d.startswith(field_name) for d in differences), differences
 
 
+def test_the_scoring_hash_is_no_longer_gated_and_the_numbers_are(
+    m19_environment, live_environment,
+) -> None:
+    """T6 added the necessity metrics, so the hash cannot match and does not gate.
+
+    What gates instead is stronger and is asserted in the same freeze: the M19 metrics,
+    recomputed by the new code over M19's committed rows, reproduce ``GRADING.json``.
+    This test fails if ``scoring`` is quietly put back into the byte-equal set -- which
+    would refuse every M19b run -- or if the reproduction stops being checked at all.
+    """
+    assert "scoring" not in m19b.ASSERTED_FIELDS
+    mutated = json.loads(json.dumps(m19_environment))
+    mutated["scoring"]["scoring.py"] = "0" * 64
+    assert m19b.environment_differences(mutated, live_environment) == []
+
+    reproduces, differences = m19b.reproduces_grading()
+    assert differences == []
+    assert reproduces
+
+
+def test_the_freeze_refuses_a_scoring_change_that_moves_an_m19_number(
+    monkeypatch,
+) -> None:
+    """The other half: the replacement gate must be capable of refusing."""
+    monkeypatch.setattr(
+        m19b, "reproduces_grading",
+        lambda *args, **kwargs: (False, ["arms.A_deterministic: facts 335 -> 336"]),
+    )
+    payload, _entries, digest = m19._read_manifest(M19_DIR)
+    with pytest.raises(SystemExit) as excinfo:
+        m19b.build_m19b_environment(digest, str(payload.get("head", "")))
+    assert "does not reproduce" in str(excinfo.value)
+    assert "facts 335 -> 336" in str(excinfo.value)
+
+
 def test_the_commit_is_recorded_but_not_gated(m19_environment, monkeypatch, tmp_path) -> None:
     """M19b is a later commit by construction; both commits are recorded instead."""
     assert "commit" not in m19b.ASSERTED_FIELDS
@@ -132,6 +166,10 @@ def test_the_commit_is_recorded_but_not_gated(m19_environment, monkeypatch, tmp_
     assert equality["m19_commit"] == m19_environment["git"]["commit"]
     assert equality["m19b_commit"]
     assert list(equality["asserted_fields"]) == list(m19b.ASSERTED_FIELDS)
+    assert equality["scoring"]["reproduces_grading"] is True
+    assert set(equality["scoring"]["hashes"]) == {
+        "scoring.py", "arms.py", "incidents.py"
+    }
 
 
 def test_the_freeze_refuses_when_m19s_environment_differs(monkeypatch) -> None:

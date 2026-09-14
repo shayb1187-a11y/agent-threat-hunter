@@ -94,7 +94,13 @@ from ath.agent.tools import ToolBox
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
 from ath.evaluation.ablation.manifest import CaseManifest, telemetry_hash
-from ath.evaluation.ablation.scoring import CaseScores, capture_label_scores, score_case
+from ath.evaluation.ablation.scoring import (
+    CaseScores,
+    capture_label_scores,
+    context_size,
+    footing_differences,
+    score_case,
+)
 from ath.hunting.finding import Finding
 from ath.logging_setup import get_logger
 from ath.telemetry.loader import Telemetry
@@ -133,6 +139,16 @@ class ManifestMismatch(RuntimeError):
 
 class ArmUnavailable(RuntimeError):
     """An arm that requires a model was asked to run without one."""
+
+
+class UnequalFooting(RuntimeError):
+    """A row was produced under different conditions than the rows it is compared to.
+
+    Refused rather than recorded with a caveat. The whole claim of an ablation is that
+    the arms differed in one thing; a row run against a different corpus, a different
+    tool surface or a different budget is not a weaker data point in that comparison, it
+    is not a data point in it at all.
+    """
 
 
 @dataclass(frozen=True)
@@ -306,6 +322,19 @@ class CaseResult:
     """
     scripted: bool = False
     """This row was produced by canned responses, not by a model."""
+    footing: dict[str, Any] = field(default_factory=dict)
+    """What this row was allowed to see and spend. See :func:`case_footing`.
+
+    Recorded per row rather than only in ``ENVIRONMENT.json`` because the environment
+    freeze is a statement about the *repository* at one moment, and the sentence the
+    experiment rests on -- arm C received no evidence arm B could not have requested
+    through the same tools -- is a statement about each comparison. A reader holding
+    three rows can now check it without holding the freeze as well.
+    """
+    context: dict[str, Any] = field(default_factory=dict)
+    """The largest and total model request this case sent. See
+    :func:`~ath.evaluation.ablation.scoring.context_size`. Zeros for arm A, which sends
+    none."""
 
     @property
     def labelled_arm(self) -> str:
@@ -335,6 +364,8 @@ class CaseResult:
             "wall_seconds": round(self.wall_seconds, 3),
             "tokens": self.tokens,
             "budgets": dict(self.budgets),
+            "footing": dict(self.footing),
+            "context": dict(self.context),
             "labels": dict(self.labels),
             "label_scores": dict(self.label_scores),
             "scores": self.scores.to_dict(),
@@ -363,6 +394,8 @@ class CaseResult:
             "configuration": self.configuration,
             "llm_degraded": self.llm_degraded,
             "budgets": dict(self.budgets),
+            "footing": dict(self.footing),
+            "context": dict(self.context),
             "scores": scores,
             "state": state,
             "label_scores": {
@@ -478,6 +511,7 @@ def run_arm(
     llm: LLMClient | None = None,
     scripted: bool = False,
     label_scorer: Callable[[Any], dict[str, Any]] | None = None,
+    required_footing: dict[str, Any] | None = None,
 ) -> list[CaseResult]:
     """Run one arm over the manifest entries belonging to this corpus.
 
@@ -513,10 +547,18 @@ def run_arm(
             to a row produced by something else. For arm B that was arm C's architecture
             wearing arm B's label, and its tokens were counted nowhere.
 
+        required_footing: The footing every row must match -- another arm's
+            :func:`case_footing` for the same case, or the one a pre-registration
+            pinned. A row that does not match it is refused rather than written, which
+            is the point: the assertion has to fire while the run is happening, because
+            afterwards there is nothing to distinguish a row run on a different corpus
+            from a row that simply did worse.
+
     Raises:
         NotImplementedError: for a declared-but-unbuilt arm.
         ArmUnavailable: when the arm requires a model and none is configured.
         ManifestMismatch: when the inputs differ from the pinned ones.
+        UnequalFooting: when ``required_footing`` is given and a row does not match it.
     """
     if not arm.implemented:
         raise NotImplementedError(f"{arm.name} is declared, not implemented. {arm.design_note}")
@@ -571,10 +613,36 @@ def run_arm(
             tools, verifier, llm=client, config=arm.config, environment=environment,
             specialists=crew,
         )
+        footing = case_footing(tools, arm, digest)
+        if required_footing is not None:
+            differences = footing_differences(
+                {"required": required_footing, arm.name: footing}
+            )
+            if differences:
+                raise UnequalFooting(
+                    f"{entry.key}: {arm.name} would not be on equal footing with the "
+                    f"rows it is compared to: {differences}. Refusing the row -- an "
+                    "arm that saw a different tool surface, corpus or budget is not a "
+                    "weaker result in this comparison, it is not in it."
+                )
+
+        # Measurement only, and only for this case: the observer cannot alter the
+        # payload, the retry policy or the response, and a client that has no such hook
+        # (NullLLM, on arm A) simply records nothing.
+        measurements: list[dict[str, Any]] = []
+        observed = attach_request_observer(client, measurements)
         baseline = begin_token_accounting(client)
         started = time.perf_counter()
-        state = orchestrator.investigate(case)
+        try:
+            state = orchestrator.investigate(case)
+        finally:
+            # In a ``finally`` because the client outlives the case: an investigation
+            # that raised would otherwise leave the hook pointing at a dead case's list,
+            # and the next case would be charged for this one's requests.
+            detach_request_observer(client)
         elapsed = time.perf_counter() - started
+        if observed:
+            state.llm_requests = request_records(measurements, client)
 
         # Eligibility only disappears by running (``should_run`` declines a specialist
         # that has already run, and every other gate is monotone within one case), so
@@ -604,6 +672,8 @@ def run_arm(
             labels=dict(entry.labels),
             label_scores=capture_label_scores(entry.labels, case_scores),
             budgets=budgets_of(tools, arm, state),
+            footing=footing,
+            context=context_size(state),
             scripted=scripted,
         )
         graded = label_scorer(state) if label_scorer is not None else {}
@@ -677,6 +747,93 @@ def budgets_of(tools: ToolBox, arm: ArmConfig, state: Any) -> dict[str, Any]:
         "tool_budget_hit": bool(tools.budget_hits),
         "step_budget_hit": state.status is InvestigationStatus.STEP_LIMIT,
     }
+
+
+def case_footing(tools: ToolBox, arm: ArmConfig, digest: str) -> dict[str, Any]:
+    """What this row was allowed to see and spend, in a form two rows can be compared on.
+
+    Three things, and they are the three that would invalidate a comparison without
+    changing a single score:
+
+    ``tool_surface_sha256``
+        Every tool the toolbox exposes, hashed -- read from
+        :func:`ath.evaluation.ablation.environment.tool_surface`, the same function the
+        freeze records, so the per-row assertion and the environment file cannot drift.
+        This is where "arm C must not receive any evidence arm B could not request
+        through the same tools" becomes checkable from the artifact.
+    ``tool_call_cap`` / ``max_steps``
+        The budgets this case really ran under, read from the live
+        :class:`~ath.agent.tools.ToolBox` rather than from the arm definition, because
+        the box is what refuses a call.
+    ``telemetry_hash``
+        The corpus. Already on the row; repeated here so that one comparison reads one
+        structure.
+    """
+    from ath.evaluation.ablation.environment import (  # noqa: PLC0415 -- environment imports this module
+        sha256_text,
+        tool_surface,
+    )
+
+    surface = tool_surface()
+    return {
+        "tool_surface_sha256": sha256_text("\n".join(surface)),
+        "tools": len(surface),
+        "tool_call_cap": tools.tool_call_budget,
+        "max_steps": arm.config.max_steps,
+        "telemetry_hash": digest,
+        "requires_model": arm.requires_model,
+        "generalist": arm.generalist,
+    }
+
+
+def attach_request_observer(client: Any, sink: list[dict[str, Any]]) -> bool:
+    """Point the client's measurement hook at ``sink``; False if it has none.
+
+    Nothing about the call changes. :attr:`~ath.agent.llm.AnthropicLLM.request_observer`
+    is consulted once per call, before the first attempt, and its return value is
+    ignored -- so this records what a run sent without being able to affect what it
+    sends.
+    """
+    if not hasattr(client, "request_observer"):
+        return False
+    client.request_observer = sink.append
+    return True
+
+
+def detach_request_observer(client: Any) -> None:
+    """Put the hook back, so one case's measurements cannot reach another's."""
+    if hasattr(client, "request_observer"):
+        client.request_observer = None
+
+
+def request_records(
+    measurements: list[dict[str, Any]], client: Any
+) -> list[dict[str, Any]]:
+    """Per-call request sizes with the provider's own input-token count beside them.
+
+    The two come from different places -- the size from the body before it is sent, the
+    token count from the response after it arrives -- and are paired by position:
+    both the observer and the token log get exactly one entry per
+    :meth:`complete`. When they do not line up the tokens are recorded as ``None`` with
+    a note, rather than silently attached to the wrong call: a cost column that pairs the
+    wrong two numbers is worse than one that says it could not pair them.
+    """
+    log = list(getattr(client, "token_log", None) or [])
+    aligned = len(log) == len(measurements)
+    records: list[dict[str, Any]] = []
+    for index, measurement in enumerate(measurements):
+        record = dict(measurement)
+        tokens = log[index].get("input_tokens") if aligned else None
+        record["input_tokens"] = (
+            tokens if isinstance(tokens, int) and not isinstance(tokens, bool) else None
+        )
+        if not aligned:
+            record["input_tokens_note"] = (
+                f"{len(measurements)} request(s) measured against {len(log)} token-log "
+                "entry(ies); the two could not be paired by position"
+            )
+        records.append(record)
+    return records
 
 
 def identical(left: Iterable[CaseResult], right: Iterable[CaseResult]) -> list[str]:
