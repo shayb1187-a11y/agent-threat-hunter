@@ -669,6 +669,24 @@ def test_the_grader_refuses_an_incomplete_comparison(tmp_path: Path) -> None:
     assert "compare arms" in str(excinfo.value)
 
 
+def test_a_partial_grading_selects_no_branch_at_all(tmp_path: Path) -> None:
+    """Every branch of section 5 compares B with C. With one missing there is no input,
+    and a rule that answered anyway would let a half-run experiment pick an outcome."""
+    _write_scores(tmp_path, "A", [_scored_row(k) for k in CASE_KEYS])
+    assert harness.main([
+        "grade", "--out-dir", str(tmp_path), "--partial",
+        "--manifest-dir", str(ROOT / "reports" / "m19b"),
+    ]) == 0
+    decision = json.loads(
+        (tmp_path / "GRADING.json").read_text(encoding="utf-8")
+    )["decision_rule"]
+    assert decision["comparable"] is False
+    assert decision["selected"] == []
+    assert decision["outcome"].startswith("UNAVAILABLE")
+    assert all(b["numbers"].startswith("UNAVAILABLE") for b in decision["branches"])
+    assert decision["simplify_or_remove_crew"]["added"] is False
+
+
 def test_uniqueness_is_decided_across_the_arms_that_ran(tmp_path: Path) -> None:
     """A contribution both model arms produced is unique to neither."""
     shared = ("sig-shared",)

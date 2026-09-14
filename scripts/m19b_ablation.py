@@ -1150,10 +1150,16 @@ def cder(
     """
     pairs = link_pairs(case)
     if not pairs:
+        # The same keys as a defined case, so a reader joining the nine rows into one
+        # table does not have to special-case the two that have no answer key. The
+        # zeros are not scores: `status` says UNAVAILABLE and `defined` is 0.
         return {
             "status": str(case.get("cder", "UNAVAILABLE")),
             "defined": 0, "specific_recovered": 0, "specific": None,
-            "blanket_recovered": 0, "blanket_link_ids": [], "specific_link_ids": [],
+            "specific_link_ids": [], "any_recovered": 0,
+            "blanket_recovered": 0, "blanket_link_ids": [],
+            "rule": SPECIFICITY_RULE,
+            "note": "no link is pre-registered on an unlabelled corpus",
         }
     names = link_ids_by_pair(case)
     everything = cross_domain_evidence_recovery(payload, pairs, domain_of)
@@ -1743,7 +1749,12 @@ def decision_rule(
 ) -> dict[str, Any]:
     """Section 5, evaluated mechanically. Read only after H1-H6 are graded."""
     A, B, C = by_arm.get("A", {}), by_arm.get("B", {}), by_arm.get("C", {})
-    keys = sorted(set(B) & set(C)) or sorted(set(C) or set(B))
+    keys = sorted(set(B) & set(C))
+    # Every branch of section 5 is a comparison between the two model arms. With one of
+    # them missing the rule has no input, and answering anyway would let a partial run
+    # select an outcome -- which is precisely the mistake "no row is rerun" exists to
+    # prevent, arriving through the back door.
+    comparable = bool(B) and bool(C)
 
     ucc_c_ge_b = [k for k in keys if ucc["C"].get(k, 0) >= ucc["B"].get(k, 0)]
     ucc_c_gt_b = [k for k in keys if ucc["C"].get(k, 0) > ucc["B"].get(k, 0)]
@@ -1780,7 +1791,8 @@ def decision_rule(
     }
 
     crew_adds_nothing = (
-        have_baseline and bool(keys) and all(not adds_over_a(C, k) for k in keys)
+        comparable and have_baseline and bool(keys)
+        and all(not adds_over_a(C, k) for k in keys)
     )
 
     keep = bool(grades["H1"]["holds"] and len(ucc_c_ge_b) >= 5 and grades["H6"]["holds"])
@@ -1811,9 +1823,18 @@ def decision_rule(
          else "UNAVAILABLE: arm A's scores are the reference this branch is read "
               "against, and they were not supplied"),
     ]
+    if not comparable:
+        branches = [
+            (name, False,
+             "UNAVAILABLE: section 5 compares arms B and C, and "
+             f"{sorted({'B', 'C'} - set(by_arm))} did not run")
+            for name, _holds, _why in branches
+        ]
     selected = [name for name, holds, _why in branches if holds]
     return {
         "read_only_after_grading": True,
+        "comparable": comparable,
+        "arms_present": sorted(by_arm),
         "cases": len(keys),
         "ucc_per_case": {arm: dict(values) for arm, values in ucc.items()},
         "ucc_C_ge_B_cases": ucc_c_ge_b,
@@ -1837,8 +1858,10 @@ def decision_rule(
             "cases_where_C_adds_something": adds["C"] if have_baseline else None,
         },
         "outcome": (
-            " + ".join(selected) if selected else "NO BRANCH SELECTED"
-        ) + (" + SIMPLIFY / REMOVE CREW" if crew_adds_nothing else ""),
+            "UNAVAILABLE (arms B and C have not both run)" if not comparable
+            else (" + ".join(selected) if selected else "NO BRANCH SELECTED")
+            + (" + SIMPLIFY / REMOVE CREW" if crew_adds_nothing else "")
+        ),
     }
 
 
