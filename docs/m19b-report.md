@@ -88,6 +88,21 @@ the single divergence from M19.
   lookup. Two agent-layer defects were fixed before the freeze with arm A's claims
   unchanged on all 22 M19 cases.
 
+### 4.1 Arm A on the benchmark (T7, MEASURED, `reports/m19b/ablation/scores_A.json`)
+
+| case | CDER-specific | CDER-blanket | stages | completeness | planner choices offered / taken | duplicate calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| synthetic:INC-001 | 0/15 | 15 | 10/10 | 0.400 | 3 / 0 | 7 of 43 |
+| M1, M2, L1 | 0/2 | 1 | 2/4 | 0.333 | 2 / 0 | 0 of 9 |
+| M3 | 0/2 | 1 | 3/4 | 0.500 | 2 / 0 | 2 of 12 |
+| M4 | 0/2 | 1 | 2/3 | 0.400 | 2 / 0 | 0 of 8 |
+| L2 | 0/1 | 1 | 1/3 | 0.250 | 2 / 0 | 0 of 8 |
+| flaws CASE-182 / CASE-256 | UNAVAILABLE | — | UNAVAILABLE | UNAVAILABLE | 2 / 0 | 0 of 4, 7 of 17 |
+
+Arm A makes no specific cross-domain claim on any case and discriminates neither
+look-alike; the bar the model arms must clear is zero. Evidence correctness 1.0 and 0
+rejected claims on all nine rows.
+
 ## 5. What it will cost (Phase 9)
 
 Known from M19 and T3: B ≈ 56k tokens and 47 s per case, C ≈ 10k and 28 s, A 0 and 0.2 s.
@@ -95,8 +110,19 @@ M19b figures: UNAVAILABLE until Phase 8.
 
 ## 6. Does C provide unique value on genuinely cross-domain cases? (Phase 8)
 
-**UNAVAILABLE.** Blocked on API credit. The harness (`scripts/m19b_ablation.py`), the
-freeze and arm A's baseline are prepared; the pre-registered predictions are that H1 and
+**UNAVAILABLE.** Blocked on API credit (400 "credit balance is too low", MEASURED three
+times on 2026-09-14). The harness (`scripts/m19b_ablation.py`), the freeze and arm A's
+baseline are prepared. To resume, in the integration checkout with the key exported:
+
+```
+python scripts/m19b_ablation.py freeze                      # re-take at HEAD, credential present
+python scripts/m19b_ablation.py run --arm A --repeat 2 --check-planner
+python scripts/m19b_ablation.py run --arm B --check-planner
+python scripts/m19b_ablation.py run --arm C --check-planner
+python scripts/m19b_ablation.py score --arm A; ... --arm B; ... --arm C
+python scripts/m19b_ablation.py grade
+```
+ the pre-registered predictions are that H1 and
 H2 are false, H3 true, H4 true for duplication and false for latency, H5 true, H6 true.
 
 ## 7. Architectural decision (Phase 12)
