@@ -58,7 +58,7 @@ import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable, Mapping
 
 from ath.evaluation.incidents import Incident
 from ath.telemetry.loader import Telemetry
@@ -187,8 +187,37 @@ def _pairs(ref: str) -> frozenset[str]:
     return frozenset(part.strip() for part in ref.split(";") if part.strip())
 
 
-def resolve_labels(labels: ExternalLabels, telemetry: Telemetry) -> ResolvedLabels:
-    """Map every ref to the ``event_id`` rows whose ``source_ref`` carries all its pairs."""
+RESOLVED = "resolved"
+UNRESOLVED = "unresolved"
+AMBIGUOUS = "ambiguous"
+
+
+@dataclass(frozen=True)
+class ResolvedRef:
+    """One native ref and the ingested row it names, or why it names none.
+
+    ``status`` is the three-way answer the label format already draws elsewhere and
+    which a boolean would flatten: a ref that matched nothing is labelled activity ATH
+    never ingested, and a ref that matched several rows is a *publisher* id this corpus
+    does not uniquely identify. Both are measurements; neither is an id.
+    """
+
+    ref: str
+    event_ids: tuple[str, ...]
+    status: str
+
+    @property
+    def event_id(self) -> str:
+        """The single row this ref names, or ``""`` when it does not name exactly one."""
+        return self.event_ids[0] if self.status == RESOLVED else ""
+
+
+def _pair_index(telemetry: Telemetry) -> dict[str, set[str]]:
+    """``key=value`` -> the event ids whose ``source_ref`` carries it, over all tables.
+
+    Built once per call and shared by every ref: the alternative, scanning four tables
+    per ref, is the same work multiplied by the size of the answer key.
+    """
     by_pair: dict[str, set[str]] = defaultdict(set)
     for table in (telemetry.processes, telemetry.network, telemetry.logons, telemetry.controls):
         if table.empty:
@@ -196,6 +225,42 @@ def resolve_labels(labels: ExternalLabels, telemetry: Telemetry) -> ResolvedLabe
         for event_id, source_ref in zip(table["event_id"], table["source_ref"]):
             for pair in _pairs(str(source_ref)):
                 by_pair[pair].add(str(event_id))
+    return by_pair
+
+
+def _resolve_one(ref: str, by_pair: Mapping[str, set[str]]) -> ResolvedRef:
+    pairs = _pairs(ref)
+    if not pairs:
+        return ResolvedRef(ref=ref, event_ids=(), status=UNRESOLVED)
+    candidates: set[str] | None = None
+    for pair in pairs:
+        hits = by_pair.get(pair, set())
+        candidates = set(hits) if candidates is None else candidates & hits
+        if not candidates:
+            break
+    if not candidates:
+        return ResolvedRef(ref=ref, event_ids=(), status=UNRESOLVED)
+    if len(candidates) > 1:
+        return ResolvedRef(ref=ref, event_ids=tuple(sorted(candidates)), status=AMBIGUOUS)
+    return ResolvedRef(ref=ref, event_ids=(next(iter(candidates)),), status=RESOLVED)
+
+
+def resolve_refs(refs: Iterable[str], telemetry: Telemetry) -> dict[str, ResolvedRef]:
+    """Resolve arbitrary native refs, one :class:`ResolvedRef` each, keyed by ref.
+
+    :func:`resolve_labels` answers "which ids does this scenario cover"; a benchmark
+    that pre-registers *pairs* of ids -- a cross-domain link between one logon record
+    and one process record -- needs the ref-level answer instead, and re-deriving it
+    beside this module would be a second copy of the matching rule for the answer key
+    to drift from. The same ``source_ref`` matching, exposed per ref.
+    """
+    by_pair = _pair_index(telemetry)
+    return {ref: _resolve_one(ref, by_pair) for ref in dict.fromkeys(refs)}
+
+
+def resolve_labels(labels: ExternalLabels, telemetry: Telemetry) -> ResolvedLabels:
+    """Map every ref to the ``event_id`` rows whose ``source_ref`` carries all its pairs."""
+    by_pair = _pair_index(telemetry)
 
     resolved = ResolvedLabels(labels=labels)
     for scenario in labels.scenarios:
@@ -203,22 +268,13 @@ def resolve_labels(labels: ExternalLabels, telemetry: Telemetry) -> ResolvedLabe
         missing: list[str] = []
         multiple: list[str] = []
         for ref in scenario.refs:
-            pairs = _pairs(ref)
-            if not pairs:
+            match = _resolve_one(ref, by_pair)
+            if match.status == UNRESOLVED:
                 missing.append(ref)
-                continue
-            candidates: set[str] | None = None
-            for pair in pairs:
-                hits = by_pair.get(pair, set())
-                candidates = set(hits) if candidates is None else candidates & hits
-                if not candidates:
-                    break
-            if not candidates:
-                missing.append(ref)
-            elif len(candidates) > 1:
+            elif match.status == AMBIGUOUS:
                 multiple.append(ref)
             else:
-                ids |= candidates
+                ids |= set(match.event_ids)
         resolved.event_ids_by_scenario[scenario.name] = frozenset(ids)
         resolved.unresolved[scenario.name] = tuple(missing)
         resolved.ambiguous[scenario.name] = tuple(multiple)
