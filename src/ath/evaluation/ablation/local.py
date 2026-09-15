@@ -1,0 +1,590 @@
+"""The local-model tier of the ablation: a D1 arm, a resumable row store, a RAM guard,
+and a freeze that records the model rather than the credential.
+
+Why a sibling module and not an edit to :mod:`ath.evaluation.ablation.arms`
+----------------------------------------------------------------------------
+``arms.py`` is one of the three files whose hash the M19b freeze gates on, and the
+M19b Phase 8 run has not happened yet. A D1 arm added there would change that hash for a
+run that has nothing to do with D1. So every local addition lives here: it *reuses*
+:class:`~ath.evaluation.ablation.arms.ArmConfig`, :func:`~ath.evaluation.ablation.arms.arm_b`
+and :func:`~ath.evaluation.ablation.arms.run_arm` unchanged, and registers its arms in
+its own :data:`LOCAL_ARM_BUILDERS`. ``tests/test_frozen_surface_pin.py`` is what turns
+that intention into something that fails.
+
+The D1 arm
+-----------
+V1's "local investigator" -- next tool plus a handful of cited hypotheses -- is arm B's
+architecture: the seven-facet generalist with the model planning and synthesising. D1 is
+therefore ``arm_b`` with three deliberate differences and no others: the client is local,
+the model tag is the local one, and ``tool_output_budget`` carries the M19b value (the
+single pre-registered divergence from M19, applied to every model arm identically).
+
+The row store
+--------------
+M19 and M19b wrote one file per arm at the end of a run. A crash at case 19 of 20 lost
+the night, and a rerun had no way to know what it had already done. Here a row is one
+file, named by a key that says everything the V1 plan requires a result to be keyed on --
+case, arm, provider, model, quantisation, repeat and seed -- and a run skips any key whose
+file already parses. A degraded row is *written*, not rerun: silently retrying a failure
+is how a model's reliability disappears from the results. Paths under ``reports/m19/`` or
+``reports/m19b/`` are refused, by path, before any write.
+
+The RAM guard
+--------------
+On the target laptop a 9B fits only when nearly everything else is closed. Below that
+line the OS pages, and a 90-second call becomes a 15-minute one with no error anywhere.
+So a row is refused before it starts when available memory is below a floor named for the
+model's size class, and the available figure is recorded on the row that did start.
+"""
+
+from __future__ import annotations
+
+import ctypes
+import hashlib
+import json
+import os
+import platform
+import re
+import sys
+from dataclasses import dataclass, replace
+from pathlib import Path
+from typing import Any, Callable
+
+from ath.agent.llm import LLMClient
+from ath.agent.ollama_llm import D1_SAMPLING, OllamaLLM, Sampling
+from ath.evaluation.ablation.arms import ArmConfig, CaseResult, arm_b
+from ath.evaluation.ablation.environment import (
+    capture_environment,
+    prompt_hashes,
+    scoring_hashes,
+)
+
+# --------------------------------------------------------------------------------------
+# The arm
+# --------------------------------------------------------------------------------------
+
+ARM_D1 = "D1_local_single"
+"""One bounded local investigator, single pass, greedy and seeded (V1 rung 1)."""
+
+LOCAL_TOOL_OUTPUT_BUDGET = 4096
+"""Bytes of evidence ids one claim may contribute to the synthesis prompt.
+
+The M19b value (``scripts/m19b_ablation.py: TOOL_OUTPUT_BUDGET``, ``PREREGISTERED.md``
+section 1), restated here because ``src`` must not import a script. A test asserts the
+two are equal so they cannot drift apart.
+"""
+
+
+def ollama_factory(
+    sampling: Sampling = D1_SAMPLING, **client_kwargs: Any,
+) -> Callable[..., LLMClient]:
+    """A factory :func:`~ath.evaluation.ablation.arms.build_client` will hand the arm's
+    pinned model tag to. Sampling and every other client setting are fixed at factory
+    construction, so the arm definition -- not an environment variable -- says what ran.
+    """
+
+    def factory(model: str) -> LLMClient:
+        return OllamaLLM(model, sampling=sampling, **client_kwargs)
+
+    return factory
+
+
+def arm_d1(
+    model: str,
+    *,
+    llm_factory: Callable[..., LLMClient] | None = None,
+    sampling: Sampling = D1_SAMPLING,
+) -> ArmConfig:
+    """Arm B's architecture on a local model, with the M19b synthesis bound."""
+    if not model:
+        raise ValueError("arm D1 needs a local model tag, e.g. 'qwen3.5:4b'")
+    base = arm_b(llm_factory=llm_factory or ollama_factory(sampling))
+    return replace(
+        base,
+        name=ARM_D1,
+        model=model,
+        config=replace(base.config, tool_output_budget=LOCAL_TOOL_OUTPUT_BUDGET),
+    )
+
+
+LOCAL_ARM_BUILDERS: dict[str, Callable[..., ArmConfig]] = {ARM_D1: arm_d1}
+"""The local arms, by name. Deliberately separate from ``arms.ARM_BUILDERS``."""
+
+
+# --------------------------------------------------------------------------------------
+# The model, as the header records it
+# --------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ModelSpec:
+    """What produced a row: provider, tag, quantisation, size and the daemon's digest.
+
+    Two rows with the same tag but different digests were produced by different weights
+    (a re-pulled model), and the digest is the only field that can say so.
+    """
+
+    provider: str
+    model: str
+    quantization: str | None = None
+    parameter_size: str | None = None
+    digest: str | None = None
+
+    @property
+    def quant_label(self) -> str:
+        return self.quantization or "unknown-quant"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "provider": self.provider,
+            "model": self.model,
+            "quantization": self.quantization,
+            "parameter_size": self.parameter_size,
+            "digest": self.digest,
+        }
+
+    @classmethod
+    def from_description(cls, described: dict[str, Any]) -> "ModelSpec":
+        """From :meth:`ath.agent.ollama_llm.OllamaLLM.describe`."""
+        return cls(
+            provider=str(described.get("provider", "")),
+            model=str(described.get("model", "")),
+            quantization=described.get("quantization_level"),
+            parameter_size=described.get("parameter_size"),
+            digest=described.get("digest"),
+        )
+
+
+# --------------------------------------------------------------------------------------
+# The row store
+# --------------------------------------------------------------------------------------
+
+FROZEN_REPORT_PREFIXES: tuple[str, ...] = ("reports/m19", "reports/m19b")
+"""Directories this tier reads and never writes."""
+
+MAX_ROW_BYTES = 50 * 1024 * 1024
+"""The same bound ``scripts/m19_ablation.py`` puts on an artifact, for the same reason."""
+
+_UNSAFE = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+class FrozenPathRefused(RuntimeError):
+    """A write was aimed at a frozen experiment's directory."""
+
+
+class RowTooLarge(RuntimeError):
+    """A row would exceed :data:`MAX_ROW_BYTES`; refused, not truncated."""
+
+
+def refuse_frozen_path(path: Path, root: Path) -> Path:
+    """Refuse, by path, any write under a frozen experiment's reports directory."""
+    resolved = Path(path).resolve()
+    for prefix in FROZEN_REPORT_PREFIXES:
+        frozen = (Path(root) / prefix).resolve()
+        if resolved == frozen or frozen in resolved.parents:
+            raise FrozenPathRefused(
+                f"refusing to write {path}: {prefix}/ is a frozen experiment. The local "
+                "tier reports under reports/local/ and never beside a frozen row."
+            )
+    return Path(path)
+
+
+def _slug(value: Any) -> str:
+    text = _UNSAFE.sub("_", str(value)).strip("_")
+    return text or "_"
+
+
+@dataclass(frozen=True)
+class RowKey:
+    """Everything a V1 result row is keyed on. See the module docstring."""
+
+    corpus: str
+    case_id: str
+    arm: str
+    provider: str
+    model: str
+    quantization: str
+    repeat: int
+    seed: int | None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "corpus": self.corpus,
+            "case_id": self.case_id,
+            "arm": self.arm,
+            "provider": self.provider,
+            "model": self.model,
+            "quantization": self.quantization,
+            "repeat": self.repeat,
+            "seed": self.seed,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "RowKey":
+        return cls(
+            corpus=str(payload["corpus"]),
+            case_id=str(payload["case_id"]),
+            arm=str(payload["arm"]),
+            provider=str(payload["provider"]),
+            model=str(payload["model"]),
+            quantization=str(payload["quantization"]),
+            repeat=int(payload["repeat"]),
+            seed=None if payload.get("seed") is None else int(payload["seed"]),
+        )
+
+    @property
+    def digest(self) -> str:
+        """Short hash of the exact key. The readable part of a filename is slugged and can
+        collide (``a:b`` and ``a_b``); this part cannot, so the mapping stays injective."""
+        payload = json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+
+    @property
+    def filename(self) -> str:
+        seed = "noseed" if self.seed is None else f"seed{self.seed}"
+        return (
+            f"{_slug(self.corpus)}__{_slug(self.case_id)}__{_slug(self.arm)}__"
+            f"{_slug(self.provider)}__{_slug(self.model)}__{_slug(self.quantization)}__"
+            f"rep{self.repeat}__{seed}__{self.digest}.json"
+        )
+
+
+def row_path(rows_dir: Path, key: RowKey) -> Path:
+    return Path(rows_dir) / key.filename
+
+
+def read_row(path: Path) -> dict[str, Any] | None:
+    """The row payload, or ``None`` when the file is absent, unparseable or not a row.
+
+    A half-written file from a crash mid-write is ``None`` and will be rewritten; a
+    complete one -- degraded or not -- is a row and will not be run again.
+    """
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if not isinstance(payload.get("key"), dict) or not isinstance(payload.get("row"), dict):
+        return None
+    if "arm" not in payload["row"] or "scores" not in payload["row"]:
+        return None
+    return payload
+
+
+def is_complete(path: Path) -> bool:
+    return read_row(path) is not None
+
+
+def write_row(
+    rows_dir: Path,
+    key: RowKey,
+    result: CaseResult,
+    header: dict[str, Any],
+    *,
+    root: Path,
+) -> Path:
+    """Write one row atomically (temp file, then replace) inside the guards.
+
+    Atomic so that a crash never leaves a file that both exists and parses as half a row:
+    the temp name is never a row path, and ``os.replace`` is all-or-nothing.
+    """
+    path = refuse_frozen_path(row_path(rows_dir, key), root)
+    payload = {
+        "key": key.to_dict(),
+        "header": dict(header),
+        "row": result.to_dict(),
+    }
+    text = json.dumps(payload, indent=2, default=str)
+    size = len(text.encode("utf-8"))
+    if size > MAX_ROW_BYTES:
+        raise RowTooLarge(
+            f"refusing to write {path}: {size / 1e6:.1f} MB exceeds {MAX_ROW_BYTES / 1e6:.0f} MB"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".partial")
+    temporary.write_text(text, encoding="utf-8")
+    os.replace(temporary, path)
+    return path
+
+
+def completed_rows(rows_dir: Path) -> list[dict[str, Any]]:
+    """Every complete row under ``rows_dir``, sorted by filename."""
+    directory = Path(rows_dir)
+    if not directory.is_dir():
+        return []
+    rows: list[dict[str, Any]] = []
+    for path in sorted(directory.glob("*.json")):
+        payload = read_row(path)
+        if payload is not None:
+            rows.append(payload)
+    return rows
+
+
+# --------------------------------------------------------------------------------------
+# The RAM guard
+# --------------------------------------------------------------------------------------
+
+GIB = 1024 ** 3
+
+RAM_FLOORS_BYTES: dict[str, int] = {
+    "4B": int(4.5 * GIB),
+    "9B": int(9.5 * GIB),
+}
+"""Available memory required before a row may start, by model size class.
+
+The V1 plan's figures for this machine (16 GB, ~13 GB in use with normal apps): a 4B Q4
+runs beside a browser, a 9B Q4 needs everything else closed. Named constants so the
+amendment can cite them; a floor that is wrong is corrected here and nowhere else.
+"""
+
+
+def ram_floor_for(parameter_size: str | None) -> int | None:
+    """The floor for a model whose daemon-reported size is e.g. ``"4.7B"`` or ``"9.1B"``.
+
+    ``None`` when the size is unknown or outside both classes: an unguarded run is then a
+    *recorded* choice (the row says the floor was ``None``) rather than a silent one.
+    """
+    if not parameter_size:
+        return None
+    match = re.match(r"\s*([0-9]+(?:\.[0-9]+)?)\s*B", str(parameter_size), re.IGNORECASE)
+    if not match:
+        return None
+    billions = float(match.group(1))
+    if billions <= 6.0:
+        return RAM_FLOORS_BYTES["4B"]
+    if billions <= 12.0:
+        return RAM_FLOORS_BYTES["9B"]
+    return None
+
+
+def available_ram_bytes() -> int | None:
+    """Physical memory currently available, or ``None`` when the platform cannot say."""
+    if sys.platform == "win32":
+        return _windows_available_bytes()
+    try:
+        with open("/proc/meminfo", encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) * 1024
+    except (OSError, ValueError, IndexError):
+        return None
+    return None
+
+
+def _windows_available_bytes() -> int | None:
+    class _MemoryStatusEx(ctypes.Structure):
+        _fields_ = [
+            ("dwLength", ctypes.c_ulong),
+            ("dwMemoryLoad", ctypes.c_ulong),
+            ("ullTotalPhys", ctypes.c_ulonglong),
+            ("ullAvailPhys", ctypes.c_ulonglong),
+            ("ullTotalPageFile", ctypes.c_ulonglong),
+            ("ullAvailPageFile", ctypes.c_ulonglong),
+            ("ullTotalVirtual", ctypes.c_ulonglong),
+            ("ullAvailVirtual", ctypes.c_ulonglong),
+            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ]
+
+    try:
+        status = _MemoryStatusEx()
+        status.dwLength = ctypes.sizeof(_MemoryStatusEx)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):  # type: ignore[attr-defined]
+            return None
+        return int(status.ullAvailPhys)
+    except Exception:  # noqa: BLE001 -- a guard that cannot read is a guard that says None
+        return None
+
+
+@dataclass(frozen=True)
+class RamVerdict:
+    """Whether a row may start. ``ok`` is ``None`` when nothing could be measured."""
+
+    ok: bool | None
+    available_bytes: int | None
+    floor_bytes: int | None
+    message: str
+    resident_bytes: int = 0
+    """System memory the model already occupies in the daemon (kept alive from an earlier
+    call). Credited against the floor: those bytes are spent, not needed again."""
+
+    @property
+    def effective_bytes(self) -> int | None:
+        if self.available_bytes is None:
+            return None
+        return self.available_bytes + self.resident_bytes
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "ok": self.ok,
+            "available_bytes": self.available_bytes,
+            "resident_bytes": self.resident_bytes,
+            "effective_bytes": self.effective_bytes,
+            "floor_bytes": self.floor_bytes,
+            "message": self.message,
+        }
+
+
+def check_ram(
+    floor_bytes: int | None, available_bytes: int | None, resident_bytes: int = 0,
+) -> RamVerdict:
+    """The guard. ``resident_bytes`` is what the model already holds, so a daemon that kept
+    the weights loaded is not refused for the memory the weights are using."""
+    resident = max(0, int(resident_bytes or 0))
+    if floor_bytes is None:
+        return RamVerdict(
+            None, available_bytes, None,
+            "no RAM floor for this model size; the row is unguarded and says so", resident,
+        )
+    if available_bytes is None:
+        return RamVerdict(
+            None, None, floor_bytes,
+            "available RAM could not be measured on this platform; proceeding unguarded",
+            resident,
+        )
+    effective = available_bytes + resident
+    credit = f" plus {resident / GIB:.2f} GiB already resident" if resident else ""
+    if effective < floor_bytes:
+        return RamVerdict(
+            False, available_bytes, floor_bytes,
+            f"refusing to start: {available_bytes / GIB:.2f} GiB available{credit} is below "
+            f"the {floor_bytes / GIB:.1f} GiB floor for this model; below it the OS pages and "
+            "a 90 s call becomes a 15 min one with no error. Close applications and retry.",
+            resident,
+        )
+    return RamVerdict(
+        True, available_bytes, floor_bytes,
+        f"{available_bytes / GIB:.2f} GiB available{credit}, floor {floor_bytes / GIB:.1f} GiB",
+        resident,
+    )
+
+
+# --------------------------------------------------------------------------------------
+# The local freeze
+# --------------------------------------------------------------------------------------
+
+LOCAL_GATED_FIELDS: tuple[str, ...] = (
+    "prompts", "scoring", "manifest_hash", "model_digest", "daemon_version",
+    "client_configuration",
+)
+"""What must match between the local freeze and a scored local run.
+
+Not the commit: the dev loop commits between passes by design, and the prompt and scoring
+hashes are what a commit could change that matters. Not RAM: recorded, because it explains
+a slow row, and never gated, because it changes by the minute.
+"""
+
+_CONFIGURATION_UNGATED: frozenset[str] = frozenset({
+    "base_url", "timeout_seconds_per_attempt", "max_attempts", "backoff_seconds",
+})
+"""Client settings that change where and how patiently a call is made, not what it
+computes. Recorded, not gated."""
+
+
+def _ollama_environment_variables() -> dict[str, str]:
+    return {k: v for k, v in sorted(os.environ.items()) if k.startswith("OLLAMA_")}
+
+
+def local_environment(
+    root: Path,
+    *,
+    manifest_hash: str,
+    arm: ArmConfig,
+    described: dict[str, Any],
+    manifest_head: str = "",
+    available_ram: int | None = None,
+) -> dict[str, Any]:
+    """The frozen environment for a local run.
+
+    Wraps :func:`~ath.evaluation.ablation.environment.capture_environment` -- so the git
+    state, prompt hashes, scoring hashes, tool surface and the *hosted* request
+    configuration are recorded exactly as M19b recorded them, which is what lets a reader
+    see they did not move -- and adds the local section: what the daemon said about
+    itself and the model, and what the client will send.
+    """
+    base = capture_environment(
+        root, manifest_hash=manifest_hash, manifest_head=manifest_head,
+        arm_configs=[arm], credential_present=False,
+    )
+    base["local"] = {
+        "daemon": {
+            "provider": described.get("provider"),
+            "base_url": described.get("base_url"),
+            "version": described.get("daemon_version"),
+            "environment_variables": _ollama_environment_variables(),
+        },
+        "model": ModelSpec.from_description(described).to_dict(),
+        "model_details": {
+            "family": described.get("family"),
+            "format": described.get("format"),
+            "size_bytes": described.get("size_bytes"),
+            "modified_at": described.get("modified_at"),
+            "capabilities": list(described.get("capabilities") or []),
+            "model_context_length": described.get("model_context_length"),
+        },
+        "client_configuration": dict(described.get("configuration") or {}),
+        "machine": {
+            "platform": platform.platform(),
+            "processor": platform.processor(),
+            "available_ram_bytes": available_ram,
+            "note": "available RAM is recorded, never gated",
+        },
+    }
+    return base
+
+
+def _gated_configuration(configuration: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in configuration.items() if k not in _CONFIGURATION_UNGATED}
+
+
+def check_local_environment(
+    recorded: dict[str, Any],
+    *,
+    manifest_hash: str,
+    described: dict[str, Any],
+) -> list[str]:
+    """Differences between the freeze and the live world that make a run not-the-frozen-
+    experiment. Empty when clean. Descriptions, so a refusal names what moved."""
+    differences: list[str] = []
+
+    for name, live in prompt_hashes().items():
+        frozen = (recorded.get("prompts") or {}).get(name)
+        if frozen != live:
+            differences.append(f"prompts.{name}: frozen {str(frozen)[:12]} live {live[:12]}")
+    for name, live in scoring_hashes().items():
+        frozen = (recorded.get("scoring") or {}).get(name)
+        if frozen != live:
+            differences.append(f"scoring.{name}: frozen {str(frozen)[:12]} live {live[:12]}")
+
+    frozen_manifest = recorded.get("manifest_hash")
+    if frozen_manifest != manifest_hash:
+        differences.append(
+            f"manifest_hash: frozen {str(frozen_manifest)[:12]} live {manifest_hash[:12]}"
+        )
+
+    local = recorded.get("local") or {}
+    frozen_model = local.get("model") or {}
+    live_model = ModelSpec.from_description(described)
+    if frozen_model.get("digest") != live_model.digest:
+        differences.append(
+            f"model_digest: frozen {str(frozen_model.get('digest'))[:12]} live "
+            f"{str(live_model.digest)[:12]} (the weights changed; re-freeze and say so)"
+        )
+    if frozen_model.get("model") != live_model.model:
+        differences.append(
+            f"model: frozen {frozen_model.get('model')!r} live {live_model.model!r}"
+        )
+    frozen_version = (local.get("daemon") or {}).get("version")
+    if frozen_version != described.get("daemon_version"):
+        differences.append(
+            f"daemon_version: frozen {frozen_version!r} live {described.get('daemon_version')!r}"
+        )
+    frozen_configuration = _gated_configuration(local.get("client_configuration") or {})
+    live_configuration = _gated_configuration(dict(described.get("configuration") or {}))
+    for name in sorted(set(frozen_configuration) | set(live_configuration)):
+        if frozen_configuration.get(name) != live_configuration.get(name):
+            differences.append(
+                f"client_configuration.{name}: frozen {frozen_configuration.get(name)!r} "
+                f"live {live_configuration.get(name)!r}"
+            )
+    return differences
