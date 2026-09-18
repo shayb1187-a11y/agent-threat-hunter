@@ -210,3 +210,145 @@ def test_twenty_clean_rows_meet_the_target_and_nineteen_do_not() -> None:
 def test_medians_and_p95_are_never_invented() -> None:
     assert run_script._median([]) is None and run_script._p95([None]) is None
     assert run_script._p95([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) == 10
+
+
+# --------------------------------------------------------------------------------------
+# Provenance: which rows a summary may read
+# --------------------------------------------------------------------------------------
+
+ABSTAIN = (
+    '{"explanations": [{"label": "insufficient", "statement": "not enough", "evidence": []}], '
+    '"evidence_gap": "g", "next_probe": "none", "probe_reason": "", "disposition": "abstain"}'
+)
+
+
+def test_the_row_key_and_the_rows_directory_carry_the_manifest_hash(tmp_path, corpus, pipeline, manifest) -> None:
+    """The 2026-09-15 rows were keyed without the manifest, so a rerun against the
+    regenerated manifest would have skipped every case as already complete."""
+    digest = manifest_hash(manifest)
+    _run(tmp_path, corpus, pipeline, manifest, client=ScriptedLLM(responses=[ABSTAIN] * 64, name="scripted"))
+    row = completed_rows(tmp_path / "rows")[0]
+    key = RowKey.from_dict(row["key"])
+    assert key.manifest_hash == digest
+    assert f"m{digest[:12]}" in row_path(tmp_path / "rows", key).name
+    other = RowKey.from_dict({**row["key"], "manifest_hash": "f" * 64})
+    assert other.filename != key.filename, "a different manifest is a different row"
+    directory = run_script.rows_dir(tmp_path, "D1", "fake:1b", digest)
+    assert directory.name.startswith(f"m{digest[:12]}_")
+    assert run_script.rows_dir(tmp_path, "D1", "fake:1b", "e" * 64) != directory
+
+
+def test_a_stale_manifest_row_is_rejected_and_a_matching_one_accepted(tmp_path, corpus, pipeline, manifest) -> None:
+    digest = manifest_hash(manifest)
+    _run(tmp_path, corpus, pipeline, manifest, client=ScriptedLLM(responses=[ABSTAIN] * 64, name="scripted"))
+    rows = completed_rows(tmp_path / "rows")
+    for row in rows:
+        row["header"]["investigator"] = run_script.investigator_environment()
+    kept, excluded = run_script.select_rows(rows, manifest, digest, model="fake:1b", repeat=1)
+    assert len(kept) == len(rows) and excluded == {}
+    kept, excluded = run_script.select_rows(rows, manifest, "f" * 64, model="fake:1b", repeat=1)
+    assert kept == [] and excluded == {"stale_manifest": len(rows)}
+
+
+def test_a_telemetry_hash_mismatch_is_rejected(tmp_path, corpus, pipeline, manifest) -> None:
+    digest = manifest_hash(manifest)
+    _run(tmp_path, corpus, pipeline, manifest, client=ScriptedLLM(responses=[ABSTAIN] * 64, name="scripted"))
+    rows = completed_rows(tmp_path / "rows")
+    for row in rows:
+        row["header"]["investigator"] = run_script.investigator_environment()
+    rows[0]["row"]["telemetry_hash"] = "0" * 64
+    kept, excluded = run_script.select_rows(rows, manifest, digest, model="fake:1b", repeat=1)
+    assert len(kept) == len(rows) - 1 and excluded == {"telemetry_hash_mismatch": 1}
+
+
+def test_a_row_under_different_investigator_prompts_is_rejected(tmp_path, corpus, pipeline, manifest) -> None:
+    digest = manifest_hash(manifest)
+    _run(tmp_path, corpus, pipeline, manifest, client=ScriptedLLM(responses=[ABSTAIN] * 64, name="scripted"))
+    rows = completed_rows(tmp_path / "rows")
+    for row in rows:
+        row["header"]["investigator"] = {**run_script.investigator_environment(), "investigator_system": "0" * 64}
+    kept, excluded = run_script.select_rows(rows, manifest, digest, model="fake:1b", repeat=1)
+    assert kept == [] and excluded == {"investigator_prompt_drift": len(rows)}
+
+
+def _link_row(*, manifest_hash: str, scored_under: str, telemetry: str = "t" * 64, links=None) -> dict:
+    row = _row()
+    row["row"]["manifest_hash"] = manifest_hash
+    row["row"]["telemetry_hash"] = telemetry
+    row["row"]["labels"] = {"verdict": "malicious"}
+    row["row"]["label_scores"] = {} if links is None else {
+        "links": links, "link_scoring": {"manifest_hash": scored_under, "telemetry_hash": telemetry},
+    }
+    return row
+
+
+def test_link_scores_are_never_synthesised_or_read_for_stale_rows() -> None:
+    current = "a" * 64
+    links = {"X-LINK-1": True, "X-LINK-2": False}
+    pinned = {"c/CASE-001": "t" * 64}
+    # Scored under the current manifest, run against it, telemetry pinned: readable.
+    good = run_script.row_summary(_link_row(manifest_hash=current, scored_under=current, links=links),
+                                  manifest_digest=current, telemetry_hashes=pinned)
+    assert good["links_valid"] is True and good["links"] == links
+    # Run against a stale manifest: refused, and nothing is computed in its place.
+    stale = run_script.row_summary(_link_row(manifest_hash="b" * 64, scored_under="b" * 64, links=links),
+                                   manifest_digest=current, telemetry_hashes=pinned)
+    assert stale["links_valid"] is False and stale["links"] is None
+    # Scored under another manifest than the one it was run against: refused.
+    mixed = run_script.row_summary(_link_row(manifest_hash=current, scored_under="b" * 64, links=links),
+                                   manifest_digest=current, telemetry_hashes=pinned)
+    assert mixed["links_valid"] is False
+    # Telemetry no longer pinned by the manifest for this case: refused.
+    moved = run_script.row_summary(_link_row(manifest_hash=current, scored_under=current, links=links),
+                                   manifest_digest=current, telemetry_hashes={"c/CASE-001": "u" * 64})
+    assert moved["links_valid"] is False
+    # A row that carries no link scores has none; nothing is invented.
+    none = run_script.row_summary(_link_row(manifest_hash=current, scored_under=current),
+                                  manifest_digest=current, telemetry_hashes=pinned)
+    assert none["links_valid"] is False and none["links"] is None
+    summary = run_script.summarise([good["key"] and _link_row(manifest_hash=current, scored_under=current, links=links),
+                                    _link_row(manifest_hash="b" * 64, scored_under="b" * 64, links=links)],
+                                   expected_cases=2, manifest_digest=current, telemetry_hashes=pinned)
+    inv = summary["investigation"]
+    assert inv["link_scorable_rows"] == 1 and inv["link_unscorable_rows"] == 1
+    assert (inv["link_1_recovered"], inv["link_1_defined"], inv["link_1_score"]) == (1, 1, 1.0)
+    assert (inv["link_2_recovered"], inv["link_2_defined"], inv["link_2_score"]) == (0, 1, 0.0)
+
+
+def _labelled(verdict, disposition, *, benign_final=False, tools=(), returned=0, used=0, truncated=False, changed=False):
+    row = _row()
+    row["row"]["labels"] = {"verdict": verdict} if verdict else {}
+    row["row"]["state"]["investigation"] = {
+        "final_disposition": disposition, "abstained": disposition == "abstain",
+        "benign_hypothesis_present_initial": benign_final, "benign_hypothesis_present_final": benign_final,
+        "chosen_tool": tools[0] if tools else None, "chosen_tools": list(tools), "probes_run": list(tools),
+        "trajectory": ["seed", *tools], "new_evidence_ids_returned": returned, "new_evidence_ids_used": used,
+        "output_truncated": truncated, "hypothesis_changed_after_tool": changed, "labels_changed_after_tool": changed,
+        "evidence_gap": "g", "tool_choice_reason": "r", "model_calls": 1 + len(tools),
+    }
+    return row
+
+
+def test_the_investigation_metrics_are_counted_from_labels_and_dispositions() -> None:
+    rows = [
+        _labelled("malicious", "malicious", tools=("process_tree",), returned=2, used=1, changed=True),
+        _labelled("malicious", "abstain"),
+        _labelled("benign", "malicious", tools=("user_auth_history",), returned=3),
+        _labelled("benign", "benign", benign_final=True, tools=("process_tree",), returned=1, used=1),
+        _labelled(None, "abstain", truncated=True),
+    ]
+    inv = run_script.summarise(rows, expected_cases=5)["investigation"]
+    assert inv["labelled_rows"] == 4 and inv["malicious_cases"] == 2 and inv["benign_cases"] == 2
+    assert inv["malicious_called_malicious"] == 1 and inv["malicious_abstained"] == 1
+    assert inv["benign_called_malicious"] == 1 and inv["benign_called_benign"] == 1
+    assert inv["benign_false_narrative_rate"] == 0.5
+    assert inv["benign_retaining_benign_alternative"] == 1
+    assert inv["abstentions"] == 2 and inv["abstention_rate"] == 0.4
+    assert inv["cases_with_tool_call"] == 3 and inv["probes_total"] == 3
+    assert inv["first_tool_distribution"] == {"process_tree": 2, "user_auth_history": 1}
+    assert inv["tool_choice_diversity"] == 2
+    assert inv["unique_trajectories"] == 3
+    assert inv["cases_retrieving_new_evidence"] == 3 and inv["cases_using_new_evidence"] == 2
+    assert inv["truncated_rows"] == 1 and inv["truncation_rate"] == 0.2
+    assert inv["hypothesis_changed_after_tool"] == 1
+    assert inv["link_1_defined"] == 0 and inv["link_1_score"] is None

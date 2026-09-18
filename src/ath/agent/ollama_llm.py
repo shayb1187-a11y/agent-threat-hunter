@@ -45,6 +45,7 @@ generation or paging cannot be diagnosed.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import socket
@@ -258,6 +259,14 @@ class OllamaLLM(TokenAccounting):
             "num_predict_cap": self.num_predict_cap,
             "think": self.think,
             "format": self.format if isinstance(self.format, str) or self.format is None else "schema",
+            # A schema is not dumped into the freeze, but *which* schema is gated: two
+            # runs under different output grammars are different experiments.
+            "format_schema_sha256": (
+                None if isinstance(self.format, str) or self.format is None
+                else hashlib.sha256(
+                    json.dumps(self.format, sort_keys=True).encode("utf-8")
+                ).hexdigest()
+            ),
             "keep_alive": self.keep_alive,
             "timeout_seconds_per_attempt": self.timeout_seconds,
             "max_attempts": self.max_attempts,

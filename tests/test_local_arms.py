@@ -29,9 +29,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from ath.agent.llm import ScriptedLLM
+from ath.agent.llm import NullLLM, ScriptedLLM
 from ath.agent.ollama_llm import D1_SAMPLING, OllamaLLM, Sampling
-from ath.evaluation.ablation import ARM_B, arm_b, build_client, run_arm
+from ath.evaluation.ablation import ARM_B, ArmUnavailable, arm_b, build_client
 from ath.evaluation.ablation.local import (
     ARM_D1,
     LOCAL_ARM_BUILDERS,
@@ -39,29 +39,29 @@ from ath.evaluation.ablation.local import (
     ModelSpec,
     arm_d1,
     ollama_factory,
+    run_local_arm,
 )
 
 # The harness fixtures the existing arm tests use, imported rather than copied.
 from test_ablation_harness import corpus, manifest, pipeline  # noqa: F401
 
 
-def test_d1_differs_from_arm_b_in_exactly_three_fields() -> None:
+def test_d1_keeps_arm_bs_budgets_and_is_its_own_architecture() -> None:
+    """D1 v2 is the bounded investigator, not the facet generalist. What it must share
+    with arm B is the budgets -- the same step budget and tool cap -- so a cost or
+    coverage difference is a difference in what investigates, not in what it was
+    allowed to spend. Fails if a budget drifts, if D1 is quietly rebuilt on the
+    generalist, or if the arm stops requiring a model."""
     b, d1 = arm_b(), arm_d1("qwen3.5:4b")
     assert d1.name == ARM_D1 and b.name == ARM_B
     assert d1.model == "qwen3.5:4b"
+    assert d1.requires_model is True and d1.implemented is True
+    assert d1.tool_call_cap == b.tool_call_cap == 40
+    assert d1.config.max_steps == b.config.max_steps == 8
+    assert d1.generalist is False, "D1 v2 is the investigator loop, not the facet walk"
+    assert "investigator" in d1.design_note
     assert d1.config.tool_output_budget == LOCAL_TOOL_OUTPUT_BUDGET
     assert b.config.tool_output_budget is None
-
-    same = {
-        "requires_model", "tool_call_cap", "generalist", "implemented", "design_note",
-    }
-    for field_name in same:
-        assert getattr(d1, field_name) == getattr(b, field_name), field_name
-    for field_name in ("max_steps", "use_llm_planner", "use_llm_synthesis", "max_synthesis_claims"):
-        assert getattr(d1.config, field_name) == getattr(b.config, field_name), field_name
-
-    b_dict, d1_dict = b.to_dict(), d1.to_dict()
-    assert {k for k in b_dict if b_dict[k] != d1_dict[k]} == {"name", "model"}
 
 
 def test_the_synthesis_bound_is_the_m19b_constant() -> None:
@@ -94,12 +94,16 @@ def test_d1_refuses_an_empty_tag() -> None:
         arm_d1("")
 
 
-def test_a_scripted_d1_row_is_labelled_d1_scripted_and_runs_the_generalist(
+def test_a_scripted_d1_row_is_labelled_d1_scripted_and_runs_the_investigator(
     manifest, corpus, pipeline,
 ) -> None:
     findings, cases, environment = pipeline
-    scripted = ScriptedLLM(responses=['{"claims": []}'] * 64, name="scripted-model")
-    results = run_arm(
+    abstain = (
+        '{"explanations": [{"label": "insufficient", "statement": "not enough", "evidence": []}], '
+        '"evidence_gap": "none", "next_probe": "none", "probe_reason": "", "disposition": "abstain"}'
+    )
+    scripted = ScriptedLLM(responses=[abstain] * 64, name="scripted-model")
+    results = run_local_arm(
         arm_d1("qwen3.5:4b"), manifest, corpus, cases, findings=findings,
         environment=environment, llm=scripted, scripted=True,
     )
@@ -109,7 +113,16 @@ def test_a_scripted_d1_row_is_labelled_d1_scripted_and_runs_the_generalist(
         assert result.labelled_arm == f"{ARM_D1}_SCRIPTED"
         assert result.budgets["tool_call_cap"] == 40
         assert result.budgets["max_steps"] == 8
-        assert result.state["agents_run"], "D1 must actually run something"
+        assert result.state["agents_run"][0] == "investigator:seed", "D1 must run the investigator"
+        assert result.state["investigation"]["final_disposition"] == "abstain"
+
+
+def test_run_local_arm_refuses_without_a_model_exactly_as_run_arm_does(manifest, corpus, pipeline) -> None:
+    findings, cases, environment = pipeline
+    with pytest.raises(ArmUnavailable):
+        run_local_arm(arm_d1("qwen3.5:4b", llm_factory=NullLLM), manifest, corpus, cases, findings=findings)
+    with pytest.raises(ArmUnavailable):
+        run_local_arm(arm_d1("qwen3.5:4b"), manifest, corpus, cases, findings=findings, llm=NullLLM(), scripted=True)
 
 
 def test_model_spec_reads_the_daemons_description() -> None:

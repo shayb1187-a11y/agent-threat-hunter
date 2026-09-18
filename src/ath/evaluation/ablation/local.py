@@ -13,11 +13,15 @@ that intention into something that fails.
 
 The D1 arm
 -----------
-V1's "local investigator" -- next tool plus a handful of cited hypotheses -- is arm B's
-architecture: the seven-facet generalist with the model planning and synthesising. D1 is
-therefore ``arm_b`` with three deliberate differences and no others: the client is local,
-the model tag is the local one, and ``tool_output_budget`` carries the M19b value (the
-single pre-registered divergence from M19, applied to every model arm identically).
+The first D1 preview ran arm B's architecture (seven facets of one generalist, walked to
+exhaustion, then one synthesis pass) on the local model and measured a detector narrator:
+the same six steps on every case, no process lineage, verdicts read off the detector's
+own sentences (``reports/local/dev/D1_AUDIT.md``). D1 is now its own loop,
+:mod:`ath.agent.investigator` -- observations, competing explanations, one evidence gap,
+at most one probe per round, update -- run by :func:`run_local_arm`, which mirrors the
+frozen :func:`~ath.evaluation.ablation.arms.run_arm` step for step (manifest check,
+footing, token accounting, scoring, row shape) and differs only in what investigates.
+The arm keeps arm B's budgets: ``max_steps`` 8 and a 40-call tool cap.
 
 The row store
 --------------
@@ -46,18 +50,59 @@ import os
 import platform
 import re
 import sys
-from dataclasses import dataclass, replace
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
+from ath.agent.claims import ClaimVerifier
+from ath.agent.investigator import (
+    D1_PROMPT_VERSION,
+    INVESTIGATOR_MAX_TOKENS,
+    MAX_PROBES,
+    RESPONSE_SCHEMA,
+    build_investigator,
+)
+from ath.agent.investigator import prompt_hashes as investigator_prompt_hashes
 from ath.agent.llm import LLMClient
 from ath.agent.ollama_llm import D1_SAMPLING, OllamaLLM, Sampling
-from ath.evaluation.ablation.arms import ArmConfig, CaseResult, arm_b
+from ath.agent.orchestrator import InvestigationConfig
+from ath.agent.tools import ToolBox
+from ath.correlation.chain import InvestigationCase
+from ath.evaluation.ablation.arms import (
+    STEP_BUDGET,
+    TOOL_CALL_CAP,
+    ArmConfig,
+    ArmUnavailable,
+    CaseResult,
+    UnequalFooting,
+    _check_inputs,
+    attach_request_observer,
+    begin_token_accounting,
+    budgets_of,
+    build_client,
+    case_footing,
+    detach_request_observer,
+    request_records,
+    tokens_spent,
+)
 from ath.evaluation.ablation.environment import (
     capture_environment,
     prompt_hashes,
     scoring_hashes,
 )
+from ath.evaluation.ablation.manifest import CaseManifest, telemetry_hash
+from ath.evaluation.ablation.scoring import (
+    UnknownRubric,
+    capture_label_scores,
+    context_size,
+    cross_domain_evidence_recovery,
+    domain_of_telemetry,
+    footing_differences,
+    score_case,
+)
+from ath.hunting.finding import Finding
+from ath.telemetry.loader import Telemetry
 
 # --------------------------------------------------------------------------------------
 # The arm
@@ -73,6 +118,15 @@ The M19b value (``scripts/m19b_ablation.py: TOOL_OUTPUT_BUDGET``, ``PREREGISTERE
 section 1), restated here because ``src`` must not import a script. A test asserts the
 two are equal so they cannot drift apart.
 """
+
+
+D1_DESIGN_NOTE = (
+    "one bounded investigator (ath.agent.investigator): observations -> <= 3 competing "
+    "explanations -> one evidence gap -> at most one probe per round from a menu built "
+    f"from the case's own evidence -> update; <= {MAX_PROBES} probe round(s), "
+    f"<= {MAX_PROBES + 1} model calls, {INVESTIGATOR_MAX_TOKENS} output tokens per call, "
+    "JSON-schema-bounded output. Budgets are arm B's (max_steps, tool cap)."
+)
 
 
 def ollama_factory(
@@ -94,21 +148,199 @@ def arm_d1(
     *,
     llm_factory: Callable[..., LLMClient] | None = None,
     sampling: Sampling = D1_SAMPLING,
+    **client_kwargs: Any,
 ) -> ArmConfig:
-    """Arm B's architecture on a local model, with the M19b synthesis bound."""
+    """The D1 arm: the bounded investigator on a local model, under arm B's budgets.
+
+    ``client_kwargs`` (``base_url``, ``think``, ...) reach the local client through the
+    default factory, so the freeze and the run build the client the same way. The
+    client's output ``format`` is the investigator's JSON schema.
+    """
     if not model:
         raise ValueError("arm D1 needs a local model tag, e.g. 'qwen3.5:4b'")
-    base = arm_b(llm_factory=llm_factory or ollama_factory(sampling))
-    return replace(
-        base,
+    factory = llm_factory or ollama_factory(sampling, format=RESPONSE_SCHEMA, **client_kwargs)
+    return ArmConfig(
         name=ARM_D1,
+        llm_factory=factory,
+        config=InvestigationConfig(
+            max_steps=STEP_BUDGET, use_llm_planner=True, use_llm_synthesis=True,
+            tool_output_budget=LOCAL_TOOL_OUTPUT_BUDGET,
+        ),
+        requires_model=True,
+        tool_call_cap=TOOL_CALL_CAP,
+        generalist=False,
         model=model,
-        config=replace(base.config, tool_output_budget=LOCAL_TOOL_OUTPUT_BUDGET),
+        design_note=D1_DESIGN_NOTE,
     )
 
 
 LOCAL_ARM_BUILDERS: dict[str, Callable[..., ArmConfig]] = {ARM_D1: arm_d1}
 """The local arms, by name. Deliberately separate from ``arms.ARM_BUILDERS``."""
+
+
+def investigator_environment() -> dict[str, Any]:
+    """What the D1 loop reads and how it is bounded, for the freeze and its gate."""
+    return {
+        **investigator_prompt_hashes(),
+        "max_probes": MAX_PROBES,
+        "max_tokens": INVESTIGATOR_MAX_TOKENS,
+    }
+
+
+# --------------------------------------------------------------------------------------
+# Running the arm
+# --------------------------------------------------------------------------------------
+
+
+def link_recovery(
+    state: Any,
+    links: Sequence[dict[str, Any]],
+    domain_of: Any,
+    *,
+    manifest_digest: str,
+    telemetry_digest: str,
+) -> dict[str, Any]:
+    """LINK-1 / LINK-2 style scores for one row, from its own state.
+
+    ``links`` are the manifest's entries (``link_id``, ``identity.event_id``,
+    ``endpoint.event_id``). Scored through :func:`cross_domain_evidence_recovery`, the
+    M19b definition: a link is recovered when one accepted FACT or INFERENCE cites both
+    ids. The result names the manifest and telemetry it was scored against, so a summary
+    can refuse to read it beside a different manifest.
+    """
+    pairs = [(str(l["identity"]["event_id"]), str(l["endpoint"]["event_id"])) for l in links]
+    ids = {tuple(sorted(pair)): str(l["link_id"]) for pair, l in zip(pairs, links)}
+    try:
+        recovery = cross_domain_evidence_recovery(state, pairs, domain_of)
+    except UnknownRubric as exc:
+        return {"links_error": str(exc), "link_scoring": {
+            "manifest_hash": manifest_digest, "telemetry_hash": telemetry_digest,
+            "investigator_version": D1_PROMPT_VERSION,
+        }}
+    recovered = {ids[tuple(sorted(link["evidence_ids"]))] for link in recovery["recovered_links"]}
+    return {
+        "links": {link_id: (link_id in recovered) for link_id in ids.values()},
+        "links_defined": recovery["defined"],
+        "links_recovered": recovery["recovered"],
+        "link_recovery": recovery["recovery"],
+        "link_scoring": {
+            "manifest_hash": manifest_digest, "telemetry_hash": telemetry_digest,
+            "investigator_version": D1_PROMPT_VERSION,
+        },
+    }
+
+
+def run_local_arm(
+    arm: ArmConfig,
+    manifest: Sequence[CaseManifest],
+    telemetry: Telemetry,
+    cases: Sequence[InvestigationCase],
+    *,
+    manifest_digest: str = "",
+    findings: Sequence[Finding] | None = None,
+    environment: Any = None,
+    llm: LLMClient | None = None,
+    scripted: bool = False,
+    label_scorer: Callable[[Any], dict[str, Any]] | None = None,
+    required_footing: dict[str, Any] | None = None,
+    links: dict[str, Sequence[dict[str, Any]]] | None = None,
+) -> list[CaseResult]:
+    """Run the D1 investigator over the manifest entries of one corpus.
+
+    The frozen :func:`~ath.evaluation.ablation.arms.run_arm`, step for step -- the
+    refusals, the manifest check, the per-case toolbox, the footing assertion, the
+    request observer, the token accounting, the scorer and the row shape are the same
+    calls -- except that :class:`~ath.agent.investigator.D1Investigator` investigates
+    instead of the orchestrator over a generalist crew. ``environment`` is accepted for
+    signature parity and unused: the investigator has no should-run gates to inform.
+
+    ``links``: the manifest's cross-domain links by case key, scored on the row's own
+    state and written beside the label scores with the hashes they were scored under.
+    """
+    if not arm.implemented:
+        raise NotImplementedError(f"{arm.name} is declared, not implemented. {arm.design_note}")
+    client = llm if llm is not None else build_client(arm)
+    if scripted and not client.available:
+        raise ArmUnavailable(
+            f"{arm.name} was asked for a scripted run but the client {client.name!r} "
+            "reports available=False; a scripted run must be given a scripted client."
+        )
+    if arm.requires_model and not client.available and not scripted:
+        raise ArmUnavailable(
+            f"{arm.name} requires a configured model and none is available (client "
+            f"{client.name!r} reports available=False). Refusing to run: a deterministic "
+            "run relabelled as a model arm would be a false row, not a weak one."
+        )
+
+    entries = list(manifest)
+    cases_by_id = {c.case_id: c for c in cases}
+    digest = telemetry_hash(telemetry)
+    _check_inputs(entries, digest, cases_by_id)
+    all_findings = (
+        list(findings) if findings is not None
+        else list({f.finding_id: f for c in cases for f in c.findings}.values())
+    )
+    verifier = ClaimVerifier(telemetry)
+    domain_of = domain_of_telemetry(telemetry) if links else None
+
+    results: list[CaseResult] = []
+    for entry in entries:
+        case = cases_by_id[entry.case_id]
+        tools = ToolBox(telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap)
+        investigator = build_investigator(tools, verifier, client, max_steps=arm.config.max_steps)
+        footing = case_footing(tools, arm, digest)
+        if required_footing is not None:
+            differences = footing_differences({"required": required_footing, arm.name: footing})
+            if differences:
+                raise UnequalFooting(
+                    f"{entry.key}: {arm.name} would not be on equal footing with the rows "
+                    f"it is compared to: {differences}. Refusing the row."
+                )
+        measurements: list[dict[str, Any]] = []
+        observed = attach_request_observer(client, measurements)
+        baseline = begin_token_accounting(client)
+        started = time.perf_counter()
+        try:
+            state = investigator.investigate(case)
+        finally:
+            detach_request_observer(client)
+        elapsed = time.perf_counter() - started
+        if observed:
+            state.llm_requests = request_records(measurements, client)
+        tokens = tokens_spent(client, baseline)
+        case_scores = score_case(
+            state, case, verifier, eligible_never_ran=[], wall_seconds=elapsed, tokens=tokens,
+        )
+        result = CaseResult(
+            arm=arm.name, corpus=entry.corpus, case_id=entry.case_id,
+            manifest_hash=manifest_digest, telemetry_hash=digest,
+            configuration=client.name if client.available else "deterministic",
+            llm_degraded=bool(state.llm_degraded), llm_status=str(state.llm_status),
+            state=state.to_dict(), scores=case_scores, wall_seconds=elapsed, tokens=tokens,
+            labels=dict(entry.labels),
+            label_scores=capture_label_scores(entry.labels, case_scores),
+            budgets=budgets_of(tools, arm, state), footing=footing,
+            context=context_size(state), scripted=scripted,
+        )
+        graded = label_scorer(state) if label_scorer is not None else {}
+        if graded:
+            result.label_scores = {
+                **result.label_scores,
+                "incident_id": graded.get("incident_id"), "arm": result.labelled_arm,
+                "configuration": result.configuration, "llm_degraded": result.llm_degraded,
+                **{k: v for k, v in graded.items() if k != "incident_id"},
+            }
+        case_links = list((links or {}).get(entry.key) or ())
+        if case_links:
+            result.label_scores = {
+                **result.label_scores,
+                **link_recovery(
+                    state, case_links, domain_of,
+                    manifest_digest=manifest_digest, telemetry_digest=digest,
+                ),
+            }
+        results.append(result)
+    return results
 
 
 # --------------------------------------------------------------------------------------
@@ -206,6 +438,11 @@ class RowKey:
     quantization: str
     repeat: int
     seed: int | None
+    manifest_hash: str = ""
+    """The manifest the row was run against. Part of the key since the first preview:
+    the 2026-09-15 rows were keyed without it, so a rerun against the regenerated
+    manifest would have found every key "complete" and written nothing. A row keyed on a
+    different manifest is a different row."""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -217,6 +454,7 @@ class RowKey:
             "quantization": self.quantization,
             "repeat": self.repeat,
             "seed": self.seed,
+            "manifest_hash": self.manifest_hash,
         }
 
     @classmethod
@@ -230,6 +468,7 @@ class RowKey:
             quantization=str(payload["quantization"]),
             repeat=int(payload["repeat"]),
             seed=None if payload.get("seed") is None else int(payload["seed"]),
+            manifest_hash=str(payload.get("manifest_hash") or ""),
         )
 
     @property
@@ -242,10 +481,11 @@ class RowKey:
     @property
     def filename(self) -> str:
         seed = "noseed" if self.seed is None else f"seed{self.seed}"
+        manifest = f"m{self.manifest_hash[:12]}__" if self.manifest_hash else ""
         return (
             f"{_slug(self.corpus)}__{_slug(self.case_id)}__{_slug(self.arm)}__"
             f"{_slug(self.provider)}__{_slug(self.model)}__{_slug(self.quantization)}__"
-            f"rep{self.repeat}__{seed}__{self.digest}.json"
+            f"rep{self.repeat}__{seed}__{manifest}{self.digest}.json"
         )
 
 
@@ -465,7 +705,7 @@ def check_ram(
 
 LOCAL_GATED_FIELDS: tuple[str, ...] = (
     "prompts", "scoring", "manifest_hash", "model_digest", "daemon_version",
-    "client_configuration",
+    "client_configuration", "investigator",
 )
 """What must match between the local freeze and a scored local run.
 
@@ -523,6 +763,7 @@ def local_environment(
             "model_context_length": described.get("model_context_length"),
         },
         "client_configuration": dict(described.get("configuration") or {}),
+        "investigator": investigator_environment(),
         "machine": {
             "platform": platform.platform(),
             "processor": platform.processor(),
@@ -586,5 +827,13 @@ def check_local_environment(
             differences.append(
                 f"client_configuration.{name}: frozen {frozen_configuration.get(name)!r} "
                 f"live {live_configuration.get(name)!r}"
+            )
+    frozen_investigator = dict(local.get("investigator") or {})
+    live_investigator = investigator_environment()
+    for name in sorted(set(frozen_investigator) | set(live_investigator)):
+        if frozen_investigator.get(name) != live_investigator.get(name):
+            differences.append(
+                f"investigator.{name}: frozen {str(frozen_investigator.get(name))[:12]} "
+                f"live {str(live_investigator.get(name))[:12]}"
             )
     return differences

@@ -170,6 +170,23 @@ def test_a_prompt_or_scoring_drift_is_flagged_by_name() -> None:
     assert len(flagged) == 2
 
 
+def test_the_investigators_prompts_and_bounds_are_frozen_and_gated() -> None:
+    """A D1 run under different investigator prompts, schema or bounds is a different
+    experiment. Fails if the freeze stops recording them or the gate stops reading them."""
+    frozen = _frozen()
+    investigator = frozen["local"]["investigator"]
+    for name in ("investigator_version", "investigator_system", "investigator_user_template",
+                 "investigator_schema", "investigator_bounds", "max_probes", "max_tokens"):
+        assert name in investigator, name
+    assert "investigator" in LOCAL_GATED_FIELDS
+    frozen["local"]["investigator"]["investigator_system"] = "0" * 64
+    frozen["local"]["investigator"]["max_probes"] = 99
+    flagged = check_local_environment(frozen, manifest_hash="a" * 64, described=_described())
+    assert any(f.startswith("investigator.investigator_system") for f in flagged)
+    assert any(f.startswith("investigator.max_probes") for f in flagged)
+    assert len(flagged) == 2
+
+
 def test_a_model_already_resident_is_credited_against_the_floor() -> None:
     """A daemon that kept the weights loaded is not refused for the memory they use."""
     floor = RAM_FLOORS_BYTES["4B"]

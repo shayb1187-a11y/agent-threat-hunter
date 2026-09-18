@@ -169,6 +169,13 @@ class InvestigationState:
     send, with the provider's reported ``input_tokens`` beside it -- the bytes that went
     on the wire, from the builder that put them there, which is the only way this project
     could say what a request that came back 413 actually weighed."""
+    investigation: dict[str, Any] = field(default_factory=dict)
+    """Compact diagnostics of the D1 bounded investigator (``ath.agent.investigator``).
+
+    Empty for every other loop, and then not serialised, so a state produced by the
+    orchestrator serialises exactly as it did before this field existed. What it holds
+    is machine-readable and small by construction -- labels, counts, one-line reasons --
+    never a transcript and never chain-of-thought."""
     llm_errors: list[str] = field(default_factory=list)
     """Model calls that failed. Populated even though the run still completes.
 
@@ -358,6 +365,7 @@ class InvestigationState:
                 # without one serialises exactly as every already-published row did.
                 **({"requests": list(self.llm_requests)} if self.llm_requests else {}),
             },
+            **({"investigation": dict(self.investigation)} if self.investigation else {}),
             "claims": [c.to_dict() for c in self.claims],
             "rejected_claims": [r.to_dict() for r in self.rejected_claims],
             "plan_log": list(self.plan_log),
