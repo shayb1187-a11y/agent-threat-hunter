@@ -35,3 +35,6 @@ data/external/*
 # `scripts/local_inject_dedale.py` (seed + source/output sha256 pinned in the
 # case MANIFEST.json, which IS committed). ~94 MB, so kept out of the repo.
 reports/local/**/winlogbeat/
+
+# Local scratch working file, stripped from history in the M19 cleanup -- never commit
+data/raw/control_events.csv
