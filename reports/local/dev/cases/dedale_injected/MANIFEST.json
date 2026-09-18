@@ -1,0 +1,2273 @@
+{
+  "generated_utc": "2026-09-15T10:15:04Z",
+  "split": "dev",
+  "seed": 260915,
+  "script": "scripts/local_inject_dedale.py",
+  "script_sha256": "c18bcbe94d3a078f7440abaad6b2b437f3621efde5a878535ac8d7594f19b102",
+  "generator": "scripts/m19b_inject_dedale.py",
+  "generator_sha256": "d5f97a3db2132f892808f6f4c44f9d913b7e91b946c7a1d5d26f64d6191bea91",
+  "days_extension": {
+    "D02": "2024-12-24"
+  },
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background (day D02) + injected attack rows",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "source_files": {
+    "D02/D02_2024-12-24.jsonl": {
+      "sha256": "934480d382a449fa8422f27f614eb80cc83ac5104ac771eaa39d733e20d3f6cc",
+      "bytes": 451031565
+    }
+  },
+  "frozen_hosts_avoided": [
+    "CLIENT12",
+    "CLIENT26",
+    "CLIENT28",
+    "CLIENT3",
+    "CLIENT7",
+    "CLIENT9"
+  ],
+  "notes": [
+    "Dev split for the V1 local-model stage; not part of any frozen benchmark.",
+    "Every case is endpoint x identity, the one cross-domain shape the correlator forms; recorded as a limitation of this split.",
+    "Each case's background hours were hunted with nothing injected and raised 0 findings (background_check), and the written case was hunted and forms exactly the expected findings in one case (verified)."
+  ],
+  "cases": {
+    "V1": {
+      "case_id": "V1",
+      "directory": "V1",
+      "seed": 260915,
+      "case_seed": "260915:V1",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT1:08",
+          "CLIENT2:08"
+        ],
+        "source_host": "CLIENT1",
+        "source_ip": "172.16.1.2",
+        "target_host": "CLIENT2",
+        "account": "client2",
+        "malicious": true,
+        "scenario": "guessed-credential-then-remote-exec",
+        "burst_start": "08:07:12",
+        "failure_count": 13,
+        "failure_span_seconds": 300.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 25.0,
+        "exec_offset_seconds": 70.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net group \"Domain Admins\" /domain & net localgroup administrators\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  group \"Domain Admins\" /domain",
+          "net  localgroup administrators"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT1_2024-12-24T08.jsonl": {
+          "background": 2966,
+          "injected": 0
+        },
+        "CLIENT2_2024-12-24T08.jsonl": {
+          "background": 2869,
+          "injected": 17
+        }
+      },
+      "injected_count": 17,
+      "bytes": 10699901,
+      "files": {
+        "CASE.md": "584fe21d19120be08a4f0b1ac76db2ea9a587a466d726440ef29ebe339974d25",
+        "labels.json": "b9ffbf1a8424e6d649cbf10d57e6479750c36ad04421d9a339792581039343cf",
+        "winlogbeat/CLIENT1_2024-12-24T08.jsonl": "d91c47f46460efec4296028fb4a9f3d74b70777cb6021a3d9a3cfdc0222d8201",
+        "winlogbeat/CLIENT2_2024-12-24T08.jsonl": "521699607e4a588911a924bd44063b5f9b0c49d2ff3acf4e1b6c752c4655985e"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22753,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22753"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22754,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22754"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22755,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22755"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22756,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22756"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22757,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22757"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22758,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22758"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22759,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22759"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22760,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22760"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22761,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22761"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22762,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22762"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22763,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22763"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22764,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22764"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22765,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22765"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 22766,
+          "stage": "2-successful-logon",
+          "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22766"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 681172,
+          "stage": "3-remote-service-execution",
+          "ref": "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=681172"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 681173,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=681173"
+        },
+        {
+          "host": "CLIENT2.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 681174,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=681174"
+        }
+      ],
+      "links": [
+        "V1-LINK-1",
+        "V1-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V2": {
+      "case_id": "V2",
+      "directory": "V2",
+      "seed": 260915,
+      "case_seed": "260915:V2",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT4:08",
+          "CLIENT5:08"
+        ],
+        "source_host": "CLIENT4",
+        "source_ip": "172.16.1.5",
+        "target_host": "CLIENT5",
+        "account": "client5",
+        "malicious": true,
+        "scenario": "slow-guessing-then-delayed-remote-exec",
+        "burst_start": "08:04:30",
+        "failure_count": 11,
+        "failure_span_seconds": 540.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 200.0,
+        "exec_offset_seconds": 400.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net user /domain & net group \"Domain Computers\" /domain\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  user /domain",
+          "net  group \"Domain Computers\" /domain"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT4_2024-12-24T08.jsonl": {
+          "background": 2790,
+          "injected": 0
+        },
+        "CLIENT5_2024-12-24T08.jsonl": {
+          "background": 2203,
+          "injected": 15
+        }
+      },
+      "injected_count": 15,
+      "bytes": 9327662,
+      "files": {
+        "CASE.md": "5d9ce0366651aa5825c3f72c73e80a08df990f12cb38226ac705ab74f11b1628",
+        "labels.json": "6cde0a4f403e5e480a04990828add4253036fc20d9e41dc4ee3dc14237a9b435",
+        "winlogbeat/CLIENT4_2024-12-24T08.jsonl": "4aaa966cba8e9bdb4174d5a62b894242480825d425b53ddf4f1e8a66f53ff63e",
+        "winlogbeat/CLIENT5_2024-12-24T08.jsonl": "6ad9c60fd79ac8a737932500a507e4cb87a3dada042b24c3d7e2843a6afb9ef2"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22570,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22570"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22571,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22571"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22572,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22572"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22573,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22573"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22574,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22574"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22575,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22575"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22576,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22576"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22577,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22577"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22578,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22578"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22579,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22579"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22580,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22580"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 22581,
+          "stage": "2-successful-logon",
+          "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22581"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 700429,
+          "stage": "3-remote-service-execution",
+          "ref": "host=CLIENT5.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=700429"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 700430,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT5.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=700430"
+        },
+        {
+          "host": "CLIENT5.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 700431,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT5.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=700431"
+        }
+      ],
+      "links": [
+        "V2-LINK-1",
+        "V2-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V3": {
+      "case_id": "V3",
+      "directory": "V3",
+      "seed": 260915,
+      "case_seed": "260915:V3",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT6:08",
+          "CLIENT8:08"
+        ],
+        "source_host": "CLIENT6",
+        "source_ip": "172.16.1.7",
+        "target_host": "CLIENT8",
+        "account": "client8",
+        "malicious": true,
+        "scenario": "unsuccessful-guessing-then-remote-exec",
+        "burst_start": "08:12:00",
+        "failure_count": 12,
+        "failure_span_seconds": 240.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": null,
+        "exec_offset_seconds": 120.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net localgroup administrators & net view\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  localgroup administrators",
+          "net  view"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT6_2024-12-24T08.jsonl": {
+          "background": 2504,
+          "injected": 0
+        },
+        "CLIENT8_2024-12-24T08.jsonl": {
+          "background": 1976,
+          "injected": 15
+        }
+      },
+      "injected_count": 15,
+      "bytes": 8493603,
+      "files": {
+        "CASE.md": "95257e6f2aff1df227a430420173d5a9f98746aabcee58ac98bc34f4a3e057d8",
+        "labels.json": "76deb0186c07cc987369075d493218f0332faafbb702701a113e478dd1f59146",
+        "winlogbeat/CLIENT6_2024-12-24T08.jsonl": "8367efaf298f951f42f28e9629d0d1149ed3f90338c65f54c81c04bbbc3d05e6",
+        "winlogbeat/CLIENT8_2024-12-24T08.jsonl": "a084c62283da08cf63892235618a22acf1da0376380c761041268a3b58a1365c"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21750,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21750"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21751,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21751"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21752,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21752"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21753,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21753"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21754,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21754"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21755,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21755"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21756,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21756"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21757,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21757"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21758,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21758"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21759,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21759"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21760,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21760"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21761,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21761"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 639127,
+          "stage": "2-remote-service-execution",
+          "ref": "host=CLIENT8.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=639127"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 639128,
+          "stage": "3-discovery",
+          "ref": "host=CLIENT8.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=639128"
+        },
+        {
+          "host": "CLIENT8.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 639129,
+          "stage": "3-discovery",
+          "ref": "host=CLIENT8.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=639129"
+        }
+      ],
+      "links": [
+        "V3-LINK-1",
+        "V3-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 2,
+        "rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": []
+      }
+    },
+    "V4": {
+      "case_id": "V4",
+      "directory": "V4",
+      "seed": 260915,
+      "case_seed": "260915:V4",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT10:08",
+          "CLIENT13:08"
+        ],
+        "source_host": "CLIENT10",
+        "source_ip": "172.16.1.11",
+        "target_host": "CLIENT13",
+        "account": "client13",
+        "malicious": true,
+        "scenario": "rapid-spray-then-share-enumeration",
+        "burst_start": "08:21:40",
+        "failure_count": 20,
+        "failure_span_seconds": 60.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 15.0,
+        "exec_offset_seconds": 45.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net use & net share\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  use",
+          "net  share"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT10_2024-12-24T08.jsonl": {
+          "background": 2359,
+          "injected": 0
+        },
+        "CLIENT13_2024-12-24T08.jsonl": {
+          "background": 2695,
+          "injected": 24
+        }
+      },
+      "injected_count": 24,
+      "bytes": 9463027,
+      "files": {
+        "CASE.md": "d0e548f7b174528cb8536a4cc17441fd46b89b83ef9b8b7eaaf69f1635c1918a",
+        "labels.json": "16ac3a4c982686b4e3a5ec554b84f3ba0590ef0547f533dbef0b90f7c2d54e56",
+        "winlogbeat/CLIENT10_2024-12-24T08.jsonl": "964a213dd089b6a9491b8b1bfed9c354077735d899590a6cbd82235c1684514f",
+        "winlogbeat/CLIENT13_2024-12-24T08.jsonl": "f19c83b194dc93519d131e21abad40c65ab72f6fa84e4028760b903436a8e699"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20885,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20885"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20886,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20886"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20887,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20887"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20888,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20888"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20889,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20889"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20890,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20890"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20891,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20891"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20892,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20892"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20893,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20893"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20894,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20894"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20895,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20895"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20896,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20896"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20897,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20897"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20898,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20898"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20899,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20899"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20900,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20900"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20901,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20901"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20902,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20902"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20903,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20903"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 20904,
+          "stage": "1-credential-spray",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20904"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 20905,
+          "stage": "2-successful-logon",
+          "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20905"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 606602,
+          "stage": "3-remote-service-execution",
+          "ref": "host=CLIENT13.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=606602"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 606603,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT13.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=606603"
+        },
+        {
+          "host": "CLIENT13.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 606604,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT13.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=606604"
+        }
+      ],
+      "links": [
+        "V4-LINK-1",
+        "V4-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V5": {
+      "case_id": "V5",
+      "directory": "V5",
+      "seed": 260915,
+      "case_seed": "260915:V5",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT15:08",
+          "CLIENT16:08"
+        ],
+        "source_host": "CLIENT15",
+        "source_ip": "172.16.1.16",
+        "target_host": "CLIENT16",
+        "account": "client16",
+        "malicious": true,
+        "scenario": "guessing-then-privileged-group-discovery",
+        "burst_start": "08:09:05",
+        "failure_count": 10,
+        "failure_span_seconds": 420.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 60.0,
+        "exec_offset_seconds": 200.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net accounts /domain & net group \"Enterprise Admins\" /domain\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  accounts /domain",
+          "net  group \"Enterprise Admins\" /domain"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT15_2024-12-24T08.jsonl": {
+          "background": 2714,
+          "injected": 0
+        },
+        "CLIENT16_2024-12-24T08.jsonl": {
+          "background": 2233,
+          "injected": 14
+        }
+      },
+      "injected_count": 14,
+      "bytes": 9292621,
+      "files": {
+        "CASE.md": "c17666c380538ae843509f15c39301297ec0b1d96202ab540ab6681cde92187c",
+        "labels.json": "a4f8bec5930c588d25dfc2d77bdce394caf9aa441a3e59238030fcbea09bba91",
+        "winlogbeat/CLIENT15_2024-12-24T08.jsonl": "f2a6acb3cea280d3bb61a1e9232a862087affc74a9ea2652da88cb6a833e6883",
+        "winlogbeat/CLIENT16_2024-12-24T08.jsonl": "5067bde9db459c7962211c736a89ea06c8e0f44d6a3850123183d9f563a90c3a"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21505,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21505"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21506,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21506"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21507,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21507"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21508,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21508"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21509,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21509"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21510,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21510"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21511,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21511"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21512,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21512"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21513,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21513"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21514,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21514"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 21515,
+          "stage": "2-successful-logon",
+          "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21515"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 554877,
+          "stage": "3-remote-service-execution",
+          "ref": "host=CLIENT16.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=554877"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 554878,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT16.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=554878"
+        },
+        {
+          "host": "CLIENT16.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 554879,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT16.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=554879"
+        }
+      ],
+      "links": [
+        "V5-LINK-1",
+        "V5-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V6": {
+      "case_id": "V6",
+      "directory": "V6",
+      "seed": 260915,
+      "case_seed": "260915:V6",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT17:08",
+          "CLIENT18:08"
+        ],
+        "source_host": "CLIENT17",
+        "source_ip": "172.16.1.18",
+        "target_host": "CLIENT18",
+        "account": "client18",
+        "malicious": true,
+        "scenario": "guessing-then-long-dwell-remote-exec",
+        "burst_start": "08:03:20",
+        "failure_count": 15,
+        "failure_span_seconds": 180.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 30.0,
+        "exec_offset_seconds": 780.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net localgroup \"Remote Desktop Users\" & net session\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  localgroup \"Remote Desktop Users\"",
+          "net  session"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT17_2024-12-24T08.jsonl": {
+          "background": 2825,
+          "injected": 0
+        },
+        "CLIENT18_2024-12-24T08.jsonl": {
+          "background": 3014,
+          "injected": 19
+        }
+      },
+      "injected_count": 19,
+      "bytes": 10776181,
+      "files": {
+        "CASE.md": "b661cf0a48083b749144a33339136785bf14483a32eb775f4543f5f7201afeb8",
+        "labels.json": "98fe273178bdd025e43789a47dd547c4ada97dc7be04aaf76449e729c029972a",
+        "winlogbeat/CLIENT17_2024-12-24T08.jsonl": "e022ce00294e5ede50048c6810c8be6a01db68bc02eeb7148e54f574ebe120be",
+        "winlogbeat/CLIENT18_2024-12-24T08.jsonl": "554bfc4776ed49b5e3714abdfd0fd894c1bb017c258449599458c4a6034051d2"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21092,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21092"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21093,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21093"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21094,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21094"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21095,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21095"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21096,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21096"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21097,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21097"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21098,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21098"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21099,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21099"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21100,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21100"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21101,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21101"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21102,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21102"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21103,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21103"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21104,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21104"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21105,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21105"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21106,
+          "stage": "1-credential-guessing",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21106"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 21107,
+          "stage": "2-successful-logon",
+          "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21107"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 564089,
+          "stage": "3-remote-service-execution",
+          "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564089"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 564090,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564090"
+        },
+        {
+          "host": "CLIENT18.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 564091,
+          "stage": "4-discovery",
+          "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564091"
+        }
+      ],
+      "links": [
+        "V6-LINK-1",
+        "V6-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V7": {
+      "case_id": "V7",
+      "directory": "V7",
+      "seed": 260915,
+      "case_seed": "260915:V7",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT19:08",
+          "CLIENT20:08"
+        ],
+        "source_host": "CLIENT19",
+        "source_ip": "172.16.1.20",
+        "target_host": "CLIENT20",
+        "account": "client20",
+        "malicious": false,
+        "scenario": "lockout-cascade-then-remote-support",
+        "burst_start": "08:14:50",
+        "failure_count": 12,
+        "failure_span_seconds": 258.0,
+        "failure_sub_status": [
+          "0xc000006a",
+          "0xc0000234"
+        ],
+        "success_offset_seconds": 400.0,
+        "exec_offset_seconds": 80.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net stop wuauserv & net start wuauserv\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  stop wuauserv",
+          "net  start wuauserv"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT19_2024-12-24T08.jsonl": {
+          "background": 2425,
+          "injected": 0
+        },
+        "CLIENT20_2024-12-24T08.jsonl": {
+          "background": 2343,
+          "injected": 16
+        }
+      },
+      "injected_count": 16,
+      "bytes": 9029418,
+      "files": {
+        "CASE.md": "1a8ecce032b9069150322339feccec6d62d8712424886574d4a4adf894b91b40",
+        "labels.json": "50cf4034d5dc0d1f974b5f792d8218a49e6f549a96b72a8b77de0f8aa3e65b32",
+        "winlogbeat/CLIENT19_2024-12-24T08.jsonl": "a48ea0394706343353d6a12b6e68280045dbbe910e2f03bdf623a7565c7895bd",
+        "winlogbeat/CLIENT20_2024-12-24T08.jsonl": "5c6fdc771be8d8dcad02c67175ab6997e500fa639dbc1cba69f3da442f18132f"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22699,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22699"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22700,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22700"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22701,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22701"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22702,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22702"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22703,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22703"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22704,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22704"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22705,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22705"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22706,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22706"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22707,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22707"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22708,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22708"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22709,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22709"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22710,
+          "stage": "1-stale-credential-lockout",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22710"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 22711,
+          "stage": "2-logon-after-unlock",
+          "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22711"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 607479,
+          "stage": "3-remote-support-action",
+          "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607479"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 607480,
+          "stage": "4-support-commands",
+          "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607480"
+        },
+        {
+          "host": "CLIENT20.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 607481,
+          "stage": "4-support-commands",
+          "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607481"
+        }
+      ],
+      "links": [
+        "V7-LINK-1",
+        "V7-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V8": {
+      "case_id": "V8",
+      "directory": "V8",
+      "seed": 260915,
+      "case_seed": "260915:V8",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT21:08",
+          "CLIENT22:08"
+        ],
+        "source_host": "CLIENT21",
+        "source_ip": "172.16.1.22",
+        "target_host": "CLIENT22",
+        "account": "client22",
+        "malicious": false,
+        "scenario": "scheduled-replication-with-stale-password",
+        "burst_start": "08:02:10",
+        "failure_count": 12,
+        "failure_span_seconds": 495.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 45.0,
+        "exec_offset_seconds": 100.0,
+        "admin_share_redirect": false,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"C:\\BREACH\\replica\\sync.cmd --peer CLIENT22 --profile hourly\"",
+        "child_commands": [],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT21_2024-12-24T08.jsonl": {
+          "background": 2738,
+          "injected": 0
+        },
+        "CLIENT22_2024-12-24T08.jsonl": {
+          "background": 2487,
+          "injected": 14
+        }
+      },
+      "injected_count": 14,
+      "bytes": 9745963,
+      "files": {
+        "CASE.md": "f970dff97240d22583f10246466f9c2a951845eba9c21c00b5d2658171b1334c",
+        "labels.json": "e3a9964f8ab2b920bb9051b25d4653109f5c27fe8e688e85d080b745ce3f97fc",
+        "winlogbeat/CLIENT21_2024-12-24T08.jsonl": "73072186e52e362082684b32fa4aed41f5f95b96ae9e419c5f67812a7b4059d4",
+        "winlogbeat/CLIENT22_2024-12-24T08.jsonl": "c761acdd00f921914604807ea2eb15250edf21a7ffe6246d165cb3daf39cf51e"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21528,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21528"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21529,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21529"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21530,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21530"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21531,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21531"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21532,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21532"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21533,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21533"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21534,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21534"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21535,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21535"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21536,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21536"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21537,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21537"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21538,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21538"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 21539,
+          "stage": "1-stale-scheduled-credential",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21539"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 21540,
+          "stage": "2-credential-corrected",
+          "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21540"
+        },
+        {
+          "host": "CLIENT22.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 576798,
+          "stage": "3-service-started-script",
+          "ref": "host=CLIENT22.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=576798"
+        }
+      ],
+      "links": [
+        "V8-LINK-1"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V9": {
+      "case_id": "V9",
+      "directory": "V9",
+      "seed": 260915,
+      "case_seed": "260915:V9",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT23:08",
+          "CLIENT24:08"
+        ],
+        "source_host": "CLIENT23",
+        "source_ip": "172.16.1.24",
+        "target_host": "CLIENT24",
+        "account": "client24",
+        "malicious": false,
+        "scenario": "monitoring-agent-expired-credential",
+        "burst_start": "08:18:30",
+        "failure_count": 10,
+        "failure_span_seconds": 270.0,
+        "failure_sub_status": [
+          "0xc000006a"
+        ],
+        "success_offset_seconds": 30.0,
+        "exec_offset_seconds": 60.0,
+        "admin_share_redirect": false,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"C:\\BREACH\\monitoring\\collect.cmd --host CLIENT24\"",
+        "child_commands": [
+          "net  statistics workstation"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT23_2024-12-24T08.jsonl": {
+          "background": 3386,
+          "injected": 0
+        },
+        "CLIENT24_2024-12-24T08.jsonl": {
+          "background": 2483,
+          "injected": 13
+        }
+      },
+      "injected_count": 13,
+      "bytes": 10797372,
+      "files": {
+        "CASE.md": "702284a481c83d48964b6c6ba010466ab9bc76b508ed01a5d7dacd06e2107968",
+        "labels.json": "e933ca475b839ee631fc8e7dfaa27beb274ce8b77f3b4c06c03e4d1601be2e12",
+        "winlogbeat/CLIENT23_2024-12-24T08.jsonl": "6fdaefaee06bb43344976581ccc7a22f3558880755106a612a5a781f7ccb475f",
+        "winlogbeat/CLIENT24_2024-12-24T08.jsonl": "b526fe5d5ead1e48c55878249f72a149ceac0e24ed48cd32cce76f5fe4d2aa8f"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22852,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22852"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22853,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22853"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22854,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22854"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22855,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22855"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22856,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22856"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22857,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22857"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22858,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22858"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22859,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22859"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22860,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22860"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 22861,
+          "stage": "1-expired-service-credential",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22861"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 22862,
+          "stage": "2-credential-renewed",
+          "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22862"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 678863,
+          "stage": "3-collector-script",
+          "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678863"
+        },
+        {
+          "host": "CLIENT24.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 678864,
+          "stage": "4-collection-command",
+          "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678864"
+        }
+      ],
+      "links": [
+        "V9-LINK-1",
+        "V9-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    },
+    "V10": {
+      "case_id": "V10",
+      "directory": "V10",
+      "seed": 260915,
+      "case_seed": "260915:V10",
+      "provenance": "real+injected",
+      "provenance_note": "real benign DEDALE background + injected attack rows",
+      "sealed": false,
+      "parameters": {
+        "day": "D02",
+        "date": "2024-12-24",
+        "background_segments": [
+          "CLIENT25:08",
+          "CLIENT27:08"
+        ],
+        "source_host": "CLIENT25",
+        "source_ip": "172.16.1.26",
+        "target_host": "CLIENT27",
+        "account": "client27",
+        "malicious": false,
+        "scenario": "typo-lockout-then-helpdesk-inventory",
+        "burst_start": "08:25:15",
+        "failure_count": 12,
+        "failure_span_seconds": 246.0,
+        "failure_sub_status": [
+          "0xc000006a",
+          "0xc0000234"
+        ],
+        "success_offset_seconds": 300.0,
+        "exec_offset_seconds": 120.0,
+        "admin_share_redirect": true,
+        "shell_command": "C:\\Windows\\system32\\cmd.exe /Q /c \"net config workstation & net time \\\\CLIENT27\" 1> \\\\127.0.0.1\\ADMIN$\\__1735130400.5423 2>&1",
+        "child_commands": [
+          "net  config workstation",
+          "net  time \\\\CLIENT27"
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "expected_findings": 2
+      },
+      "segments": {
+        "CLIENT25_2024-12-24T08.jsonl": {
+          "background": 2888,
+          "injected": 0
+        },
+        "CLIENT27_2024-12-24T08.jsonl": {
+          "background": 2333,
+          "injected": 16
+        }
+      },
+      "injected_count": 16,
+      "bytes": 9768773,
+      "files": {
+        "CASE.md": "0f5353e78c4bc9da7dc9a41051712fa4cde1e089bcb1d6ee1594ef359e6c3389",
+        "labels.json": "b8f2e436badf1a3d487dd90994117f28e782b19d5cab8b8c851e4c9301b271f1",
+        "winlogbeat/CLIENT25_2024-12-24T08.jsonl": "7a858d40d88c855c763f480565417cbb1675a22baf44431f74d181e5fdfa5827",
+        "winlogbeat/CLIENT27_2024-12-24T08.jsonl": "5c5b4bc482843db2e448b92ccd995d1e9c908e83b8743ffbfffaff0781596e1f"
+      },
+      "injected_record_ids": [
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23251,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23251"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23252,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23252"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23253,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23253"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23254,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23254"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23255,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23255"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23256,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23256"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23257,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23257"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23258,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23258"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23259,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23259"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23260,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23260"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23261,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23261"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4625,
+          "record_id": 23262,
+          "stage": "1-typo-lockout",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23262"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Security",
+          "event_id": 4624,
+          "record_id": 23263,
+          "stage": "2-logon-after-unlock",
+          "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23263"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 537239,
+          "stage": "3-helpdesk-remote-exec",
+          "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537239"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 537240,
+          "stage": "4-inventory-commands",
+          "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537240"
+        },
+        {
+          "host": "CLIENT27.breach.local",
+          "channel": "Microsoft-Windows-Sysmon/Operational",
+          "event_id": 1,
+          "record_id": 537241,
+          "stage": "4-inventory-commands",
+          "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537241"
+        }
+      ],
+      "links": [
+        "V10-LINK-1",
+        "V10-LINK-2"
+      ],
+      "background_check": {
+        "findings": 0,
+        "cases": 0,
+        "rules": []
+      },
+      "verified": {
+        "findings": 3,
+        "rules": [
+          "ATH-005",
+          "ATH-006",
+          "ATH-007"
+        ],
+        "cases": 1,
+        "case_rules": [
+          [
+            "ATH-005",
+            "ATH-006",
+            "ATH-007"
+          ]
+        ],
+        "expected_rules": [
+          "ATH-005",
+          "ATH-007"
+        ],
+        "extra_rules": [
+          "ATH-006"
+        ]
+      }
+    }
+  }
+}

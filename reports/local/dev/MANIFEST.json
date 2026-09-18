@@ -1,0 +1,1361 @@
+{
+  "generated_at": "2026-09-15T10:24:26+00:00",
+  "head": "195e369",
+  "split": "dev",
+  "purpose": "V1 local-model development split; never used to grade a frozen benchmark",
+  "seed": 260915,
+  "composition": {
+    "dedale_injected_dev": 10,
+    "synthetic:INC-003": 0,
+    "flaws_cloud": 10
+  },
+  "decided_composition": {
+    "dedale_injected_dev": 10,
+    "synthetic:INC-003": 1,
+    "flaws_cloud": 6,
+    "k8s_or_attack_data_aws": 3
+  },
+  "substitutions": [
+    "the decided composition had 6 flaws.cloud + 3 k8s_ci/k8ntext/attack_data_aws cases; MEASURED 2026-09-15 at 195e369: k8s_ci and k8ntext form 0 cases and attack_data_aws forms only the two cases M19 froze, so those three seats went to flaws.cloud",
+    "synthetic:INC-003 forms no case under the current correlator; its seat went to flaws.cloud"
+  ],
+  "disjoint_from": [
+    {
+      "path": "reports/m19/ablation/MANIFEST.json",
+      "manifest_hash": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15"
+    },
+    {
+      "path": "reports/m19b/MANIFEST.json",
+      "manifest_hash": "0ced14fb387c7752fe1435c876e19fbe4a8bfd3f52a830049844c31718143263"
+    }
+  ],
+  "disjointness_rule": "no shared (telemetry_hash, case_id) pair and no shared finding id with any frozen entry; asserted before writing and by tests/test_contamination.py",
+  "limitations": [
+    "ten of twenty cases share one shape (endpoint x identity via auth_then_exec), the same shape as six of the nine M19b benchmark cases; tuning on them tunes to that shape",
+    "the nine flaws.cloud cases are unlabelled: no completeness or discrimination metric"
+  ],
+  "provenance": {
+    "synthetic:INC-003": {
+      "provenance": "synthetic",
+      "cases_formed": 0,
+      "included": false
+    },
+    "dedale_injected_dev:V1": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "guessed-credential-then-remote-exec"
+    },
+    "dedale_injected_dev:V2": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "slow-guessing-then-delayed-remote-exec"
+    },
+    "dedale_injected_dev:V3": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "unsuccessful-guessing-then-remote-exec"
+    },
+    "dedale_injected_dev:V4": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "rapid-spray-then-share-enumeration"
+    },
+    "dedale_injected_dev:V5": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "guessing-then-privileged-group-discovery"
+    },
+    "dedale_injected_dev:V6": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "malicious",
+      "scenario": "guessing-then-long-dwell-remote-exec"
+    },
+    "dedale_injected_dev:V7": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "benign",
+      "scenario": "lockout-cascade-then-remote-support"
+    },
+    "dedale_injected_dev:V8": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "benign",
+      "scenario": "scheduled-replication-with-stale-password"
+    },
+    "dedale_injected_dev:V9": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "benign",
+      "scenario": "monitoring-agent-expired-credential"
+    },
+    "dedale_injected_dev:V10": {
+      "provenance": "real benign DEDALE background (D02) + injected labelled rows",
+      "verdict": "benign",
+      "scenario": "typo-lockout-then-helpdesk-inventory"
+    },
+    "flaws_cloud": {
+      "provenance": "real, unlabelled CloudTrail",
+      "seed": 260915,
+      "eligible": 264,
+      "excluded_as_frozen": 15,
+      "strata": {
+        "AWS-003": 124,
+        "AWS-004": 140
+      },
+      "rule": "round-robin over leading rules in sorted order, each stratum shuffled once under the seed",
+      "chosen": [
+        {
+          "case_id": "CASE-020",
+          "leading_rule": "AWS-003"
+        },
+        {
+          "case_id": "CASE-121",
+          "leading_rule": "AWS-004"
+        },
+        {
+          "case_id": "CASE-186",
+          "leading_rule": "AWS-003"
+        },
+        {
+          "case_id": "CASE-252",
+          "leading_rule": "AWS-004"
+        },
+        {
+          "case_id": "CASE-141",
+          "leading_rule": "AWS-003"
+        },
+        {
+          "case_id": "CASE-199",
+          "leading_rule": "AWS-004"
+        },
+        {
+          "case_id": "CASE-098",
+          "leading_rule": "AWS-003"
+        },
+        {
+          "case_id": "CASE-071",
+          "leading_rule": "AWS-004"
+        },
+        {
+          "case_id": "CASE-221",
+          "leading_rule": "AWS-003"
+        },
+        {
+          "case_id": "CASE-003",
+          "leading_rule": "AWS-004"
+        }
+      ]
+    }
+  },
+  "manifest_hash": "2298b0e81f2a02f8108a5159ddb961c1521ff153829510f36062289d0b9a48de",
+  "cases": [
+    {
+      "corpus": "dedale_injected_dev:V1",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001273",
+        "ATH-006:wlb-logon-0001440",
+        "ATH-007:wlb-process-0000546"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001273",
+        "wlb-logon-0001274",
+        "wlb-logon-0001276",
+        "wlb-logon-0001278",
+        "wlb-logon-0001279",
+        "wlb-logon-0001281",
+        "wlb-logon-0001283",
+        "wlb-logon-0001307",
+        "wlb-logon-0001347",
+        "wlb-logon-0001356",
+        "wlb-logon-0001379",
+        "wlb-logon-0001408",
+        "wlb-logon-0001420",
+        "wlb-logon-0001440",
+        "wlb-process-0000546"
+      ],
+      "telemetry_hash": "eb08dfc56be687769195dfa4846b102c158d4586a4b1461d06a4b81af42c509a",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V1/ forms",
+      "labels": {
+        "injected_case": "V1",
+        "provenance": "real+injected",
+        "scenario": "guessed-credential-then-remote-exec",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-guessing",
+          "2-successful-logon",
+          "3-remote-service-execution",
+          "4-discovery"
+        ],
+        "links": [
+          "V1-LINK-1",
+          "V1-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V1-LINK-1",
+          "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V1/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22766",
+            "event_id": "wlb-logon-0001440"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=681172",
+            "event_id": "wlb-process-0000546"
+          }
+        },
+        {
+          "link_id": "V1-LINK-2",
+          "stage_transition": "2-successful-logon -> 4-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V1/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT2.breach.local;channel=Security;record_id=22766",
+            "event_id": "wlb-logon-0001440"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT2.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=681173",
+            "event_id": "wlb-process-0000548"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V2",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001184",
+        "ATH-006:wlb-logon-0001689",
+        "ATH-007:wlb-process-0000577"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001184",
+        "wlb-logon-0001187",
+        "wlb-logon-0001188",
+        "wlb-logon-0001228",
+        "wlb-logon-0001272",
+        "wlb-logon-0001319",
+        "wlb-logon-0001360",
+        "wlb-logon-0001416",
+        "wlb-logon-0001454",
+        "wlb-logon-0001527",
+        "wlb-logon-0001576",
+        "wlb-logon-0001689",
+        "wlb-process-0000577"
+      ],
+      "telemetry_hash": "8ebed04424f56c0b962fb7894f602ebfe3991a3459815545228107cc2ce89289",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V2/ forms",
+      "labels": {
+        "injected_case": "V2",
+        "provenance": "real+injected",
+        "scenario": "slow-guessing-then-delayed-remote-exec",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-guessing",
+          "2-successful-logon",
+          "3-remote-service-execution",
+          "4-discovery"
+        ],
+        "links": [
+          "V2-LINK-1",
+          "V2-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V2-LINK-1",
+          "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V2/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22581",
+            "event_id": "wlb-logon-0001689"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT5.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=700429",
+            "event_id": "wlb-process-0000577"
+          }
+        },
+        {
+          "link_id": "V2-LINK-2",
+          "stage_transition": "2-successful-logon -> 4-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V2/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT5.breach.local;channel=Security;record_id=22581",
+            "event_id": "wlb-logon-0001689"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT5.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=700430",
+            "event_id": "wlb-process-0000578"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V3",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-007",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0000997",
+        "ATH-007:wlb-process-0000292"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0000997",
+        "wlb-logon-0000998",
+        "wlb-logon-0000999",
+        "wlb-logon-0001000",
+        "wlb-logon-0001001",
+        "wlb-logon-0001002",
+        "wlb-logon-0001003",
+        "wlb-logon-0001004",
+        "wlb-logon-0001005",
+        "wlb-logon-0001006",
+        "wlb-logon-0001007",
+        "wlb-logon-0001008",
+        "wlb-process-0000292"
+      ],
+      "telemetry_hash": "bba84a171e47828d0109df72fdd63393a73b289a7e3832d7c53343fb20025a1f",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V3/ forms",
+      "labels": {
+        "injected_case": "V3",
+        "provenance": "real+injected",
+        "scenario": "unsuccessful-guessing-then-remote-exec",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-guessing",
+          "2-remote-service-execution",
+          "3-discovery"
+        ],
+        "links": [
+          "V3-LINK-1",
+          "V3-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V3-LINK-1",
+          "stage_transition": "1-credential-guessing -> 2-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V3/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21761",
+            "event_id": "wlb-logon-0001008"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT8.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=639127",
+            "event_id": "wlb-process-0000292"
+          }
+        },
+        {
+          "link_id": "V3-LINK-2",
+          "stage_transition": "1-credential-guessing -> 3-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V3/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT8.breach.local;channel=Security;record_id=21761",
+            "event_id": "wlb-logon-0001008"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT8.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=639128",
+            "event_id": "wlb-process-0000294"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V4",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001506",
+        "ATH-006:wlb-logon-0001562",
+        "ATH-007:wlb-process-0000564"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001506",
+        "wlb-logon-0001515",
+        "wlb-logon-0001516",
+        "wlb-logon-0001517",
+        "wlb-logon-0001518",
+        "wlb-logon-0001519",
+        "wlb-logon-0001520",
+        "wlb-logon-0001521",
+        "wlb-logon-0001522",
+        "wlb-logon-0001523",
+        "wlb-logon-0001524",
+        "wlb-logon-0001528",
+        "wlb-logon-0001529",
+        "wlb-logon-0001535",
+        "wlb-logon-0001536",
+        "wlb-logon-0001545",
+        "wlb-logon-0001546",
+        "wlb-logon-0001548",
+        "wlb-logon-0001560",
+        "wlb-logon-0001561",
+        "wlb-logon-0001562",
+        "wlb-process-0000564"
+      ],
+      "telemetry_hash": "ecc4cf004f20ad9d44a612e9e1a5eeb970d3d47950ea432d22ec544999e3ce5c",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V4/ forms",
+      "labels": {
+        "injected_case": "V4",
+        "provenance": "real+injected",
+        "scenario": "rapid-spray-then-share-enumeration",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-spray",
+          "2-successful-logon",
+          "3-remote-service-execution",
+          "4-discovery"
+        ],
+        "links": [
+          "V4-LINK-1",
+          "V4-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V4-LINK-1",
+          "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V4/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20905",
+            "event_id": "wlb-logon-0001562"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT13.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=606602",
+            "event_id": "wlb-process-0000564"
+          }
+        },
+        {
+          "link_id": "V4-LINK-2",
+          "stage_transition": "2-successful-logon -> 4-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V4/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT13.breach.local;channel=Security;record_id=20905",
+            "event_id": "wlb-logon-0001562"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT13.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=606603",
+            "event_id": "wlb-process-0000565"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V5",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001097",
+        "ATH-006:wlb-logon-0001107",
+        "ATH-007:wlb-process-0000302"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001097",
+        "wlb-logon-0001098",
+        "wlb-logon-0001099",
+        "wlb-logon-0001100",
+        "wlb-logon-0001101",
+        "wlb-logon-0001102",
+        "wlb-logon-0001103",
+        "wlb-logon-0001104",
+        "wlb-logon-0001105",
+        "wlb-logon-0001106",
+        "wlb-logon-0001107",
+        "wlb-process-0000302"
+      ],
+      "telemetry_hash": "e851ecf2b59a3b00f41ffe12dd162922c08201c3ac598ee319f0a45bc1f519d2",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V5/ forms",
+      "labels": {
+        "injected_case": "V5",
+        "provenance": "real+injected",
+        "scenario": "guessing-then-privileged-group-discovery",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-guessing",
+          "2-successful-logon",
+          "3-remote-service-execution",
+          "4-discovery"
+        ],
+        "links": [
+          "V5-LINK-1",
+          "V5-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V5-LINK-1",
+          "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V5/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21515",
+            "event_id": "wlb-logon-0001107"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT16.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=554877",
+            "event_id": "wlb-process-0000302"
+          }
+        },
+        {
+          "link_id": "V5-LINK-2",
+          "stage_transition": "2-successful-logon -> 4-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V5/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT16.breach.local;channel=Security;record_id=21515",
+            "event_id": "wlb-logon-0001107"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT16.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=554878",
+            "event_id": "wlb-process-0000303"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V6",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001151",
+        "ATH-006:wlb-logon-0001166",
+        "ATH-007:wlb-process-0000560"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001151",
+        "wlb-logon-0001152",
+        "wlb-logon-0001153",
+        "wlb-logon-0001154",
+        "wlb-logon-0001155",
+        "wlb-logon-0001156",
+        "wlb-logon-0001157",
+        "wlb-logon-0001158",
+        "wlb-logon-0001159",
+        "wlb-logon-0001160",
+        "wlb-logon-0001161",
+        "wlb-logon-0001162",
+        "wlb-logon-0001163",
+        "wlb-logon-0001164",
+        "wlb-logon-0001165",
+        "wlb-logon-0001166",
+        "wlb-process-0000560"
+      ],
+      "telemetry_hash": "ae6c8819ecd1e043fde177bd9be91d4a08c9b1915af99db02d682ad216f4e5be",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V6/ forms",
+      "labels": {
+        "injected_case": "V6",
+        "provenance": "real+injected",
+        "scenario": "guessing-then-long-dwell-remote-exec",
+        "verdict": "malicious",
+        "stages": [
+          "1-credential-guessing",
+          "2-successful-logon",
+          "3-remote-service-execution",
+          "4-discovery"
+        ],
+        "links": [
+          "V6-LINK-1",
+          "V6-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V6-LINK-1",
+          "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V6/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21107",
+            "event_id": "wlb-logon-0001166"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564089",
+            "event_id": "wlb-process-0000560"
+          }
+        },
+        {
+          "link_id": "V6-LINK-2",
+          "stage_transition": "2-successful-logon -> 4-discovery",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V6/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21107",
+            "event_id": "wlb-logon-0001166"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564090",
+            "event_id": "wlb-process-0000561"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V7",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001001",
+        "ATH-006:wlb-logon-0001446",
+        "ATH-007:wlb-process-0000595"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001001",
+        "wlb-logon-0001002",
+        "wlb-logon-0001003",
+        "wlb-logon-0001004",
+        "wlb-logon-0001005",
+        "wlb-logon-0001010",
+        "wlb-logon-0001011",
+        "wlb-logon-0001013",
+        "wlb-logon-0001038",
+        "wlb-logon-0001060",
+        "wlb-logon-0001084",
+        "wlb-logon-0001101",
+        "wlb-logon-0001446",
+        "wlb-process-0000595"
+      ],
+      "telemetry_hash": "5eb881d6b8b1873fbc7cfa2daaeaf03f21dab97da3dce3beb1b17b4b4d24e1b7",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V7/ forms",
+      "labels": {
+        "injected_case": "V7",
+        "provenance": "real+injected",
+        "scenario": "lockout-cascade-then-remote-support",
+        "verdict": "benign",
+        "stages": [
+          "1-stale-credential-lockout",
+          "2-logon-after-unlock",
+          "3-remote-support-action",
+          "4-support-commands"
+        ],
+        "links": [
+          "V7-LINK-1",
+          "V7-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V7-LINK-1",
+          "stage_transition": "2-logon-after-unlock -> 3-remote-support-action",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V7/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22711",
+            "event_id": "wlb-logon-0001446"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607479",
+            "event_id": "wlb-process-0000595"
+          }
+        },
+        {
+          "link_id": "V7-LINK-2",
+          "stage_transition": "2-logon-after-unlock -> 4-support-commands",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V7/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22711",
+            "event_id": "wlb-logon-0001446"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607480",
+            "event_id": "wlb-process-0000596"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V8",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001109",
+        "ATH-006:wlb-logon-0001121",
+        "ATH-007:wlb-process-0000302"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001109",
+        "wlb-logon-0001110",
+        "wlb-logon-0001111",
+        "wlb-logon-0001112",
+        "wlb-logon-0001113",
+        "wlb-logon-0001114",
+        "wlb-logon-0001115",
+        "wlb-logon-0001116",
+        "wlb-logon-0001117",
+        "wlb-logon-0001118",
+        "wlb-logon-0001119",
+        "wlb-logon-0001120",
+        "wlb-logon-0001121",
+        "wlb-process-0000302"
+      ],
+      "telemetry_hash": "f5d45c5fcfb5e6623cd58d2e3444bacbf8020654779104008c3ba6520223934b",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V8/ forms",
+      "labels": {
+        "injected_case": "V8",
+        "provenance": "real+injected",
+        "scenario": "scheduled-replication-with-stale-password",
+        "verdict": "benign",
+        "stages": [
+          "1-stale-scheduled-credential",
+          "2-credential-corrected",
+          "3-service-started-script"
+        ],
+        "links": [
+          "V8-LINK-1"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V8-LINK-1",
+          "stage_transition": "2-credential-corrected -> 3-service-started-script",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V8/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21540",
+            "event_id": "wlb-logon-0001121"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT22.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=576798",
+            "event_id": "wlb-process-0000302"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V9",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001483",
+        "ATH-006:wlb-logon-0001660",
+        "ATH-007:wlb-process-0000571"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001483",
+        "wlb-logon-0001484",
+        "wlb-logon-0001485",
+        "wlb-logon-0001491",
+        "wlb-logon-0001492",
+        "wlb-logon-0001518",
+        "wlb-logon-0001555",
+        "wlb-logon-0001591",
+        "wlb-logon-0001615",
+        "wlb-logon-0001636",
+        "wlb-logon-0001660",
+        "wlb-process-0000571"
+      ],
+      "telemetry_hash": "add9992a569a6037a9869fc4b877015dd7ee2b64c06339ead4041dc888ebc77a",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V9/ forms",
+      "labels": {
+        "injected_case": "V9",
+        "provenance": "real+injected",
+        "scenario": "monitoring-agent-expired-credential",
+        "verdict": "benign",
+        "stages": [
+          "1-expired-service-credential",
+          "2-credential-renewed",
+          "3-collector-script",
+          "4-collection-command"
+        ],
+        "links": [
+          "V9-LINK-1",
+          "V9-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V9-LINK-1",
+          "stage_transition": "2-credential-renewed -> 3-collector-script",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V9/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22862",
+            "event_id": "wlb-logon-0001660"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678863",
+            "event_id": "wlb-process-0000571"
+          }
+        },
+        {
+          "link_id": "V9-LINK-2",
+          "stage_transition": "2-credential-renewed -> 4-collection-command",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V9/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22862",
+            "event_id": "wlb-logon-0001660"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678864",
+            "event_id": "wlb-process-0000572"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "dedale_injected_dev:V10",
+      "case_id": "CASE-001",
+      "rule_ids": [
+        "ATH-005",
+        "ATH-006",
+        "ATH-007"
+      ],
+      "leading_rule": "ATH-005",
+      "finding_ids": [
+        "ATH-005:wlb-logon-0001266",
+        "ATH-006:wlb-logon-0001692",
+        "ATH-007:wlb-process-0000601"
+      ],
+      "evidence_ids": [
+        "wlb-logon-0001266",
+        "wlb-logon-0001292",
+        "wlb-logon-0001307",
+        "wlb-logon-0001321",
+        "wlb-logon-0001345",
+        "wlb-logon-0001374",
+        "wlb-logon-0001393",
+        "wlb-logon-0001414",
+        "wlb-logon-0001428",
+        "wlb-logon-0001447",
+        "wlb-logon-0001475",
+        "wlb-logon-0001496",
+        "wlb-logon-0001692",
+        "wlb-process-0000601"
+      ],
+      "telemetry_hash": "596f55775b9cc342beaa9b7aae856bb9688440bd627a3021bb2ba83ad4cfe5f4",
+      "selection": "the single case reports/local/dev/cases/dedale_injected/V10/ forms",
+      "labels": {
+        "injected_case": "V10",
+        "provenance": "real+injected",
+        "scenario": "typo-lockout-then-helpdesk-inventory",
+        "verdict": "benign",
+        "stages": [
+          "1-typo-lockout",
+          "2-logon-after-unlock",
+          "3-helpdesk-remote-exec",
+          "4-inventory-commands"
+        ],
+        "links": [
+          "V10-LINK-1",
+          "V10-LINK-2"
+        ]
+      },
+      "links": [
+        {
+          "link_id": "V10-LINK-1",
+          "stage_transition": "2-logon-after-unlock -> 3-helpdesk-remote-exec",
+          "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)",
+          "source": "reports/local/dev/cases/dedale_injected/V10/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23263",
+            "event_id": "wlb-logon-0001692"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537239",
+            "event_id": "wlb-process-0000601"
+          }
+        },
+        {
+          "link_id": "V10-LINK-2",
+          "stage_transition": "2-logon-after-unlock -> 4-inventory-commands",
+          "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection.",
+          "source": "reports/local/dev/cases/dedale_injected/V10/labels.json",
+          "identity": {
+            "domain": "identity",
+            "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23263",
+            "event_id": "wlb-logon-0001692"
+          },
+          "endpoint": {
+            "domain": "endpoint",
+            "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537240",
+            "event_id": "wlb-process-0000602"
+          }
+        }
+      ]
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-020",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-113034",
+        "AWS-004:cloudtrail-control-113038"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-113034",
+        "cloudtrail-control-113037",
+        "cloudtrail-control-113038",
+        "cloudtrail-control-113040",
+        "cloudtrail-control-113041",
+        "cloudtrail-control-113042",
+        "cloudtrail-control-113048",
+        "cloudtrail-control-113049",
+        "cloudtrail-control-113050",
+        "cloudtrail-control-113051",
+        "cloudtrail-control-113052",
+        "cloudtrail-control-113054",
+        "cloudtrail-control-113055",
+        "cloudtrail-control-113056",
+        "cloudtrail-control-113057",
+        "cloudtrail-control-113058",
+        "cloudtrail-control-113059",
+        "cloudtrail-control-113060",
+        "cloudtrail-control-113061",
+        "cloudtrail-control-113062",
+        "cloudtrail-control-113063",
+        "cloudtrail-control-113064",
+        "cloudtrail-control-113065",
+        "cloudtrail-control-113071",
+        "cloudtrail-control-113073"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-121",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-1648756"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1648756",
+        "cloudtrail-control-1648757",
+        "cloudtrail-control-1648760",
+        "cloudtrail-control-1648761",
+        "cloudtrail-control-1648762",
+        "cloudtrail-control-1648763",
+        "cloudtrail-control-1648764",
+        "cloudtrail-control-1648765",
+        "cloudtrail-control-1648766",
+        "cloudtrail-control-1648768",
+        "cloudtrail-control-1648769",
+        "cloudtrail-control-1648770",
+        "cloudtrail-control-1648771"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-186",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1740171",
+        "AWS-004:cloudtrail-control-1740171"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1740171",
+        "cloudtrail-control-1740172",
+        "cloudtrail-control-1740174",
+        "cloudtrail-control-1740176",
+        "cloudtrail-control-1740177",
+        "cloudtrail-control-1740178",
+        "cloudtrail-control-1740179",
+        "cloudtrail-control-1740180",
+        "cloudtrail-control-1740181",
+        "cloudtrail-control-1740182",
+        "cloudtrail-control-1740183",
+        "cloudtrail-control-1740184",
+        "cloudtrail-control-1740185",
+        "cloudtrail-control-1740186",
+        "cloudtrail-control-1740187",
+        "cloudtrail-control-1740188",
+        "cloudtrail-control-1740189",
+        "cloudtrail-control-1740190",
+        "cloudtrail-control-1740191",
+        "cloudtrail-control-1740192",
+        "cloudtrail-control-1740193",
+        "cloudtrail-control-1740202",
+        "cloudtrail-control-1740204",
+        "cloudtrail-control-1740205",
+        "cloudtrail-control-1740207",
+        "cloudtrail-control-1740208",
+        "cloudtrail-control-1740221"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-252",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1813746",
+        "AWS-004:cloudtrail-control-1813768"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1813746",
+        "cloudtrail-control-1813768",
+        "cloudtrail-control-1813774",
+        "cloudtrail-control-1813779",
+        "cloudtrail-control-1813803",
+        "cloudtrail-control-1813818",
+        "cloudtrail-control-1813877",
+        "cloudtrail-control-1813890",
+        "cloudtrail-control-1813903",
+        "cloudtrail-control-1813921",
+        "cloudtrail-control-1813939",
+        "cloudtrail-control-1813940",
+        "cloudtrail-control-1814037",
+        "cloudtrail-control-1814055",
+        "cloudtrail-control-1814086",
+        "cloudtrail-control-1814129",
+        "cloudtrail-control-1814170",
+        "cloudtrail-control-1814185",
+        "cloudtrail-control-1814192",
+        "cloudtrail-control-1814193",
+        "cloudtrail-control-1814233",
+        "cloudtrail-control-1814248",
+        "cloudtrail-control-1814301",
+        "cloudtrail-control-1814350"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-141",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1677638",
+        "AWS-004:cloudtrail-control-1677643"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1677638",
+        "cloudtrail-control-1677641",
+        "cloudtrail-control-1677643",
+        "cloudtrail-control-1677644",
+        "cloudtrail-control-1677645",
+        "cloudtrail-control-1677646",
+        "cloudtrail-control-1677647",
+        "cloudtrail-control-1677648",
+        "cloudtrail-control-1677649",
+        "cloudtrail-control-1677650",
+        "cloudtrail-control-1677651",
+        "cloudtrail-control-1677652",
+        "cloudtrail-control-1677653",
+        "cloudtrail-control-1677654",
+        "cloudtrail-control-1677655",
+        "cloudtrail-control-1677656",
+        "cloudtrail-control-1677657",
+        "cloudtrail-control-1677658",
+        "cloudtrail-control-1677659",
+        "cloudtrail-control-1677660",
+        "cloudtrail-control-1677661",
+        "cloudtrail-control-1677662",
+        "cloudtrail-control-1677663",
+        "cloudtrail-control-1677667",
+        "cloudtrail-control-1677671",
+        "cloudtrail-control-1677695",
+        "cloudtrail-control-1677699",
+        "cloudtrail-control-1677700",
+        "cloudtrail-control-1677702",
+        "cloudtrail-control-1677705",
+        "cloudtrail-control-1677720",
+        "cloudtrail-control-1677721",
+        "cloudtrail-control-1677725"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-199",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1754301",
+        "AWS-004:cloudtrail-control-1754299"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1754299",
+        "cloudtrail-control-1754300",
+        "cloudtrail-control-1754301",
+        "cloudtrail-control-1754302",
+        "cloudtrail-control-1754303",
+        "cloudtrail-control-1754304",
+        "cloudtrail-control-1754305",
+        "cloudtrail-control-1754306",
+        "cloudtrail-control-1754307",
+        "cloudtrail-control-1754308",
+        "cloudtrail-control-1754309",
+        "cloudtrail-control-1754310",
+        "cloudtrail-control-1754311",
+        "cloudtrail-control-1754313",
+        "cloudtrail-control-1754314",
+        "cloudtrail-control-1754315",
+        "cloudtrail-control-1754316",
+        "cloudtrail-control-1754317",
+        "cloudtrail-control-1754320",
+        "cloudtrail-control-1754321",
+        "cloudtrail-control-1754325",
+        "cloudtrail-control-1754326",
+        "cloudtrail-control-1754328",
+        "cloudtrail-control-1754330",
+        "cloudtrail-control-1754332",
+        "cloudtrail-control-1754337",
+        "cloudtrail-control-1754358",
+        "cloudtrail-control-1754360",
+        "cloudtrail-control-1754369"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-098",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-273852",
+        "AWS-004:cloudtrail-control-273895"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-273852",
+        "cloudtrail-control-273853",
+        "cloudtrail-control-273865",
+        "cloudtrail-control-273867",
+        "cloudtrail-control-273878",
+        "cloudtrail-control-273879",
+        "cloudtrail-control-273881",
+        "cloudtrail-control-273882",
+        "cloudtrail-control-273884",
+        "cloudtrail-control-273891",
+        "cloudtrail-control-273894",
+        "cloudtrail-control-273895",
+        "cloudtrail-control-273896",
+        "cloudtrail-control-273901",
+        "cloudtrail-control-273903",
+        "cloudtrail-control-273904",
+        "cloudtrail-control-273908",
+        "cloudtrail-control-273980"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-071",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-234104"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-234104",
+        "cloudtrail-control-234105",
+        "cloudtrail-control-234106",
+        "cloudtrail-control-234107",
+        "cloudtrail-control-234108",
+        "cloudtrail-control-234110",
+        "cloudtrail-control-234111",
+        "cloudtrail-control-234112",
+        "cloudtrail-control-234113",
+        "cloudtrail-control-234114",
+        "cloudtrail-control-234115",
+        "cloudtrail-control-234116",
+        "cloudtrail-control-234117",
+        "cloudtrail-control-234118",
+        "cloudtrail-control-234427"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-221",
+      "rule_ids": [
+        "AWS-003",
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-003",
+      "finding_ids": [
+        "AWS-003:cloudtrail-control-1781827",
+        "AWS-004:cloudtrail-control-1781828"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-1781827",
+        "cloudtrail-control-1781828",
+        "cloudtrail-control-1781829",
+        "cloudtrail-control-1781830",
+        "cloudtrail-control-1781831",
+        "cloudtrail-control-1781832",
+        "cloudtrail-control-1781833",
+        "cloudtrail-control-1781834",
+        "cloudtrail-control-1781835",
+        "cloudtrail-control-1781836",
+        "cloudtrail-control-1781837",
+        "cloudtrail-control-1781838",
+        "cloudtrail-control-1781839",
+        "cloudtrail-control-1781840",
+        "cloudtrail-control-1781841",
+        "cloudtrail-control-1781842",
+        "cloudtrail-control-1781843",
+        "cloudtrail-control-1781844",
+        "cloudtrail-control-1781847",
+        "cloudtrail-control-1781849",
+        "cloudtrail-control-1781850",
+        "cloudtrail-control-1781851",
+        "cloudtrail-control-1781855",
+        "cloudtrail-control-1781865",
+        "cloudtrail-control-1781866",
+        "cloudtrail-control-1781868",
+        "cloudtrail-control-1781871"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    },
+    {
+      "corpus": "flaws_cloud",
+      "case_id": "CASE-003",
+      "rule_ids": [
+        "AWS-004"
+      ],
+      "leading_rule": "AWS-004",
+      "finding_ids": [
+        "AWS-004:cloudtrail-control-011677"
+      ],
+      "evidence_ids": [
+        "cloudtrail-control-011677",
+        "cloudtrail-control-011678",
+        "cloudtrail-control-011679",
+        "cloudtrail-control-011712",
+        "cloudtrail-control-011791",
+        "cloudtrail-control-011805",
+        "cloudtrail-control-011829",
+        "cloudtrail-control-011830",
+        "cloudtrail-control-011836",
+        "cloudtrail-control-011837",
+        "cloudtrail-control-011841"
+      ],
+      "telemetry_hash": "d124dc925e7743723f164b2bb800d3012f1a678fd0864d2521e4450a4ce4f0c4",
+      "selection": "stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+      "labels": {}
+    }
+  ]
+}

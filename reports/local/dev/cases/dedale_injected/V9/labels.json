@@ -1,0 +1,119 @@
+{
+  "dataset": "dedale_injected/V9",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "V9",
+  "seed": 260915,
+  "case_seed": "260915:V9",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT23",
+      "hour": "08",
+      "file": "CLIENT23_2024-12-24T08.jsonl",
+      "background_records": 3386,
+      "injected_records": 0
+    },
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT24",
+      "hour": "08",
+      "file": "CLIENT24_2024-12-24T08.jsonl",
+      "background_records": 2483,
+      "injected_records": 13
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "monitoring-agent-expired-credential": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: a monitoring collector with an expired service credential",
+      "stages": {
+        "1-expired-service-credential": {
+          "note": "ten failures at a 30s polling cadence",
+          "refs": [
+            "host=CLIENT24.breach.local;channel=Security;record_id=22852",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22853",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22854",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22855",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22856",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22857",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22858",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22859",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22860",
+            "host=CLIENT24.breach.local;channel=Security;record_id=22861"
+          ]
+        },
+        "2-credential-renewed": {
+          "note": "the next poll succeeds",
+          "refs": [
+            "host=CLIENT24.breach.local;channel=Security;record_id=22862"
+          ]
+        },
+        "3-collector-script": {
+          "note": "services.exe starts the collector's script, no ADMIN$ redirect",
+          "refs": [
+            "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678863"
+          ]
+        },
+        "4-collection-command": {
+          "note": "workstation statistics gathered",
+          "refs": [
+            "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678864"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "V9-LINK-1",
+      "stage_transition": "2-credential-renewed -> 3-collector-script",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT24.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22862,
+        "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22862"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT24.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 678863,
+        "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678863"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "V9-LINK-2",
+      "stage_transition": "2-credential-renewed -> 4-collection-command",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT24.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22862,
+        "ref": "host=CLIENT24.breach.local;channel=Security;record_id=22862"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT24.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 678864,
+        "ref": "host=CLIENT24.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=678864"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "dataset": "dedale_injected/V7",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "V7",
+  "seed": 260915,
+  "case_seed": "260915:V7",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT19",
+      "hour": "08",
+      "file": "CLIENT19_2024-12-24T08.jsonl",
+      "background_records": 2425,
+      "injected_records": 0
+    },
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT20",
+      "hour": "08",
+      "file": "CLIENT20_2024-12-24T08.jsonl",
+      "background_records": 2343,
+      "injected_records": 16
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "lockout-cascade-then-remote-support": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: a lockout cascade and a PsExec restart of Windows Update",
+      "stages": {
+        "1-stale-credential-lockout": {
+          "note": "three bad-password failures, then nine against a locked account",
+          "refs": [
+            "host=CLIENT20.breach.local;channel=Security;record_id=22699",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22700",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22701",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22702",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22703",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22704",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22705",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22706",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22707",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22708",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22709",
+            "host=CLIENT20.breach.local;channel=Security;record_id=22710"
+          ]
+        },
+        "2-logon-after-unlock": {
+          "note": "success from the same host after the unlock",
+          "refs": [
+            "host=CLIENT20.breach.local;channel=Security;record_id=22711"
+          ]
+        },
+        "3-remote-support-action": {
+          "note": "PsExec-style service-launched shell, output to ADMIN$",
+          "refs": [
+            "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607479"
+          ]
+        },
+        "4-support-commands": {
+          "note": "Windows Update service stopped and started",
+          "refs": [
+            "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607480",
+            "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607481"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "V7-LINK-1",
+      "stage_transition": "2-logon-after-unlock -> 3-remote-support-action",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT20.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22711,
+        "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22711"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT20.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 607479,
+        "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607479"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "V7-LINK-2",
+      "stage_transition": "2-logon-after-unlock -> 4-support-commands",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT20.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 22711,
+        "ref": "host=CLIENT20.breach.local;channel=Security;record_id=22711"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT20.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 607480,
+        "ref": "host=CLIENT20.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=607480"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

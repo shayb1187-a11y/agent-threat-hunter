@@ -1,0 +1,122 @@
+{
+  "dataset": "dedale_injected/V10",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "V10",
+  "seed": 260915,
+  "case_seed": "260915:V10",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT25",
+      "hour": "08",
+      "file": "CLIENT25_2024-12-24T08.jsonl",
+      "background_records": 2888,
+      "injected_records": 0
+    },
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT27",
+      "hour": "08",
+      "file": "CLIENT27_2024-12-24T08.jsonl",
+      "background_records": 2333,
+      "injected_records": 16
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "typo-lockout-then-helpdesk-inventory": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: a mistyped password locks the account, then a helpdesk inventory run",
+      "stages": {
+        "1-typo-lockout": {
+          "note": "four bad-password failures, then eight against a locked account",
+          "refs": [
+            "host=CLIENT27.breach.local;channel=Security;record_id=23251",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23252",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23253",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23254",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23255",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23256",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23257",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23258",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23259",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23260",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23261",
+            "host=CLIENT27.breach.local;channel=Security;record_id=23262"
+          ]
+        },
+        "2-logon-after-unlock": {
+          "note": "success after the unlock",
+          "refs": [
+            "host=CLIENT27.breach.local;channel=Security;record_id=23263"
+          ]
+        },
+        "3-helpdesk-remote-exec": {
+          "note": "PsExec-style service-launched shell, output to ADMIN$",
+          "refs": [
+            "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537239"
+          ]
+        },
+        "4-inventory-commands": {
+          "note": "workstation configuration and time read",
+          "refs": [
+            "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537240",
+            "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537241"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "V10-LINK-1",
+      "stage_transition": "2-logon-after-unlock -> 3-helpdesk-remote-exec",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT27.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 23263,
+        "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23263"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT27.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 537239,
+        "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537239"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "V10-LINK-2",
+      "stage_transition": "2-logon-after-unlock -> 4-inventory-commands",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT27.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 23263,
+        "ref": "host=CLIENT27.breach.local;channel=Security;record_id=23263"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT27.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 537240,
+        "ref": "host=CLIENT27.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=537240"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

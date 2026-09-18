@@ -1,0 +1,94 @@
+{
+  "dataset": "dedale_injected/V8",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "V8",
+  "seed": 260915,
+  "case_seed": "260915:V8",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT21",
+      "hour": "08",
+      "file": "CLIENT21_2024-12-24T08.jsonl",
+      "background_records": 2738,
+      "injected_records": 0
+    },
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT22",
+      "hour": "08",
+      "file": "CLIENT22_2024-12-24T08.jsonl",
+      "background_records": 2487,
+      "injected_records": 14
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "scheduled-replication-with-stale-password": {
+      "malicious": false,
+      "note": "BENIGN LOOK-ALIKE: a replication job's stored password went stale, then its own sync script",
+      "stages": {
+        "1-stale-scheduled-credential": {
+          "note": "twelve failures at an exact 45s cadence",
+          "refs": [
+            "host=CLIENT22.breach.local;channel=Security;record_id=21528",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21529",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21530",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21531",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21532",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21533",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21534",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21535",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21536",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21537",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21538",
+            "host=CLIENT22.breach.local;channel=Security;record_id=21539"
+          ]
+        },
+        "2-credential-corrected": {
+          "note": "the next scheduled cycle succeeds",
+          "refs": [
+            "host=CLIENT22.breach.local;channel=Security;record_id=21540"
+          ]
+        },
+        "3-service-started-script": {
+          "note": "services.exe starts the replication agent's sync script, no ADMIN$ redirect",
+          "refs": [
+            "host=CLIENT22.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=576798"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "V8-LINK-1",
+      "stage_transition": "2-credential-corrected -> 3-service-started-script",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT22.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 21540,
+        "ref": "host=CLIENT22.breach.local;channel=Security;record_id=21540"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT22.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 576798,
+        "ref": "host=CLIENT22.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=576798"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    }
+  ]
+}

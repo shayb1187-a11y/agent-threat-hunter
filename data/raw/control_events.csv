@@ -1,0 +1,1 @@
+event_id,timestamp,event_type,device,user,source,source_ref,actor,actor_groups,verb,resource_type,resource_name,resource_namespace,target_actor,role_ref,decision,source_ip

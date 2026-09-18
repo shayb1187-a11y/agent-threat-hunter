@@ -1,0 +1,125 @@
+{
+  "dataset": "dedale_injected/V6",
+  "provenance": "real+injected",
+  "provenance_note": "real benign DEDALE background + injected attack rows. The background rows are DEDALE's own bytes; every row named in this file was written by scripts/m19b_inject_dedale.py and never happened.",
+  "case_id": "V6",
+  "seed": 260915,
+  "case_seed": "260915:V6",
+  "generated_by": "scripts/m19b_inject_dedale.py",
+  "attribution": "DEDALE (INRIA/IRISA PIRAT), https://doi.org/10.57745/Y5JLDG, https://dedale.inria.fr/ -- licence CC BY 4.0.",
+  "background": [
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT17",
+      "hour": "08",
+      "file": "CLIENT17_2024-12-24T08.jsonl",
+      "background_records": 2825,
+      "injected_records": 0
+    },
+    {
+      "day": "D02",
+      "date": "2024-12-24",
+      "host": "CLIENT18",
+      "hour": "08",
+      "file": "CLIENT18_2024-12-24T08.jsonl",
+      "background_records": 3014,
+      "injected_records": 19
+    }
+  ],
+  "domains": [
+    "endpoint",
+    "identity"
+  ],
+  "scenarios": {
+    "guessing-then-long-dwell-remote-exec": {
+      "malicious": true,
+      "note": "Thirteen minutes of dwell between the credential and the shell",
+      "stages": {
+        "1-credential-guessing": {
+          "note": "fifteen failed logons in 180s",
+          "refs": [
+            "host=CLIENT18.breach.local;channel=Security;record_id=21092",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21093",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21094",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21095",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21096",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21097",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21098",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21099",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21100",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21101",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21102",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21103",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21104",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21105",
+            "host=CLIENT18.breach.local;channel=Security;record_id=21106"
+          ]
+        },
+        "2-successful-logon": {
+          "note": "success 30s after the last failure",
+          "refs": [
+            "host=CLIENT18.breach.local;channel=Security;record_id=21107"
+          ]
+        },
+        "3-remote-service-execution": {
+          "note": "services.exe starts cmd.exe 780s later, ADMIN$ redirect",
+          "refs": [
+            "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564089"
+          ]
+        },
+        "4-discovery": {
+          "note": "remote-desktop users and sessions listed",
+          "refs": [
+            "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564090",
+            "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564091"
+          ]
+        }
+      }
+    }
+  },
+  "links": [
+    {
+      "link_id": "V6-LINK-1",
+      "stage_transition": "2-successful-logon -> 3-remote-service-execution",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT18.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 21107,
+        "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21107"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT18.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 564089,
+        "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564089"
+      },
+      "note": "the authentication that the service-launched shell on the same host followed; the only cross-domain join this architecture can make (auth_then_exec)"
+    },
+    {
+      "link_id": "V6-LINK-2",
+      "stage_transition": "2-successful-logon -> 4-discovery",
+      "identity": {
+        "domain": "identity",
+        "host": "CLIENT18.breach.local",
+        "channel": "Security",
+        "event_id": 4624,
+        "record_id": 21107,
+        "ref": "host=CLIENT18.breach.local;channel=Security;record_id=21107"
+      },
+      "endpoint": {
+        "domain": "endpoint",
+        "host": "CLIENT18.breach.local",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "event_id": 1,
+        "record_id": 564090,
+        "ref": "host=CLIENT18.breach.local;channel=Microsoft-Windows-Sysmon/Operational;record_id=564090"
+      },
+      "note": "the same authentication and the first command run under the shell it explains. Deliberately harder than LINK-1: no finding cites this process row, so recovering it means an arm went looking at the shell's children rather than reading the case's own evidence. It measures investigation, not detection."
+    }
+  ]
+}

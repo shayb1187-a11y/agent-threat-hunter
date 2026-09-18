@@ -1,0 +1,2050 @@
+{
+  "rows_written": 20,
+  "expected_cases": 20,
+  "completed_strict": 17,
+  "completion_rate": 0.85,
+  "meets_completion_target": false,
+  "degraded_rows": 3,
+  "rows_with_unparseable": 0,
+  "rows_with_context_refusals": 0,
+  "model_calls": 120,
+  "unparseable_responses": 0,
+  "context_refusals": 0,
+  "parse_rate": 1.0,
+  "total_wall_seconds": 4464.9,
+  "median_case_wall_seconds": 201.137,
+  "p95_case_wall_seconds": 372.0,
+  "tokens_total": 136086,
+  "prompt_tokens_total": 122178,
+  "completion_tokens_total": 13908,
+  "median_prompt_tokens_per_second": 44.75,
+  "median_eval_tokens_per_second": 10.2,
+  "planner_median_seconds": 11.88,
+  "synthesis_median_seconds": 141.753,
+  "ram_min_available_bytes": 468758528,
+  "ram_guard_events": 11,
+  "ram_guard_refusals": 0,
+  "ram_guard_overrides": 11,
+  "rows_run_under_override": 11,
+  "evidence_correctness_min": 1.0,
+  "evidence_correctness_all_at_least_floor": true,
+  "rejected_claims_total": 0,
+  "planner_model_chosen_steps": 100,
+  "planner_multi_candidate_steps": 100,
+  "failure_types": {
+    "generation_cap": 3
+  },
+  "rows": [
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V10",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 193.208,
+      "tokens": 7051,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.613,
+        "median_prompt_eval_seconds": 8.52,
+        "median_eval_seconds": 4.064,
+        "median_prompt_tokens_per_second": 43.1,
+        "median_eval_tokens_per_second": 10.1,
+        "prompt_tokens": 1810,
+        "completion_tokens": 205,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 130.034,
+        "median_prompt_eval_seconds": 117.651,
+        "median_eval_seconds": 12.316,
+        "median_prompt_tokens_per_second": 41.9,
+        "median_eval_tokens_per_second": 8.4,
+        "prompt_tokens": 4933,
+        "completion_tokens": 103,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:account",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1138876416,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 2010808320,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V1",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 187.191,
+      "tokens": 7081,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 9.344,
+        "median_prompt_eval_seconds": 6.69,
+        "median_eval_seconds": 3.448,
+        "median_prompt_tokens_per_second": 52.2,
+        "median_eval_tokens_per_second": 11.3,
+        "prompt_tokens": 1784,
+        "completion_tokens": 187,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 129.742,
+        "median_prompt_eval_seconds": 115.537,
+        "median_eval_seconds": 14.018,
+        "median_prompt_tokens_per_second": 43.2,
+        "median_eval_tokens_per_second": 8.7,
+        "prompt_tokens": 4988,
+        "completion_tokens": 122,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 5983162368,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 2002632704,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V2",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 183.856,
+      "tokens": 6929,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.766,
+        "median_prompt_eval_seconds": 7.721,
+        "median_eval_seconds": 3.658,
+        "median_prompt_tokens_per_second": 46.0,
+        "median_eval_tokens_per_second": 11.0,
+        "prompt_tokens": 1784,
+        "completion_tokens": 202,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 126.175,
+        "median_prompt_eval_seconds": 113.831,
+        "median_eval_seconds": 12.263,
+        "median_prompt_tokens_per_second": 42.5,
+        "median_eval_tokens_per_second": 9.0,
+        "prompt_tokens": 4833,
+        "completion_tokens": 110,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1992220672,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1599565824,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V3",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 173.915,
+      "tokens": 6531,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.439,
+        "median_prompt_eval_seconds": 7.569,
+        "median_eval_seconds": 3.523,
+        "median_prompt_tokens_per_second": 46.0,
+        "median_eval_tokens_per_second": 11.0,
+        "prompt_tokens": 1754,
+        "completion_tokens": 197,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 117.447,
+        "median_prompt_eval_seconds": 104.515,
+        "median_eval_seconds": 12.826,
+        "median_prompt_tokens_per_second": 42.7,
+        "median_eval_tokens_per_second": 9.0,
+        "prompt_tokens": 4464,
+        "completion_tokens": 116,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1600147456,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 852660224,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 9,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 11,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 11,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 9,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 11
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V4",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 202.725,
+      "tokens": 7688,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.344,
+        "median_prompt_eval_seconds": 7.289,
+        "median_eval_seconds": 3.688,
+        "median_prompt_tokens_per_second": 45.8,
+        "median_eval_tokens_per_second": 10.8,
+        "prompt_tokens": 1810,
+        "completion_tokens": 202,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 146.664,
+        "median_prompt_eval_seconds": 132.145,
+        "median_eval_seconds": 14.439,
+        "median_prompt_tokens_per_second": 42.0,
+        "median_eval_tokens_per_second": 8.4,
+        "prompt_tokens": 5555,
+        "completion_tokens": 121,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:account",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 831414272,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1200508928,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V5",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 210.442,
+      "tokens": 7025,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.659,
+        "median_prompt_eval_seconds": 7.831,
+        "median_eval_seconds": 3.599,
+        "median_prompt_tokens_per_second": 45.8,
+        "median_eval_tokens_per_second": 10.9,
+        "prompt_tokens": 1799,
+        "completion_tokens": 192,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 153.397,
+        "median_prompt_eval_seconds": 120.556,
+        "median_eval_seconds": 32.762,
+        "median_prompt_tokens_per_second": 39.6,
+        "median_eval_tokens_per_second": 7.9,
+        "prompt_tokens": 4776,
+        "completion_tokens": 258,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1188904960,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 504459264,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V6",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 209.687,
+      "tokens": 7282,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.257,
+        "median_prompt_eval_seconds": 8.428,
+        "median_eval_seconds": 3.863,
+        "median_prompt_tokens_per_second": 41.1,
+        "median_eval_tokens_per_second": 10.1,
+        "prompt_tokens": 1799,
+        "completion_tokens": 193,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 146.486,
+        "median_prompt_eval_seconds": 130.429,
+        "median_eval_seconds": 15.974,
+        "median_prompt_tokens_per_second": 39.6,
+        "median_eval_tokens_per_second": 7.8,
+        "prompt_tokens": 5166,
+        "completion_tokens": 124,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 510763008,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 468758528,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V7",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 225.378,
+      "tokens": 7249,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.246,
+        "median_prompt_eval_seconds": 8.283,
+        "median_eval_seconds": 3.906,
+        "median_prompt_tokens_per_second": 43.8,
+        "median_eval_tokens_per_second": 10.7,
+        "prompt_tokens": 1810,
+        "completion_tokens": 203,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 163.186,
+        "median_prompt_eval_seconds": 124.103,
+        "median_eval_seconds": 38.999,
+        "median_prompt_tokens_per_second": 39.7,
+        "median_eval_tokens_per_second": 7.8,
+        "prompt_tokens": 4933,
+        "completion_tokens": 303,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:account",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 473673728,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1579384832,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V8",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 222.578,
+      "tokens": 7169,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.783,
+        "median_prompt_eval_seconds": 8.295,
+        "median_eval_seconds": 4.24,
+        "median_prompt_tokens_per_second": 41.6,
+        "median_eval_tokens_per_second": 9.4,
+        "prompt_tokens": 1799,
+        "completion_tokens": 202,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 157.816,
+        "median_prompt_eval_seconds": 123.924,
+        "median_eval_seconds": 33.794,
+        "median_prompt_tokens_per_second": 39.5,
+        "median_eval_tokens_per_second": 8.0,
+        "prompt_tokens": 4899,
+        "completion_tokens": 269,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1550200832,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 747814912,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "dedale_injected_dev:V9",
+        "case_id": "CASE-001",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 199.549,
+      "tokens": 6843,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.754,
+        "median_prompt_eval_seconds": 8.116,
+        "median_eval_seconds": 4.178,
+        "median_prompt_tokens_per_second": 44.0,
+        "median_eval_tokens_per_second": 9.7,
+        "prompt_tokens": 1799,
+        "completion_tokens": 202,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 137.02,
+        "median_prompt_eval_seconds": 123.021,
+        "median_eval_seconds": 13.921,
+        "median_prompt_tokens_per_second": 38.6,
+        "median_eval_tokens_per_second": 7.1,
+        "prompt_tokens": 4743,
+        "completion_tokens": 99,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:case",
+          "generalist:account",
+          "generalist:host",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 766361600,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1074851840,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 13,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 13,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 11,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 13
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-003",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single_DEGRADED",
+      "status": "complete",
+      "degraded": true,
+      "degradation_reason": "response truncated at num_predict=2048",
+      "errors": [
+        "response truncated at num_predict=2048"
+      ],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": false,
+      "wall_seconds": 372.0,
+      "tokens": 7040,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.106,
+        "median_prompt_eval_seconds": 8.273,
+        "median_eval_seconds": 4.212,
+        "median_prompt_tokens_per_second": 42.0,
+        "median_eval_tokens_per_second": 9.6,
+        "prompt_tokens": 1739,
+        "completion_tokens": 196,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 310.011,
+        "median_prompt_eval_seconds": 73.428,
+        "median_eval_seconds": 236.524,
+        "median_prompt_tokens_per_second": 41.6,
+        "median_eval_tokens_per_second": 8.7,
+        "prompt_tokens": 3057,
+        "completion_tokens": 2048,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:host",
+          "generalist:finding",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 941625344,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1623924736,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 0,
+        "tool_calls": 6,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 6,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 0,
+        "rejected": 0,
+        "tool_calls": 6
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-020",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single_DEGRADED",
+      "status": "complete",
+      "degraded": true,
+      "degradation_reason": "response truncated at num_predict=2048",
+      "errors": [
+        "response truncated at num_predict=2048"
+      ],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": false,
+      "wall_seconds": 406.558,
+      "tokens": 8161,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.674,
+        "median_prompt_eval_seconds": 7.69,
+        "median_eval_seconds": 4.085,
+        "median_prompt_tokens_per_second": 45.7,
+        "median_eval_tokens_per_second": 10.3,
+        "prompt_tokens": 1762,
+        "completion_tokens": 211,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 346.086,
+        "median_prompt_eval_seconds": 96.092,
+        "median_eval_seconds": 249.876,
+        "median_prompt_tokens_per_second": 43.1,
+        "median_eval_tokens_per_second": 8.2,
+        "prompt_tokens": 4140,
+        "completion_tokens": 2048,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:account",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1498206208,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 2300272640,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 0,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 0,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-071",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 222.085,
+      "tokens": 5964,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.26,
+        "median_prompt_eval_seconds": 7.476,
+        "median_eval_seconds": 3.732,
+        "median_prompt_tokens_per_second": 47.9,
+        "median_eval_tokens_per_second": 10.5,
+        "prompt_tokens": 1744,
+        "completion_tokens": 198,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 165.435,
+        "median_prompt_eval_seconds": 74.141,
+        "median_eval_seconds": 91.226,
+        "median_prompt_tokens_per_second": 43.6,
+        "median_eval_tokens_per_second": 8.6,
+        "prompt_tokens": 3234,
+        "completion_tokens": 788,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:host",
+          "generalist:finding",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1459380224,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 625901568,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 3,
+        "tool_calls": 6,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 6,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 3,
+        "rejected": 0,
+        "tool_calls": 6
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-098",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 158.979,
+      "tokens": 5951,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.148,
+        "median_prompt_eval_seconds": 8.221,
+        "median_eval_seconds": 3.863,
+        "median_prompt_tokens_per_second": 47.1,
+        "median_eval_tokens_per_second": 10.4,
+        "prompt_tokens": 1873,
+        "completion_tokens": 204,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 98.841,
+        "median_prompt_eval_seconds": 86.872,
+        "median_eval_seconds": 11.844,
+        "median_prompt_tokens_per_second": 43.4,
+        "median_eval_tokens_per_second": 8.9,
+        "prompt_tokens": 3769,
+        "completion_tokens": 105,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:case",
+          "generalist:account",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 614457344,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1478762496,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 9,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 9,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 9
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-121",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single_DEGRADED",
+      "status": "complete",
+      "degraded": true,
+      "degradation_reason": "response truncated at num_predict=2048",
+      "errors": [
+        "response truncated at num_predict=2048"
+      ],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": false,
+      "wall_seconds": 362.377,
+      "tokens": 7184,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.794,
+        "median_prompt_eval_seconds": 7.486,
+        "median_eval_seconds": 3.736,
+        "median_prompt_tokens_per_second": 46.8,
+        "median_eval_tokens_per_second": 10.5,
+        "prompt_tokens": 1744,
+        "completion_tokens": 195,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 305.74,
+        "median_prompt_eval_seconds": 72.937,
+        "median_eval_seconds": 232.725,
+        "median_prompt_tokens_per_second": 43.8,
+        "median_eval_tokens_per_second": 8.8,
+        "prompt_tokens": 3197,
+        "completion_tokens": 2048,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:host",
+          "generalist:finding",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 2295631872,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1074360320,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 0,
+        "tool_calls": 6,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 6,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 5,
+        "inferences": 0,
+        "hypotheses": 0,
+        "rejected": 0,
+        "tool_calls": 6
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-141",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 233.452,
+      "tokens": 7133,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 12.452,
+        "median_prompt_eval_seconds": 8.167,
+        "median_eval_seconds": 3.973,
+        "median_prompt_tokens_per_second": 44.8,
+        "median_eval_tokens_per_second": 10.8,
+        "prompt_tokens": 1769,
+        "completion_tokens": 216,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 172.366,
+        "median_prompt_eval_seconds": 113.785,
+        "median_eval_seconds": 58.504,
+        "median_prompt_tokens_per_second": 40.9,
+        "median_eval_tokens_per_second": 8.4,
+        "prompt_tokens": 4656,
+        "completion_tokens": 492,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1525452800,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1506869248,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-186",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 189.281,
+      "tokens": 5638,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.731,
+        "median_prompt_eval_seconds": 7.866,
+        "median_eval_seconds": 4.147,
+        "median_prompt_tokens_per_second": 47.2,
+        "median_eval_tokens_per_second": 9.4,
+        "prompt_tokens": 1847,
+        "completion_tokens": 202,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 125.147,
+        "median_prompt_eval_seconds": 75.255,
+        "median_eval_seconds": 49.814,
+        "median_prompt_tokens_per_second": 42.0,
+        "median_eval_tokens_per_second": 8.6,
+        "prompt_tokens": 3162,
+        "completion_tokens": 427,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:account",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1070624768,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1403424768,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-199",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 151.151,
+      "tokens": 5391,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 13.007,
+        "median_prompt_eval_seconds": 8.585,
+        "median_eval_seconds": 3.84,
+        "median_prompt_tokens_per_second": 43.2,
+        "median_eval_tokens_per_second": 10.3,
+        "prompt_tokens": 1847,
+        "completion_tokens": 203,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 88.616,
+        "median_prompt_eval_seconds": 77.627,
+        "median_eval_seconds": 10.926,
+        "median_prompt_tokens_per_second": 41.7,
+        "median_eval_tokens_per_second": 9.5,
+        "prompt_tokens": 3237,
+        "completion_tokens": 104,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:account",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1500098560,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 616587264,
+        "guard_ok": true
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-221",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 176.224,
+      "tokens": 6527,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 11.33,
+        "median_prompt_eval_seconds": 7.509,
+        "median_eval_seconds": 3.808,
+        "median_prompt_tokens_per_second": 47.1,
+        "median_eval_tokens_per_second": 10.5,
+        "prompt_tokens": 1769,
+        "completion_tokens": 200,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 118.631,
+        "median_prompt_eval_seconds": 104.278,
+        "median_eval_seconds": 14.276,
+        "median_prompt_tokens_per_second": 42.6,
+        "median_eval_tokens_per_second": 7.9,
+        "prompt_tokens": 4445,
+        "completion_tokens": 113,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:account",
+          "generalist:case",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 618332160,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 944279552,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    },
+    {
+      "key": {
+        "corpus": "flaws_cloud",
+        "case_id": "CASE-252",
+        "arm": "D1_local_single",
+        "provider": "ollama",
+        "model": "qwen3.5:4b",
+        "quantization": "Q4_K_M",
+        "repeat": 1,
+        "seed": 0
+      },
+      "labelled_arm": "D1_local_single",
+      "status": "complete",
+      "degraded": false,
+      "degradation_reason": null,
+      "errors": [],
+      "context_refusals": 0,
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "model_calls": 6,
+      "parse_ok_calls": 6,
+      "completed_strict": true,
+      "wall_seconds": 184.237,
+      "tokens": 6249,
+      "planner": {
+        "calls": 5,
+        "median_total_seconds": 13.676,
+        "median_prompt_eval_seconds": 9.248,
+        "median_eval_seconds": 4.337,
+        "median_prompt_tokens_per_second": 38.0,
+        "median_eval_tokens_per_second": 9.8,
+        "prompt_tokens": 1768,
+        "completion_tokens": 199,
+        "unsent": 0
+      },
+      "synthesis": {
+        "calls": 1,
+        "median_total_seconds": 114.639,
+        "median_prompt_eval_seconds": 100.876,
+        "median_eval_seconds": 13.635,
+        "median_prompt_tokens_per_second": 41.4,
+        "median_eval_tokens_per_second": 7.4,
+        "prompt_tokens": 4181,
+        "completion_tokens": 101,
+        "unsent": 0
+      },
+      "planner_activation": {
+        "steps": 6,
+        "multi_candidate_steps": 5,
+        "multi_candidate_share": 0.8333333333333334,
+        "chosen_by_model": 5,
+        "decisions": {
+          "model-chosen": 5,
+          "only-eligible": 1
+        },
+        "specialists_selected": [
+          "generalist:finding",
+          "generalist:host",
+          "generalist:case",
+          "generalist:account",
+          "generalist:timeline",
+          "generalist:technique"
+        ],
+        "domain_specialists_selected": [],
+        "handoffs": []
+      },
+      "ram": {
+        "preflight_available_bytes": 1402609664,
+        "preflight_resident_bytes": 3424754072,
+        "after_bytes": 1539330048,
+        "guard_ok": false
+      },
+      "scores": {
+        "evidence_correctness": 1.0,
+        "evidence_coverage": 1.0,
+        "rejected_claims": 0,
+        "unsupported_claims": 0,
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "tool_calls": 8,
+        "technique_jaccard": 1.0
+      },
+      "label_scores": {},
+      "budgets": {
+        "max_steps": 8,
+        "tool_call_cap": 40,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_budget_hit": false,
+        "step_budget_hit": false
+      },
+      "counts": {
+        "facts": 7,
+        "inferences": 0,
+        "hypotheses": 1,
+        "rejected": 0,
+        "tool_calls": 8
+      }
+    }
+  ],
+  "arm": "D1",
+  "model": "qwen3.5:4b",
+  "manifest_hash": "2298b0e81f2a02f8108a5159ddb961c1521ff153829510f36062289d0b9a48de",
+  "repeat": 1,
+  "head": "195e369"
+}

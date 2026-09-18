@@ -1,0 +1,185 @@
+{
+  "git": {
+    "commit": "195e3691871aa4eb9a40bfb8c5b911068a9650b5",
+    "short_commit": "195e369",
+    "branch": "m14-real-data-validation",
+    "dirty": true,
+    "dirty_paths": [
+      "data/raw/control_events.csv",
+      "reports/local/",
+      "scripts/local_ablation.py",
+      "scripts/local_inject_dedale.py",
+      "scripts/local_manifest.py",
+      "tests/test_contamination.py",
+      "tests/test_local_ablation.py"
+    ]
+  },
+  "arms": {
+    "D1_local_single": {
+      "name": "D1_local_single",
+      "model": "qwen3.5:4b",
+      "requires_model": true,
+      "generalist": true,
+      "use_llm_planner": true,
+      "use_llm_synthesis": true,
+      "max_steps": 8,
+      "tool_call_cap": 40,
+      "tool_surface": [
+        "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+        "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+        "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+        "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+        "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+        "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+        "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+        "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+        "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+      ]
+    }
+  },
+  "shared_tool_surface": [
+    "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+    "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+    "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+    "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+    "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+    "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+    "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+    "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+    "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+  ],
+  "request": {
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "anthropic_version_header": "2023-06-01",
+    "thinking": {
+      "type": "adaptive"
+    },
+    "effort": "provider default (high); output_config is not sent",
+    "max_tokens": {
+      "planner": 8192,
+      "synthesis": 8192
+    },
+    "sampling_parameters": "none sent; temperature, top_p and top_k are rejected with a 400 by the models this experiment runs",
+    "body_fields": [
+      "model",
+      "max_tokens",
+      "system",
+      "messages",
+      "thinking"
+    ],
+    "transport": "urllib (stdlib); no SDK, by project choice"
+  },
+  "retry": {
+    "timeout_seconds_per_attempt": 60,
+    "max_attempts": 3,
+    "backoff_seconds": 1.0,
+    "backoff": "exponential: backoff_seconds * 2**attempt",
+    "retryable_statuses": [
+      408,
+      409,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "note": "a non-retryable status (400/401/403/404) fails immediately; a truncated or textless reply is not retried either -- it is returned as an error so the row degrades rather than spending the budget again on the same cap"
+  },
+  "prompts": {
+    "planner_system": "c8bca1694a015878e05751c9a5c9b5f0e841d0be360c204e30a67ad07f629bf6",
+    "synthesis_system": "9d1a547b0006abd87fb2c8764194ad1174546491038e91f91cd50f680f7f3d6f",
+    "planner_user_template": "9136d5d63c5ad470b756fc7797d659468047ce5992640752a39649a6b302b67d",
+    "synthesis_user_template": "e15896466418b847e8f7357fbd76edcfe5090fe3cc05db820e521a1568bf4d31"
+  },
+  "scoring": {
+    "scoring.py": "3b8e8bb2d76c65af36105e33305c9e3f391f0c61d4153bb1ad7bb09c0bea0ec8",
+    "arms.py": "37daf4df704b0c4500e9278f048729d6d40fe2c1d2ac8f4816e605264405a06f",
+    "incidents.py": "25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb"
+  },
+  "manifest_hash": "2298b0e81f2a02f8108a5159ddb961c1521ff153829510f36062289d0b9a48de",
+  "manifest_head": "195e369",
+  "runtime": {
+    "python": "3.9.2",
+    "implementation": "CPython",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "executable": "python.exe",
+    "packages": {
+      "pandas": "2.2.3",
+      "numpy": "2.0.2",
+      "pyarrow": "21.0.0",
+      "python-dotenv": "1.2.1"
+    }
+  },
+  "credential": {
+    "variable": "ATH_LLM_API_KEY",
+    "present": false,
+    "note": "presence only; the value is never recorded anywhere"
+  },
+  "local": {
+    "daemon": {
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "version": "0.33.3",
+      "environment_variables": {}
+    },
+    "model": {
+      "provider": "ollama",
+      "model": "qwen3.5:4b",
+      "quantization": "Q4_K_M",
+      "parameter_size": "4.7B",
+      "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd"
+    },
+    "model_details": {
+      "family": "qwen35",
+      "format": "gguf",
+      "size_bytes": 3389983735,
+      "modified_at": "2026-09-14T20:37:31.9120755+03:00",
+      "capabilities": [
+        "completion",
+        "vision",
+        "tools",
+        "thinking"
+      ],
+      "model_context_length": 262144
+    },
+    "client_configuration": {
+      "provider": "ollama",
+      "model": "qwen3.5:4b",
+      "base_url": "http://127.0.0.1:11434",
+      "endpoint": "/api/chat",
+      "sampling": {
+        "temperature": 0.0,
+        "seed": 0
+      },
+      "num_ctx": 10240,
+      "num_predict_cap": 2048,
+      "think": false,
+      "format": "json",
+      "keep_alive": -1,
+      "timeout_seconds_per_attempt": 900,
+      "max_attempts": 3,
+      "backoff_seconds": 1.0,
+      "retryable_statuses": [
+        408,
+        409,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "chars_per_token_estimate": 3.0,
+      "transport": "urllib (stdlib); no SDK, by project choice"
+    },
+    "machine": {
+      "platform": "Windows-10-10.0.26100-SP0",
+      "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+      "available_ram_bytes": 6018818048,
+      "note": "available RAM is recorded, never gated"
+    }
+  },
+  "frozen_at": "2026-09-15T10:24:46+00:00",
+  "arm_letter": "D1"
+}
