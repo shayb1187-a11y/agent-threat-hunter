@@ -216,6 +216,36 @@ def test_new_evidence_from_a_probe_can_be_cited_and_updates_the_hypotheses(world
     assert state.rejected_claims == []
 
 
+def test_a_probes_result_is_shown_as_new_evidence_in_the_next_round(world) -> None:
+    """Pass 2 of the D1 tuning: in the smoke run the children were rendered but never
+    cited, buried among the seed observations. The next round now separates them."""
+    _, llm, _ = _run(world, [
+        _answer([{"label": "insufficient", "statement": "s", "evidence": []}], probe="P1"),
+        _answer([{"label": "insufficient", "statement": "s", "evidence": []}]),
+    ])
+    first, second = llm.calls[0][1], llm.calls[1][1]
+    assert "NEW EVIDENCE" not in first
+    assert "NEW EVIDENCE from your last probe" in second
+    new_section = second[second.index("NEW EVIDENCE"):second.index("Probe menu")]
+    assert world["child_id"] in new_section
+    assert "Rewrite them against the new evidence" in second
+
+
+def test_no_probe_is_offered_for_a_built_in_account(world) -> None:
+    _, llm, _ = _run(world, [_answer([{"label": "insufficient", "statement": "s", "evidence": []}])])
+    assert "user_auth_history(user='SYSTEM')" not in llm.calls[0][1]
+    assert "user_auth_history(user='u1')" in llm.calls[0][1]
+
+
+def test_the_system_prompt_carries_no_case_content_to_parrot() -> None:
+    """The v2 examples named a mechanism ('stale cached password') and every smoke case
+    repeated it. The prompt may describe shapes, never a story."""
+    for phrase in ("stale cached password", "ev-410", "HOST-A", "acct u1", "-> disposition \"abstain\""):
+        assert phrase not in INVESTIGATOR_SYSTEM, phrase
+    assert "is not a default third entry" in INVESTIGATOR_SYSTEM
+    assert "you must decide" in INVESTIGATOR_SYSTEM
+
+
 def test_the_path_is_the_models_choice_not_a_fixed_sequence(world) -> None:
     lineage = _run(world, [_answer([{"label": "insufficient", "statement": "s", "evidence": []}], probe="P1")])
     prompt = lineage[1].calls[0][1]

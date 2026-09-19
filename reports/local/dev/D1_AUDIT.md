@@ -94,6 +94,28 @@ Consequences, stated plainly:
   here -- and until then a manifest's `head` and the freeze's `runtime` must be read
   together.
 
+## Tuning passes (maximum three; each is a prompt version, a commit and a re-freeze)
+
+**Pass 1, `d1-investigator-v2` (`cc13b39`), smoke on Colab 2026-09-19, 5 cases
+(V1, V2, V7, V8, flaws CASE-071).** MEASURED: 0 truncations, 0 rejected claims, a
+benign alternative in every case, LINK-1 recovered 4/4, LINK-2 0/4, probes ran in every
+case (first tool: process_tree x3, user_auth_history x2), new ids returned in every case
+but **used in none**, and **every disposition was "abstain"**. The round-2 prompt
+reproduced with the scripted client shows the shell's children rendered with their ids,
+so the retrieval worked and the model did not use it. Three prompt causes: the v2
+examples named a mechanism ("stale cached password") and every case's benign
+explanation repeated it; the abstain example made abstain the default; new evidence
+was rendered among the seed observations and the process_tree menu text led with the
+already-known parent.
+
+**Pass 2, `d1-investigator-v3`.** Examples reduced to shapes with no case-like content;
+"insufficient" is no longer a default third entry; abstain is allowed only while a menu
+probe could still change the answer, otherwise the model must decide; a probe's
+observations are shown in a separate NEW EVIDENCE section with an instruction to cite
+them; the process_tree menu entry leads with the children; no account probe is offered
+for built-in accounts (SYSTEM and the like). Nothing structural changed: same bounds,
+same menu builder, same verifier.
+
 ## What this stage changes, and what it leaves alone
 
 * New module `ath.agent.investigator` (D1 only): observations -> <= 3 competing

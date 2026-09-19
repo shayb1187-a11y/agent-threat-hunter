@@ -80,7 +80,7 @@ logger = get_logger(__name__)
 # The bounds
 # --------------------------------------------------------------------------------------
 
-D1_PROMPT_VERSION = "d1-investigator-v2"
+D1_PROMPT_VERSION = "d1-investigator-v3"
 """Named version of the prompts, schema and bounds below. Written into every row header
 and into the local freeze; a change here is a change of experiment."""
 
@@ -96,6 +96,12 @@ MAX_EXPLANATIONS = 3
 MAX_EVIDENCE_PER_EXPLANATION = 6
 MAX_MENU = 8
 """Probes offered per round. Deterministic order; see :func:`build_menu`."""
+
+BUILTIN_ACCOUNTS: frozenset[str] = frozenset({
+    "SYSTEM", "LOCAL SERVICE", "NETWORK SERVICE", "NT AUTHORITY\\SYSTEM", "ROOT", "-",
+})
+"""Accounts whose authentication history is a machine's, not a person's; an account
+probe on them answers no question about who used a credential."""
 
 MAX_IDS_SHOWN = 8
 """Event ids rendered per observation. The count of the rest is always shown."""
@@ -161,39 +167,43 @@ INVESTIGATOR_SYSTEM = (
     "Each turn:\n"
     "1. Give at most 3 competing explanations that account for ALL the observations "
     "together. Label each \"malicious\", \"benign\" or \"insufficient\". Include a benign "
-    "explanation whenever the observations are consistent with one. Never force a "
-    "malicious explanation.\n"
+    "explanation whenever the observations are consistent with one, and say which "
+    "observed detail makes it plausible here. Never force a malicious explanation. Use "
+    "\"insufficient\" only when no observation favours either side; it is not a default "
+    "third entry.\n"
     "2. For each explanation list the event ids it rests on (at most 6, only ids you were "
-    "shown). An explanation with no ids is an unsupported hypothesis.\n"
+    "shown). Prefer the ids of the rows that decide it: a child process, a specific "
+    "logon, a specific command. An explanation with no ids is an unsupported hypothesis.\n"
     "3. Name the single most decision-relevant evidence gap: the one missing fact that "
-    "would most change which explanation is right.\n"
+    "would most change which explanation is right. Do not name a fact an observation "
+    "already states.\n"
     "4. Choose at most ONE probe from the menu that can retrieve evidence for that gap, "
     "or \"none\" if no listed probe can, or if the evidence already decides. Never choose "
     "a probe because it has not been run yet.\n"
-    "5. Give a disposition: \"malicious\" or \"benign\" only when the evidence separates "
-    "the explanations; otherwise \"abstain\".\n"
+    "5. Give a disposition. \"abstain\" is allowed only while a probe on the menu could "
+    "still change the answer. When you answer \"none\", or no listed probe would change "
+    "it, you must decide: \"malicious\" or \"benign\", whichever the observed rows "
+    "support better, and your explanations must say why the other is weaker.\n"
     "\n"
     "Rules. Do not restate a detector's sentence as an explanation. Do not assert what no "
     "observation shows: no attacker, exfiltration, command-and-control or intent unless "
-    "an observation shows it. When new evidence contradicts an explanation, drop it. Keep "
-    "statements short and specific: name hosts, accounts, commands and times.\n"
+    "an observation shows it. Do not import a story from outside the observations (no "
+    "'stale password', 'service account', 'scanner' or 'maintenance' unless a row shows "
+    "it). When new evidence arrives, cite it where it bears on an explanation, drop what "
+    "it contradicts, and say what it confirmed. Keep statements short and specific: name "
+    "hosts, accounts, commands and times.\n"
     "\n"
-    "Illustrative examples (not this case):\n"
-    "- Observation: a detector says \"12 failed logons for acct u1, then a success\". BAD "
-    "explanation: \"the credential was guessed and the account is compromised\" -- it "
-    "restates the detector and adds nothing.\n"
-    "- BAD explanation: \"the attacker exfiltrated files to a C2 server\" when no "
-    "observation shows any network activity -- unsupported speculation.\n"
-    "- GOOD (malicious): \"the service-started shell's first child at 09:14:02 ran "
-    "'net group \\\"domain admins\\\" /domain' (ev-410), 40 s after the network logon "
-    "(ev-388): post-access discovery that no detector cited.\"\n"
-    "- GOOD (benign): \"all 9 failures come from acct u1's own workstation HOST-A, spaced "
-    "about 60 s apart, and the success comes from the same host (ev-201, ev-210): "
-    "consistent with a stale cached password being retried, not guessing from "
-    "elsewhere.\"\n"
-    "- GOOD (abstain): \"the shell's child processes have not been retrieved; without "
-    "them a maintenance script and attacker discovery look identical\" -> disposition "
-    "\"abstain\", next probe: the shell's process tree.\n"
+    "What counts as a contribution (shapes only; the content is always this case's):\n"
+    "- BAD: an explanation that repeats the rule's own sentence, or a generic story "
+    "(\"credentials were guessed\", \"an admin was doing maintenance\") with no row "
+    "named.\n"
+    "- BAD: a claim about something no observation shows.\n"
+    "- GOOD: a statement that names a specific row, what it shows, and how its timing or "
+    "source or command bears on the choice between explanations, citing that row's id.\n"
+    "- GOOD: a benign explanation grounded in an observed detail (the source host, the "
+    "spacing, the command run, who owns the host) rather than in what is usually benign.\n"
+    "- GOOD: a decision, once the retrieved rows favour one side, that says which row "
+    "decided it.\n"
     "\n"
     "Respond with JSON only, in this shape:\n"
     "{\"explanations\": [{\"label\": \"malicious|benign|insufficient\", \"statement\": "
@@ -207,13 +217,18 @@ Round {round} of {rounds}. Probes already run: {probes_run}.
 
 Observations:
 {observations}
-
+{new_evidence}
 Probe menu (choose at most one, or "none"):
 {menu}
 {previous}"""
 
+NEW_EVIDENCE_TEMPLATE = """
+NEW EVIDENCE from your last probe (not seen before this round; cite these ids where they bear on an explanation):
+{observations}
+"""
+
 PREVIOUS_TEMPLATE = """
-Your previous explanations (update them against the new observations; drop any the evidence now contradicts):
+Your previous explanations. Rewrite them against the new evidence: cite the new ids that support or contradict each one, drop what is contradicted, and decide if no remaining probe would change the answer.
 {explanations}
 Previous disposition: {disposition}."""
 
@@ -237,7 +252,7 @@ def prompt_hashes() -> dict[str, str]:
         "investigator_version": D1_PROMPT_VERSION,
         "investigator_system": sha(INVESTIGATOR_SYSTEM),
         "investigator_user_template": sha(INVESTIGATOR_USER_TEMPLATE),
-        "investigator_previous_template": sha(PREVIOUS_TEMPLATE),
+        "investigator_previous_template": sha(PREVIOUS_TEMPLATE + NEW_EVIDENCE_TEMPLATE),
         "investigator_schema": sha(json.dumps(RESPONSE_SCHEMA, sort_keys=True)),
         "investigator_bounds": sha(bounds),
     }
@@ -375,8 +390,8 @@ class ObservationLog:
     def shown_ids(self) -> set[str]:
         return {e for o in self.items for e in o.shown_ids}
 
-    def render(self) -> str:
-        return "\n".join(f"{o.ref} {o.text}" for o in self.items)
+    def render(self, items: Sequence[Observation] | None = None) -> str:
+        return "\n".join(f"{o.ref} {o.text}" for o in (self.items if items is None else items))
 
 
 # --------------------------------------------------------------------------------------
@@ -404,10 +419,12 @@ def build_menu(
             "process_tree",
             {"device": row.get("device"), "pid": row.get("process_id"),
              "process_guid": row.get("process_guid") or ""},
-            f"what started {row.get('process_name')} (pid {row.get('process_id')}) on "
-            f"{row.get('device')} and every CHILD process it ran, with command lines",
-            "you need to know what was actually done after this process started "
-            "(discovery, maintenance, a script), or what launched it",
+            f"every CHILD process {row.get('process_name')} (pid {row.get('process_id')}) "
+            f"on {row.get('device')} ran, with command lines and times, plus its parent "
+            "chain",
+            "you need to know what was actually done under this process after it "
+            "started (discovery commands, a script, a tool); the parent shown in the "
+            "cited row is already known",
             "authentication questions",
         ))
     for child in children[:3]:
@@ -421,6 +438,8 @@ def build_menu(
             "anything outside that process",
         ))
     for user in case.users:
+        if user.upper() in BUILTIN_ACCOUNTS:
+            continue
         probes.append(Probe(
             "user_auth_history", {"user": user},
             f"every authentication event for account '{user}' across hosts: source host, "
@@ -842,9 +861,15 @@ class D1Investigator:
     def _ask(
         self, state: InvestigationState, log: ObservationLog, menu: Sequence[Probe],
         round_index: int, probes_run: Sequence[str], previous: Answer | None,
+        new_since: int = 0,
     ) -> tuple[Answer | None, dict[str, Any]]:
         case = state.case
         previous_text = ""
+        fresh = log.items[new_since:] if previous is not None else []
+        new_evidence = (
+            NEW_EVIDENCE_TEMPLATE.format(observations=log.render(fresh)) if fresh
+            else ("\nNEW EVIDENCE from your last probe: none returned.\n" if previous is not None else "")
+        )
         if previous is not None:
             previous_text = PREVIOUS_TEMPLATE.format(
                 explanations="\n".join(
@@ -861,7 +886,8 @@ class D1Investigator:
             rules=", ".join(case.rule_ids),
             round=round_index + 1, rounds=self.config.max_probes + 1,
             probes_run=", ".join(probes_run) or "none",
-            observations=log.render(),
+            observations=log.render(log.items[:new_since] if fresh else log.items),
+            new_evidence=new_evidence,
             menu="\n".join(p.render() for p in menu) or "(no probe applies)",
             previous=previous_text,
         )
@@ -962,11 +988,13 @@ class D1Investigator:
 
         if not self.llm.available:
             stop_reason = "no model available"
+        new_since = len(log.items)
         for round_index in range(self.config.max_probes + 1):
             if stop_reason:
                 break
             menu = build_menu(case, process_rows, children, destinations, already_run)
-            answer, record = self._ask(state, log, menu, round_index, probes_run, previous)
+            answer, record = self._ask(state, log, menu, round_index, probes_run, previous, new_since)
+            new_since = len(log.items)
             round_record: dict[str, Any] = {
                 "round": round_index + 1, "menu": [p.ref + ":" + p.tool for p in menu],
                 **record,
@@ -1009,6 +1037,7 @@ class D1Investigator:
                 diagnostics["rounds"].append(round_record)
                 stop_reason = "step or tool budget spent"
                 break
+            new_since = len(log.items)
             result, new_children, new_destinations, returned = self._run_probe(state, chosen, log, answer.probe_reason)
             state.plan_log.append(f"step {state.step + 1}: investigator:probe -- {chosen.ref} {chosen.tool}: {answer.probe_reason}")
             self._verify_and_record(state, result)
