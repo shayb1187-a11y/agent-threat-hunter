@@ -270,6 +270,28 @@
         "D03": "30 ATH-004 findings (lsass.exe started by wininit.exe at boot on each of 30 hosts), 30 singleton cases, 0% triage; reports/m14/dedale_d03.json",
         "D15": "same 30 boot findings; 5 labelled process creates resolved, 0 surfaced; case precision 0%; reports/m14/dedale_d15.deterministic.json; LLM arm unavailable (no key)"
       }
+    },
+    "comiset": {
+      "_entry_kind": "citation-only",
+      "name": "COMISET Lab Environment Dataset (Comiset23)",
+      "publisher": "Universidad Pontificia Comillas",
+      "url": "https://zenodo.org/records/15375146",
+      "source_page": "https://zenodo.org/records/15375146",
+      "paper": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12266566/",
+      "license": "CC BY 4.0; cite the dataset (https://zenodo.org/records/15375146) in any use or redistribution.",
+      "provenance": "emulated lab environment (Comillas), Sysmon via ELK/HELK export, 2022-11-16..25",
+      "telemetry": "one zip, Comiset23_Lab_Environment_Dataset.zip, 4,912,643,312 bytes; one member dataset_comillas2.json, 159.7 GB uncompressed; Elasticsearch export in the HELK/OTRF logs-endpoint-winevent-* layout",
+      "archive": {
+        "name": "Comiset23_Lab_Environment_Dataset.zip",
+        "bytes": 4912643312,
+        "member": "dataset_comillas2.json",
+        "member_uncompressed_gb": 159.7
+      },
+      "files": [],
+      "fetch_command": "none: the record's file must be downloaded interactively from Zenodo; there is no stable direct URL to pin, so scripts/fetch_external.py skips this entry",
+      "subset_kept": "nothing committed. The canonical slices M17 and M18b were computed from (reports/m17/canonical/, reports/m18b/canonical/) were removed from the repository and its history before publication; each directory's README.md records the sha256 and size of every file it held. Re-derive with scripts/comiset_slice.py.",
+      "used_in": "M16 (H4, held out), M17, M18, M18b, M19, M19b",
+      "labels": "none usable here (M17 recorded it as an unlabelled corpus for this project's purposes)"
     }
   },
   "_attack_generation": {

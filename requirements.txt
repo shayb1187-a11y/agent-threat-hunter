@@ -1,5 +1,8 @@
 # --- Milestones 1-3: telemetry + deterministic pipeline (no credentials needed) ---
-pandas>=2.0
+# <3: the project was built and measured on pandas 2.x; pandas 3 changes copy-on-write
+# and string-dtype defaults and fails five tests (cloud behaviour stats, timestamp
+# quarantine). Lift the cap only with a green suite on 3.x.
+pandas>=2.0,<3
 python-dotenv>=1.0
 
 # --- Development ---

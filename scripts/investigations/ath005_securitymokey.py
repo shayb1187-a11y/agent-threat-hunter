@@ -8,8 +8,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS  # noqa
 from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa
 
-FLAWS = Path(r"<local-checkout>\agentic-threat-hunter"
-             r"\data\external\flaws_cloud\raw")
+FLAWS = ROOT / "data" / "external" / "flaws_cloud" / "raw"  # fetched by scripts/fetch_external.py
 t = CloudTrailSource(FLAWS).load().tables[EVENT_LOGON]
 import pandas as pd
 burst_end = pd.Timestamp("2017-05-26 22:29:16+00:00")

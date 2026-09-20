@@ -17,13 +17,19 @@ tree. It fails if the refusal is downgraded to a truncation -- a results file si
 trimmed to fit has numbers that no longer add up, and recomputability is the only reason
 these artifacts are committed at all.
 
-*The sweep* asserts that every file under ``reports/`` is below 60 MB, with exactly two
-named exceptions. It fails the moment an oversized artifact is produced by any route the
+*The sweep* asserts that every file under ``reports/`` is below 60 MB, with no
+exceptions. It fails the moment an oversized artifact is produced by any route the
 writer does not own -- a different script, a manual copy, a future milestone -- which is
 what actually happened: the 372 MB file was committed before anybody measured it. The
 two limits differ on purpose: a writer that refuses at 50 MB cannot grow the tree to the
 60 MB the sweep would reject, so the two guards can never disagree about a file between
 them.
+
+The sweep used to carry two named exceptions, the ~53 MB COMISET canonical network
+parquet for M17 and M18b. Those files were removed from the tree and from history
+before publication (see README "External datasets"), so the allowlist is empty and the
+sweep is unconditional. It should stay that way: an exception list is a statement about
+the tree, and the next unbounded artifact deserves a red test, not an entry.
 """
 
 from __future__ import annotations
@@ -46,13 +52,11 @@ from m19_ablation import (  # noqa: E402
 REPORTS_SIZE_LIMIT = 60 * 1024 * 1024
 """Largest committed file ``reports/`` may contain, outside the named exceptions."""
 
-KNOWN_LARGE = (
-    "reports/m17/canonical/comiset_network.parquet",
-    "reports/m18b/canonical/comiset_network.parquet",
-)
-"""The two canonical COMISET network freezes -- ~53 MB each, parquet, and the input to
-M17 and M18b rather than an output of either. They are listed by name rather than by an
-extension rule, because "parquet is exempt" would exempt the next unbounded parquet too.
+KNOWN_LARGE: tuple[str, ...] = ()
+"""Files under ``reports/`` allowed at or above the limit, by exact path. Empty, and
+meant to stay empty: the two COMISET parquet freezes this once named were removed from
+the repository before publication. If an entry is ever added, add the existence test
+back with it, so a stale entry cannot silently cover nothing.
 """
 
 
@@ -117,9 +121,9 @@ def test_the_refusal_names_the_largest_field_first():
 def test_every_file_under_reports_is_small_enough_to_open():
     """The sweep that would have caught the 372 MB file before it was committed.
 
-    Fails when any file under ``reports/`` reaches 60 MB except the two named COMISET
-    parquet freezes -- including one produced by a script this test has never heard of,
-    which is the case the writer's own guard cannot cover.
+    Fails when any file under ``reports/`` reaches 60 MB -- including one produced by a
+    script this test has never heard of, which is the case the writer's own guard cannot
+    cover.
     """
     allowed = set(KNOWN_LARGE)
     oversized = []
@@ -138,14 +142,3 @@ def test_every_file_under_reports_is_small_enough_to_open():
         + ", ".join(oversized)
     )
 
-
-def test_the_named_exceptions_still_exist_and_are_still_the_only_large_files():
-    """An allowlist that outlives what it lists stops being a statement about the tree.
-
-    Fails if a named exception is moved or deleted (the entry is then stale and would
-    silently cover nothing) or if either has grown past what was measured for it.
-    """
-    for relative in KNOWN_LARGE:
-        path = ROOT / relative
-        assert path.is_file(), f"{relative} is named as an exception but does not exist"
-        assert path.stat().st_size < 100 * 1024 * 1024, relative

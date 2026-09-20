@@ -50,6 +50,14 @@ _HASH_CHUNK_ROWS = 25_000
 # does not move when a pandas release changes how it prints a tz-aware Timestamp.
 _TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
+# The row terminator is pinned for the same reason, and it is CRLF for a historical one:
+# ``to_csv`` defaults to ``os.linesep``, every hash this project has pinned (the M19
+# manifest, the M19b and local-model manifests) was computed on Windows, and a digest
+# that verifies only on the platform that wrote it is not a claim anyone can check.
+# Pinning "\r\n" makes every recorded hash verify everywhere without re-pinning frozen
+# artifacts; pinning "\n" would have changed every one of them for no gain in content.
+_LINE_TERMINATOR = "\r\n"
+
 _TABLES: tuple[tuple[str, str], ...] = (
     ("process", EVENT_PROCESS),
     ("network", EVENT_NETWORK),
@@ -63,7 +71,9 @@ def table_digest(frame: pd.DataFrame) -> str:
 
     Columns are sorted by name so that a column added at a different position does not
     change the digest of unchanged data; every value is rendered as text, so the digest
-    is a statement about content rather than about a dtype's in-memory layout.
+    is a statement about content rather than about a dtype's in-memory layout. The
+    timestamp format and the row terminator are both pinned (see the constants above),
+    so the digest is a function of the rows alone and not of the platform hashing them.
     """
     digest = hashlib.sha256()
     columns = sorted(str(c) for c in frame.columns)
@@ -78,6 +88,7 @@ def table_digest(frame: pd.DataFrame) -> str:
         digest.update(
             chunk.to_csv(
                 index=False, header=False, date_format=_TIME_FORMAT,
+                lineterminator=_LINE_TERMINATOR,
             ).encode("utf-8")
         )
     return digest.hexdigest()

@@ -26,10 +26,7 @@ from ath.schema import (  # noqa: E402
 from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa: E402
 from ath.telemetry.loader import Telemetry, load_telemetry  # noqa: E402
 
-FLAWS = Path(
-    r"<local-checkout>\agentic-threat-hunter"
-    r"\data\external\flaws_cloud\raw"
-)
+FLAWS = ROOT / "data" / "external" / "flaws_cloud" / "raw"  # fetched by scripts/fetch_external.py
 
 
 def _telemetry(result) -> Telemetry:

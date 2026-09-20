@@ -87,6 +87,12 @@ def fetch_zip_member(archive: dict, member_name: str, target: Path) -> None:
 
 def process(name: str, dataset: dict, verify_only: bool) -> bool:
     print(f"[{name}] {dataset.get('name', '')}")
+    if dataset.get("_entry_kind") == "citation-only":
+        # The manifest records the corpus for attribution and provenance, but it has no
+        # URL this script can fetch from (COMISET is an interactive Zenodo download).
+        # Skipping is not a failure: there is nothing on disk to verify either.
+        print(f"  SKIP citation-only entry: {dataset.get('fetch_command', 'no fetch command')}")
+        return True
     ok = True
     files = dataset.get("files", [])
     for spec in files:

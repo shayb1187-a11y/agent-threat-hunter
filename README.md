@@ -5,14 +5,17 @@ suspicious behaviour with deterministic rules, maps the evidence to MITRE ATT&CK
 uses an LLM agent to investigate possible attack chains — where every conclusion is
 traceable to a specific telemetry event.
 
-> **Status: work in progress.** Milestones 1-8 complete: telemetry (synthetic **and
-> real Microsoft Defender exports**), **20** detection rules with KQL, MITRE ATT&CK
+> **Status: work in progress.** Milestones 1-19 complete or measured, M19b blocked on
+> API credit, M20 planned -- see the [roadmap](#roadmap). Built so far: telemetry
+> (synthetic, **real Microsoft Defender exports**, Winlogbeat/ECS, AWS CloudTrail and
+> Kubernetes audit logs), **20** detection rules with KQL equivalents, MITRE ATT&CK
 > mapping, detector evaluation, deterministic attack-chain correlation, an autonomous
-> investigation agent, calibrated report generation, a detection-engineering loop, and
-> an **environment + visibility model** that reports what the system *cannot* see as
-> explicitly as what it can. The agent runs in **fully deterministic mode with zero API
-> keys** -- an LLM is an optional enhancement layered on top, never a requirement. See
-> the [roadmap](#roadmap).
+> investigation agent, calibrated report generation, a detection-engineering loop, an
+> **environment + visibility model** that reports what the system *cannot* see as
+> explicitly as what it can, and a measured record against
+> [external corpora](#external-datasets) this project did not generate. The agent runs
+> in **fully deterministic mode with zero API keys** -- an LLM is an optional
+> enhancement layered on top, never a requirement.
 
 ---
 
@@ -108,11 +111,12 @@ agentic-threat-hunter/
 │       ├── channels.py  #    TelemetryChannel: available / partial / absent, measured
 │       ├── model.py     #    EnvironmentModel: hosts, identities, controls, unknowns
 │       └── coverage.py  #    detectable / undetected / unverifiable / unobservable
-├── queries/             # ✅ 16 KQL files + a KQL primer (README.md)
-├── docs/
-│   ├── data-dictionary.md
-│   └── detection-engineering.md   # the v1->v2 walkthrough with real numbers
-├── tests/               # 652 tests
+├── queries/             # ✅ 20 KQL files (one per rule) + a KQL primer (README.md)
+├── docs/                # data dictionary, detection-engineering walkthrough, and the
+│                        #   milestone reports M14-M20 (see the roadmap for links)
+├── data/external/       # MANIFEST.json + fetch index only; corpora are fetched, never committed
+├── scripts/             # milestone measurement scripts + fetch_external.py
+├── tests/               # pytest suite; the count is asserted by tests/test_docs_claims.py, not typed here
 └── main.py
 ```
 
@@ -161,7 +165,7 @@ python main.py stats               # summarise it
 python main.py peek --device PC01  # walk a host's timeline
 
 python main.py rules -v            # list detections + their false positives
-python main.py hunt                # run all 8 detections
+python main.py hunt                # run all 20 detections
 python main.py hunt --rule ATH-002 # run one rule
 python main.py hunt --summary      # compact table
 python main.py hunt --triage       # ...with benign/malicious disposition per finding
@@ -196,8 +200,11 @@ python main.py benchmark --json bench.json   # ...as structured output
 python main.py feedback --finding-id <id> --verdict false_positive --analyst sam
 python main.py feedback                      # triage agreement + measured FP cost by rule
 
-pytest -q                          # 652 tests
+pytest -q                          # the full suite; no API key, no network
 ```
+
+`requirements.txt` pins `pandas>=2.0,<3`: the project was built and measured on pandas 2.x,
+and several tests fail under 3.x.
 
 No API key is required for anything built so far — the entire deterministic pipeline
 runs offline.
@@ -206,7 +213,7 @@ runs offline.
 
 ## The dataset
 
-A synthetic but realistic corporate morning: 8 hosts, 8 accounts, ~1,085 events over
+A synthetic but realistic corporate morning: 8 hosts, 8 accounts, 1,118 events over
 four hours, split into three tables that mirror the Microsoft Defender advanced-hunting
 schema (`DeviceProcessEvents`, `DeviceNetworkEvents`, `DeviceLogonEvents`).
 
@@ -214,13 +221,14 @@ Full field-by-field explanation: **[docs/data-dictionary.md](docs/data-dictionar
 
 | Table | Rows |
 | ----- | ---- |
-| process | 429 |
+| process | 462 |
 | network | 389 |
 | logon | 267 |
 
-**Under 5% of events are part of any labelled scenario** (enforced by a unit test).
-The dataset contains 79 PowerShell executions, nearly all benign — so "PowerShell ran"
-can never be a detection.
+**Under 5% of events are part of any labelled scenario** -- 44 of 1,118, across three
+labelled scenarios (the intrusion, a ransomware-preparation session on a second host,
+and the benign look-alike), enforced by a unit test. The dataset contains 81 PowerShell
+executions, nearly all benign — so "PowerShell ran" can never be a detection.
 
 It also contains a deliberate **benign look-alike**: an IT administrator running an
 encoded PowerShell inventory script via patch-management tooling, which then contacts a
@@ -372,12 +380,12 @@ computed for it; hunt/chains/investigate/report all work normally without this f
 
 ## Detections
 
-Eight deterministic rules. Each declares the telemetry fields it depends on and its
-known false positives **as code**, so those caveats travel with every finding and
-cannot be dropped by the time a report is written.
+Twenty deterministic rules, in three families by telemetry source. Each declares the
+telemetry fields it depends on and its known false positives **as code**, so those
+caveats travel with every finding and cannot be dropped by the time a report is written.
 
-| Rule | Detects | Severity | MITRE (mapped in M3) |
-| ---- | ------- | -------- | -------------------- |
+| Rule | Detects | Severity | MITRE |
+| ---- | ------- | -------- | ----- |
 | ATH-001 | Office application spawned a script interpreter | HIGH | T1204.002 / T1059.001 |
 | ATH-002 | Encoded PowerShell, **decoded and graded** by payload | LOW→HIGH | T1027 / T1059.001 |
 | ATH-003 | Script interpreter connected to an external host | MED→HIGH | T1071.001 / T1105 |
@@ -388,25 +396,44 @@ cannot be dropped by the time a report is written.
 | ATH-008 | Bulk archive staged into a temp directory | MED→HIGH | T1560.001 |
 | ATH-009 | Macro-enabled document opened via email client | MEDIUM | T1204.002 |
 | ATH-010 | Sequence of ≥2 discovery commands from one parent process | MEDIUM | T1033 / T1069.002 / T1482 |
+| ATH-011 | Windows recovery mechanisms destroyed (shadow copies, backup catalogues, boot-time recovery) | HIGH→CRITICAL | T1490 |
+| ATH-012 | Security product disabled or reconfigured | HIGH→CRITICAL | T1685 |
+| AWS-001 | IAM policy grant followed by access-key creation for the same identity | HIGH | T1098.003 / T1098.001 |
+| AWS-002 | CloudTrail logging disabled or trail deleted | CRITICAL | T1685 |
+| AWS-003 | Cloud service discovery burst (read-class breadth across services) | MEDIUM | T1526 / T1580 |
+| AWS-004 | Authorization-denial burst | MEDIUM | T1580 |
+| AWS-005 | Identity authority removed | MEDIUM | T1098 |
+| AWS-006 | Repeated rejected identity authority changes | MEDIUM | T1098 |
+| K8S-001 | RBAC binding grants a maximally-privileged role | HIGH | T1098.006 |
+| K8S-002 | Pod exec by an identity shortly after receiving a privileged RBAC grant | CRITICAL | T1098.006 / T1609 |
+
+`ATH-*` rules read endpoint telemetry (process, network, logon). `AWS-*` and `K8S-*` read
+the `EVENT_CONTROL` table that CloudTrail management events and Kubernetes audit records
+normalise into ([Milestone 13](#adaptive-crew-assembly)); `AWS-003..006` are generic
+control-plane behaviour rules that never enumerate an API name
+([Milestone 18](docs/m18-representation-and-cloud-detection-report.md)). On the shipped
+Windows dataset the eight cloud rules are `not_eligible` -- their tables are empty, and
+`python main.py visibility` says so rather than counting their silence as coverage.
 
 Every rule has a matching `.kql` file in [`queries/`](queries/) written against the real
 Microsoft Defender advanced-hunting schema, plus a
 [KQL primer](queries/README.md) covering `where`, `project`, `extend`, `summarize`,
-`join`, `ago()` and the `contains` vs `has` distinction. A unit test asserts the two
-layers cannot drift apart.
+`join`, `ago()` and the `contains` vs `has` distinction. Unit tests assert the two
+layers cannot drift apart in either direction: every registered rule has a `.kql`
+file, and there are exactly as many `.kql` files as registered rules.
 
 ### Results on the shipped dataset
 
 ```
 $ python main.py hunt --summary
-Rules run  : 10    Findings : 13
-Severity   : CRITICAL=2  HIGH=6  MEDIUM=4  LOW=1
+Rules run  : 20    Findings : 15
+Severity   : CRITICAL=4  HIGH=6  MEDIUM=4  LOW=1
 ```
 
-13 findings from 1,085 events: **11 true positives** covering the intrusion end to
-end -- all 10 labelled attack stages, up from 8/10 before the detection-engineering
-loop -- and **2 known false positives** on the benign IT-automation look-alike, both
-correctly graded below the real activity.
+15 findings from 1,118 events: **13 true positives** covering both labelled attack
+scenarios end to end -- all 12 labelled attack stages, 10 from the PC01 intrusion and
+2 from the ransomware-preparation session on PC03 -- and **2 known false positives** on
+the benign IT-automation look-alike, both correctly graded below the real activity.
 
 ### Design choices worth explaining
 
@@ -490,6 +517,23 @@ performing T1027.010 and is not an attacker. Every mapping therefore carries a
 | ATH-010 | T1033 System Owner/User Discovery | Discovery | whoami/systeminfo/hostname/quser matched |
 | ATH-010 | T1069.002 Domain Groups | Discovery | net.exe matched |
 | ATH-010 | T1482 Domain Trust Discovery | Discovery | nltest matched |
+| ATH-011 | T1490 Inhibit System Recovery | Impact | always |
+| ATH-012 | T1685 Disable or Modify Tools | Defense Impairment | always (parent technique: the sub-techniques are all log-specific, and what was observed is a product being disabled) |
+| AWS-001 | T1098.003 Additional Cloud Roles | Persistence / Privilege Escalation | always (the grant) |
+| AWS-001 | T1098.001 Additional Cloud Credentials | Persistence / Privilege Escalation | always (the key) |
+| AWS-002 | T1685 Disable or Modify Tools | Defense Impairment | always (parent technique) |
+| AWS-003 | T1526 Cloud Service Discovery | Discovery | always, high -- breadth across services is exactly what was counted |
+| AWS-003 | T1580 Cloud Infrastructure Discovery | Discovery | always, medium -- inferred from the same evidence, not observed |
+| AWS-004 | T1580 Cloud Infrastructure Discovery | Discovery | always, medium -- refusals name what could not be reached, not what was enumerated |
+| AWS-005 | T1098 Account Manipulation | Persistence / Privilege Escalation | always, medium -- parent only: both cloud sub-techniques describe authority being *added* |
+| AWS-006 | T1098 Account Manipulation | Persistence / Privilege Escalation | always, low -- every row is a change the platform refused to make |
+| K8S-001 | T1098.006 Additional Container Cluster Roles | Persistence / Privilege Escalation | always |
+| K8S-002 | T1098.006 Additional Container Cluster Roles | Persistence / Privilege Escalation | always (the grant) |
+| K8S-002 | T1609 Container Administration Command | Execution | always (the exec) |
+
+The gate column is the point of the table: a mapping's confidence is decided by what
+the rule *observed*, and the mapper (`src/ath/mitre/mapper.py`) says why in a comment
+next to every entry that is not `always`.
 
 **Two techniques are deliberately never asserted.** No Exfiltration technique, because
 the data shows an archive being created and, separately, an outbound connection -- it
@@ -527,10 +571,20 @@ ATH-007      1   0   0       1.00     1.00   1.00
 ATH-008      1   0   0       1.00     1.00   1.00
 ATH-009      1   0   0       1.00     1.00   1.00
 ATH-010      1   0   0       1.00     1.00   1.00
-OVERALL     11   2           0.85
+ATH-011      1   0   0       1.00     1.00   1.00
+ATH-012      1   0   0       1.00     1.00   1.00
+AWS-001      0   0   0       1.00     1.00   1.00
+...          (AWS-002..006, K8S-001..002: 0 findings, 0 declared stages -- vacuous)
+OVERALL     13   2           0.87
 
-Attack-stage coverage: 10/10 (100%)
+Attack-stage coverage: 12/12 (100%)
 ```
+
+The eight cloud rules score vacuously on this dataset (0 TP, 0 FP, 0 FN) because it
+carries no control-plane telemetry for them to read; their real measurements are on
+external corpora, in the [M18](docs/m18-representation-and-cloud-detection-report.md)
+report. A 1.00 there is the absence of a test, not a pass, and the evaluator prints it
+that way on purpose rather than hiding the rows.
 
 **Defining a match is the hard part**, and row-level scoring would be misleading here.
 ATH-005 emits *one* finding covering fifteen logon rows; ATH-006 flags one of those same
@@ -544,10 +598,13 @@ to see, and its recall would collapse to 0.07. So:
 * **Portfolio stage coverage is reported separately**, because every rule can score 1.00
   recall while the rule set as a whole misses whole stages.
 
-Stage coverage now reads **10/10** -- it was **8/10** before Milestone 6. `ATH-009`
-and `ATH-010` closed exactly the two gaps this section used to describe (`Outlook ->
-Word` and `whoami`/`net group` enumeration), via the detection-engineering loop
-documented below, not by lowering the bar for what counts as covered.
+Stage coverage now reads **12/12**. It was **8/10** before Milestone 6: `ATH-009` and
+`ATH-010` closed exactly the two gaps this section used to describe (`Outlook -> Word`
+and `whoami`/`net group` enumeration), via the detection-engineering loop documented
+below, not by lowering the bar for what counts as covered. The denominator then grew
+from 10 to 12 in Milestone 12, when the ransomware-preparation scenario on PC03 added
+two labelled stages of its own (`defense-impairment`, `recovery-inhibition`) and
+`ATH-011`/`ATH-012` were written against them.
 
 ### Simple indicator vs. context-aware detection
 
@@ -827,7 +884,7 @@ verifier, and only the legitimate claim survives.
 
 ### Specialists run conditionally, not on a fixed script
 
-Four specialists, each owning one question. Each declares the telemetry it **needs** and
+Five specialists, each owning one question. Each declares the telemetry it **needs** and
 the evidence it **responds to** — never a list of rule ids:
 
 | Specialist | Question | Needs | Triggered by |
@@ -836,6 +893,12 @@ the evidence it **responds to** — never a list of rule ids:
 | **Identity** | Whose credentials, from where? | `authentication` | auth telemetry, or the **Credential Access** tactic |
 | **Network** | Who was contacted, and is the timing automated? | `network_flow` | network telemetry, or another specialist's request |
 | **ATT&CK** | What does this match, and what's missing? | — | mappings exist, deferred until after step 0 |
+| **Control plane** | Who was granted power, and what did they do with it? | `cloud_management_activity` *or* `container_audit` | control-plane evidence (AWS or Kubernetes) |
+
+The first four are the standing roster. The fifth is never in `default_specialists()`:
+it is stood up only when [crew assembly](#adaptive-crew-assembly) finds an environment
+whose telemetry actually carries control-plane evidence, which is the whole point of
+that milestone.
 
 Each exposes `should_run(state) -> (bool, reason)`. A case with only authentication
 findings never triggers process-tree analysis — the gate refuses, and the refusal is
@@ -1489,7 +1552,7 @@ Two distinctions carry most of the value:
 | `absent_by_schema` | The canonical schema cannot carry it at all | a code change |
 
 ```
-process_command_line     available        429 of 429 rows (100.0%) carry a value
+process_command_line     available        462 of 462 rows (100.0%) carry a value
 network_url              partial          only 2 of 389 rows (0.5%) carry a value --
                                           a detection reading this field would run but
                                           see very little
@@ -1522,15 +1585,18 @@ remedies:
 ```
 $ python main.py visibility
 
-detectable 11  |  observable but undetected 5  |  unverifiable 0  |  unobservable 9
+detectable 13  |  observable but undetected 3  |  unverifiable 0  |  unobservable 12
 
--- OBSERVABLE BUT UNDETECTED -- the data is already here; write a rule (5) --
+-- OBSERVABLE BUT UNDETECTED -- the data is already here; write a rule (3) --
   T1053.005   Scheduled Task  [Persistence]
       schtasks.exe invocations are visible in command lines; no rule reads them.
-  T1490       Inhibit System Recovery  [Impact]
-      vssadmin/wbadmin deletion is command-line visible and commonly precedes ransomware.
+  T1136.001   Create Account: Local Account  [Persistence]
+      `net user /add` is command-line visible.
+  T1041       Exfiltration Over C2 Channel  [Exfiltration]
+      Flow records show a connection occurred, not what left. Confirming exfiltration
+      needs volume or content visibility.
 
--- UNOBSERVABLE -- no rule can close these; onboard telemetry (9) --
+-- UNOBSERVABLE -- no rule can close these; onboard telemetry (12) --
   T1071.004   DNS  [Command and Control]
       needs: dns_query
       DNS-tunnelled C2. With no resolver telemetry this is not detectable at any threshold.
@@ -1538,7 +1604,11 @@ detectable 11  |  observable but undetected 5  |  unverifiable 0  |  unobservabl
       needs: script_block
       A downloader's *second* stage never appears on a command line. ATH-002 decodes
       the launcher; what it fetched is unobservable without script block logging.
+  ...
 ```
+
+`T1490 Inhibit System Recovery` used to sit in the "observable but undetected" list;
+`ATH-011` (Milestone 12) moved it to detectable, which is the list working as intended.
 
 The watchlist is deliberately **broader than the ATT&CK catalogue**. `ath.mitre.attack`
 holds only techniques this project can evidence, so an `AttackMapping` can never name
@@ -1675,6 +1745,54 @@ sections of this README.
 | 12 | ATT&CK catalogue migrated to v19.2; shared `ath.behavior` layer closes a beacon-triage false negative; `ATH-011`/`ATH-012` (recovery inhibition, security-tool tampering) | ✅ done |
 | 13 | Adaptive crew assembly: `ath.schema.EVENT_CONTROL`, CloudTrail management-API + Kubernetes audit ingestion, `AWS-001/002`/`K8S-001/002`, `ControlPlaneAgent`, environment-driven `assemble_crew` | ✅ done |
 | 14 | Real-data validation: Winlogbeat/ECS adapter, CloudTrail tar/gz + Kubernetes NDJSON input, external labels, LLM arm in the benchmark; measured on flaws.cloud, Kubernetes CI, K8NTEXT and DEDALE -- see [docs/m14-validation-report.md](docs/m14-validation-report.md) | ✅ measured (conclusion: representation, then detection precision, then triage; LLM arm unavailable here) |
+| 15 | First contact with real telemetry as a target rather than a probe: seven rule defects fixed; false positives on benign real corpora driven from 67.5/day (DEDALE) and 2,070/day (Kubernetes CI) to zero -- [docs/m15-validation-report.md](docs/m15-validation-report.md) | ✅ measured |
+| 16 | Held-out validation: did the M15 fixes generalise or fit the corpora that exposed them? Four holdouts plus one sealed day, frozen at tag `m16-freeze` -- [docs/m16-heldout-validation-report.md](docs/m16-heldout-validation-report.md) | ✅ measured (they generalised; 0.09% of a real cloud attack and 0.02% of a sealed Windows attack day were representable at all) |
+| 17 | External evaluation on telemetry from outside this project's own environment: COMISET (H4) and DEDALE D18, frozen before any behaviour changed -- [docs/m17-external-evaluation-report.md](docs/m17-external-evaluation-report.md) | ✅ measured (ingestion and FP control good; representation and cross-channel reasoning not; agent layer produced essentially nothing on real data) |
+| 18 | CloudTrail control-plane representation (0.09% → 100% of an attack corpus representable); `AWS-003..006` pre-registered and graded against a held-out corpus -- [docs/m18-representation-and-cloud-detection-report.md](docs/m18-representation-and-cloud-detection-report.md) | ✅ measured |
+| 18b | Process-instance identity (`process_guid`) and its consumers, measured on COMISET and the fixtures. Artifacts under `reports/m18b/`; **no report was written** -- the plan is [M18 §13](docs/m18-representation-and-cloud-detection-report.md), the results are read by M19's `RESULTS.md` | ⚠️ artifacts only |
+| 19 | Pre-registered three-arm agentic ablation (deterministic / single LLM / specialist crew) over 22 frozen cases from 8 corpora -- [docs/m19-ablation-report.md](docs/m19-ablation-report.md), parallel track in [docs/m19-parallel-day-ledger.md](docs/m19-parallel-day-ledger.md) | ✅ measured (on 21 of 22 cases arm C differs from arm A in synthesis alone) |
+| 19b | Nine-case cross-domain benchmark and robustness harness: does the crew beat a bounded single-LLM investigator? Phases 1-7 complete -- [docs/m19b-report.md](docs/m19b-report.md), design in [docs/m19b-plan.md](docs/m19b-plan.md) | ⏸ phase 8 (frozen A→B→C runs) blocked on API credit; decision not yet made |
+| 20 | Pre-declared benign AWS corpus in a disposable account: 13 declared workflows, real CloudTrail, days 10-14 sealed as holdout -- [docs/m20-benign-cloud-validation-plan.md](docs/m20-benign-cloud-validation-plan.md), runbook in [docs/m20-aws-setup.md](docs/m20-aws-setup.md) | 📝 planned; tooling written, nothing run against AWS |
+
+Milestone identifiers with a suffix (`18b`, `19b`) are follow-on tracks that were
+numbered when they were opened, not renumbered afterwards. The statuses are the ones the
+milestone documents state about themselves; where a document is missing, the row says so
+rather than inferring one.
+
+---
+
+## External datasets
+
+From Milestone 14 onward, the numbers that matter were measured on telemetry this project
+did not generate. None of those corpora are committed. `data/external/MANIFEST.json`
+records, for each one, the publisher, the URL, the licence, the exact bytes fetched
+(size and sha256) and the date; `scripts/fetch_external.py` re-fetches from it and
+refuses a checksum mismatch. What *is* committed is small, real-shaped fixtures cut from
+three of them, each with a `PROVENANCE.md` beside it saying exactly which records were
+taken and what, if anything, was altered.
+
+| Corpus | Publisher | Licence | Committed | Used in |
+| --- | --- | --- | --- | --- |
+| **DEDALE** -- Dataset for Evaluating Detection of APT among Logs and Events | INRIA / IRISA PIRAT (Lanvin, Majorczyk) -- https://dedale.inria.fr/, https://doi.org/10.57745/Y5JLDG | CC BY 4.0 | 25-record fixture, `tests/fixtures/real_shaped/dedale/` (message field removed, nothing else altered); the zip member index `data/external/dedale_winlogbeat_zip_index.json`; injected-case cuts under `reports/m19b/cases/dedale_injected/` | M14-M17, M19b |
+| **COMISET** Lab Environment Dataset (Comiset23) | Universidad Pontificia Comillas -- https://zenodo.org/records/15375146 | CC BY 4.0 | **Nothing.** The canonical freezes M17 and M18b were computed from (`reports/m17/canonical/`, `reports/m18b/canonical/`) were removed from the repository and its history before publication; each directory keeps a `README.md` with the sha256 of every file it held. The `MANIFEST.json` entry is `citation-only`: the 4.9 GB archive has no direct fetch URL | M16 (H4, held out), M17, M18, M18b, M19, M19b |
+| **flaws.cloud** CloudTrail logs | Summit Route (Scott Piper) | unverified -- no licence statement | 10 KB shaped tar, `tests/fixtures/real_shaped/cloudtrail_shaped/` | M14-M16, M18, M19, M19b |
+| **Kubernetes CI** kube-apiserver audit log (`ci-kubernetes-e2e-gci-gce`, run `2065053743543488512`) | Kubernetes project test-infra, public GCS bucket `kubernetes-ci-logs` | unverified -- no licence text on the bucket | 12 unmodified audit records of a disposable e2e test cluster, `tests/fixtures/real_shaped/k8s_ci/`, redistributed as a test fixture with that citation | M14-M16, M18 |
+| **K8NTEXT** Kubernetes audit dataset v1.0.0 | Fondazione Bruno Kessler | CC BY-NC-ND 4.0 | Nothing (no derived files, by licence) | M14-M16, M18 |
+| **Splunk attack_data** (CloudTrail technique sets) | Splunk | Apache-2.0 | Nothing | M16, M18, M19 |
+
+**Attribution.** DEDALE is © INRIA/IRISA PIRAT and is used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); cite the dataset and link
+https://dedale.inria.fr/. COMISET is © Universidad Pontificia Comillas and is used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); cite
+https://zenodo.org/records/15375146. Neither publisher endorses this project.
+
+**What removing the COMISET freezes costs.** M17 and M18b are no longer reproducible from
+this repository alone. Their inputs were derived from a 159.7 GB archive member and were
+the actual inputs to those milestones, not a cheap recompute; re-deriving them needs the
+archive and `scripts/comiset_slice.py`, and the sha256s in the
+two `canonical/README.md` files are there so that a re-derivation can be checked against
+what was measured. Every downstream number those milestones report is unchanged and still
+in their reports; what is gone is the ability to re-run them from a clone.
 
 ---
 
@@ -1700,9 +1818,12 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
 - **ATT&CK mappings are evidence-informed interpretations, not verdicts.** They say the
   observed behaviour matches how ATT&CK describes a technique. They do not establish
   that an adversary was present.
-- **The agent's specialists are hand-written, not autonomous discovery.** They know
-  which rule ids to look for; a genuinely open-ended agent would need to infer relevance
-  from evidence content, not from a rule-id allowlist.
+- **The agent's specialists are hand-written, not autonomous discovery.** Their
+  eligibility is decided by the telemetry channels a case's evidence rests on (the
+  rule-id allowlist this entry used to describe was removed for the reasons
+  [given above](#why-eligibility-is-a-capability-not-an-allowlist)), but each
+  specialist's *questions* are still authored by hand. A genuinely open-ended agent would
+  need to decide what to ask from the evidence itself, not from a fixed set of analyses.
 - **Beacon detection uses a simple robust statistic (median/MAD) on fixed intervals.**
   Real implants add jitter specifically to defeat this; a negative result is weak
   evidence of absence, and the code says so.
@@ -1737,15 +1858,14 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   The handle-based query is included in `queries/ATH-004-*.kql` as documentation of the
   gap, and `python main.py visibility` now reports it as `T1003.001-handle`
   (unobservable, needs `handle_access`) rather than leaving it as prose.
-- **The Environment Model describes, it does not yet plan.** It establishes what the
-  environment is and what can be seen of it, and specialists now consult it — but
-  nothing yet *plans* from it. The roster is still a fixed set of four; the system
-  selects among them by capability rather than assembling a crew appropriate to the
-  environment, and it cannot propose a capability it does not already have. A cloud
-  environment would correctly activate the identity and endpoint specialists on its
-  CloudTrail evidence, and would correctly report that no cloud-specific capability
-  exists — but it would not create one. That is the next milestone, and it needs the
-  capability registry and evaluation harness the vision describes.
+- **The Environment Model describes, and crew assembly selects; nothing yet
+  designs.** The environment model establishes what can be seen, and
+  [`assemble_crew`](#adaptive-crew-assembly) turns that into a roster of up to five
+  capabilities -- but the registry it selects from is fixed and hand-written. A telemetry
+  shape nobody anticipated gets the closest existing capability or none; the system
+  cannot propose one it does not already have. A capability registry with versioning,
+  evaluation gates for newly proposed capabilities and per-capability budgets is the gap
+  between this and the adaptive platform the opening sections describe.
 - **Cloud management activity has its own table now, and it took a schema change.**
   This limitation used to read "roughly a third of a real CloudTrail export has nowhere
   to go": the adapter named five management calls (`CreateAccessKey`, `AttachUserPolicy`,
@@ -1764,19 +1884,24 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   rather than invented, which correctly stops `ATH-006`'s host-ownership inference from
   firing on telemetry where interactive host sessions do not exist — but it also means
   the environment model cannot classify cloud identities as interactive or service.
-- **Correlation needs two linked findings, so single-finding incidents get no
-  investigation.** Measured, not theorised: INC-002 in the benchmark detects a cloud
-  credential-stuffing attack and then produces zero facts, because one finding cannot
-  form a case. This is the largest gap the benchmark currently exposes.
-- **The benchmark is three incidents, two of them derived from one dataset.** It is
-  enough to have caught real defects, and far from a representative corpus. The quiet-day
-  scenario in particular measures false alarms against *this* benign background only.
+- **Single-finding incidents are investigated only above a severity bar.** INC-002 used
+  to detect a cloud credential-stuffing attack and then produce zero facts, because one
+  finding could not form a case; a lone finding at or above HIGH is now raised as a
+  singleton case with `confidence=low`, and INC-002 is investigated
+  ([measured above](#what-the-failures-mean)). What remains is the bar itself: a genuine
+  incident that only ever trips one MEDIUM rule is still detected and never explained.
+- **The synthetic benchmark is five incidents, three of them derived from one
+  dataset.** It is enough to have caught real defects, and far from a representative
+  corpus; it currently passes 5 of 5, which is exactly when a benchmark stops
+  discriminating. The quiet-day scenario measures false alarms against *this* benign
+  background only, and the numbers that carry weight are the ones on
+  [external corpora](#external-datasets).
 - **Benign triage rests on prevalence, and prevalence needs a real baseline.** The
   destination and process profiles are computed from a four-hour window of eight hosts.
   In a real estate they would need weeks of history and explicit handling for newly
   onboarded software, which starts rare and looks suspicious for exactly that reason.
 - **Benign signals are hand-written gates, like the ATT&CK mappings.** They cover the
-  metadata this project's ten rules happen to emit. A new rule emitting different
+  metadata this project's twenty rules happen to emit. A new rule emitting different
   metadata gets `needs_review` by default — safe, but it means coverage of the benign
   side grows manually rather than automatically.
 - **`is_known_security_tool` reads a hardcoded product list.** `CcmExec.exe` is
@@ -1809,7 +1934,23 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   and inbound remote authentication is classified as a workstation with the ambiguity
   stated in its `role_reason`, because this telemetry genuinely cannot distinguish a
   developer's desktop from a terminal server.
-- **The technique watchlist is hand-curated, not the full ATT&CK matrix.** It covers 25
+- **The technique watchlist is hand-curated, not the full ATT&CK matrix.** It covers 28
   techniques chosen to exercise all four coverage states. A production posture
   assessment would need the full matrix and per-technique telemetry requirements
   maintained as data, not as a Python tuple.
+- **Milestones 17 and 18b cannot be re-run from a clone.** Their COMISET inputs
+  (`reports/m17/canonical/`, `reports/m18b/canonical/`, ~110 MB of parquet derived from a
+  159.7 GB archive member) were removed from the repository and its history before
+  publication, because committing external data contradicts this project's own rule that
+  external corpora are fetched and never committed. The results those milestones report
+  are unchanged; re-deriving their inputs needs the archive, `scripts/comiset_slice.py`
+  and the sha256s recorded in each `canonical/README.md`. See
+  [External datasets](#external-datasets).
+- **The telemetry digest's row terminator was the platform default until publication.**
+  `table_digest` hashed `to_csv` output with `os.linesep`, so every telemetry hash pinned
+  in `reports/m19/ablation/MANIFEST.json` (and the M19b and local-model manifests) was a
+  CRLF digest that verified on the Windows machine that wrote it and on nothing else;
+  the guard test `test_arm_a_on_the_m19_manifest_is_unchanged_by_the_defect_fixes` was
+  red on any Linux or macOS checkout. The terminator is now pinned to `\r\n` explicitly,
+  which makes every recorded hash verify everywhere without re-pinning a single frozen
+  artifact. The choice of CRLF is historical, not principled, and the code says so.

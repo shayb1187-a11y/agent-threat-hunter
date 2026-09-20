@@ -14,8 +14,7 @@ import pandas as pd  # noqa
 from ath.schema import EVENT_LOGON  # noqa
 from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa
 
-FLAWS = Path(r"<local-checkout>\agentic-threat-hunter"
-             r"\data\external\flaws_cloud\raw")
+FLAWS = ROOT / "data" / "external" / "flaws_cloud" / "raw"  # fetched by scripts/fetch_external.py
 WINDOW = timedelta(minutes=15)
 
 t = CloudTrailSource(FLAWS).load().tables[EVENT_LOGON]

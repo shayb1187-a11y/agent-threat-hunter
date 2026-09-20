@@ -38,3 +38,14 @@ reports/local/**/winlogbeat/
 
 # Local scratch working file, stripped from history in the M19 cleanup -- never commit
 data/raw/control_events.csv
+
+# COMISET canonical freezes (inputs to M17 / M18b, ~110 MB, derived from a 159.7 GB
+# archive member). External data is fetched, never committed; these were removed from
+# the tree and from history before publication. Re-derive with scripts/comiset_slice.py
+# and check against the sha256s in each canonical/README.md.
+reports/m17/canonical/*.parquet
+reports/m18b/canonical/*.parquet
+
+# Scripted (smoke-test) ablation rows can be hundreds of MB; the real M19 rows live one
+# directory up and are size-guarded by tests/test_artifact_size_guard.py.
+reports/m19/ablation/scripted/arm_B.json

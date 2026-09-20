@@ -692,6 +692,28 @@ def test_every_rule_has_a_kql_file() -> None:
         assert len(matches) == 1, f"{rule_id} has {len(matches)} KQL files, expected 1"
 
 
+def test_kql_files_and_registered_rules_are_the_same_set() -> None:
+    """The other direction of the test above: no KQL file without a registered rule.
+
+    ``test_every_rule_has_a_kql_file`` proves every rule has a query; it says nothing
+    about a query whose rule was renamed or removed, which would sit in ``queries/`` and
+    be counted by anyone who counts files. Parity in both directions is what lets the
+    README's "one .kql per rule" be checked rather than trusted.
+    """
+    queries = PROJECT_ROOT / "queries"
+    kql_files = sorted(queries.glob("*.kql"))
+    registered = sorted(registered_rule_ids())
+    assert len(kql_files) == len(registered), (
+        f"{len(kql_files)} KQL files but {len(registered)} registered rules"
+    )
+    kql_rule_ids = sorted("-".join(path.name.split("-", 2)[:2]) for path in kql_files)
+    assert kql_rule_ids == registered, (
+        "KQL files not matching the registry one-to-one: "
+        f"extra={sorted(set(kql_rule_ids) - set(registered))}, "
+        f"missing={sorted(set(registered) - set(kql_rule_ids))}"
+    )
+
+
 def test_kql_files_reference_their_pandas_implementation() -> None:
     """Each KQL file must name the pandas class it mirrors, so the pair stays linked."""
     queries = PROJECT_ROOT / "queries"
