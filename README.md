@@ -1,18 +1,22 @@
 # Agentic Threat Hunter
 
-An AI-assisted threat-hunting system that analyses security telemetry, detects
-suspicious behaviour with deterministic rules, maps the evidence to MITRE ATT&CK, and
-uses an LLM agent to investigate possible attack chains — where every conclusion is
-traceable to a specific telemetry event.
+AI-assisted threat hunting over security telemetry. Deterministic rules find suspicious
+behaviour, the evidence is mapped to MITRE ATT&CK and correlated into attack chains, and
+an investigation agent explains what happened — where every claim must cite a telemetry
+event that actually exists.
 
-> **Status: work in progress.** Milestones 1-8 complete: telemetry (synthetic **and
-> real Microsoft Defender exports**), **10** detection rules with KQL, MITRE ATT&CK
-> mapping, detector evaluation, deterministic attack-chain correlation, an autonomous
-> investigation agent, calibrated report generation, a detection-engineering loop, and
-> an **environment + visibility model** that reports what the system *cannot* see as
-> explicitly as what it can. The agent runs in **fully deterministic mode with zero API
-> keys** -- an LLM is an optional enhancement layered on top, never a requirement. See
-> the [roadmap](#roadmap).
+**Status:** work in progress, milestones 1-11 complete — see the [roadmap](#roadmap).
+
+**No API key required:** the entire pipeline runs offline and deterministically by
+default; an LLM is an optional layer on top, never a requirement.
+
+|  |  |
+|---|---|
+| Detection rules | 10, each with a matching KQL query |
+| Telemetry sources | synthetic generator and real Microsoft Defender advanced-hunting exports |
+| On the shipped dataset | 13 findings from 1,085 events — 11 true positives, 2 known false positives |
+| Attack-stage coverage | 10 / 10 |
+| Tests | 545 |
 
 ---
 
@@ -145,7 +149,8 @@ own: the model never sees raw telemetry, only tool results, and it can never aut
 ## Quick start
 
 ```bash
-git clone <repo> && cd agentic-threat-hunter
+git clone https://github.com/shayb1187-a11y/agentic-threat-hunter.git
+cd agentic-threat-hunter
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
@@ -154,7 +159,7 @@ python main.py stats               # summarise it
 python main.py peek --device PC01  # walk a host's timeline
 
 python main.py rules -v            # list detections + their false positives
-python main.py hunt                # run all 8 detections
+python main.py hunt                # run all 10 detections
 python main.py hunt --rule ATH-002 # run one rule
 python main.py hunt --summary      # compact table
 python main.py hunt --triage       # ...with benign/malicious disposition per finding
@@ -365,7 +370,7 @@ computed for it; hunt/chains/investigate/report all work normally without this f
 
 ## Detections
 
-Eight deterministic rules. Each declares the telemetry fields it depends on and its
+Ten deterministic rules. Each declares the telemetry fields it depends on and its
 known false positives **as code**, so those caveats travel with every finding and
 cannot be dropped by the time a report is written.
 
