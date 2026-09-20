@@ -105,8 +105,7 @@ comparison is for.
 
 They can be reused. They were written at `c4ccb24` under `d1-investigator-v3` with the
 Colab manifest, and nothing in this change alters the investigator hashes, the schema,
-the bounds, scoring or the manifest builder. The notebook restores them from Drive (or
-from the downloaded `dev_results.zip`) into the session's rows directory without
+the bounds, scoring or the manifest builder. The notebook restores them from the uploaded `dev_results.zip` (Google Drive is not used: its authorisation failed on the user's account, so results travel as downloaded and re-uploaded zips) into the session's rows directory without
 overwriting, and the new `validate-rows` subcommand checks each row's manifest hash,
 telemetry hash, model digest, daemon version, gated client configuration, prompt
 version and investigator hashes against the live freeze and manifest. A row that fails is
