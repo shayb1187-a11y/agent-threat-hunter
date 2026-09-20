@@ -116,6 +116,11 @@ in well under 400 tokens; the old 2048 let the model copy id lists until the cap
 STATEMENT_CHARS = 300
 """Longest statement kept from the model, and longest recorded in diagnostics."""
 
+RAW_REPLY_CHARS = 2000
+"""Longest raw model reply recorded per round in the row's diagnostics. Not a bound the
+model reads and not in :func:`prompt_hashes`: it changes what a row records, never what
+the model sees, so rows before and after its introduction summarise together."""
+
 LABELS: tuple[str, ...] = ("malicious", "benign", "insufficient")
 DISPOSITIONS: tuple[str, ...] = ("malicious", "benign", "abstain")
 NO_PROBE = "none"
@@ -231,6 +236,12 @@ PREVIOUS_TEMPLATE = """
 Your previous explanations. Rewrite them against the new evidence: cite the new ids that support or contradict each one, drop what is contradicted, and decide if no remaining probe would change the answer.
 {explanations}
 Previous disposition: {disposition}."""
+
+
+def prompt_sha256(text: str) -> str:
+    """The digest a round's prompt is recorded under, newline-normalised like the prompt
+    hashes. An offline replay proves it rebuilt a Colab prompt byte for byte by matching it."""
+    return hashlib.sha256(text.replace("\r\n", "\n").encode("utf-8")).hexdigest()
 
 
 def prompt_hashes() -> dict[str, str]:
@@ -895,6 +906,12 @@ class D1Investigator:
         record: dict[str, Any] = {
             "parse_ok": False, "truncated": bool(getattr(response, "truncated", False)),
             "error": response.error, "output_tokens": response.output_tokens,
+            # Recorded before any early return: an unusable reply is the one a reader
+            # most needs to see, and the prompt digest lets an offline replay prove it
+            # rebuilt this round's prompt byte for byte.
+            "raw": _clip(getattr(response, "text", "") or "", RAW_REPLY_CHARS),
+            "prompt_sha256": prompt_sha256(prompt),
+            "prompt_chars": len(prompt),
         }
         if not response.ok:
             state.llm_errors.append(response.error or "unknown error")

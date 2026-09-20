@@ -41,6 +41,7 @@ from ath.agent.investigator import (
     build_menu,
     parse_answer,
     prompt_hashes,
+    prompt_sha256,
 )
 from ath.agent.llm import ScriptedLLM, truncated_reply
 from ath.agent.tools import ToolBox
@@ -283,6 +284,22 @@ def test_an_unparseable_reply_is_counted_not_a_model_failure(world) -> None:
     assert state.llm_unparseable_responses == 1
     assert state.llm_unparseable_by_kind == {"investigator": 1}
     assert state.investigation["final_disposition"] is None
+    record = state.investigation["rounds"][0]
+    assert record["raw"] == "I think it is fine.", "the unusable reply is the one a reader most needs recorded"
+
+
+def test_the_raw_reply_and_the_prompt_digest_are_recorded_per_round(world) -> None:
+    """Pass-1 rows could not say what the model wrote; the replay could not prove it
+    rebuilt the same prompt. Both are now on the round record, and neither is hashed
+    into the freeze, so rows before and after summarise together."""
+    first = _answer([{"label": "insufficient", "statement": "s", "evidence": []}], probe="P1")
+    second = _answer([{"label": "insufficient", "statement": "s", "evidence": []}])
+    state, llm, _ = _run(world, [first, second])
+    rounds = state.investigation["rounds"]
+    assert [r["raw"] for r in rounds] == [first, second]
+    assert [r["prompt_sha256"] for r in rounds] == [prompt_sha256(p) for _, p in llm.calls]
+    assert [r["prompt_chars"] for r in rounds] == [len(p) for _, p in llm.calls]
+    assert "raw" not in json.dumps(prompt_hashes())
 
 
 def test_findings_reach_the_model_as_observations_with_benign_causes(world) -> None:

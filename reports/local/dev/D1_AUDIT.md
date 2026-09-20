@@ -116,6 +116,25 @@ them; the process_tree menu entry leads with the children; no account probe is o
 for built-in accounts (SYSTEM and the like). Nothing structural changed: same bounds,
 same menu builder, same verifier.
 
+**Offline ceiling of the harness, MEASURED 2026-09-20 on the laptop at `59fadc1` plus
+the replay commit, no model.** `scripts/local_replay.py` drives the real loop over the
+real injected dev cases with an oracle client that reads the prompt and cites only ids
+the prompt rendered. Under `--path link` (the shell's `process_tree`, then one
+explanation citing the link's logon and the first child): the link's identity id is among
+the seed's shown ids in 10/10 cases (it lands in the tail of the cited-rows observation);
+the shell's `process_tree` is menu entry P1 in 10/10; the LINK-2 child arrives in the NEW
+EVIDENCE section of round 2 in the 9/9 cases that define one (V8 defines none); LINK-1
+and LINK-2 are recovered 9/9 with 0 rejected claims, through the same `link_recovery`
+call the runner makes. Under `--path auth-first` (V1, V3) the shell's tree is still
+offered after `user_auth_history`, the child arrives in round 3, and both links recover.
+So retrieval, rendering and the scorer are not where a LINK-2 zero comes from: a model
+shown the child and the logon that cites both recovers the link. Every round now records
+the raw model reply and the prompt's sha256 (neither hashed into the freeze), so a Colab
+row can be replayed here and its prompts matched byte for byte. Two corrections to the
+reading of pass 1: the smoke set defines LINK-2 on three rows (V1, V2, V7; V8 has only
+LINK-1), and V3's identity row is a *failed* logon, so no prompt may say "the successful
+logon" where it means the logon that explains the shell.
+
 ## What this stage changes, and what it leaves alone
 
 * New module `ath.agent.investigator` (D1 only): observations -> <= 3 competing
