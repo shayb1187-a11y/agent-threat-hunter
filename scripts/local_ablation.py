@@ -66,6 +66,7 @@ from ath.evaluation.ablation.local import (  # noqa: E402
     investigator_environment,
     is_complete,
     local_environment,
+    read_row,
     ram_floor_for,
     refuse_frozen_path,
     row_path,
@@ -264,6 +265,7 @@ def run_rows(
     ram_floor: int | None,
     ram_reader: Callable[[], int | None] = available_ram_bytes,
     resident_reader: Callable[[], int] | None = None,
+    residency_reader: Callable[[], dict[str, Any]] | None = None,
     stop_after: int | None = None,
     ignore_ram_floor: bool = False,
     links: dict[str, Sequence[dict[str, Any]]] | None = None,
@@ -326,6 +328,7 @@ def run_rows(
                     "repeat": repeat,
                     "seed": seed,
                     "ram_preflight": {**verdict.to_dict(), "overridden": bool(verdict.ok is False and ignore_ram_floor)},
+                    "model_residency": dict(residency_reader()) if residency_reader is not None else None,
                     "ram_after_bytes": ram_reader(),
                     "loop_wall_seconds": round(time.perf_counter() - started, 3),
                     "calls": _classify_calls(calls, result.state.get("llm", {}).get("requests", [])),
@@ -392,6 +395,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             manifest_digest=digest, rows_directory=directory, header=header, repeats=repeats,
             seed=args.seed, surface=tool_surface(), ram_floor=ram_floor_for(spec.parameter_size),
             resident_reader=client.resident_bytes,  # type: ignore[attr-defined]
+            residency_reader=client.residency,  # type: ignore[attr-defined]
             stop_after=args.stop_after, ignore_ram_floor=args.ignore_ram_floor,
             links=links_by_case(payload), only=only, log=log,
         )
@@ -407,6 +411,114 @@ def cmd_run(args: argparse.Namespace) -> int:
         f"{counts['ram_guard_events']} -> {directory}"
     )
     return 0
+
+
+# --------------------------------------------------------------------------------------
+# validate-rows: restored rows against the live freeze and manifest
+# --------------------------------------------------------------------------------------
+
+
+def row_provenance_problems(
+    payload: dict[str, Any], *, model: str, manifest_digest: str, entries: Sequence[CaseManifest],
+    frozen: dict[str, Any],
+) -> list[str]:
+    """Why this row is not a row of the experiment the live freeze and manifest describe.
+
+    Empty when it is. Every check reads what the row recorded when it was written --
+    the key, the header's model digest, daemon version, gated client configuration,
+    prompt version and investigator hashes -- against what the freeze and the manifest
+    say now. ``run`` skips any parseable row by path alone, so a row copied in from
+    another session must pass this before it may stand in for a case.
+    """
+    key = payload["key"]
+    row = payload["row"]
+    header = payload.get("header") or {}
+    by_key = {(e.corpus, e.case_id): e for e in entries}
+    problems: list[str] = []
+    entry = by_key.get((key.get("corpus"), key.get("case_id")))
+    if entry is None:
+        problems.append("case not in the manifest")
+    elif row.get("telemetry_hash") != entry.telemetry_hash:
+        problems.append("telemetry hash differs from the one the manifest pins for this case")
+    if key.get("model") != model:
+        problems.append(f"model {key.get('model')!r} is not {model!r}")
+    if row.get("manifest_hash") != manifest_digest or key.get("manifest_hash") not in (manifest_digest, ""):
+        problems.append("manifest hash differs from the live manifest")
+    if header.get("prompt_version") != D1_PROMPT_VERSION:
+        problems.append(f"prompt version {header.get('prompt_version')!r} is not {D1_PROMPT_VERSION!r}")
+    if dict(header.get("investigator") or {}) != investigator_environment():
+        problems.append("investigator prompt/schema/bounds hashes differ from the live code")
+    local = frozen.get("local") or {}
+    frozen_model = local.get("model") or {}
+    row_model = header.get("model") or {}
+    if row_model.get("digest") != frozen_model.get("digest"):
+        problems.append("model digest differs from the freeze (different weights)")
+    if header.get("daemon_version") != (local.get("daemon") or {}).get("version"):
+        problems.append("daemon version differs from the freeze")
+    frozen_conf = _gated_configuration_view(local.get("client_configuration") or {})
+    row_conf = _gated_configuration_view(header.get("client_configuration") or {})
+    for name in sorted(set(frozen_conf) | set(row_conf)):
+        if frozen_conf.get(name) != row_conf.get(name):
+            problems.append(f"client configuration {name}: row {row_conf.get(name)!r}, freeze {frozen_conf.get(name)!r}")
+    return problems
+
+
+def _gated_configuration_view(configuration: dict[str, Any]) -> dict[str, Any]:
+    ungated = {"base_url", "timeout_seconds_per_attempt", "max_attempts", "backoff_seconds"}
+    return {k: v for k, v in configuration.items() if k not in ungated}
+
+
+def validate_rows(
+    directory: Path, *, model: str, manifest_digest: str, entries: Sequence[CaseManifest],
+    frozen: dict[str, Any], quarantine: bool = False,
+) -> dict[str, Any]:
+    """Every row file under ``directory``: valid, or the reasons it is not.
+
+    With ``quarantine``, a row that fails is *moved* to a sibling directory
+    (``<rows_dir>.quarantine/``), never deleted and never overwritten there: a row is a
+    record of a run even when it is not this run's.
+    """
+    directory = Path(directory)
+    report: dict[str, Any] = {"directory": str(directory), "valid": [], "invalid": {}, "unreadable": [], "quarantined": []}
+    if not directory.is_dir():
+        return report
+    quarantine_dir = directory.with_name(directory.name + ".quarantine")
+    for path in sorted(directory.glob("*.json")):
+        payload = read_row(path)
+        if payload is None:
+            report["unreadable"].append(path.name)
+            continue
+        problems = row_provenance_problems(payload, model=model, manifest_digest=manifest_digest, entries=entries, frozen=frozen)
+        if not problems:
+            report["valid"].append(path.name)
+            continue
+        report["invalid"][path.name] = problems
+        if quarantine:
+            refuse_frozen_path(quarantine_dir, ROOT).mkdir(parents=True, exist_ok=True)
+            target = quarantine_dir / path.name
+            if target.exists():
+                target = quarantine_dir / f"{path.stem}.{int(time.time())}{path.suffix}"
+            path.replace(target)
+            report["quarantined"].append(str(target.relative_to(directory.parent)))
+    return report
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    payload, entries, digest = local_manifest.read_manifest(args.out_dir)
+    frozen = read_environment(args.out_dir, args.model)
+    directory = rows_dir(args.out_dir, args.arm, args.model, digest)
+    report = validate_rows(
+        directory, model=args.model, manifest_digest=digest, entries=entries, frozen=frozen,
+        quarantine=args.quarantine,
+    )
+    print(json.dumps(report, indent=1))
+    invalid = len(report["invalid"])
+    print(
+        f"{len(report['valid'])} valid row(s), {invalid} invalid, {len(report['unreadable'])} unreadable, "
+        f"{len(report['quarantined'])} quarantined under {directory}",
+        file=sys.stderr,
+    )
+    return 0 if (invalid == 0 or args.quarantine) else 1
 
 
 # --------------------------------------------------------------------------------------
@@ -431,7 +543,7 @@ INVESTIGATION_FIELDS: tuple[str, ...] = (
     "initial_hypothesis_count", "final_hypothesis_count",
     "benign_hypothesis_present_initial", "benign_hypothesis_present_final",
     "evidence_gap", "chosen_tool", "tool_choice_reason", "chosen_tools", "trajectory",
-    "new_evidence_ids_returned", "new_evidence_ids_used", "hypothesis_changed_after_tool",
+    "new_evidence_ids_returned", "new_evidence_ids_shown", "new_evidence_ids_used", "hypothesis_changed_after_tool",
     "labels_changed_after_tool", "abstained", "final_disposition", "output_truncated",
     "model_calls", "probes_run", "stop_reason",
 )
@@ -531,6 +643,8 @@ def row_summary(
         "ram": {
             "preflight_available_bytes": (header.get("ram_preflight") or {}).get("available_bytes"),
             "preflight_resident_bytes": (header.get("ram_preflight") or {}).get("resident_bytes"),
+            "model_size_bytes": (header.get("model_residency") or {}).get("size"),
+            "model_vram_bytes": (header.get("model_residency") or {}).get("size_vram"),
             "after_bytes": header.get("ram_after_bytes"),
             "guard_ok": (header.get("ram_preflight") or {}).get("ok"),
         },
@@ -603,6 +717,8 @@ def investigation_metrics(per_row: Sequence[dict[str, Any]]) -> dict[str, Any]:
         "cases_retrieving_new_evidence": sum(1 for i in inv if (i.get("new_evidence_ids_returned") or 0) > 0),
         "cases_using_new_evidence": sum(1 for i in inv if (i.get("new_evidence_ids_used") or 0) > 0),
         "new_evidence_ids_returned_total": sum(i.get("new_evidence_ids_returned") or 0 for i in inv),
+        "new_evidence_ids_shown_total": sum(i.get("new_evidence_ids_shown") or 0 for i in inv if i.get("new_evidence_ids_shown") is not None),
+        "rows_recording_shown_ids": sum(1 for i in inv if i.get("new_evidence_ids_shown") is not None),
         "new_evidence_ids_used_total": sum(i.get("new_evidence_ids_used") or 0 for i in inv),
         "hypothesis_changed_after_tool": sum(1 for i in inv if i.get("hypothesis_changed_after_tool")),
         "labels_changed_after_tool": sum(1 for i in inv if i.get("labels_changed_after_tool")),
@@ -732,7 +848,7 @@ def render_summary(summary: dict[str, Any], *, arm: str, model: str, head: str) 
             ["tool distribution (all probes)", json.dumps(inv["tool_distribution"])],
             ["tool-choice diversity (distinct first tools)", inv["tool_choice_diversity"]],
             ["unique trajectories", f"{inv['unique_trajectories']} {json.dumps(inv['trajectory_distribution'])}"],
-            ["cases retrieving / USING evidence outside the findings' citations", f"{inv['cases_retrieving_new_evidence']} / {inv['cases_using_new_evidence']} (ids {inv['new_evidence_ids_returned_total']} / {inv['new_evidence_ids_used_total']})"],
+            ["cases retrieving / USING evidence outside the findings' citations", f"{inv['cases_retrieving_new_evidence']} / {inv['cases_using_new_evidence']} (ids returned {inv['new_evidence_ids_returned_total']} / shown {inv['new_evidence_ids_shown_total']} on {inv['rows_recording_shown_ids']} row(s) / used {inv['new_evidence_ids_used_total']})"],
             ["hypothesis changed after a tool (any / labels or disposition)", f"{inv['hypothesis_changed_after_tool']} / {inv['labels_changed_after_tool']}"],
             ["LINK-1 recovered / defined (score)", f"{inv['link_1_recovered']} / {inv['link_1_defined']} ({inv['link_1_score']})"],
             ["LINK-2 recovered / defined (score)", f"{inv['link_2_recovered']} / {inv['link_2_defined']} ({inv['link_2_score']})"],
@@ -869,6 +985,9 @@ def main() -> int:
     p_sum = sub.add_parser("summarise"); common(p_sum)
     p_sum.add_argument("--repeat", type=int, default=1)
     p_sum.set_defaults(func=cmd_summarise)
+    p_val = sub.add_parser("validate-rows", help="check every row in this model's rows directory against the live freeze and manifest"); common(p_val)
+    p_val.add_argument("--quarantine", action="store_true", help="move rows that fail into <rows_dir>.quarantine/ (never delete)")
+    p_val.set_defaults(func=cmd_validate)
     args = parser.parse_args()
     return args.func(args)
 

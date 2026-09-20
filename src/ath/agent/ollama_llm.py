@@ -485,16 +485,29 @@ class OllamaLLM(TokenAccounting):
         return loaded
 
     def resident_bytes(self, timeout: float = 10.0) -> int:
-        """Bytes of *system* memory this client's model already occupies, or ``0``.
+        """Bytes this client's model already occupies in the daemon, or ``0``.
 
         A model the daemon has kept alive does not need its floor a second time; the RAM
-        guard credits this figure. Only the part not in VRAM counts, because VRAM is not
-        the memory the OS would page.
+        guard credits this figure. Every loaded byte is credited, in VRAM or in system
+        memory: the floor is the system memory the weights would take if they had to be
+        loaded, and weights already sitting in VRAM will not be loaded into system memory
+        at all. The first version credited only the non-VRAM part, so on a GPU host with
+        the whole model in VRAM the credit was zero and the guard compared the host's
+        free memory against a floor meant for a CPU load; it refused a run whose model
+        was not going to touch that memory (MEASURED on Colab, 2026-09-20: 4.38 GiB
+        available, 3.4 GB model fully in VRAM, 4.5 GiB floor, refused).
+        :meth:`residency` says where the bytes live, for the row header.
         """
+        return int(self.residency(timeout).get("size") or 0)
+
+    def residency(self, timeout: float = 10.0) -> dict[str, int | None]:
+        """``{size, size_vram}`` of this client's model as the daemon holds it now, both
+        ``None`` when it is not loaded. Recorded on every row so a reader can tell a
+        VRAM run from a CPU run without the daemon's log."""
         entry = self.loaded(timeout).get(self.model)
         if not entry or entry.get("size") is None:
-            return 0
-        return max(0, int(entry["size"]) - int(entry.get("size_vram") or 0))
+            return {"size": None, "size_vram": None}
+        return {"size": int(entry["size"]), "size_vram": int(entry.get("size_vram") or 0)}
 
     def describe(self, timeout: float = 10.0) -> dict[str, Any]:
         """What the daemon says it is and what the model is. For freezes and probes.

@@ -205,6 +205,9 @@ def test_new_evidence_from_a_probe_can_be_cited_and_updates_the_hypotheses(world
     diagnostics = state.investigation
     assert diagnostics["probes_run"] == ["process_tree"]
     assert diagnostics["new_evidence_ids_returned"] >= 1
+    assert diagnostics["new_evidence_ids_shown"] >= 1
+    assert diagnostics["new_evidence_ids_shown"] <= diagnostics["new_evidence_ids_returned"]
+    assert diagnostics["rounds"][0]["new_evidence_ids_shown"] == diagnostics["new_evidence_ids_shown"]
     assert diagnostics["new_evidence_ids_used"] == 1
     assert diagnostics["hypothesis_changed_after_tool"] is True
     assert diagnostics["labels_changed_after_tool"] is True

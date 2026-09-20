@@ -576,6 +576,13 @@ RAM_FLOORS_BYTES: dict[str, int] = {
 The V1 plan's figures for this machine (16 GB, ~13 GB in use with normal apps): a 4B Q4
 runs beside a browser, a 9B Q4 needs everything else closed. Named constants so the
 amendment can cite them; a floor that is wrong is corrected here and nowhere else.
+
+The floor is the system memory the weights take when they are loaded into it. A model
+the daemon already holds -- in VRAM or in system memory -- has spent that memory, and
+:func:`check_ram` credits every loaded byte against the floor. On a GPU host the guard is
+therefore exact only once the model is resident; before the first load it compares the
+host's free memory against a CPU-load floor the run may never need. Load the model
+(``keep_alive`` set) before the first row, and the credit applies from the first row.
 """
 
 
@@ -725,6 +732,42 @@ def _ollama_environment_variables() -> dict[str, str]:
     return {k: v for k, v in sorted(os.environ.items()) if k.startswith("OLLAMA_")}
 
 
+def gpu_summary() -> list[dict[str, Any]] | None:
+    """The GPUs ``nvidia-smi`` reports, or ``None`` when there is no such tool.
+
+    Recorded, never gated: a row produced with the weights in VRAM and one produced on
+    the CPU are the same experiment at very different speeds, and a reader comparing
+    wall times needs to know which was which. The residency of the model itself is on
+    each row (``model_residency``); this is the machine.
+    """
+    import shutil  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
+
+    if shutil.which("nvidia-smi") is None:
+        return None
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name,memory.total,memory.used,driver_version",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=15, check=True,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    gpus: list[dict[str, Any]] = []
+    for line in out.splitlines():
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) < 4:
+            continue
+        try:
+            gpus.append({
+                "name": parts[0], "memory_total_mib": int(float(parts[1])),
+                "memory_used_mib": int(float(parts[2])), "driver_version": parts[3],
+            })
+        except ValueError:
+            continue
+    return gpus
+
+
 def local_environment(
     root: Path,
     *,
@@ -768,7 +811,8 @@ def local_environment(
             "platform": platform.platform(),
             "processor": platform.processor(),
             "available_ram_bytes": available_ram,
-            "note": "available RAM is recorded, never gated",
+            "gpus": gpu_summary(),
+            "note": "available RAM and GPUs are recorded, never gated",
         },
     }
     return base

@@ -438,13 +438,24 @@ def test_loaded_reads_the_daemons_resident_models_and_never_raises(monkeypatch) 
     assert client.resident_bytes() == 3_424_754_072
 
 
-def test_resident_bytes_counts_only_system_memory_and_is_zero_when_unknown(monkeypatch) -> None:
+def test_resident_bytes_credits_every_loaded_byte_and_is_zero_when_unknown(monkeypatch) -> None:
+    """A loaded model needs no floor a second time, wherever its bytes live. The first
+    version credited only the non-VRAM part and refused a GPU run whose weights were
+    entirely in VRAM (Colab, 2026-09-20)."""
     _transport(monkeypatch, [
         {"models": [{"name": "qwen3.5:4b", "size": 1000, "size_vram": 600}]},
+        {"models": [{"name": "qwen3.5:4b", "size": 1000, "size_vram": 1000}]},
+        {"models": [{"name": "qwen3.5:4b", "size": 1000, "size_vram": 0}]},
         urllib.error.URLError("down"),
+        {"models": []},
+        {"models": [{"name": "qwen3.5:4b", "size": 1000, "size_vram": 1000}]},
         {"models": []},
     ])
     client = OllamaLLM("qwen3.5:4b")
-    assert client.resident_bytes() == 400, "VRAM is not the memory the OS would page"
+    assert client.resident_bytes() == 1000, "partly offloaded: every loaded byte is spent"
+    assert client.resident_bytes() == 1000, "fully in VRAM: the same credit"
+    assert client.resident_bytes() == 1000, "fully in system memory: the same credit"
     assert client.resident_bytes() == 0, "an unreadable /api/ps is the conservative answer"
     assert client.resident_bytes() == 0
+    assert client.residency() == {"size": 1000, "size_vram": 1000}
+    assert client.residency() == {"size": None, "size_vram": None}

@@ -999,6 +999,7 @@ class D1Investigator:
         probes_run: list[str] = []
         case_ids = set(case.event_ids)
         new_ids_returned: set[str] = set()
+        new_ids_shown: set[str] = set()
         previous: Answer | None = None
         last_answer: Answer | None = None
         stop_reason = ""
@@ -1064,10 +1065,16 @@ class D1Investigator:
             destinations = destinations + [d for d in new_destinations if d not in destinations]
             fresh = {e for e in returned if e not in case_ids}
             new_ids_returned |= fresh
+            # What the model can actually cite: a probe may return thousands of ids (an
+            # account's whole history) of which the observation renders a bounded head
+            # and tail. "returned" is the retrieval's size; "shown" is the model's view.
+            shown_fresh = {e for o in log.items[new_since:] for e in o.shown_ids if e not in case_ids}
+            new_ids_shown |= shown_fresh
             round_record.update({
                 "chosen_probe": {"ref": chosen.ref, "tool": chosen.tool, "arguments": {k: v for k, v in chosen.arguments.items() if v not in (None, "")}},
                 "tool_choice_reason": answer.probe_reason,
                 "new_evidence_ids_returned": len(fresh),
+                "new_evidence_ids_shown": len(shown_fresh),
                 "evidence_ids_returned": len(returned),
             })
             diagnostics["rounds"].append(round_record)
@@ -1105,6 +1112,7 @@ class D1Investigator:
             "chosen_tools": list(diagnostics["probes_run"]),
             "trajectory": ["seed"] + list(diagnostics["probes_run"]),
             "new_evidence_ids_returned": len(new_ids_returned),
+            "new_evidence_ids_shown": len(new_ids_shown),
             "new_evidence_ids_used": len(used_outside),
             "hypothesis_changed_after_tool": any(
                 r.get("labels_changed") or r.get("disposition_changed") or r.get("statements_changed")
