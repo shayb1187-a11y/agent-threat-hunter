@@ -1,0 +1,52 @@
+# The cheap invariants, on every push and pull request.
+#
+# What runs here never needs a model, a daemon or the 1.6 GB telemetry cache: lint, the
+# unit and harness tests over fixture corpora, the frozen-identity pins, and a --help
+# smoke of every experiment entry point. Model runs happen on Colab or a rented machine.
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Lint
+        run: python -m ruff check src tests scripts
+
+      - name: Frozen identity and source pins
+        run: >
+          python -m pytest -q
+          tests/test_frozen_identity_pin.py
+          tests/test_frozen_source_pin.py
+          tests/test_frozen_surface_pin.py
+
+      - name: Experiment CLI answers --help
+        run: |
+          for command in "" paths identity manifest-build inject freeze preflight run validate-rows summarise compare; do
+            python -m ath.experiments $command --help > /dev/null
+          done
+          ath-experiment --help > /dev/null
+          python scripts/local_ablation.py --help > /dev/null
+          python scripts/local_manifest.py --help > /dev/null
+          python scripts/local_compare.py --help > /dev/null
+
+      - name: Tests
+        run: python -m pytest -q
