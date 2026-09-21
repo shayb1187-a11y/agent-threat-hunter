@@ -13,9 +13,11 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 import time
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -125,13 +127,28 @@ def run_rows(
     links: dict[str, Sequence[dict[str, Any]]] | None = None,
     only: set[str] | None = None,
     record: RunRecord | None = None,
+    workers: int = 1,
+    client_factory: Callable[[], LLMClient] | None = None,
+    slots: int | None = None,
+    context_allowance_bytes: int | None = None,
     log: Log = _stderr,
 ) -> dict[str, int]:
     """The resumable loop. Returns ``{"ran", "skipped", "degraded", "ram_guard_events"}``.
 
     ``only`` restricts the run to the named ``corpus/case_id`` keys (the smoke set).
     ``record`` receives every row written or skipped, by file and key digest.
+
+    ``workers`` above one fans the cases of each corpus out over a thread pool. Every
+    worker owns a client of its own (``client_factory``), because a client's token log
+    and request observer are per case and would interleave if shared; rows are
+    independent files with atomic writes, so resume is unaffected. The RAM guard runs
+    with the floor the caller scaled for that many slots (``ram_floor``), once before the
+    pool starts and once per case inside each worker; a refusal stops everything.
     """
+    if workers < 1:
+        raise ValueError("workers must be at least 1")
+    if workers > 1 and client_factory is None:
+        raise ValueError("workers above one need a client_factory: one client per worker")
     by_corpus: dict[str, list[CaseManifest]] = defaultdict(list)
     for entry in entries:
         if only is not None and entry.key not in only:
@@ -139,77 +156,128 @@ def run_rows(
         by_corpus[entry.corpus].append(entry)
     counts = {"ran": 0, "skipped": 0, "degraded": 0, "ram_guard_events": 0}
     events_path = Path(rows_directory) / GUARD_EVENTS
-    stamp = record.header_stamp() if record is not None else None
+    lock = threading.Lock()
+    stop = threading.Event()
+    guard_kwargs = {"slots": slots or workers, "context_allowance_bytes": context_allowance_bytes}
+    clients: list[LLMClient] = [client] if workers == 1 else [client_factory() for _ in range(workers)]  # type: ignore[misc]
+
+    def guard(entry: CaseManifest, repeat: int) -> Any:
+        resident = resident_reader() if resident_reader is not None else 0
+        verdict = check_ram(ram_floor, ram_reader(), resident, **guard_kwargs)
+        if verdict.ok is False:
+            with lock:
+                counts["ram_guard_events"] += 1
+                record_guard_event(events_path, entry.key, repeat, verdict, overridden=ignore_ram_floor)
+                if record is not None:
+                    record.guard_events += 1
+            if not ignore_ram_floor:
+                raise SystemExit(f"REFUSED before {entry.key}: {verdict.message}")
+            log(f"RAM guard overridden before {entry.key}: {verdict.message}")
+        return verdict
+
+    def one(bundle: Any, footing: dict[str, Any], entry: CaseManifest, repeat: int, worker_index: int) -> None:
+        if stop.is_set():
+            return
+        worker_client = clients[worker_index]
+        key = RowKey(
+            corpus=entry.corpus, case_id=entry.case_id, arm=arm.name,
+            provider=spec.provider, model=spec.model, quantization=spec.quant_label,
+            repeat=repeat, seed=seed, manifest_hash=manifest_digest,
+        )
+        path = row_path(rows_directory, key)
+        if is_complete(path):
+            with lock:
+                counts["skipped"] += 1
+                if record is not None:
+                    record.add_row(path.name, key.digest, skipped=True)
+            log(f"skip  {entry.key} rep{repeat}: row exists ({path.name})")
+            return
+        verdict = guard(entry, repeat)
+        started = time.perf_counter()
+        results = run_local_arm(
+            arm, [entry], bundle.telemetry, bundle.cases,
+            manifest_digest=manifest_digest, findings=bundle.findings,
+            environment=bundle.environment, llm=worker_client,
+            label_scorer=label_scorer(bundle), required_footing=footing,
+            links=links, run_id=record.run_id if record is not None else "",
+        )
+        result: CaseResult = results[0]
+        calls = list(getattr(worker_client, "token_log", None) or [])
+        row_header = {
+            **header,
+            "investigator": investigator_environment(),
+            "written_at": now(),
+            "repeat": repeat,
+            "seed": seed,
+            "ram_preflight": {**verdict.to_dict(), "overridden": bool(verdict.ok is False and ignore_ram_floor)},
+            "model_residency": dict(residency_reader()) if residency_reader is not None else None,
+            "ram_after_bytes": ram_reader(),
+            "loop_wall_seconds": round(time.perf_counter() - started, 3),
+            "calls": classify_calls(calls, result.state.get("llm", {}).get("requests", [])),
+            **({"runner": record.header_stamp(worker_index)} if record is not None else {}),
+        }
+        write_row(rows_directory, key, result, row_header, root=ROOT)
+        with lock:
+            counts["ran"] += 1
+            if record is not None:
+                record.add_row(path.name, key.digest)
+                record.write()
+            if result.llm_degraded:
+                counts["degraded"] += 1
+            reached = stop_after is not None and counts["ran"] >= stop_after
+        investigation = result.state.get("investigation") or {}
+        log(
+            f"ran   {entry.key} rep{repeat}: {result.labelled_arm}, {len(calls)} call(s), "
+            f"{result.wall_seconds:.1f}s, tokens {result.tokens}, "
+            f"unparseable {result.state.get('llm', {}).get('unparseable_responses')}, "
+            f"probes {investigation.get('probes_run')}, disposition "
+            f"{investigation.get('final_disposition')}, truncated {investigation.get('output_truncated')}"
+            + (f" [worker {worker_index}]" if workers > 1 else "")
+        )
+        if reached:
+            stop.set()
+            raise Interrupted(f"stopped after {counts['ran']} newly completed row(s), as asked")
 
     for bundle in bundles:
         corpus_entries = by_corpus.get(bundle.name)
         if not corpus_entries:
             continue
         footing = required_footing_for(arm, corpus_entries[0].telemetry_hash, list(surface))
-        for entry in corpus_entries:
-            for repeat in repeats:
-                key = RowKey(
-                    corpus=entry.corpus, case_id=entry.case_id, arm=arm.name,
-                    provider=spec.provider, model=spec.model, quantization=spec.quant_label,
-                    repeat=repeat, seed=seed, manifest_hash=manifest_digest,
-                )
-                path = row_path(rows_directory, key)
-                if is_complete(path):
-                    counts["skipped"] += 1
-                    if record is not None:
-                        record.add_row(path.name, key.digest, skipped=True)
-                    log(f"skip  {entry.key} rep{repeat}: row exists ({path.name})")
-                    continue
-                resident = resident_reader() if resident_reader is not None else 0
-                verdict = check_ram(ram_floor, ram_reader(), resident)
-                if verdict.ok is False:
-                    counts["ram_guard_events"] += 1
-                    record_guard_event(events_path, entry.key, repeat, verdict, overridden=ignore_ram_floor)
-                    if record is not None:
-                        record.guard_events += 1
-                    if not ignore_ram_floor:
-                        raise SystemExit(f"REFUSED before {entry.key}: {verdict.message}")
-                    log(f"RAM guard overridden before {entry.key}: {verdict.message}")
-                started = time.perf_counter()
-                results = run_local_arm(
-                    arm, [entry], bundle.telemetry, bundle.cases,
-                    manifest_digest=manifest_digest, findings=bundle.findings,
-                    environment=bundle.environment, llm=client,
-                    label_scorer=label_scorer(bundle), required_footing=footing,
-                    links=links,
-                )
-                result: CaseResult = results[0]
-                calls = list(getattr(client, "token_log", None) or [])
-                row_header = {
-                    **header,
-                    "investigator": investigator_environment(),
-                    "written_at": now(),
-                    "repeat": repeat,
-                    "seed": seed,
-                    "ram_preflight": {**verdict.to_dict(), "overridden": bool(verdict.ok is False and ignore_ram_floor)},
-                    "model_residency": dict(residency_reader()) if residency_reader is not None else None,
-                    "ram_after_bytes": ram_reader(),
-                    "loop_wall_seconds": round(time.perf_counter() - started, 3),
-                    "calls": classify_calls(calls, result.state.get("llm", {}).get("requests", [])),
-                    **({"runner": stamp} if stamp is not None else {}),
-                }
-                write_row(rows_directory, key, result, row_header, root=ROOT)
-                counts["ran"] += 1
-                if record is not None:
-                    record.add_row(path.name, key.digest)
-                    record.write()
-                if result.llm_degraded:
-                    counts["degraded"] += 1
-                investigation = result.state.get("investigation") or {}
-                log(
-                    f"ran   {entry.key} rep{repeat}: {result.labelled_arm}, {len(calls)} call(s), "
-                    f"{result.wall_seconds:.1f}s, tokens {result.tokens}, "
-                    f"unparseable {result.state.get('llm', {}).get('unparseable_responses')}, "
-                    f"probes {investigation.get('probes_run')}, disposition "
-                    f"{investigation.get('final_disposition')}, truncated {investigation.get('output_truncated')}"
-                )
-                if stop_after is not None and counts["ran"] >= stop_after:
-                    raise Interrupted(f"stopped after {counts['ran']} newly completed row(s), as asked")
+        tasks = [(entry, repeat) for entry in corpus_entries for repeat in repeats]
+        if workers == 1:
+            for entry, repeat in tasks:
+                one(bundle, footing, entry, repeat, 0)
+            continue
+        # One guard with the scaled floor before the pool starts, on the first pending case.
+        pending = [
+            (entry, repeat) for entry, repeat in tasks
+            if not is_complete(row_path(rows_directory, RowKey(
+                corpus=entry.corpus, case_id=entry.case_id, arm=arm.name, provider=spec.provider,
+                model=spec.model, quantization=spec.quant_label, repeat=repeat, seed=seed,
+                manifest_hash=manifest_digest,
+            )))
+        ]
+        if pending:
+            guard(pending[0][0], pending[0][1])
+        interrupted: Interrupted | None = None
+        refused: BaseException | None = None
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="ath-worker") as pool:
+            futures = {
+                pool.submit(one, bundle, footing, entry, repeat, index % workers): (entry, repeat)
+                for index, (entry, repeat) in enumerate(tasks)
+            }
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Interrupted as exc:
+                    interrupted = interrupted or exc
+                except BaseException as exc:  # noqa: BLE001 -- a refusal must stop the pool
+                    stop.set()
+                    refused = refused or exc
+        if refused is not None:
+            raise refused
+        if interrupted is not None:
+            raise interrupted
     return counts
 
 
@@ -244,6 +312,8 @@ def run(
     only: Sequence[str] | None = None,
     spec: Any = None,
     argv: list[str] | None = None,
+    workers: int = 1,
+    context_allowance_bytes: int | None = None,
     log: Log = _stderr,
 ) -> int:
     payload, entries, digest = read_manifest(out_dir)
@@ -279,7 +349,7 @@ def run(
     }
     record = RunRecord.start(
         layout, "run", argv=argv, spec=spec, model=model_spec.to_dict(),
-        daemon_version=described.get("daemon_version"),
+        daemon_version=described.get("daemon_version"), workers=workers,
     )
     log(f"run {record.run_id[:12]} -> {record.path}")
     repeats = list(range(1, repeat + 1))
@@ -292,11 +362,14 @@ def run(
             arm=arm, client=client, spec=model_spec, entries=entries,
             bundles=dev_bundles(external, corpora=wanted_corpora),
             manifest_digest=digest, rows_directory=directory, header=header, repeats=repeats,
-            seed=sampling.seed, surface=tool_surface(), ram_floor=ram_floor_for(model_spec.parameter_size),
+            seed=sampling.seed, surface=tool_surface(),
+            ram_floor=ram_floor_for(model_spec.parameter_size, slots=workers, context_allowance_bytes=context_allowance_bytes),
             resident_reader=client.resident_bytes,  # type: ignore[attr-defined]
             residency_reader=client.residency,  # type: ignore[attr-defined]
             stop_after=stop_after, ignore_ram_floor=ignore_ram_floor,
-            links=links_by_case(payload), only=wanted, record=record, log=log,
+            links=links_by_case(payload), only=wanted, record=record,
+            workers=workers, client_factory=lambda: build_client(arm),
+            slots=workers, context_allowance_bytes=context_allowance_bytes, log=log,
         )
     except Interrupted as exc:
         log(f"INTERRUPTED: {exc}; completed rows are on disk and a rerun will skip them")

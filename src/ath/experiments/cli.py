@@ -146,11 +146,13 @@ def cmd_run(args: argparse.Namespace) -> int:
         if spec is None or not spec.smoke_cases:
             raise SystemExit("--smoke needs a spec with smoke_cases")
         only = list(spec.smoke_cases)
+    workers = args.workers if args.workers is not None else (spec.workers if spec is not None else 1)
+    allowance = int(args.context_allowance_gib * (1024 ** 3)) if args.context_allowance_gib is not None else None
     return run(
         out_dir=args.out_dir, arm_letter=args.arm, model=args.model, sampling=_sampling(args),
         base_url=args.base_url, external=args.external, think=bool(args.think),
         repeat=args.repeat, stop_after=args.stop_after, ignore_ram_floor=args.ignore_ram_floor,
-        only=only, spec=spec, argv=args.argv,
+        only=only, spec=spec, argv=args.argv, workers=workers, context_allowance_bytes=allowance,
     )
 
 
@@ -208,6 +210,7 @@ def cmd_bootstrap(args: argparse.Namespace) -> int:
     report = bootstrap(
         base_url=args.base_url, external=Path(args.external), uploads=Path(args.uploads), models=models,
         daemon_log=Path(args.daemon_log), skip_fetch=args.skip_fetch, inject=not args.no_inject,
+        workers=args.workers if args.workers is not None else (spec.workers if spec is not None else 1),
     )
     print(json.dumps(report, indent=1, default=str))
     return 0
@@ -270,6 +273,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--daemon-log", default="/content/ollama.log")
     p.add_argument("--skip-fetch", action="store_true", help="do not fetch or restore telemetry")
     p.add_argument("--no-inject", action="store_true", help="do not regenerate the injected dev cases")
+    p.add_argument("--workers", type=int, default=None, help="start the daemon with this many parallel slots")
     p.set_defaults(func=cmd_bootstrap)
 
     p = sub.add_parser("run", help="run the arm over the dev split, resumably")
@@ -280,6 +284,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--ignore-ram-floor", action="store_true", help="run below the RAM floor; every such row and event is recorded as overridden")
     p.add_argument("--only", nargs="*", default=None, metavar="CORPUS/CASE", help="run only these manifest keys")
     p.add_argument("--smoke", action="store_true", help="run only the spec's smoke_cases")
+    p.add_argument("--workers", type=int, default=None, help="concurrent cases against the one loaded model (default: the spec's, else 1); needs OLLAMA_NUM_PARALLEL on the daemon")
+    p.add_argument("--context-allowance-gib", type=float, default=None, help="RAM each extra parallel slot is assumed to cost (default: the unmeasured 1.5 GiB constant)")
     p.set_defaults(func=cmd_run)
 
     p = sub.add_parser("validate-rows", help="check every row in this model's rows directory against the live freeze and manifest")

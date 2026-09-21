@@ -635,11 +635,27 @@ host's free memory against a CPU-load floor the run may never need. Load the mod
 """
 
 
-def ram_floor_for(parameter_size: str | None) -> int | None:
+DEFAULT_CONTEXT_ALLOWANCE_BYTES = int(1.5 * GIB)
+"""What one extra parallel slot is assumed to cost until it is measured.
+
+Each ``OLLAMA_NUM_PARALLEL`` slot allocates its own KV cache for the client's
+``num_ctx`` (10,240 tokens). 1.5 GiB is a deliberately generous figure for a 4B or 9B
+model at Q4 and that context; it is UNMEASURED. The first Colab session that runs with
+``--workers`` above one measures the ``/api/ps`` size delta per slot and replaces this
+constant (or passes ``--context-allowance-gib``), and every verdict records which figure
+it was decided on.
+"""
+
+
+def ram_floor_for(
+    parameter_size: str | None, slots: int = 1, context_allowance_bytes: int | None = None,
+) -> int | None:
     """The floor for a model whose daemon-reported size is e.g. ``"4.7B"`` or ``"9.1B"``.
 
     ``None`` when the size is unknown or outside both classes: an unguarded run is then a
     *recorded* choice (the row says the floor was ``None``) rather than a silent one.
+    With ``slots`` above one (parallel workers), every extra slot adds one context
+    allowance, because a floor sized for one context under-guards at four.
     """
     if not parameter_size:
         return None
@@ -648,10 +664,15 @@ def ram_floor_for(parameter_size: str | None) -> int | None:
         return None
     billions = float(match.group(1))
     if billions <= 6.0:
-        return RAM_FLOORS_BYTES["4B"]
-    if billions <= 12.0:
-        return RAM_FLOORS_BYTES["9B"]
-    return None
+        base = RAM_FLOORS_BYTES["4B"]
+    elif billions <= 12.0:
+        base = RAM_FLOORS_BYTES["9B"]
+    else:
+        return None
+    if slots <= 1:
+        return base
+    allowance = DEFAULT_CONTEXT_ALLOWANCE_BYTES if context_allowance_bytes is None else int(context_allowance_bytes)
+    return base + (slots - 1) * allowance
 
 
 def available_ram_bytes() -> int | None:
@@ -703,6 +724,11 @@ class RamVerdict:
     resident_bytes: int = 0
     """System memory the model already occupies in the daemon (kept alive from an earlier
     call). Credited against the floor: those bytes are spent, not needed again."""
+    slots: int = 1
+    context_allowance_bytes: int | None = None
+    """How many parallel slots the floor was scaled for and what each extra one was
+    assumed to cost; serialised only above one slot, so single-worker rows and guard
+    events keep their exact shape."""
 
     @property
     def effective_bytes(self) -> int | None:
@@ -711,7 +737,7 @@ class RamVerdict:
         return self.available_bytes + self.resident_bytes
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "ok": self.ok,
             "available_bytes": self.available_bytes,
             "resident_bytes": self.resident_bytes,
@@ -719,39 +745,52 @@ class RamVerdict:
             "floor_bytes": self.floor_bytes,
             "message": self.message,
         }
+        if self.slots > 1:
+            payload["slots"] = self.slots
+            payload["context_allowance_bytes"] = self.context_allowance_bytes
+            payload["context_allowance_source"] = (
+                "default-unmeasured" if self.context_allowance_bytes in (None, DEFAULT_CONTEXT_ALLOWANCE_BYTES)
+                else "measured"
+            )
+        return payload
 
 
 def check_ram(
     floor_bytes: int | None, available_bytes: int | None, resident_bytes: int = 0,
+    *, slots: int = 1, context_allowance_bytes: int | None = None,
 ) -> RamVerdict:
     """The guard. ``resident_bytes`` is what the model already holds, so a daemon that kept
-    the weights loaded is not refused for the memory the weights are using."""
+    the weights loaded is not refused for the memory the weights are using. ``slots`` and
+    ``context_allowance_bytes`` are recorded on the verdict when the floor was scaled for
+    parallel workers (see :func:`ram_floor_for`)."""
     resident = max(0, int(resident_bytes or 0))
+    extra = {"slots": max(1, int(slots)), "context_allowance_bytes": context_allowance_bytes}
     if floor_bytes is None:
         return RamVerdict(
             None, available_bytes, None,
-            "no RAM floor for this model size; the row is unguarded and says so", resident,
+            "no RAM floor for this model size; the row is unguarded and says so", resident, **extra,
         )
     if available_bytes is None:
         return RamVerdict(
             None, None, floor_bytes,
             "available RAM could not be measured on this platform; proceeding unguarded",
-            resident,
+            resident, **extra,
         )
     effective = available_bytes + resident
     credit = f" plus {resident / GIB:.2f} GiB already resident" if resident else ""
+    scaled = f" for {slots} parallel slot(s)" if slots > 1 else ""
     if effective < floor_bytes:
         return RamVerdict(
             False, available_bytes, floor_bytes,
             f"refusing to start: {available_bytes / GIB:.2f} GiB available{credit} is below "
-            f"the {floor_bytes / GIB:.1f} GiB floor for this model; below it the OS pages and "
+            f"the {floor_bytes / GIB:.1f} GiB floor for this model{scaled}; below it the OS pages and "
             "a 90 s call becomes a 15 min one with no error. Close applications and retry.",
-            resident,
+            resident, **extra,
         )
     return RamVerdict(
         True, available_bytes, floor_bytes,
-        f"{available_bytes / GIB:.2f} GiB available{credit}, floor {floor_bytes / GIB:.1f} GiB",
-        resident,
+        f"{available_bytes / GIB:.2f} GiB available{credit}, floor {floor_bytes / GIB:.1f} GiB{scaled}",
+        resident, **extra,
     )
 
 

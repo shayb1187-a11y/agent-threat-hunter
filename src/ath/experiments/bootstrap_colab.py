@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -47,20 +48,30 @@ def daemon_up(base_url: str, timeout: float = 2.0) -> bool:
         return False
 
 
-def ensure_ollama(base_url: str, *, log_path: Path, wait_seconds: int = 120, log: Log = _stderr) -> str:
-    """Install Ollama if absent, start the daemon if down, return its version."""
+def ensure_ollama(
+    base_url: str, *, log_path: Path, wait_seconds: int = 120, num_parallel: int = 1, log: Log = _stderr,
+) -> str:
+    """Install Ollama if absent, start the daemon if down, return its version.
+
+    ``num_parallel`` above one starts the daemon with ``OLLAMA_NUM_PARALLEL`` set, one
+    slot per runner worker; a daemon already up keeps whatever it was started with,
+    which is logged so a mismatch is visible.
+    """
     if shutil.which("ollama") is None:
         log("installing ollama ...")
         subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
     if not daemon_up(base_url):
         handle = open(log_path, "ab")  # noqa: SIM115 -- the daemon outlives this call
-        subprocess.Popen(["ollama", "serve"], stdout=handle, stderr=subprocess.STDOUT, start_new_session=True)
+        env = {**os.environ, **({"OLLAMA_NUM_PARALLEL": str(num_parallel)} if num_parallel > 1 else {})}
+        subprocess.Popen(["ollama", "serve"], stdout=handle, stderr=subprocess.STDOUT, start_new_session=True, env=env)
         for _ in range(wait_seconds):
             if daemon_up(base_url):
                 break
             time.sleep(1)
         else:
             raise SystemExit(f"ollama daemon did not start; see {log_path}")
+    else:
+        log(f"ollama already up at {base_url}; OLLAMA_NUM_PARALLEL is whatever it was started with")
     version = json.load(urllib.request.urlopen(base_url.rstrip("/") + "/api/version"))["version"]
     log(f"ollama {version} is up at {base_url}")
     return str(version)
@@ -324,14 +335,15 @@ def write_session(target: Path, layout: Layout, *, base_url: str, models: Iterab
 
 def bootstrap(
     *, base_url: str, external: Path, uploads: Path, models: Iterable[str],
-    daemon_log: Path, skip_fetch: bool = False, inject: bool = True, log: Log = _stderr,
+    daemon_log: Path, skip_fetch: bool = False, inject: bool = True, workers: int = 1,
+    log: Log = _stderr,
 ) -> dict[str, Any]:
     """Tools, daemon, telemetry, injected cases, manifest. Rows are restored per model
     after the manifest exists (``restore_rows``), because the layout needs its hash."""
     from ath.experiments.manifest_build import build_dev_manifest, inject_cases
 
     install_tools(log=log)
-    version = ensure_ollama(base_url, log_path=daemon_log, log=log)
+    version = ensure_ollama(base_url, log_path=daemon_log, num_parallel=workers, log=log)
     for model in models:
         pull_model(model, log=log)
     uploads.mkdir(parents=True, exist_ok=True)
