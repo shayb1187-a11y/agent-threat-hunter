@@ -218,6 +218,8 @@ def _optional_budgets(tools: ToolBox, investigator: Any, state: Any) -> dict[str
         })
     if config is not None and getattr(config, "reject_unretrieved", False):
         out["reject_unretrieved"] = True
+    if config is not None and getattr(config, "prompt_contract", False):
+        out["prompt_contract"] = True
     return out
 
 

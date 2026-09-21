@@ -69,7 +69,8 @@ from datetime import datetime
 from typing import Any, Sequence
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
-from ath.agent.llm import LLMClient, NullLLM
+from ath.agent.contract import check_prompt_contract
+from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
 from ath.agent.tools import ToolBox
 from ath.correlation.chain import InvestigationCase
@@ -581,6 +582,7 @@ class InvestigatorConfig:
     time_budget_seconds: float | None = None
     token_budget: int | None = None
     reject_unretrieved: bool = False
+    prompt_contract: bool = False
     """Opt-in behaviour, none of it in ``prompt_hashes()``: a wall-clock budget checked
     before every round and passed on as the request timeout; a token budget; and
     verification of the conclusion against the ids the model was shown instead of the
@@ -910,7 +912,13 @@ class D1Investigator:
             menu="\n".join(p.render() for p in menu) or "(no probe applies)",
             previous=previous_text,
         )
-        if self.config.time_budget_seconds is None:
+        violations = check_prompt_contract(prompt) if self.config.prompt_contract else []
+        if violations:
+            response = LLMResponse(
+                error=f"prompt contract violation: names raw field(s) {', '.join(violations[:6])}",
+                model=self.llm.name,
+            )
+        elif self.config.time_budget_seconds is None:
             response = self.llm.complete(INVESTIGATOR_SYSTEM, prompt, max_tokens=self.config.max_tokens)
         else:
             remaining = self.config.time_budget_seconds - (time.perf_counter() - self._started)
@@ -1184,13 +1192,13 @@ def build_investigator(
     tools: ToolBox, verifier: ClaimVerifier, llm: LLMClient | None, *, max_steps: int = 8,
     max_probes: int = MAX_PROBES, max_tokens: int = INVESTIGATOR_MAX_TOKENS,
     time_budget_seconds: float | None = None, token_budget: int | None = None,
-    reject_unretrieved: bool = False,
+    reject_unretrieved: bool = False, prompt_contract: bool = False,
 ) -> D1Investigator:
     return D1Investigator(
         tools, verifier, llm=llm,
         config=InvestigatorConfig(
             max_probes=max_probes, max_tokens=max_tokens, max_steps=max_steps,
             time_budget_seconds=time_budget_seconds, token_budget=token_budget,
-            reject_unretrieved=reject_unretrieved,
+            reject_unretrieved=reject_unretrieved, prompt_contract=prompt_contract,
         ),
     )

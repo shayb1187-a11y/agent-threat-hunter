@@ -45,6 +45,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
+from ath.agent.contract import check_prompt_contract
 from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.specialists import Specialist
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
@@ -259,6 +260,10 @@ class InvestigationConfig:
     citing an id that exists but was never retrieved is a *rejection* with its own
     reason rather than a claim silently dropped. Off by default: it changes
     ``rejected_claims`` on new rows and the frozen arms did not run with it."""
+    prompt_contract: bool = False
+    """Check every rendered prompt with :func:`ath.agent.contract.check_prompt_contract`
+    before it is sent; a violation is recorded in ``llm_errors`` and the call is not
+    made. Off by default; the frozen prompts pass it (tests/test_prompt_contract.py)."""
 
 
 class InvestigationOrchestrator:
@@ -531,7 +536,15 @@ class InvestigationOrchestrator:
         return reason
 
     def _complete(self, system: str, prompt: str, *, max_tokens: int) -> LLMResponse:
-        """One model call, with what is left of the time budget as its timeout."""
+        """One model call, with what is left of the time budget as its timeout, and --
+        under ``prompt_contract`` -- refused before it is sent if the prompt carries raw
+        schema fields."""
+        if self.config.prompt_contract:
+            violations = check_prompt_contract(prompt)
+            if violations:
+                error = f"prompt contract violation: names raw field(s) {', '.join(violations[:6])}"
+                logger.error("%s; the call was not sent", error)
+                return LLMResponse(error=error, model=self.llm.name)
         if self.config.time_budget_seconds is None:
             return self.llm.complete(system, prompt, max_tokens=max_tokens)
         remaining, _reason = _budget_remaining(
