@@ -33,9 +33,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Sequence
 
+import numpy as np
 import pandas as pd
 
 from ath.correlation.chain import InvestigationCase
@@ -102,6 +104,134 @@ def telemetry_hash(telemetry: Telemetry) -> str:
     return digest.hexdigest()
 
 
+DIGEST_VERSIONS: tuple[int, ...] = (1, 2)
+"""Telemetry digest versions. 1 is the CSV-text digest every frozen manifest carries; 2 is
+the canonical-value digest that does not depend on the pandas or numpy release."""
+
+_NULL = "\x00NULL"
+_NAN = "\x00NAN"
+_CELL = "\x1f"
+
+
+def _float_text(value: Any) -> str:
+    number = float(value)
+    if number != number:
+        return _NAN
+    if number in (float("inf"), float("-inf")):
+        return "\x00INF" if number > 0 else "\x00-INF"
+    if number == 0.0:
+        return "0.0"
+    return repr(number)
+
+
+def _datetime_text(series: pd.Series) -> tuple[str, pd.Series]:
+    tz = getattr(series.dt, "tz", None)
+    tag = "datetime" if tz is not None else "datetime-naive"
+    utc = series.dt.tz_convert(None) if tz is not None else series
+    values = utc.to_numpy(dtype="datetime64[ns]")
+    missing = np.isnat(values)
+    text = values.astype("int64").astype(str)
+    return tag, pd.Series(np.where(missing, _NULL, text), index=series.index, dtype="string")
+
+
+def _cell_text(value: Any) -> str:
+    """One cell of an object column, tagged by its own type."""
+    if value is None or value is pd.NA or value is pd.NaT:
+        return _NULL
+    if isinstance(value, (bool, np.bool_)):
+        return "bool:" + ("1" if value else "0")
+    if isinstance(value, (int, np.integer)):
+        return f"int:{int(value)}"
+    if isinstance(value, (float, np.floating)):
+        return _NULL if value != value else "float:" + _float_text(value)
+    if isinstance(value, str):
+        return "str:" + unicodedata.normalize("NFC", value)
+    if isinstance(value, (pd.Timestamp, np.datetime64)):
+        stamp = pd.Timestamp(value)
+        if stamp is pd.NaT:
+            return _NULL
+        if stamp.tzinfo is not None:
+            stamp = stamp.tz_convert(None)
+        return f"datetime:{stamp.value}"
+    return f"{type(value).__name__}:{value!r}"
+
+
+def canonical_column(series: pd.Series) -> tuple[str, pd.Series]:
+    """A column as ``(type tag, text per cell)`` that two runtimes agree on.
+
+    Every null kind becomes one sentinel; integers are decimal; floats are the shortest
+    round-trip repr with ``-0.0`` folded into ``0.0`` and NaN/inf as sentinels; datetimes
+    are UTC nanoseconds, a naive column tagged so the assumption is in the hash; strings
+    are NFC-normalised; an object column that mixes types tags every cell.
+    """
+    dtype = series.dtype
+    missing = series.isna()
+    if pd.api.types.is_bool_dtype(dtype):
+        text = series.astype("boolean").map({True: "1", False: "0"}).astype("string")
+        return "bool", text.where(~missing, _NULL)
+    if pd.api.types.is_integer_dtype(dtype):
+        text = series.astype("Int64").astype("string")
+        return "int", text.where(~missing, _NULL)
+    if pd.api.types.is_float_dtype(dtype):
+        text = series.map(_float_text).astype("string")
+        return "float", text.where(~missing, _NULL)
+    if pd.api.types.is_datetime64_any_dtype(dtype):
+        return _datetime_text(series)
+    present = series[~missing]
+    if isinstance(dtype, pd.StringDtype) or (pd.api.types.is_object_dtype(dtype) and present.map(type).eq(str).all()):
+        text = present.astype("string").str.normalize("NFC")
+        return "str", text.reindex(series.index).astype("string").where(~missing, _NULL)
+    text = series.map(_cell_text).astype("string")
+    return "object", text.where(~missing, _NULL)
+
+
+def table_digest_v2(frame: pd.DataFrame) -> str:
+    """Version 2 of :func:`table_digest`: the same shape and order rules, values rendered
+    by :func:`canonical_column` instead of by ``to_csv``."""
+    digest = hashlib.sha256()
+    columns = sorted(str(c) for c in frame.columns)
+    tagged = {name: canonical_column(frame[name]) for name in columns}
+    header = "columns:" + "|".join(f"{name}={tagged[name][0]}" for name in columns)
+    digest.update((header + "\n").encode("utf-8"))
+    digest.update(f"rows:{len(frame)}\n".encode("utf-8"))
+    if frame.empty:
+        return digest.hexdigest()
+    encoded = pd.DataFrame({name: tagged[name][1] for name in columns}, index=frame.index)
+    for start in range(0, len(encoded), _HASH_CHUNK_ROWS):
+        chunk = encoded.iloc[start : start + _HASH_CHUNK_ROWS]
+        rows = chunk.astype(object).agg(_CELL.join, axis=1)
+        digest.update(("\n".join(rows.tolist()) + "\n").encode("utf-8"))
+    return digest.hexdigest()
+
+
+def column_digests(frame: pd.DataFrame, version: int = 2) -> dict[str, str]:
+    """Per-column digests under either version, for naming what moved between runtimes."""
+    out: dict[str, str] = {}
+    for name in sorted(str(c) for c in frame.columns):
+        if version == 1:
+            text = frame[[name]].to_csv(
+                index=False, header=False, date_format=_TIME_FORMAT, lineterminator=_LINE_TERMINATOR,
+            )
+        else:
+            tag, cells = canonical_column(frame[name])
+            text = tag + "\n" + "\n".join(cells.astype(object).tolist())
+        out[name] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return out
+
+
+def telemetry_digest(telemetry: Telemetry, version: int = 1) -> str:
+    """The corpus digest under ``version``: 1 is :func:`telemetry_hash`, unchanged."""
+    if version == 1:
+        return telemetry_hash(telemetry)
+    if version != 2:
+        raise ValueError(f"unknown telemetry digest version {version!r}; known: {DIGEST_VERSIONS}")
+    digest = hashlib.sha256()
+    digest.update(b"digest_version:2\n")
+    for name, event_type in _TABLES:
+        digest.update(f"{name}:{table_digest_v2(telemetry.table(event_type))}\n".encode())
+    return digest.hexdigest()
+
+
 def telemetry_rows(telemetry: Telemetry) -> dict[str, int]:
     """Row counts per canonical table -- reported next to the hash, never instead."""
     return {
@@ -139,6 +269,9 @@ class CaseManifest:
     telemetry_hash: str
     selection: str = ""
     labels: dict[str, Any] = field(default_factory=dict)
+    digest_version: int = 1
+    """Which telemetry digest ``telemetry_hash`` was computed with. Serialised only when it
+    is not 1, so every manifest frozen before versions existed hashes exactly as before."""
 
     @property
     def key(self) -> str:
@@ -155,6 +288,7 @@ class CaseManifest:
             "telemetry_hash": self.telemetry_hash,
             "selection": self.selection,
             "labels": dict(self.labels),
+            **({"digest_version": self.digest_version} if self.digest_version != 1 else {}),
         }
 
     @classmethod
@@ -169,6 +303,7 @@ class CaseManifest:
             telemetry_hash=str(payload["telemetry_hash"]),
             selection=str(payload.get("selection", "")),
             labels=dict(payload.get("labels", {})),
+            digest_version=int(payload.get("digest_version", 1)),
         )
 
 
@@ -194,6 +329,7 @@ def build_manifest(
     *,
     selection: str = "",
     labels: dict[str, dict[str, Any]] | None = None,
+    digest_version: int = 1,
 ) -> list[CaseManifest]:
     """Pin ``cases`` against ``telemetry``.
 
@@ -203,11 +339,12 @@ def build_manifest(
         cases: The cases to pin, in the order they should appear.
         selection: Why these cases (not the corpus's others) are here.
         labels: Optional per-case-id ground truth to carry alongside.
+        digest_version: Which telemetry digest to pin the cases with (see ``DIGEST_VERSIONS``).
 
     Returns:
         One :class:`CaseManifest` per case, in the order given.
     """
-    digest = telemetry_hash(telemetry)
+    digest = telemetry_digest(telemetry, digest_version)
     labels = labels or {}
     return [
         CaseManifest(
@@ -220,6 +357,7 @@ def build_manifest(
             telemetry_hash=digest,
             selection=selection,
             labels=dict(labels.get(case.case_id, {})),
+            digest_version=digest_version,
         )
         for case in cases
     ]

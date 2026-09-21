@@ -36,7 +36,13 @@ from ath.evaluation.ablation import (
     manifest_hash,
 )
 from ath.evaluation.ablation.local import refuse_frozen_path
-from ath.evaluation.ablation.manifest import leading_rule_of, telemetry_hash
+from ath.evaluation.ablation.manifest import (
+    _TABLES,
+    DIGEST_VERSIONS,
+    column_digests,
+    leading_rule_of,
+    telemetry_digest,
+)
 from ath.evaluation.dev_labels import injected_labels as _resolve_injected_labels
 from ath.experiments import _frozen_scripts
 from ath.experiments.bundles import (
@@ -216,9 +222,17 @@ def head() -> str:
 
 def build_dev_manifest(
     *, external: Path = DEFAULT_EXTERNAL, out_dir: Path = DEV_DIR, seed: int | None = None,
-    expected: int = 20, log=lambda text: print(text, file=sys.stderr),
+    expected: int = 20, digest_version: int = 1, log=lambda text: print(text, file=sys.stderr),
 ) -> dict[str, Any]:
-    """Build and write ``MANIFEST.json``/``.md`` under ``out_dir``; returns the payload."""
+    """Build and write ``MANIFEST.json``/``.md`` under ``out_dir``; returns the payload.
+
+    ``digest_version`` selects the telemetry digest the entries are pinned with. Version 1
+    is what every frozen manifest carries and depends on the pandas release; version 2
+    is runtime-stable. The version and a per-column digest detail are recorded on the
+    payload, outside the hashed entries.
+    """
+    if digest_version not in DIGEST_VERSIONS:
+        raise SystemExit(f"unknown digest version {digest_version}; known: {DIGEST_VERSIONS}")
     if seed is None:
         seed = dev_seed()
     out_dir = Path(out_dir)
@@ -227,6 +241,7 @@ def build_dev_manifest(
     entries: list[CaseManifest] = []
     provenance: dict[str, Any] = {}
     links_by_key: dict[str, list[dict[str, Any]]] = {}
+    detail: dict[str, Any] = {}
     substitutions: list[str] = [
         "the decided composition had 6 flaws.cloud + 3 k8s_ci/k8ntext/attack_data_aws cases; "
         "MEASURED 2026-09-15 at 195e369: k8s_ci and k8ntext form 0 cases and attack_data_aws "
@@ -234,6 +249,10 @@ def build_dev_manifest(
     ]
 
     for bundle in dev_bundles(external):
+        detail[bundle.name] = {
+            name: column_digests(bundle.telemetry.table(event_type), digest_version)
+            for name, event_type in _TABLES
+        }
         if bundle.name == SYNTHETIC_DEV:
             selected, selection, detail = select_synthetic(bundle)
             if not selected:
@@ -245,6 +264,7 @@ def build_dev_manifest(
                 continue
             entries += build_manifest(
                 bundle.name, bundle.telemetry, selected, selection=selection, labels=bundle.labels,
+                digest_version=digest_version,
             )
             provenance[bundle.name] = {"provenance": "synthetic", **detail}
         elif bundle.name.startswith("dedale_injected_dev:"):
@@ -256,7 +276,7 @@ def build_dev_manifest(
             entries += build_manifest(
                 bundle.name, bundle.telemetry, [case],
                 selection=f"the single case reports/local/dev/cases/dedale_injected/{case_id}/ forms",
-                labels={case.case_id: label_block},
+                labels={case.case_id: label_block}, digest_version=digest_version,
             )
             links_by_key[f"{bundle.name}/{case.case_id}"] = links
             provenance[bundle.name] = {
@@ -264,7 +284,7 @@ def build_dev_manifest(
                 "verdict": label_block["verdict"], "scenario": label_block["scenario"],
             }
         elif bundle.name == "flaws_cloud":
-            digest = telemetry_hash(bundle.telemetry)
+            digest = telemetry_digest(bundle.telemetry, digest_version)
             seats = expected - len(entries)   # flaws.cloud loads last and fills what is left
             chosen, detail = select_flaws(bundle.cases, frozen, digest, count=seats, seed=seed)
             if len(chosen) != seats:
@@ -272,6 +292,7 @@ def build_dev_manifest(
             entries += build_manifest(
                 bundle.name, bundle.telemetry, chosen,
                 selection="stratified sample outside both frozen manifests (see provenance.flaws_cloud)",
+                digest_version=digest_version,
             )
             provenance[bundle.name] = {"provenance": "real, unlabelled CloudTrail", **detail}
         log(f"{bundle.name}: {len(bundle.cases)} case(s) formed")
@@ -310,6 +331,8 @@ def build_dev_manifest(
             "the nine flaws.cloud cases are unlabelled: no completeness or discrimination metric",
         ],
         "provenance": provenance,
+        "digest_version": digest_version,
+        "telemetry_digest_detail": detail,
         "manifest_hash": digest,
         "cases": [
             {**e.to_dict(), **({"links": links_by_key[e.key]} if e.key in links_by_key else {})}

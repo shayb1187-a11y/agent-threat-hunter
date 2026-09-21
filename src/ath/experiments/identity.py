@@ -136,9 +136,11 @@ def _frozen_objects() -> dict[str, Any]:
         "local.write_row": local.write_row,
         "local.read_row": local.read_row,
         "local.investigator_environment": local.investigator_environment,
+        # The v1 digest bodies. CaseManifest.to_dict is pinned by *output* instead (the
+        # committed manifests recompute in frozen_surface): it gained a conditional
+        # digest_version key that a v1 entry never emits.
         "manifest.table_digest": manifest.table_digest,
         "manifest.telemetry_hash": manifest.telemetry_hash,
-        "manifest.CaseManifest.to_dict": manifest.CaseManifest.to_dict,
         "manifest.manifest_hash": manifest.manifest_hash,
     }
 

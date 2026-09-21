@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -93,10 +94,28 @@ def cmd_manifest_build(args: argparse.Namespace) -> int:
     from ath.experiments.manifest_build import build_dev_manifest
 
     args, spec = resolve(args)
+    version = args.digest_version if args.digest_version is not None else (spec.digest_version if spec else 1)
     build_dev_manifest(
         external=args.external, out_dir=args.out_dir, seed=args.manifest_seed,
         expected=args.expected if args.expected is not None else (spec.expected_cases if spec else 20),
+        digest_version=version,
     )
+    return 0
+
+
+def cmd_manifest_digest(args: argparse.Namespace) -> int:
+    from ath.experiments.digest_diagnostic import compare, diagnose, render
+
+    if args.compare:
+        report = compare(Path(args.compare[0]), Path(args.compare[1]))
+        print(render(report))
+        print(json.dumps(report, indent=1, default=str), file=sys.stderr)
+        return 0
+    from ath.experiments.manifest_build import dev_bundles
+
+    args, _ = resolve(args)
+    corpora = set(args.only_corpora) if args.only_corpora else None
+    diagnose(dev_bundles(args.external, corpora=corpora), out_dir=args.out_dir, label=args.label)
     return 0
 
 
@@ -214,7 +233,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--external", type=Path, default=None)
     p.add_argument("--manifest-seed", type=int, default=None, help="selection seed (default: the injector's DEV_SEED)")
     p.add_argument("--expected", type=int, default=None)
+    p.add_argument("--digest-version", type=int, choices=(1, 2), default=None, help="telemetry digest version (default: the spec's, else 1)")
     p.set_defaults(func=cmd_manifest_build)
+
+    p = sub.add_parser("manifest-digest", help="per-column telemetry digests of every dev corpus on this runtime, or a comparison of two such files")
+    _common(p, model=False)
+    p.add_argument("--external", type=Path, default=None)
+    p.add_argument("--label", default=platform.python_version() + "-" + platform.system().lower(), help="name of this runtime in the output file")
+    p.add_argument("--only-corpora", nargs="*", default=None, help="restrict to these corpus names")
+    p.add_argument("--compare", nargs=2, default=None, metavar=("A_JSON", "B_JSON"), help="name the columns whose digests differ between two diagnostic files")
+    p.set_defaults(func=cmd_manifest_digest)
 
     p = sub.add_parser("inject", help="regenerate the injected dev cases via the pinned script")
     _common(p, model=False)

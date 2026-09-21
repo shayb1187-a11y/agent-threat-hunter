@@ -4,7 +4,6 @@
   "object:local.investigator_environment": "b0bd4e65048d83431a0c8cd36d8a0157fdba14a1c0b180a25e45d423c296f3bb",
   "object:local.read_row": "04caf2ed89b231ad7226428e4274d9ee69ff6e2262182171170977e6431ef99a",
   "object:local.write_row": "aafd5760ba23d40aa34e8c89c96aaceba4b78394e32974d014684d3f43f02614",
-  "object:manifest.CaseManifest.to_dict": "5f85a65f83c92b5d6b7321676e33d1b94badff9e9da835b4f3735824bea91bc3",
   "object:manifest.manifest_hash": "e8f46d7a9db9a0ef0f182d86a2aa1fb4772a1fbb273c886e293f083b70a0ddde",
   "object:manifest.table_digest": "b5bde6cfc6588c72f9895c3698f8ae38009a715ae66a388263bba8b7c4ffbeec",
   "object:manifest.telemetry_hash": "ed1af507fb8ea9dfeb14b2cb93de16feb4478467e301d225c3f77c2a10d121a2",
