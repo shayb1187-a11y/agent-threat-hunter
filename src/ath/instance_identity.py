@@ -264,7 +264,7 @@ class InstanceKey:
     def __str__(self) -> str:
         return self.identity or f"{self.device}|{self.process_id} ({INFERRED_FROM_PID})"
 
-    def joins(self, other: "InstanceKey") -> tuple[bool, bool]:
+    def joins(self, other: InstanceKey) -> tuple[bool, bool]:
         """Whether these two rows describe the same process instance, and how we know.
 
         Returns:
@@ -313,7 +313,7 @@ def instance_key(identity: Any, device: Any, process_id: Any) -> InstanceKey | N
 
 
 def match_keys(
-    left: Collection["InstanceKey"], right: Collection["InstanceKey"]
+    left: Collection[InstanceKey], right: Collection[InstanceKey]
 ) -> tuple[bool, bool]:
     """Whether any key on the left names the same instance as any key on the right.
 

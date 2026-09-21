@@ -46,15 +46,14 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from m18_field_usability import measure  # noqa: E402
-
 from ath.behavior.control_plane import verb_class  # noqa: E402
 from ath.evaluation.profile import profile_telemetry  # noqa: E402
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS  # noqa: E402
-from ath.telemetry.cloudtrail_source import AUTH_EVENTS, CloudTrailSource  # noqa: E402
+from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa: E402
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.telemetry.normalize import QUARANTINE_REASON_PREFIX  # noqa: E402
 from ath.telemetry.source import SourceLoadResult  # noqa: E402
+from m18_field_usability import measure  # noqa: E402
 
 CONTROL_FIELDS = (
     "verb", "resource_type", "actor", "decision", "target_actor", "role_ref",

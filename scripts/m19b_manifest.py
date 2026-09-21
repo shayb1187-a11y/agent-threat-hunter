@@ -62,11 +62,12 @@ import json
 import sys
 import time
 from collections import defaultdict
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -76,7 +77,6 @@ import m19_ablation as m19  # noqa: E402
 import m19b_link_measure as link_measure  # noqa: E402
 import m19b_link_report as link_report  # noqa: E402
 import m19b_necessity_audit as necessity_script  # noqa: E402
-
 from ath.correlation.chain import InvestigationCase  # noqa: E402
 from ath.evaluation.ablation import (  # noqa: E402
     ARM_BUILDERS,
@@ -616,12 +616,10 @@ def inc001_links(telemetry: Telemetry) -> list[dict[str, Any]]:
                     # would silently produce links no scorer could read, so it stops here
                     # instead.
                     raise SystemExit(
-                        "INC-001: stage transition {} -> {} pairs {} with {}, which is "
+                        f"INC-001: stage transition {stage} -> {INC001_TARGET_STAGE} pairs {source_domain} with {target_domain}, which is "
                         "not the identity x endpoint shape every CDER consumer "
                         "addresses by name. Widen the link schema deliberately rather "
-                        "than emitting a link nothing can score.".format(
-                            stage, INC001_TARGET_STAGE, source_domain, target_domain,
-                        )
+                        "than emitting a link nothing can score."
                     )
                 pair = {
                     source_domain: {
@@ -672,7 +670,7 @@ def directory_digest(directory: Path) -> tuple[str, dict[str, str]]:
     }
     digest = hashlib.sha256()
     for name in sorted(files):
-        digest.update(f"{name}:{files[name]}\n".encode("utf-8"))
+        digest.update(f"{name}:{files[name]}\n".encode())
     return digest.hexdigest(), files
 
 
@@ -796,7 +794,7 @@ def build_synthetic_case(bundle: m19.Bundle, case: InvestigationCase) -> Benchma
         ),
         condition_3=CONDITION_3["synthetic:INC-001"],
         links=links,
-        cder="DEFINED ({} pre-registered link(s))".format(len(links)),
+        cder=f"DEFINED ({len(links)} pre-registered link(s))",
         rubric={
             "stages": list(stages),
             "verdict": "malicious",
@@ -826,17 +824,15 @@ def build_injected_case(
     ambiguous = {k: v for k, v in resolved.ambiguous.items() if v}
     if unresolved or ambiguous:
         raise SystemExit(
-            "dedale_injected:{}: the answer key has holes against this load -- "
-            "unresolved {}, ambiguous {}. Every injected ref must name exactly one "
+            f"dedale_injected:{case_id}: the answer key has holes against this load -- "
+            f"unresolved {unresolved}, ambiguous {ambiguous}. Every injected ref must name exactly one "
             "ingested row, or the labels describe a different corpus from the one the "
-            "arms will investigate.".format(case_id, unresolved, ambiguous)
+            "arms will investigate."
         )
     if len(labels.scenarios) != 1:
         raise SystemExit(
-            "dedale_injected:{}: {} scenarios. Each case in this directory carries "
-            "exactly one story, and the rubric's verdict is that story's.".format(
-                case_id, len(labels.scenarios),
-            )
+            f"dedale_injected:{case_id}: {len(labels.scenarios)} scenarios. Each case in this directory carries "
+            "exactly one story, and the rubric's verdict is that story's."
         )
     scenario = labels.scenarios[0]
     stage_notes = {
@@ -856,8 +852,8 @@ def build_injected_case(
     entry = build_manifest(
         bundle.name, bundle.telemetry, [case],
         selection=(
-            "the single case reports/m19b/cases/dedale_injected/{}/ forms when its "
-            "winlogbeat/ directory is hunted, triaged and correlated".format(case_id)
+            f"the single case reports/m19b/cases/dedale_injected/{case_id}/ forms when its "
+            "winlogbeat/ directory is hunted, triaged and correlated"
         ),
         labels={case.case_id: {
             "injected_case": case_id,
@@ -868,7 +864,7 @@ def build_injected_case(
     )[0]
     links = injected_links(case_id, bundle.telemetry, payload)
     return BenchmarkCase(
-        key="dedale_injected:{}".format(case_id),
+        key=f"dedale_injected:{case_id}",
         corpus=bundle.name,
         provenance=PROVENANCE_INJECTED,
         entry=entry,
@@ -879,22 +875,22 @@ def build_injected_case(
             corpus_channels=bundle.environment.observable_channels,
             ground_truth=ground_truth,
         ),
-        condition_3=CONDITION_3["dedale_injected:{}".format(case_id)],
+        condition_3=CONDITION_3[f"dedale_injected:{case_id}"],
         links=links,
-        cder="DEFINED ({} pre-registered link(s))".format(len(links)),
+        cder=f"DEFINED ({len(links)} pre-registered link(s))",
         rubric={
             "stages": [s.name for s in scenario.stages],
             "stage_notes": stage_notes,
             "verdict": "malicious" if scenario.malicious else "benign",
-            "next_action": NEXT_ACTION["dedale_injected:{}".format(case_id)],
+            "next_action": NEXT_ACTION[f"dedale_injected:{case_id}"],
             "stages_source": (
-                "reports/m19b/cases/dedale_injected/{}/labels.json, scenario "
-                "`{}`".format(case_id, scenario.name)
+                f"reports/m19b/cases/dedale_injected/{case_id}/labels.json, scenario "
+                f"`{scenario.name}`"
             ),
         },
         label_source=(
-            "reports/m19b/cases/dedale_injected/{}/labels.json, via "
-            "ath.evaluation.external_labels".format(case_id)
+            f"reports/m19b/cases/dedale_injected/{case_id}/labels.json, via "
+            "ath.evaluation.external_labels"
         ),
         rule_titles=_rule_titles(case),
         notes=(
@@ -906,7 +902,7 @@ def build_injected_case(
 
 
 def build_flaws_case(
-    pin: "FlawsPin", bundle: m19.Bundle, case: InvestigationCase,
+    pin: FlawsPin, bundle: m19.Bundle, case: InvestigationCase,
     evidence_index: dict[str, set[str]] | None = None,
 ) -> BenchmarkCase:
     principals = case_principals(bundle.telemetry, case)
@@ -922,8 +918,8 @@ def build_flaws_case(
     entry = build_manifest(
         bundle.name, bundle.telemetry, [case],
         selection=(
-            "{}; pinned by member finding ids and the principal '{}', not by case "
-            "number".format(pin.note, pin.principal)
+            f"{pin.note}; pinned by member finding ids and the principal '{pin.principal}', not by case "
+            "number"
         ),
         labels={case.case_id: {
             "provenance": "real",
@@ -932,7 +928,7 @@ def build_flaws_case(
         }},
     )[0]
     return BenchmarkCase(
-        key="flaws_cloud:{}".format(pin.principal),
+        key=f"flaws_cloud:{pin.principal}",
         corpus=bundle.name,
         provenance=PROVENANCE_REAL,
         entry=entry,
@@ -944,7 +940,7 @@ def build_flaws_case(
             ground_truth=ground_truth,
             evidence_index=evidence_index,
         ),
-        condition_3=CONDITION_3["flaws_cloud:{}".format(pin.principal)],
+        condition_3=CONDITION_3[f"flaws_cloud:{pin.principal}"],
         links=[],
         cder=CDER_UNAVAILABLE,
         rubric={
@@ -953,7 +949,7 @@ def build_flaws_case(
             # would describe the rule catalogue rather than the case.
             "stages": list(_rule_titles(case).values()),
             "verdict": "unknown",
-            "next_action": NEXT_ACTION["flaws_cloud:{}".format(pin.principal)],
+            "next_action": NEXT_ACTION[f"flaws_cloud:{pin.principal}"],
             "stages_source": (
                 "the member findings' distinct rule titles -- this corpus has no "
                 "ground truth, so it has no stages, and saying so is the measurement"
@@ -996,9 +992,7 @@ def build_cases(external: Path) -> tuple[list[BenchmarkCase], dict[str, Any]]:
             "pipeline_seconds": round(bundle.pipeline_seconds, 1),
         }
         print(
-            "{}: {} finding(s), {} case(s), {} pinned".format(
-                bundle.name, len(bundle.findings), len(bundle.cases), len(selected),
-            ),
+            f"{bundle.name}: {len(bundle.findings)} finding(s), {len(bundle.cases)} case(s), {len(selected)} pinned",
             flush=True,
         )
     return built, corpora
@@ -1021,13 +1015,11 @@ def source_hashes(external: Path) -> dict[str, Any]:
         )
         if differing:
             raise SystemExit(
-                "dedale_injected:{}: {} file(s) differ from the digests "
-                "reports/m19b/cases/dedale_injected/MANIFEST.json publishes: {}".format(
-                    case_id, len(differing), differing,
-                )
+                f"dedale_injected:{case_id}: {len(differing)} file(s) differ from the digests "
+                f"reports/m19b/cases/dedale_injected/MANIFEST.json publishes: {differing}"
             )
         directories[case_id] = {
-            "directory": "reports/m19b/cases/dedale_injected/{}".format(case_id),
+            "directory": f"reports/m19b/cases/dedale_injected/{case_id}",
             "sha256": digest,
             "files": files,
         }
@@ -1068,26 +1060,22 @@ def input_differences(
         was, now = previous[key], current[key]
         if was.telemetry_hash != now.telemetry_hash:
             differences.append(
-                "{}: telemetry hash {} -> {}; the corpus this case is investigated "
-                "against is not the corpus the manifest pinned".format(
-                    key, was.telemetry_hash[:12], now.telemetry_hash[:12],
-                )
+                f"{key}: telemetry hash {was.telemetry_hash[:12]} -> {now.telemetry_hash[:12]}; the corpus this case is investigated "
+                "against is not the corpus the manifest pinned"
             )
         if was.finding_ids != now.finding_ids:
             differences.append(
-                "{}: finding ids {} -> {}; a case id is not an identity, its findings "
-                "are".format(key, list(was.finding_ids), list(now.finding_ids))
+                f"{key}: finding ids {list(was.finding_ids)} -> {list(now.finding_ids)}; a case id is not an identity, its findings "
+                "are"
             )
         if was.evidence_ids != now.evidence_ids:
             differences.append(
-                "{}: {} evidence id(s) -> {}".format(
-                    key, len(was.evidence_ids), len(now.evidence_ids),
-                )
+                f"{key}: {len(was.evidence_ids)} evidence id(s) -> {len(now.evidence_ids)}"
             )
     for key in sorted(set(previous) - set(current)):
-        differences.append("{}: pinned in the frozen manifest and absent now".format(key))
+        differences.append(f"{key}: pinned in the frozen manifest and absent now")
     for key in sorted(set(current) - set(previous)):
-        differences.append("{}: not in the frozen manifest; the case set is fixed".format(key))
+        differences.append(f"{key}: not in the frozen manifest; the case set is fixed")
     return differences
 
 
@@ -1207,7 +1195,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
          "cases in corpus", "cases pinned", "telemetry hash", "load s", "pipeline s"],
         [
             [
-                "`{}`".format(name),
+                f"`{name}`",
                 corpus["rows"]["process"], corpus["rows"]["network"],
                 corpus["rows"]["logon"], corpus["rows"]["control"],
                 corpus["findings"], corpus["cases_in_corpus"], corpus["cases_pinned"],
@@ -1234,10 +1222,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
                     "`{}` {}".format(r, case["rule_titles"].get(r, ""))
                     for r in case["rule_ids"]
                 )],
-                ["findings", ", ".join("`{}`".format(f) for f in case["finding_ids"])],
+                ["findings", ", ".join(f"`{f}`" for f in case["finding_ids"])],
                 ["evidence ids", "{} -- {}".format(
                     len(case["evidence_ids"]),
-                    ", ".join("`{}`".format(e) for e in case["evidence_ids"]),
+                    ", ".join(f"`{e}`" for e in case["evidence_ids"]),
                 )],
                 ["telemetry hash", "`{}`".format(case["telemetry_hash"])],
                 ["selection", case["selection"]],
@@ -1253,7 +1241,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
                        ", ".join(audit["whole_run_eligible"]) or "--",
                        audit["independent_evidence_sources"],
                        ", ".join(
-                           "{} {}".format(v, k)
+                           f"{v} {k}"
                            for k, v in sorted(audit["evidence_sources"].items())
                        ) or "--",
                        "YES" if audit["qualifies"] else "no -- " + audit["failure_reason"],
@@ -1288,7 +1276,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         out.append("**Rubric.** Stages ({}): {}. Verdict: **{}**. Next action, written "
                    "before any run: {}\n".format(
                        case["rubric"]["stages_source"],
-                       ", ".join("`{}`".format(s) for s in case["rubric"]["stages"]),
+                       ", ".join(f"`{s}`" for s in case["rubric"]["stages"]),
                        case["rubric"]["verdict"],
                        case["rubric"]["next_action"],
                    ))
@@ -1331,7 +1319,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
 
     out.append("## How the links were defined\n")
     for name, rule in payload["cder_link_rules"].items():
-        out.append("* **{}**: {}".format(name, rule))
+        out.append(f"* **{name}**: {rule}")
     out.append("")
 
     out.append("## Limitations\n")
@@ -1381,8 +1369,8 @@ def cmd_build(args: argparse.Namespace) -> int:
     entries = [case.entry for case in built]
     if len(built) != 9:
         raise SystemExit(
-            "the frozen case set has nine cases and this build produced {}; the set is "
-            "fixed by the architect and this script may not change it".format(len(built))
+            f"the frozen case set has nine cases and this build produced {len(built)}; the set is "
+            "fixed by the architect and this script may not change it"
         )
     refuse_if_inputs_moved(args.out_dir / MANIFEST_PATH.name, entries)
 
@@ -1428,20 +1416,16 @@ def cmd_build(args: argparse.Namespace) -> int:
     (args.out_dir / MANIFEST_MD.name).write_text(
         render_markdown(payload), encoding="utf-8",
     )
-    print("\nmanifest_hash  {}".format(digest))
+    print(f"\nmanifest_hash  {digest}")
     print("benchmark_hash {}".format(payload["benchmark_hash"]))
-    print("wrote {} and {}".format(
-        args.out_dir / MANIFEST_PATH.name, args.out_dir / MANIFEST_MD.name,
-    ))
+    print(f"wrote {args.out_dir / MANIFEST_PATH.name} and {args.out_dir / MANIFEST_MD.name}")
 
     not_qualifying = [
         case.key for case in built if not case.audit.qualifies
     ]
     if not_qualifying:
         print(
-            "WARNING: {} case(s) do not qualify under docs/m19b-plan.md: {}".format(
-                len(not_qualifying), not_qualifying,
-            )
+            f"WARNING: {len(not_qualifying)} case(s) do not qualify under docs/m19b-plan.md: {not_qualifying}"
         )
     return 0
 
@@ -1492,9 +1476,9 @@ def read_manifest(out_dir: Path) -> tuple[dict[str, Any], list[CaseManifest], st
     recorded = str(payload.get("manifest_hash", ""))
     if recomputed != recorded:
         raise SystemExit(
-            "MANIFEST.json records {} but its entries hash to {}. The file has been "
+            f"MANIFEST.json records {recorded[:12]} but its entries hash to {recomputed[:12]}. The file has been "
             "edited since it was frozen; refusing to run an arm against a manifest that "
-            "does not describe itself.".format(recorded[:12], recomputed[:12])
+            "does not describe itself."
         )
     return payload, entries, recorded
 
@@ -1621,7 +1605,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         )
     arm = ARM_BUILDERS[m19._arm_name(args.arm)]()
     if arm.requires_model:
-        raise SystemExit("{} requires a model; this script is the no-key path".format(arm.name))
+        raise SystemExit(f"{arm.name} requires a model; this script is the no-key path")
 
     by_corpus: dict[str, list[CaseManifest]] = defaultdict(list)
     for entry in entries:
@@ -1657,9 +1641,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     differences = identical(runs[0], runs[1])
     if differences:
         raise SystemExit(
-            "arm A is deterministic and its two runs differ in {} place(s): {}. A "
+            f"arm A is deterministic and its two runs differ in {len(differences)} place(s): {differences[:5]}. A "
             "baseline that is not reproducible cannot be the baseline anything is "
-            "compared against.".format(len(differences), differences[:5])
+            "compared against."
         )
 
     links = links_by_case(payload)
@@ -1673,9 +1657,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     analysis = [
         analyse(
             row,
-            links.get("{}/{}".format(row.corpus, row.case_id), []),
-            cder_status.get("{}/{}".format(row.corpus, row.case_id), ""),
-            evidence.get("{}/{}".format(row.corpus, row.case_id), ()),
+            links.get(f"{row.corpus}/{row.case_id}", []),
+            cder_status.get(f"{row.corpus}/{row.case_id}", ""),
+            evidence.get(f"{row.corpus}/{row.case_id}", ()),
         )
         for row in runs[0]
     ]
@@ -1718,10 +1702,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         "cases": [r.to_dict() for r in runs[0]],
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    out = args.out_dir / "arm_{}.json".format(letter)
+    out = args.out_dir / f"arm_{letter}.json"
     m19.refuse_mislabelled_output(out, runs[0])
     m19.write_artifact(out, record)
-    print("\nwrote {} ({} row(s)); two runs IDENTICAL".format(out, len(runs[0])))
+    print(f"\nwrote {out} ({len(runs[0])} row(s)); two runs IDENTICAL")
 
     print("\n" + link_report.table(
         ["case", "specialists eligible/run", "planner multi-candidate steps",

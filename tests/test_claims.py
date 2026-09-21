@@ -8,11 +8,9 @@ specific epistemic guarantee the rest of the project depends on.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
-from ath.agent.claims import Claim, ClaimType, ClaimVerifier, DETERMINISTIC_SOURCES
+from ath.agent.claims import DETERMINISTIC_SOURCES, Claim, ClaimType, ClaimVerifier
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import load_telemetry
 

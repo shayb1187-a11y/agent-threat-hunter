@@ -41,7 +41,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ath.evaluation.ablation import arm_a, arm_b, arm_c
+from ath.evaluation.ablation import arm_b, arm_c
 from ath.evaluation.ablation import environment as env
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))

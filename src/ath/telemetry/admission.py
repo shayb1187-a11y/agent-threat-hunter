@@ -45,9 +45,9 @@ the boundary recognises a telemetry shape, never a dataset.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 # How many records the sniff reads before deciding. Small enough that admission costs
 # nothing on a 2 GB NDJSON slice, large enough that a file whose first record is a

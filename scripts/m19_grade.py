@@ -62,7 +62,9 @@ def tool_ids(row: dict) -> set[str]:
 
 
 def main() -> int:
-    A, sA = load("A"); B, sB = load("B"); C, sC = load("C")
+    A, sA = load("A")
+    B, sB = load("B")
+    C, sC = load("C")
     keys = list(A)
     assert set(keys) == set(B) == set(C), "the three arms do not cover the same cases"
     planner = {"B": planner_from_log("B"), "C": planner_from_log("C")}
@@ -131,7 +133,8 @@ def main() -> int:
     for arm, rows in (("B", B), ("C", C)):
         per_case = []
         for k in keys:
-            a_claims = claim_ids(A[k]); a_all = a_claims | tool_ids(A[k])
+            a_claims = claim_ids(A[k])
+            a_all = a_claims | tool_ids(A[k])
             hyps = [c for c in rows[k]["state"]["claims"] if c["type"] == "HYPOTHESIS"]
             new_vs_claims = any(set(h.get("evidence_ids") or []) - a_claims for h in hyps)
             new_vs_all = any(set(h.get("evidence_ids") or []) - a_all for h in hyps)

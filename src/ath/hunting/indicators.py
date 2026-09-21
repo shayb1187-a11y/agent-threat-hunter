@@ -13,7 +13,9 @@ import re
 
 # Re-exported so existing imports keep working; the single definition lives in
 # ath.netaddr, which ath.behavior can reach without pulling in the hunting layer.
-from ath.netaddr import is_public_ip
+from ath.netaddr import (
+    is_public_ip,  # noqa: F401 -- re-exported; the network rules import it from here
+)
 
 # PowerShell accepts *any unambiguous prefix* of a parameter name. That means all of
 # -e, -en, -enc, -encod and -EncodedCommand are valid and equivalent. Attackers use

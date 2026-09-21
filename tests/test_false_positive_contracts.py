@@ -28,16 +28,15 @@ Expectations:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import pytest
 
+from _builders import at, ctrl, failures, logon, net, proc, telemetry
 from ath.hunting.base import all_detectors, get_detector
 from ath.hunting.finding import Severity
 from ath.telemetry.loader import Telemetry
-
-from _builders import at, ctrl, failures, logon, net, proc, telemetry
 
 
 @dataclass(frozen=True)

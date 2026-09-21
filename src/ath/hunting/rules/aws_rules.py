@@ -10,8 +10,6 @@ explicitly rather than inferred).
 
 from __future__ import annotations
 
-import pandas as pd
-
 from ath.channels import TelemetryChannel
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity

@@ -65,12 +65,12 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Sequence
+from typing import Any, Sequence
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
 from ath.agent.llm import LLMClient, NullLLM
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
-from ath.agent.tools import ToolBox, ToolCall
+from ath.agent.tools import ToolBox
 from ath.correlation.chain import InvestigationCase
 from ath.logging_setup import get_logger
 

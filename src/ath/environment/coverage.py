@@ -78,7 +78,7 @@ is what keeps "0 findings" from meaning three different things at once.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
@@ -92,7 +92,7 @@ from ath.environment.channels import (
 )
 from ath.environment.model import EnvironmentModel
 from ath.hunting.base import Detector, all_detectors
-from ath.mitre.attack import TECHNIQUES, Tactic
+from ath.mitre.attack import Tactic
 from ath.mitre.mapper import MAPPING_RULES
 from ath.schema import (
     EVENT_CONTROL,

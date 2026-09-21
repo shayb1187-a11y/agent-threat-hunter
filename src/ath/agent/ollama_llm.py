@@ -56,12 +56,12 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from ath.agent.llm import (
+    _RETRYABLE_STATUS,
     ERROR_MESSAGE_CHARS,
     NO_TEXT_BLOCK,
     LLMResponse,
     TokenAccounting,
     _parse_json,
-    _RETRYABLE_STATUS,
 )
 from ath.logging_setup import get_logger
 

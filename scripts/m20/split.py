@@ -87,10 +87,10 @@ def key_timestamp(name: str) -> datetime:
     match = KEY_PATTERN.match(name)
     if match is None:
         raise SystemExit(
-            "{0!r} is not a CloudTrail delivery name "
+            f"{name!r} is not a CloudTrail delivery name "
             "(<account>_CloudTrail_<region>_<YYYYMMDDTHHMMZ>_<hash>.json.gz). Refusing "
             "to split: assigning it would mean reading it, and the holdout must stay "
-            "unopened.".format(name)
+            "unopened."
         )
     return datetime.strptime(match.group("timestamp"), KEY_TIME_FORMAT)
 
@@ -162,23 +162,21 @@ def split(source: Path, out: Path, start_date: datetime, dry_run: bool = False) 
                    if p.exists()]
         if already:
             raise SystemExit(
-                "{0} has already been split ({1} exists). Refusing to split twice: a "
+                f"{out} has already been split ({already[0]} exists). Refusing to split twice: a "
                 "second run over a directory that has since received more deliveries "
-                "would move late day-9 files into the sealed side.".format(
-                    out, already[0],
-                )
+                "would move late day-9 files into the sealed side."
             )
 
     if not source.is_dir():
-        raise SystemExit("{0} is not a directory".format(source))
+        raise SystemExit(f"{source} is not a directory")
 
     candidates = sorted(
         p for p in source.rglob("*.json.gz") if p.is_file()
     )
     if not candidates:
         raise SystemExit(
-            "no *.json.gz files under {0}. Nothing to split -- check the `aws s3 sync` "
-            "target.".format(source)
+            f"no *.json.gz files under {source}. Nothing to split -- check the `aws s3 sync` "
+            "target."
         )
 
     # Pass 1: classify by name only. Any unparseable name aborts before a byte moves.
@@ -189,9 +187,9 @@ def split(source: Path, out: Path, start_date: datetime, dry_run: bool = False) 
     duplicates = _duplicate_names(planned)
     if duplicates:
         raise SystemExit(
-            "delivered names are not unique across prefixes: {0}. Refusing to split, "
+            f"delivered names are not unique across prefixes: {sorted(duplicates)[:5]}. Refusing to split, "
             "because one would overwrite the other in the flat output "
-            "layout.".format(sorted(duplicates)[:5])
+            "layout."
         )
 
     dev_entries = []
@@ -268,7 +266,7 @@ def main(argv=None) -> int:
     try:
         start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
     except ValueError as exc:
-        raise SystemExit("--start-date must be YYYY-MM-DD: {0}".format(exc))
+        raise SystemExit(f"--start-date must be YYYY-MM-DD: {exc}") from exc
 
     record = split(args.source, args.out, start_date, dry_run=args.dry_run)
     print("boundary {0} ({1})".format(record["boundary_utc"], record["boundary_rule"]))

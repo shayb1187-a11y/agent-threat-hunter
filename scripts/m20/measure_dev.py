@@ -59,7 +59,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from m20.common import (  # noqa: E402
-    DEFAULT_PREREGISTRATION, holdout_gate, load_cloudtrail, mentions_holdout,
+    DEFAULT_PREREGISTRATION,
+    holdout_gate,
+    load_cloudtrail,
+    mentions_holdout,
 )
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -86,10 +89,10 @@ def measure(telemetry_dir: Path, preregistration: Path = DEFAULT_PREREGISTRATION
     """
     holdout_gate(telemetry_dir, preregistration, TOOL)
 
+    from ath.environment import build_environment_model
     from ath.evaluation.profile import profile_telemetry
     from ath.hunting import HuntConfig, run_hunt
     from ath.triage import assess_findings
-    from ath.environment import build_environment_model
 
     telemetry, result = load_cloudtrail(telemetry_dir)
     profile = profile_telemetry(telemetry)
@@ -100,8 +103,8 @@ def measure(telemetry_dir: Path, preregistration: Path = DEFAULT_PREREGISTRATION
     if dict(by_rule) != dict(profile.findings_by_rule):
         raise SystemExit(
             "profile_telemetry and run_hunt disagree on findings by rule "
-            "(profile {0} vs hunt {1}). The measurement would be describing two "
-            "different runs.".format(dict(profile.findings_by_rule), dict(by_rule))
+            f"(profile {dict(profile.findings_by_rule)} vs hunt {dict(by_rule)}). The measurement would be describing two "
+            "different runs."
         )
 
     environment = build_environment_model(telemetry)
@@ -236,7 +239,7 @@ def render_preregistration(measurements: dict) -> str:
         return "{0:.2f}".format(per_rule.get(rule_id, {}).get("per_day", 0.0))
 
     lines = [
-        "Development-split observation (days 1-9, N events = {0}):".format(events),
+        f"Development-split observation (days 1-9, N events = {events}):",
         "  findings/day by rule:  ATH-005 {0}  AWS-001 {1}  AWS-002 {2}".format(
             rate("ATH-005"), rate("AWS-001"), rate("AWS-002")),
         "                         AWS-003 {0}  AWS-004 {1}  AWS-005 {2}  AWS-006 {3}".format(
@@ -299,7 +302,7 @@ def main(argv=None) -> int:
         args.template_out.parent.mkdir(parents=True, exist_ok=True)
         args.template_out.write_text(template, encoding="utf-8")
     print(template)
-    print("wrote {0}".format(args.out))
+    print(f"wrote {args.out}")
     return 0
 
 

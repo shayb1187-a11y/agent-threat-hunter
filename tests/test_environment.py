@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from tests import _builders as build
 
 from ath.environment import (
     CHANNEL_SPECS,
@@ -37,8 +38,6 @@ from ath.mitre.attack import TECHNIQUES
 from ath.schema import CORE_COLUMNS, TABLE_COLUMNS
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import Telemetry, load_telemetry
-
-from tests import _builders as build
 
 
 @pytest.fixture(scope="module")

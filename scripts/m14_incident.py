@@ -25,9 +25,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from ath.agent.llm import NullLLM, build_llm  # noqa: E402
+from ath.agent.llm import build_llm  # noqa: E402
 from ath.evaluation.external_labels import (  # noqa: E402
-    incident_from_labels, load_external_labels, resolve_labels,
+    incident_from_labels,
+    load_external_labels,
+    resolve_labels,
 )
 from ath.evaluation.incidents import run_incident  # noqa: E402
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS  # noqa: E402
@@ -114,7 +116,7 @@ def main() -> int:
             ), encoding="utf-8")
             return 0
         runs = []
-        for i in range(args.runs):
+        for _ in range(args.runs):
             o = run_incident(incident, llm=llm)
             runs.append(o.to_dict())
             _print(o, resolved)

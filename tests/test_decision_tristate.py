@@ -18,6 +18,7 @@ from __future__ import annotations
 import inspect
 
 import pytest
+from tests import _builders as build
 
 from ath.control_vocab import (
     AUTHORIZATION_ERROR_TOKENS,
@@ -32,9 +33,6 @@ from ath.hunting import run_hunt
 from ath.hunting.base import all_detectors, get_detector
 from ath.schema import EVENT_CONTROL
 from ath.telemetry.k8s_audit_source import _decision, _normalise_control_record
-
-from tests import _builders as build
-
 
 # ======================================================================================
 # classify_error: the shared definition of denied vs failed

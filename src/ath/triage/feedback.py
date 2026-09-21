@@ -35,11 +35,12 @@ disagreement report in front of them.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from ath.logging_setup import get_logger
 from ath.triage.benign import Disposition, TriageAssessment
@@ -135,7 +136,7 @@ class AnalystVerdict:
         }
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "AnalystVerdict":
+    def from_dict(cls, payload: dict[str, Any]) -> AnalystVerdict:
         disposition = payload.get("system_disposition")
         return cls(
             finding_id=payload["finding_id"],

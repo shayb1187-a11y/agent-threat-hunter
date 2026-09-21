@@ -214,7 +214,6 @@ def test_logon_type_is_null_rather_than_invented(result) -> None:
     Inventing one would silently re-enable ATH-006's host-ownership inference on
     telemetry where the concept of an interactive host session does not exist.
     """
-    import pandas as pd
 
     assert result.tables[EVENT_LOGON]["logon_type"].isna().all()
 

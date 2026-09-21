@@ -13,8 +13,6 @@ from __future__ import annotations
 
 import re
 
-import pandas as pd
-
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity
 from ath.hunting.indicators import truncate

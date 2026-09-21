@@ -59,7 +59,7 @@ def _profile_row(key: str, rec: dict, cls: dict) -> list[str]:
         f"{_pct(e0['kept_fraction'])} of {e0['rows_read']:,}",
         "no labels",
         "no labels" if not cls.get("benign_only") else f"0 / {det['findings']} (benign-only source), FN n/a",
-        "no labels" if not cls.get("benign_only") else (f"0% / n/a" if det["findings"] else "n/a (0 findings)"),
+        "no labels" if not cls.get("benign_only") else ("0% / n/a" if det["findings"] else "n/a (0 findings)"),
         "no labels" if not cls.get("benign_only") else (f"0% ({cor['cases']} of {cor['cases']} benign)" if cor["cases"] else "n/a (0 cases)"),
         "not run (no incident)", "not run (no incident)",
         _pct(tri["triage_load_reduction"]) if det["findings"] else "n/a (0 findings)",
@@ -73,7 +73,7 @@ def _incident_row(key: str, rec: dict, cls: dict, arm: str) -> list[str]:
         status = rec.get("status", UNAVAILABLE)
         return [key, rec.get("provenance", "?"), arm, status] + [UNAVAILABLE] * 8 + [cls.get("failure_class", "unclassified")]
     o, lab, ing = rec["outcome"], rec["labels"], rec["ingestion"]
-    d, al, bd, cq, cn, tr = (o["detection"], o["analyst_load"], o["benign_discrimination"],
+    d, al, bd, _cq, cn, tr = (o["detection"], o["analyst_load"], o["benign_discrimination"],
                              o["chain_quality"], o["conclusions"], o["trust"])
     tp_findings = al["findings"] - bd["benign_findings_total"]
     fp_findings = bd["benign_findings_total"]

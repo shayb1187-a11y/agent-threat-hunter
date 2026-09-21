@@ -62,7 +62,10 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from m20.common import (  # noqa: E402
-    load_cloudtrail, parse_utc, principal_names, refuse_holdout,
+    load_cloudtrail,
+    parse_utc,
+    principal_names,
+    refuse_holdout,
 )
 from m20.sessions import read_sessions  # noqa: E402
 
@@ -275,7 +278,7 @@ def _print_report(report: dict) -> None:
         summary["unexplained_rows"], report["unexplained"]["by_table"],
     ))
     for actor, count in list(report["unexplained"]["by_actor"].items())[:10]:
-        print("    {0:>28}  {1}".format(actor, count))
+        print(f"    {actor:>28}  {count}")
 
 
 def main(argv=None) -> int:
@@ -293,7 +296,7 @@ def main(argv=None) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     _print_report(report)
-    print("wrote {0}".format(args.out))
+    print(f"wrote {args.out}")
     if args.strict and report["summary"]["sessions_uncovered"]:
         return 1
     return 0

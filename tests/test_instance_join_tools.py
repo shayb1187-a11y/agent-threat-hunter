@@ -23,7 +23,8 @@ from __future__ import annotations
 
 import pytest
 
-from _builders import at, net, proc, telemetry as build_telemetry
+from _builders import at, net, proc
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import ClaimType, ClaimVerifier
 from ath.agent.specialists import EndpointAgent
 from ath.agent.state import InvestigationState

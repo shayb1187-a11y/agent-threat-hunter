@@ -40,8 +40,6 @@ from pathlib import Path
 
 import pytest
 
-from ath.agent.claims import ClaimVerifier
-from ath.agent.tools import ToolBox
 from ath.correlation import correlate
 from ath.environment import build_environment_model
 from ath.evaluation.ablation import CaseResult, arm_a, arm_b, build_manifest, run_arm

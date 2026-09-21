@@ -22,11 +22,11 @@ import dataclasses
 import pytest
 
 from ath.environment import build_environment_model
+from ath.hunting import run_hunt
 from ath.hunting.base import all_detectors
 from ath.hunting.finding import Severity
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import load_telemetry
-from ath.hunting import run_hunt
 from ath.triage import Disposition, assess_findings
 
 EMITTED = sorted({det.severity for det in all_detectors()}, key=lambda s: list(Severity).index(s))

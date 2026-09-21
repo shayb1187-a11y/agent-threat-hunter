@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from tests import _builders as build
 
 from ath.environment import (
     DEGRADED_BELOW,
@@ -40,8 +41,6 @@ from ath.environment.channels import FIELD_APPLICABILITY, measure_field_populati
 from ath.hunting.base import all_detectors
 from ath.schema import REMOTE_LOGON_TYPES, TABLE_COLUMNS
 from ath.telemetry.loader import Telemetry
-
-from tests import _builders as build
 
 
 def _rule(telemetry: Telemetry, rule_id: str):

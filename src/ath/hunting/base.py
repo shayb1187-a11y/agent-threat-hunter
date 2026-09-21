@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import dataclasses
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import timedelta
 
 from ath.channels import TelemetryChannel

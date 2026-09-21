@@ -29,6 +29,11 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
+from _builders import at, proc  # noqa: E402
+from _builders import telemetry as build_telemetry
+from ath.correlation import correlator as correlator_module  # noqa: E402
+from ath.hunting import Evidence, Finding, Severity  # noqa: E402
+from ath.instance_identity import start_identity  # noqa: E402
 from m18b_identity_consumers import (  # noqa: E402
     _LegacyProcessIndex,
     compare,
@@ -37,11 +42,6 @@ from m18b_identity_consumers import (  # noqa: E402
     reused_keys,
     run,
 )
-
-from _builders import at, proc, telemetry as build_telemetry  # noqa: E402
-from ath.correlation import correlator as correlator_module  # noqa: E402
-from ath.hunting import Evidence, Finding, Severity  # noqa: E402
-from ath.instance_identity import start_identity  # noqa: E402
 
 DEVICE = "PC09"
 REUSED_PID = 4444

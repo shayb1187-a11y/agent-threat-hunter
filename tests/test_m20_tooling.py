@@ -51,9 +51,9 @@ import pytest
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+from m20 import provenance as provenance_mod  # noqa: E402
 from m20 import sessions as sessions_mod  # noqa: E402
 from m20 import split as split_mod  # noqa: E402
-from m20 import provenance as provenance_mod  # noqa: E402
 from m20.common import holdout_gate, principal_names, refuse_holdout, unfilled_blanks  # noqa: E402
 
 START = "2026-10-01"
@@ -92,9 +92,7 @@ def test_plan_covers_every_schedule_row(tmp_path) -> None:
     for day, text in sessions_mod.SCHEDULE_TABLE:
         named = {w for w in sessions_mod.WORKFLOWS if w != "SETUP" and w in text}
         assert named <= by_day[day], (
-            "day {0} of the plan names {1}; generated {2}".format(
-                day, sorted(named), sorted(by_day[day]),
-            )
+            f"day {day} of the plan names {sorted(named)}; generated {sorted(by_day[day])}"
         )
     assert set(by_day) == {day for day, _ in sessions_mod.SCHEDULE_TABLE}
 
@@ -245,7 +243,7 @@ def test_record_refuses_a_file_whose_columns_are_not_the_declared_ones(tmp_path)
 
 
 def _name(stamp: str, index: int = 0) -> str:
-    return "012345678901_CloudTrail_us-east-1_{0}_a1b2c3d{1}.json.gz".format(stamp, index)
+    return f"012345678901_CloudTrail_us-east-1_{stamp}_a1b2c3d{index}.json.gz"
 
 
 def _write_trail_file(directory: Path, stamp: str, index: int = 0, records=None) -> Path:
@@ -325,7 +323,7 @@ def test_holdout_file_is_hashed_without_being_opened(tmp_path) -> None:
         ["SHA256SUMS", "SIZES", corrupt.name]
     )
     # And the file really is unreadable, so the test above could not have passed by luck.
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017 -- any read failure is the point
         with gzip.open(holdout / corrupt.name, "rb") as handle:
             handle.read()
 
@@ -650,7 +648,7 @@ def test_no_workflow_script_can_stop_or_delete_the_trail() -> None:
     for script in sorted(WORKFLOWS_DIR.glob("W*.sh")):
         text = script.read_text(encoding="utf-8")
         for token in forbidden:
-            assert token not in text, "{0} mentions {1}".format(script.name, token)
+            assert token not in text, f"{script.name} mentions {token}"
 
 
 def test_every_catalogued_workflow_has_a_script() -> None:
@@ -672,7 +670,7 @@ def test_workflow_scripts_reach_sessions_record_through_the_shared_helper() -> N
     for script in sorted(WORKFLOWS_DIR.glob("W*.sh")):
         text = script.read_text(encoding="utf-8")
         assert "_common.sh" in text
-        assert "\naws " not in text, "{0} calls aws directly".format(script.name)
+        assert "\naws " not in text, f"{script.name} calls aws directly"
 
 
 def test_provenance_records_that_file_names_carry_the_account_id(tmp_path) -> None:

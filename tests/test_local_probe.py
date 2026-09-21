@@ -27,7 +27,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import local_probe as probe  # noqa: E402
-
 from ath.agent.llm import ScriptedLLM  # noqa: E402
 from ath.agent.orchestrator import (  # noqa: E402
     ELISION,
@@ -36,7 +35,6 @@ from ath.agent.orchestrator import (  # noqa: E402
 )
 from ath.evaluation.ablation.environment import prompt_hashes, sha256_text  # noqa: E402
 from ath.evaluation.ablation.local import FrozenPathRefused  # noqa: E402
-
 
 # --------------------------------------------------------------------------------------
 # Prompt linkage

@@ -45,9 +45,10 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -307,7 +308,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## Scoring",
         "",
         f"* **reproduces GRADING.json: {str(scoring.get('reproduces_grading')).lower()}**",
-        f"* recomputed from `reports/m19/ablation/arm_{{A,B,C}}.json` by this checkout's "
+        "* recomputed from `reports/m19/ablation/arm_{A,B,C}.json` by this checkout's "
         "`scoring.py`",
         f"* sections reproduced: {', '.join(scoring.get('sections_reproduced', []))}",
     ]

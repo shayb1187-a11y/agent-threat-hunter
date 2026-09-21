@@ -24,11 +24,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from m18b_process_identity import join_study, population  # noqa: E402
-
 from ath.instance_identity import start_identity, sysmon_identity  # noqa: E402
 from ath.schema import EVENT_NETWORK, EVENT_PROCESS  # noqa: E402
 from ath.telemetry.normalize import coerce_and_validate  # noqa: E402
+from m18b_process_identity import join_study, population  # noqa: E402
 
 DEVICE = "kiosk-14"
 

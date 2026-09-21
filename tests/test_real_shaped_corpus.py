@@ -19,12 +19,10 @@ Two kinds of assertion live here:
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
 import pytest
 
-from ath.correlation import correlate
 from ath.environment import build_environment_model
 from ath.hunting import run_hunt
 from ath.hunting.base import OFFICE_APPLICATIONS
@@ -324,7 +322,8 @@ def test_cloudtrail_shaped_flood_is_represented_not_refused(cloudtrail) -> None:
 
 def test_cloudtrail_shaped_auth_vocabulary_covers_the_corpus() -> None:
     """External truth for AUTH_EVENTS: every sts/signin event in the corpus is recognised."""
-    import gzip, tarfile
+    import gzip
+    import tarfile
     names = set()
     with tarfile.open(CLOUDTRAIL / "flaws_shaped_cloudtrail_logs.tar") as archive:
         for member in archive:

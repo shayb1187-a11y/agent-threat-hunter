@@ -7,15 +7,6 @@ than expressed as a low severity, and why benign evidence can be out-voted by a 
 incriminating indicator but can never out-weigh one.
 """
 
-from ath.triage.feedback import (
-    FEEDBACK_FILENAME,
-    AnalystVerdict,
-    FeedbackMetrics,
-    FeedbackStore,
-    Verdict,
-    score_feedback,
-    verdict_from_assessment,
-)
 from ath.triage.benign import (
     BENIGN_SIGNALS,
     BENIGN_THRESHOLD,
@@ -28,6 +19,15 @@ from ath.triage.benign import (
     assess_findings,
     set_aside_ids,
     triage_summary,
+)
+from ath.triage.feedback import (
+    FEEDBACK_FILENAME,
+    AnalystVerdict,
+    FeedbackMetrics,
+    FeedbackStore,
+    Verdict,
+    score_feedback,
+    verdict_from_assessment,
 )
 
 __all__ = [

@@ -20,7 +20,6 @@ import pytest
 
 from ath.schema import (
     EVENT_LOGON,
-    EVENT_NETWORK,
     EVENT_PROCESS,
     TABLE_COLUMNS,
     SchemaError,

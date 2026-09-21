@@ -40,9 +40,10 @@ service still cannot be marked benign on reach alone.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from ath.environment.model import EnvironmentModel
 from ath.hunting.finding import Finding, Severity

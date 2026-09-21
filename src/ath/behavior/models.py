@@ -41,9 +41,10 @@ inside :mod:`ath.environment`, which cannot be imported without pulling in hunti
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Mapping
+from typing import Any
 
 from ath.channels import TelemetryChannel
 

@@ -13,7 +13,12 @@ from typing import Any
 import pandas as pd
 
 from ath.schema import (
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    SIG_UNKNOWN,
+    TABLE_COLUMNS,
 )
 from ath.telemetry.loader import Telemetry
 from ath.telemetry.normalize import coerce_and_validate

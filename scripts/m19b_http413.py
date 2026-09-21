@@ -38,17 +38,17 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import m19_ablation  # noqa: E402
-
 from ath.agent.claims import ClaimVerifier  # noqa: E402
 from ath.agent.generalist import build_generalist_crew  # noqa: E402
 from ath.agent.llm import (  # noqa: E402
@@ -653,7 +653,7 @@ def cmd_probe(args: argparse.Namespace) -> int:
         middle = (low + high) // 2
         record = attempt(middle)
         if record["status"] is None:
-            print(f"  no status (transport error); stopping the bisection")
+            print("  no status (transport error); stopping the bisection")
             break
         if transport_accepted(record):
             low = middle

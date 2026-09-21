@@ -54,8 +54,9 @@ from __future__ import annotations
 import json
 import os
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from typing import Any, Callable, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from ath.config import DEFAULT_MODEL
 from ath.logging_setup import get_logger
@@ -359,7 +360,7 @@ def _describe_http_error(exc: Any, body: Any = None) -> str:
         400: "the request was rejected as malformed",
         401: "ATH_LLM_API_KEY is missing or invalid",
         403: "this API key is not permitted to use that model",
-        404: f"unknown model -- check ATH_LLM_MODEL",
+        404: "unknown model -- check ATH_LLM_MODEL",
         429: "rate limited",
     }
     hint = hints.get(getattr(exc, "code", None), "")

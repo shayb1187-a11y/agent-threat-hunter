@@ -39,7 +39,8 @@ from pathlib import Path
 
 import pytest
 
-from _builders import at, ctrl, logon, net, proc, telemetry as build_telemetry
+from _builders import at, ctrl, logon, net, proc
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
 from ath.agent.llm import (
     AnthropicLLM,
@@ -59,8 +60,8 @@ from ath.evaluation.ablation import (
     arm_b,
     build_manifest,
     run_arm,
+    scoring,
 )
-from ath.evaluation.ablation import scoring
 from ath.hunting import run_hunt
 from ath.hunting.finding import Evidence, Finding, Severity
 

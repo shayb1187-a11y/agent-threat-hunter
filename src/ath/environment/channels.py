@@ -530,7 +530,7 @@ class FieldApplicability:
             sees when a dataset contains none of them.
     """
 
-    applies_to: Callable[[pd.DataFrame], "pd.Series"]
+    applies_to: Callable[[pd.DataFrame], pd.Series]
     reason: str
 
 

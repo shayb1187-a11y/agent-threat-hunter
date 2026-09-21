@@ -200,7 +200,7 @@ def test_no_detection_rule_id_is_a_literal_the_correlator_reads() -> None:
         and id(node) not in docstrings
         and re.fullmatch(r"(ATH|AWS|K8S)-\d+", node.value)
     ]
-    assert offenders == [], "rule id(s) read by correlator code: {}".format(offenders)
+    assert offenders == [], f"rule id(s) read by correlator code: {offenders}"
 
 
 def test_every_channel_is_classified_or_deliberately_unclassified() -> None:

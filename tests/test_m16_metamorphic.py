@@ -26,10 +26,10 @@ pass the first two and fail only here.
 from __future__ import annotations
 
 import pytest
+from tests._builders import at, ctrl, failures, logon, proc, telemetry
 
 from ath.hunting import Severity
 from ath.hunting.base import get_detector
-from tests._builders import at, ctrl, failures, logon, proc, telemetry
 
 # Identifier permutations. Every field varied here is a *name or a number*, never a
 # security property: a different host, a different analyst, a different pid, an hour

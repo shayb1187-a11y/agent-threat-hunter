@@ -38,9 +38,10 @@ import statistics
 import subprocess
 import sys
 import time
+from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -57,7 +58,6 @@ from ath.agent.ollama_llm import (  # noqa: E402
     Sampling,
 )
 from ath.agent.orchestrator import (  # noqa: E402
-    ELISION,
     PLANNER_MAX_TOKENS,
     PLANNER_SYSTEM,
     PLANNER_USER_TEMPLATE,

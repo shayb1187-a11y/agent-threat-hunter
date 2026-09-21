@@ -39,15 +39,15 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import local_manifest  # noqa: E402
-
 from ath.agent.investigator import (  # noqa: E402
     NEW_EVIDENCE_TEMPLATE,
     prompt_sha256,

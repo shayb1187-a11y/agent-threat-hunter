@@ -1,0 +1,21 @@
+{
+  "notebooks/ath_d1_model_comparison_colab.ipynb": "b446797767ccf1fe8f25ac6cf69d654d63403cfaa1c80714fb6305a6c3110c09",
+  "object:local.RowKey": "9ccb21e2996fc6b03c4051df3cb5465631c10256497b8f4e8a887ded7d5241fc",
+  "object:local.investigator_environment": "b0bd4e65048d83431a0c8cd36d8a0157fdba14a1c0b180a25e45d423c296f3bb",
+  "object:local.read_row": "04caf2ed89b231ad7226428e4274d9ee69ff6e2262182171170977e6431ef99a",
+  "object:local.write_row": "aafd5760ba23d40aa34e8c89c96aaceba4b78394e32974d014684d3f43f02614",
+  "object:manifest.CaseManifest.to_dict": "5f85a65f83c92b5d6b7321676e33d1b94badff9e9da835b4f3735824bea91bc3",
+  "object:manifest.manifest_hash": "e8f46d7a9db9a0ef0f182d86a2aa1fb4772a1fbb273c886e293f083b70a0ddde",
+  "object:manifest.table_digest": "b5bde6cfc6588c72f9895c3698f8ae38009a715ae66a388263bba8b7c4ffbeec",
+  "object:manifest.telemetry_hash": "ed1af507fb8ea9dfeb14b2cb93de16feb4478467e301d225c3f77c2a10d121a2",
+  "object:ollama_llm.OllamaLLM.configuration": "20edbb8449d85422b48039722e9b9ec194a123f10fc7816b12c1a88ad76f8ad6",
+  "reports/local/dev/MANIFEST.json": "e5b35dd8c21cc489c8abf77f9da4d062fbeb2c2f6eb65791e782f738d6f6ec97",
+  "reports/m19/ablation/MANIFEST.json": "ff72f00645df91bc869a16bbe967908b9d3fa73db51418ff0067650840384dbb",
+  "reports/m19b/MANIFEST.json": "8b6971bd7fdb981d47b6a77fa55dcc1097fa16c8412c29954a026de5864e859b",
+  "reports/m19b/ablation/ENVIRONMENT.json": "37bfce24dc0be184f8d4df54b93a10a6aeb5606bf7a2a584feeb41e1a9005b24",
+  "scripts/local_inject_dedale.py": "c18bcbe94d3a078f7440abaad6b2b437f3621efde5a878535ac8d7594f19b102",
+  "scripts/m19b_inject_dedale.py": "d5f97a3db2132f892808f6f4c44f9d913b7e91b946c7a1d5d26f64d6191bea91",
+  "src/ath/evaluation/ablation/arms.py": "37daf4df704b0c4500e9278f048729d6d40fe2c1d2ac8f4816e605264405a06f",
+  "src/ath/evaluation/ablation/scoring.py": "3b8e8bb2d76c65af36105e33305c9e3f391f0c61d4153bb1ad7bb09c0bea0ec8",
+  "src/ath/evaluation/incidents.py": "25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb"
+}

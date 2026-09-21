@@ -21,7 +21,7 @@ from ath.correlation import correlate
 from ath.hunting import run_hunt
 from ath.reporting import audit_calibration, build_report, render_markdown
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
-from ath.telemetry.loader import load_ground_truth, load_telemetry
+from ath.telemetry.loader import load_telemetry
 
 
 @pytest.fixture(scope="module")

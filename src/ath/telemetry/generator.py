@@ -42,9 +42,8 @@ from typing import Any
 
 import pandas as pd
 
-from ath.logging_setup import get_logger
 from ath.instance_identity import start_identity
-from ath.telemetry.identity import derive_identity
+from ath.logging_setup import get_logger
 from ath.schema import (
     EVENT_LOGON,
     EVENT_NETWORK,
@@ -52,6 +51,7 @@ from ath.schema import (
     TABLE_COLUMNS,
     TABLE_FILES,
 )
+from ath.telemetry.identity import derive_identity
 
 logger = get_logger(__name__)
 

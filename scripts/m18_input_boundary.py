@@ -54,8 +54,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from pre_schema_parquet import read_canonical_table  # noqa: E402
-
 from ath.hunting import run_hunt  # noqa: E402
 from ath.schema import (  # noqa: E402
     EVENT_CONTROL,
@@ -70,6 +68,7 @@ from ath.telemetry.normalize import (  # noqa: E402
     quarantine_implausible_timestamps,
 )
 from ath.telemetry.source import NormalizationIssue, SourceLoadResult  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 TABLES = (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL)
 

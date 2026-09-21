@@ -95,7 +95,7 @@ import re
 import tarfile
 from collections.abc import Iterator
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -109,12 +109,16 @@ from ath.control_vocab import (
 )
 from ath.logging_setup import get_logger
 from ath.schema import (
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    TABLE_COLUMNS,
 )
 from ath.telemetry.admission import (
+    SNIFF_RECORDS,
     FileAdmission,
     ParsedFile,
-    SNIFF_RECORDS,
     admit_parsed,
 )
 from ath.telemetry.normalize import (
@@ -263,7 +267,7 @@ class ParsedEventName:
     parsed: bool
 
 
-@lru_cache(maxsize=None)
+@cache
 def parse_event_name(event_name: str) -> ParsedEventName:
     """Split an event name into a verb and a resource family.
 
@@ -289,7 +293,7 @@ def _service(event_source: str) -> str:
     return event_source
 
 
-@lru_cache(maxsize=None)
+@cache
 def resource_type_for(event_source: str, event_name: str) -> tuple[str, str, str]:
     """``(verb, resource_type, family)`` for one (source, name) pair.
 

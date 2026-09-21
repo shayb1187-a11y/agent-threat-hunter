@@ -19,8 +19,6 @@ from pathlib import Path
 import pytest
 
 from ath.behavior import (
-    MIN_INTERVALS_FOR_REGULARITY,
-    RECOVERY_PROCEDURES,
     SCRIPT_INTERPRETERS,
     Behavior,
     BehaviorError,
@@ -36,7 +34,6 @@ from ath.behavior.models import (
     PERIODIC_OUTBOUND_RELATIONSHIP,
     RECOVERY_MECHANISM_DISABLED,
 )
-from ath.channels import TelemetryChannel
 from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
 from ath.telemetry.loader import load_telemetry
 

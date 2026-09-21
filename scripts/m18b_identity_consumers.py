@@ -72,19 +72,21 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from m18_cloud_detection import load_corpus as _cloud_corpus  # noqa: E402
-from pre_schema_parquet import read_canonical_table  # noqa: E402
-
-from ath.correlation import correlator as correlator_module  # noqa: E402
 from ath.correlation import correlate_with_stats  # noqa: E402
+from ath.correlation import correlator as correlator_module  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
 from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.instance_identity import INFERRED_FROM_PID  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.triage import assess_findings, set_aside_ids  # noqa: E402
+from m18_cloud_detection import load_corpus as _cloud_corpus  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 OUT_DIR = ROOT / "reports" / "m18b" / "identity_consumers"
 FROZEN_BEFORE = OUT_DIR / "BEFORE_7e68840.json"
@@ -160,7 +162,7 @@ class _LegacyKey:
     device: str
     process_id: int
 
-    def joins(self, other: "_LegacyKey") -> tuple[bool, bool]:
+    def joins(self, other: _LegacyKey) -> tuple[bool, bool]:
         return self == other, False
 
 
@@ -449,7 +451,8 @@ def investigate(telemetry: Telemetry, findings, cases, limit: int) -> dict[str, 
     from ath.agent.claims import ClaimVerifier  # noqa: PLC0415
     from ath.agent.llm import NullLLM  # noqa: PLC0415
     from ath.agent.orchestrator import (  # noqa: PLC0415
-        InvestigationConfig, InvestigationOrchestrator,
+        InvestigationConfig,
+        InvestigationOrchestrator,
     )
     from ath.agent.tools import ToolBox  # noqa: PLC0415
     from ath.environment import build_environment_model as _env  # noqa: PLC0415

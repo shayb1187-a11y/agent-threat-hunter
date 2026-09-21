@@ -53,12 +53,16 @@ import pandas as pd
 from ath.control_vocab import DECISION_FAILED, RBAC_BINDING_RESOURCES, classify_error
 from ath.logging_setup import get_logger
 from ath.schema import (
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    TABLE_COLUMNS,
 )
 from ath.telemetry.admission import (
+    SNIFF_RECORDS,
     FileAdmission,
     ParsedFile,
-    SNIFF_RECORDS,
     admit_parsed,
 )
 from ath.telemetry.normalize import (

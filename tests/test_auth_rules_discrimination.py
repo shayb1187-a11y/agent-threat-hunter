@@ -22,10 +22,10 @@ question is whether it stops firing when the malicious detail is removed.
 from __future__ import annotations
 
 import pytest
+from tests._builders import at, failures, logon, telemetry
 
 from ath.hunting import Severity
 from ath.hunting.base import get_detector
-from tests._builders import at, failures, logon, proc, telemetry
 
 # Mirrors HuntConfig.bruteforce_min_failures / _window / _success_window.
 MIN_FAILURES = 10

@@ -11,8 +11,6 @@ severity of its own.
 
 from __future__ import annotations
 
-import pandas as pd
-
 from ath.behavior import extract_recovery_behaviors
 from ath.hunting.base import Detector, register
 from ath.hunting.finding import Evidence, Finding, Severity

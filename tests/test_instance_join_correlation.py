@@ -30,7 +30,8 @@ from datetime import timedelta
 
 import pytest
 
-from _builders import at, net, proc, telemetry as build_telemetry
+from _builders import at, net, proc
+from _builders import telemetry as build_telemetry
 from ath.correlation import CorrelationConfig, correlate_with_stats, score_pair
 from ath.correlation.correlator import _ProcessIndex
 from ath.hunting import Evidence, Finding, Severity

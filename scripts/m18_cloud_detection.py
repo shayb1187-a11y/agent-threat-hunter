@@ -60,8 +60,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from pre_schema_parquet import read_canonical_table  # noqa: E402
-
 from ath.correlation import correlate  # noqa: E402
 from ath.environment import (  # noqa: E402
     build_environment_model,
@@ -73,10 +71,14 @@ from ath.hunting.rules.cloud_behaviour_rules import (  # noqa: E402
 )
 from ath.mitre.mapper import map_finding  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.triage import assess_findings, set_aside_ids  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 # The four rules M18-8 added. "Before" is the rule set without them, which is what makes
 # "0 new findings" on a corpus a checkable statement rather than a recollection.
@@ -317,7 +319,10 @@ def raw_identity_types(directory: Path) -> dict[str, dict[str, int]]:
     question; M18-7 made the same call for the same reason.
     """
     from ath.telemetry.cloudtrail_source import (  # noqa: PLC0415
-        AUTH_EVENTS, _classify, _iter_payloads, _principal,
+        AUTH_EVENTS,
+        _classify,
+        _iter_payloads,
+        _principal,
     )
 
     types: dict[str, Counter] = defaultdict(Counter)
@@ -468,7 +473,8 @@ def investigate_cases(telemetry: Telemetry, limit: int) -> dict[str, Any]:
     from ath.agent.claims import ClaimVerifier  # noqa: PLC0415
     from ath.agent.llm import NullLLM  # noqa: PLC0415
     from ath.agent.orchestrator import (  # noqa: PLC0415
-        InvestigationConfig, InvestigationOrchestrator,
+        InvestigationConfig,
+        InvestigationOrchestrator,
     )
     from ath.agent.tools import ToolBox  # noqa: PLC0415
 

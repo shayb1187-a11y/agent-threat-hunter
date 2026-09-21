@@ -27,11 +27,8 @@ from ath.schema import (
     UNIFIED_COLUMNS,
     SchemaError,
     describe_logon_type,
-    validate_frame,
 )
-from ath.telemetry.normalize import INT_COLUMNS as _INT_COLUMNS
-from ath.telemetry.normalize import coerce_and_validate
-from ath.telemetry.normalize import coerce_types
+from ath.telemetry.normalize import coerce_and_validate, coerce_types
 
 logger = get_logger(__name__)
 

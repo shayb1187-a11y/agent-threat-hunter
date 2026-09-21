@@ -37,21 +37,13 @@ import subprocess
 import sys
 import time
 from collections import Counter
+from collections.abc import Iterator, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator, Sequence
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
-
-from m19b_necessity_audit import (  # noqa: E402
-    SYNTHETIC,
-    _capture_labels,
-    _corpus_ground_truth,
-    corpus_specs,
-    row_counts,
-)
 
 from ath.correlation.correlator import correlate_with_stats  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
@@ -70,6 +62,13 @@ from ath.schema import (  # noqa: E402
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.triage import assess_findings, set_aside_ids  # noqa: E402
+from m19b_necessity_audit import (  # noqa: E402
+    SYNTHETIC,
+    _capture_labels,
+    _corpus_ground_truth,
+    corpus_specs,
+    row_counts,
+)
 
 DEFAULT_EXTERNAL = ROOT.parent / "agentic-threat-hunter" / "data" / "external"
 
@@ -241,7 +240,7 @@ def measure_corpus(spec: dict, external: Path) -> dict:
         return {
             "corpus": name,
             "provenance": spec["provenance"],
-            "error": "UNAVAILABLE: {} does not exist in this checkout".format(path),
+            "error": f"UNAVAILABLE: {path} does not exist in this checkout",
         }
 
     started = time.perf_counter()
@@ -251,7 +250,7 @@ def measure_corpus(spec: dict, external: Path) -> dict:
         return {
             "corpus": name,
             "provenance": spec["provenance"],
-            "error": "LOAD FAILED: {}: {}".format(type(exc).__name__, exc),
+            "error": f"LOAD FAILED: {type(exc).__name__}: {exc}",
         }
     load_seconds = time.perf_counter() - started
 
@@ -302,7 +301,7 @@ def measure_synthetic() -> Iterator:
         ROOT / "tests" / "fixtures" / "cloudtrail",
         ROOT / "tests" / "fixtures" / "k8s_audit",
     ):
-        name = "synthetic:{}".format(incident.incident_id)
+        name = f"synthetic:{incident.incident_id}"
         telemetry = incident.telemetry
         findings, cases, environment, stats = pipeline(telemetry)
         cited = {str(e) for case in cases for e in case.event_ids}

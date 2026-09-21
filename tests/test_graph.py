@@ -8,8 +8,6 @@ project's claim that "LangGraph is a runtime choice, not the design" would be fa
 
 from __future__ import annotations
 
-import builtins
-
 import pytest
 
 from ath.agent.claims import ClaimVerifier

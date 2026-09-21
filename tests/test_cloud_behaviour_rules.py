@@ -38,6 +38,7 @@ from pathlib import Path
 
 import pytest
 
+from _builders import at, ctrl, telemetry
 from ath.hunting.base import HuntConfig, all_detectors, get_detector
 from ath.hunting.finding import Severity
 from ath.hunting.rules import cloud_behaviour_rules as rules
@@ -45,8 +46,6 @@ from ath.hunting.rules.cloud_behaviour_rules import (
     MAX_EVIDENCE,
     denied_inclusive_rejected_identity_episodes,
 )
-
-from _builders import at, ctrl, telemetry
 
 ROOT = Path(__file__).resolve().parent.parent
 MODULE = ROOT / "src" / "ath" / "hunting" / "rules" / "cloud_behaviour_rules.py"

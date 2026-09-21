@@ -31,7 +31,8 @@ import urllib.error
 
 import pytest
 
-from _builders import at, ctrl, logon, telemetry as build_telemetry
+from _builders import at, ctrl, logon
+from _builders import telemetry as build_telemetry
 from ath.agent.llm import AnthropicLLM, LLMResponse, NullLLM, ScriptedLLM
 from ath.evaluation.ablation import (
     arm_a,
@@ -41,7 +42,6 @@ from ath.evaluation.ablation import (
     run_arm,
     tokens_spent,
 )
-
 
 # --------------------------------------------------------------------------------------
 # A fake transport: the Messages API shape, and nothing else

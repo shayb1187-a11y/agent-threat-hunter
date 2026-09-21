@@ -59,10 +59,11 @@ import statistics
 import sys
 import time
 from collections import Counter, defaultdict
+from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -73,18 +74,12 @@ import m19b_env as env19b  # noqa: E402
 import m19b_link_report as link_report  # noqa: E402
 import m19b_manifest as manifest_script  # noqa: E402
 import m19b_necessity_audit as necessity_script  # noqa: E402
-
-# The M19 write guard and the two guarded writers, imported rather than restated: the
-# rule "M19b reports beside reports/m19/ and never into it" must have exactly one
-# implementation, or a later edit to one copy silently exempts the other.
-from m19b_robustness import _refuse_m19_path, write_artifact, write_text  # noqa: E402
-
 from ath.agent.orchestrator import InvestigationConfig  # noqa: E402
 from ath.evaluation.ablation import (  # noqa: E402
     ARM_A,
     ARM_B,
-    ARM_C,
     ARM_BUILDERS,
+    ARM_C,
     STEP_BUDGET,
     TOOL_CALL_CAP,
     ArmConfig,
@@ -121,6 +116,11 @@ from ath.evaluation.external_labels import (  # noqa: E402
     resolve_refs,
 )
 from ath.telemetry.loader import Telemetry, load_ground_truth  # noqa: E402
+
+# The M19 write guard and the two guarded writers, imported rather than restated: the
+# rule "M19b reports beside reports/m19/ and never into it" must have exactly one
+# implementation, or a later edit to one copy silently exempts the other.
+from m19b_robustness import _refuse_m19_path, write_artifact, write_text  # noqa: E402
 
 # --------------------------------------------------------------------------------------
 # Where things live
@@ -1602,7 +1602,7 @@ def grade_hypotheses(by_arm: dict[str, dict[str, dict[str, Any]]]) -> dict[str, 
     statement, a summary or a ranking: the grader cannot be flattered by a well-written
     answer, which is the property the plan's rule 5 asks for.
     """
-    A, B, C = by_arm.get("A", {}), by_arm.get("B", {}), by_arm.get("C", {})
+    _a, B, C = by_arm.get("A", {}), by_arm.get("B", {}), by_arm.get("C", {})
     grades: dict[str, Any] = {}
 
     labelled = sorted(k for k, row in (C or B).items() if row["labelled_corpus"])

@@ -54,9 +54,9 @@ def refuse_holdout(path: Path, tool: str) -> None:
     """
     if mentions_holdout(path):
         raise SystemExit(
-            "{0}: {1} names the sealed holdout. Section 4 of the plan: no ATH code is "
+            f"{tool}: {path} names the sealed holdout. Section 4 of the plan: no ATH code is "
             "run against the holdout -- not the adapter, not a probe, not a row count. "
-            "This tool has no holdout mode.".format(tool, path)
+            "This tool has no holdout mode."
         )
 
 
@@ -86,10 +86,8 @@ def holdout_gate(path: Path, preregistration: Path, tool: str) -> None:
         return
     if not preregistration.exists():
         raise SystemExit(
-            "{0}: {1} names the sealed holdout and {2} does not exist. Commit the "
-            "section 5 pre-registration first -- that is the whole experiment.".format(
-                tool, path, preregistration,
-            )
+            f"{tool}: {path} names the sealed holdout and {preregistration} does not exist. Commit the "
+            "section 5 pre-registration first -- that is the whole experiment."
         )
     blanks = unfilled_blanks(preregistration.read_text(encoding="utf-8"))
     if blanks:
@@ -151,7 +149,7 @@ def parse_utc(value: str, what: str) -> datetime:
             return datetime.strptime(text, fmt)
         except ValueError:
             continue
-    raise SystemExit("{0}: cannot parse {1!r} as a UTC timestamp".format(what, value))
+    raise SystemExit(f"{what}: cannot parse {value!r} as a UTC timestamp")
 
 
 # --------------------------------------------------------------------------------------

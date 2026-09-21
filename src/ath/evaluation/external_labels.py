@@ -56,9 +56,10 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ath.evaluation.incidents import Incident
 from ath.telemetry.loader import Telemetry

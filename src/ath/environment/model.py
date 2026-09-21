@@ -45,7 +45,6 @@ import pandas as pd
 
 from ath.environment.channels import (
     ChannelAssessment,
-    ChannelState,
     FieldPopulation,
     TelemetryChannel,
     assess_channels,
@@ -53,7 +52,6 @@ from ath.environment.channels import (
 )
 from ath.netaddr import is_public_ip
 from ath.schema import (
-    EVENT_CONTROL,
     REMOTE_LOGON_TYPES,
     SIG_VALID,
     describe_logon_type,

@@ -65,10 +65,10 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Iterable, Optional, Sequence
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SESSIONS_CSV = ROOT / "reports" / "m20" / "sessions.csv"
@@ -457,7 +457,7 @@ def parse_start_date(value: str) -> datetime:
     try:
         return datetime.strptime(value, "%Y-%m-%d")
     except ValueError as exc:
-        raise SystemExit("--start-date must be YYYY-MM-DD, got {0!r}: {1}".format(value, exc))
+        raise SystemExit(f"--start-date must be YYYY-MM-DD, got {value!r}: {exc}") from exc
 
 
 def _window(start_date: datetime, day: int, hhmm: str, minutes: int) -> tuple:
@@ -490,20 +490,20 @@ def planned_sessions(
     for day, workflow_id, actor_key, hhmm, minutes, label in raw:
         if workflow_id not in WORKFLOWS:
             raise SystemExit(
-                "schedule names workflow {0!r}, which is not in the catalogue".format(workflow_id)
+                f"schedule names workflow {workflow_id!r}, which is not in the catalogue"
             )
         actor = ACTORS[actor_key]
         counters[(day, workflow_id)] = counters.get((day, workflow_id), 0) + 1
         start, end = _window(start_date, day, hhmm, minutes)
         sessions.append(PlannedSession(
-            session_id="D{0:02d}-{1}-{2}".format(day, workflow_id, counters[(day, workflow_id)]),
+            session_id=f"D{day:02d}-{workflow_id}-{counters[(day, workflow_id)]}",
             workflow_id=workflow_id,
             actor_arn=actor.arn.format(account=account_id),
             actor_type=actor.actor_type,
             planned_start_utc=start,
             planned_end_utc=end,
             day=day,
-            label="{0} [{1}]".format(label, actor.key),
+            label=f"{label} [{actor.key}]",
         ))
     return sessions
 
@@ -541,17 +541,17 @@ def verify_schedule_covers_plan(sessions: Sequence) -> None:
         missing = sorted(named - scheduled)
         if missing:
             problems.append(
-                "day {0}: plan names {1} but no session was generated".format(day, missing)
+                f"day {day}: plan names {missing} but no session was generated"
             )
         extra = sorted(scheduled - named - daily_ids - set(["SETUP"]))
         if extra:
             problems.append(
-                "day {0}: generated {1}, which the plan's row does not name".format(day, extra)
+                f"day {day}: generated {extra}, which the plan's row does not name"
             )
     covered_days = set(day for day, _ in SCHEDULE_TABLE)
     if set(by_day) != covered_days:
         problems.append(
-            "days generated {0} != days in the plan {1}".format(sorted(by_day), sorted(covered_days))
+            f"days generated {sorted(by_day)} != days in the plan {sorted(covered_days)}"
         )
     if problems:
         raise SystemExit(
@@ -578,11 +578,8 @@ def verify_no_actor_overlap(sessions: Sequence) -> None:
         for earlier, later in zip(ordered, ordered[1:]):
             if later.planned_start_utc < earlier.planned_end_utc:
                 raise SystemExit(
-                    "sessions.py: {0} has overlapping planned sessions {1} ({2}..{3}) "
-                    "and {4} ({5}..)".format(
-                        actor, earlier.session_id, earlier.planned_start_utc,
-                        earlier.planned_end_utc, later.session_id, later.planned_start_utc,
-                    )
+                    f"sessions.py: {actor} has overlapping planned sessions {earlier.session_id} ({earlier.planned_start_utc}..{earlier.planned_end_utc}) "
+                    f"and {later.session_id} ({later.planned_start_utc}..)"
                 )
 
 
@@ -602,9 +599,9 @@ def write_plan(path: Path, start_date: datetime, account_id: str) -> list:
     """
     if path.exists():
         raise SystemExit(
-            "{0} already exists. sessions.csv is written once, before collection, and "
+            f"{path} already exists. sessions.csv is written once, before collection, and "
             "annotated afterwards with `record`. Delete it by hand if you are genuinely "
-            "re-planning before day 1.".format(path)
+            "re-planning before day 1."
         )
     sessions = planned_sessions(start_date, account_id)
     verify_schedule_covers_plan(sessions)
@@ -627,14 +624,14 @@ def read_sessions(path: Path) -> list:
     """Read ``sessions.csv``, refusing a file whose columns are not the declared ones."""
     if not path.exists():
         raise SystemExit(
-            "{0} does not exist. Run `sessions.py plan` before collection.".format(path)
+            f"{path} does not exist. Run `sessions.py plan` before collection."
         )
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if list(reader.fieldnames or ()) != list(COLUMNS):
             raise SystemExit(
-                "{0}: columns {1} != {2}. Refusing to write a file whose shape is not "
-                "the predeclared one.".format(path, reader.fieldnames, list(COLUMNS))
+                f"{path}: columns {reader.fieldnames} != {list(COLUMNS)}. Refusing to write a file whose shape is not "
+                "the predeclared one."
             )
         return [dict(row) for row in reader]
 
@@ -644,18 +641,18 @@ def _validate_time(value: str, flag: str) -> str:
         datetime.strptime(value, TIME_FORMAT)
     except ValueError as exc:
         raise SystemExit(
-            "{0} must be {1} (UTC), got {2!r}: {3}".format(flag, TIME_FORMAT, value, exc)
-        )
+            f"{flag} must be {TIME_FORMAT} (UTC), got {value!r}: {exc}"
+        ) from exc
     return value
 
 
 def record_session(
     path: Path,
     session_id: str,
-    actual_start: Optional[str] = None,
-    actual_end: Optional[str] = None,
-    notes: Optional[str] = None,
-    status: Optional[str] = None,
+    actual_start: str | None = None,
+    actual_end: str | None = None,
+    notes: str | None = None,
+    status: str | None = None,
 ) -> dict:
     """Annotate one planned session. Append-only (INV-2).
 
@@ -686,23 +683,23 @@ def record_session(
     if index is None:
         known = ", ".join(sorted(row["session_id"] for row in rows)[:6])
         raise SystemExit(
-            "unknown session id {0!r}. sessions.csv holds {1} planned sessions "
-            "(e.g. {2}...); `record` annotates a planned session and never creates "
-            "one.".format(session_id, len(rows), known)
+            f"unknown session id {session_id!r}. sessions.csv holds {len(rows)} planned sessions "
+            f"(e.g. {known}...); `record` annotates a planned session and never creates "
+            "one."
         )
     row = rows[index]
 
     if status is not None:
         if status not in STATUSES:
             raise SystemExit(
-                "--status must be one of {0}, got {1!r}".format(list(STATUSES), status)
+                f"--status must be one of {list(STATUSES)}, got {status!r}"
             )
         current = row["status"]
         if current in TERMINAL_STATUSES and status != current:
             raise SystemExit(
-                "{0} is already {1!r}; refusing to change it to {2!r}. Add a note "
+                f"{session_id} is already {current!r}; refusing to change it to {status!r}. Add a note "
                 "instead -- the log records what was declared and what happened, not "
-                "the latest opinion.".format(session_id, current, status)
+                "the latest opinion."
             )
         row["status"] = status
 
@@ -716,8 +713,8 @@ def record_session(
         existing = row[column]
         if existing and existing != value:
             raise SystemExit(
-                "{0} already records {1}={2!r}; refusing to overwrite it with {3!r}. "
-                "Record the correction as a note.".format(session_id, column, existing, value)
+                f"{session_id} already records {column}={existing!r}; refusing to overwrite it with {value!r}. "
+                "Record the correction as a note."
             )
         row[column] = value
 
@@ -727,8 +724,8 @@ def record_session(
     after = [dict((column, r[column]) for column in PLANNED_COLUMNS) for r in rows]
     if after != before or len(rows) != len(before):
         raise SystemExit(
-            "{0}: a planned column changed while recording {1}. Refusing to "
-            "write.".format(path, session_id)
+            f"{path}: a planned column changed while recording {session_id}. Refusing to "
+            "write."
         )
 
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -748,11 +745,9 @@ def _print_summary(sessions: Iterable, path: Path) -> None:
     per_workflow = {}
     for session in sessions:
         per_workflow[session.workflow_id] = per_workflow.get(session.workflow_id, 0) + 1
-    print("wrote {0} -- {1} planned sessions over 14 days".format(path, len(sessions)))
+    print(f"wrote {path} -- {len(sessions)} planned sessions over 14 days")
     for workflow_id in sorted(per_workflow):
-        print("  {0}: {1:3d} session(s)  {2}".format(
-            workflow_id, per_workflow[workflow_id], WORKFLOWS[workflow_id].name[:64],
-        ))
+        print(f"  {workflow_id}: {per_workflow[workflow_id]:3d} session(s)  {WORKFLOWS[workflow_id].name[:64]}")
 
 
 def main(argv=None) -> int:

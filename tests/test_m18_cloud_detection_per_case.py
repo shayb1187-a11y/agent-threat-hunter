@@ -37,9 +37,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
+from _builders import at, ctrl, logon  # noqa: E402
+from _builders import telemetry as build_telemetry
 from m18_cloud_detection import investigate_cases  # noqa: E402
-
-from _builders import at, ctrl, logon, telemetry as build_telemetry  # noqa: E402
 
 
 @pytest.fixture(scope="module")

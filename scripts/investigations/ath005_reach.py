@@ -21,7 +21,10 @@ import pandas as pd  # noqa: E402
 from ath.hunting import get_detector  # noqa: E402
 from ath.hunting.base import HuntConfig  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
 )
 from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa: E402
 from ath.telemetry.loader import Telemetry, load_telemetry  # noqa: E402

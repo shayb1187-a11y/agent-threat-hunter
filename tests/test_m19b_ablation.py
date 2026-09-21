@@ -46,9 +46,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import m19b_ablation as harness  # noqa: E402
-
 from _builders import telemetry as build_telemetry  # noqa: E402
-
 from ath.agent.claims import Claim, ClaimType  # noqa: E402
 from ath.agent.llm import (  # noqa: E402
     ScriptedLLM,

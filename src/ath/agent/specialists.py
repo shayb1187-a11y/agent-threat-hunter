@@ -757,9 +757,9 @@ class NetworkAgent(Specialist):
                     claims.append(Claim(
                         claim_type=ClaimType.INFERENCE,
                         statement=(
-                            f"The regularity of these intervals indicates automated "
-                            f"rather than human-driven communication, which is "
-                            f"consistent with command-and-control beaconing."
+                            "The regularity of these intervals indicates automated "
+                            "rather than human-driven communication, which is "
+                            "consistent with command-and-control beaconing."
                         ),
                         evidence_ids=tuple(beacon["event_ids"]),
                         source="analysis", agent=self.name, confidence=0.85,

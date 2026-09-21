@@ -41,8 +41,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from pre_schema_parquet import read_canonical_table  # noqa: E402
-
 from ath.environment import assess_coverage, build_environment_model  # noqa: E402
 from ath.environment.channels import measure_field_populations  # noqa: E402
 from ath.hunting import run_hunt  # noqa: E402
@@ -54,6 +52,7 @@ from ath.schema import (  # noqa: E402
 )
 from ath.telemetry.loader import Telemetry, load_telemetry  # noqa: E402
 from ath.telemetry.source import SourceLoadResult  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 TABLES = (EVENT_PROCESS, EVENT_NETWORK, EVENT_LOGON, EVENT_CONTROL)
 

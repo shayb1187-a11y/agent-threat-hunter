@@ -27,7 +27,7 @@ import inspect
 
 import pytest
 
-from _builders import ctrl, logon, proc, telemetry as build_telemetry
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier, RejectedClaim
 from ath.agent.generalist import KIND_ORDER
 from ath.agent.llm import NullLLM, ScriptedLLM
@@ -60,7 +60,6 @@ from ath.evaluation.ablation import (
 from ath.evaluation.ablation import scoring as scoring_module
 from ath.hunting import run_hunt
 from ath.triage import assess_findings, set_aside_ids
-
 
 # --------------------------------------------------------------------------------------
 # A small corpus that produces a real case through the real pipeline
@@ -428,7 +427,7 @@ def _hand_built_state(case, telemetry):
 
     supported = Claim(
         claim_type=ClaimType.FACT,
-        statement=f"A control-plane action is recorded consistent with T1098.006.",
+        statement="A control-plane action is recorded consistent with T1098.006.",
         evidence_ids=tuple(half), source="tool", agent="control_plane",
     )
     # HYPOTHESIS is the only claim type permitted to stand without evidence -- see the
@@ -488,9 +487,9 @@ def test_scores_measure_what_they_say_they_measure(corpus, pipeline) -> None:
 
 def test_evidence_coverage_is_one_half_on_a_case_of_two_events() -> None:
     """The coverage denominator, pinned on a case whose arithmetic is unambiguous."""
+    from _builders import at
     from ath.correlation.chain import InvestigationCase
     from ath.hunting.finding import Evidence, Finding, Severity
-    from _builders import at
 
     events = [
         Evidence(event_id="c-1", timestamp=at(), summary="one"),
@@ -521,10 +520,10 @@ def test_evidence_coverage_is_one_half_on_a_case_of_two_events() -> None:
 def _technique_state(mapped: tuple[str, ...], looked_up: tuple[str, ...], text: str):
     """A hand-built case and state: what the mapper produced, what was retrieved, what
     the claim says. The three are set independently, which is the whole point."""
+    from _builders import at
     from ath.correlation.chain import InvestigationCase
     from ath.hunting.finding import Evidence, Finding, Severity
     from ath.mitre.attack import AttackMapping, Confidence
-    from _builders import at
 
     finding = Finding(
         rule_id="TEST-001", title="t", severity=Severity.HIGH, device="d", user="u",

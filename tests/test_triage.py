@@ -14,6 +14,8 @@ import pytest
 from ath.environment import build_environment_model
 from ath.hunting import run_hunt
 from ath.hunting.finding import Evidence, Finding, Severity
+from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
+from ath.telemetry.loader import load_telemetry
 from ath.triage import (
     BENIGN_THRESHOLD,
     Disposition,
@@ -21,8 +23,6 @@ from ath.triage import (
     assess_findings,
     triage_summary,
 )
-from ath.telemetry import GeneratorConfig, generate_telemetry, write_telemetry
-from ath.telemetry.loader import load_telemetry
 
 
 @pytest.fixture(scope="module")

@@ -44,7 +44,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import m19b_manifest as mm  # noqa: E402
-
 from ath.evaluation.external_labels import (  # noqa: E402
     RESOLVED,
     load_external_labels,

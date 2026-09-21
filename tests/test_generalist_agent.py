@@ -36,7 +36,8 @@ import json
 
 import pytest
 
-from _builders import at, proc, telemetry as build_telemetry
+from _builders import at, proc
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import ClaimType, ClaimVerifier
 from ath.agent.generalist import (
     FACET_DOMAINS,

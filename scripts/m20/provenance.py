@@ -117,7 +117,7 @@ def directory_digest(directory: Path, skip_suffixes=(".pyc",)) -> dict:
     localised rather than merely detected.
     """
     if not directory.is_dir():
-        raise SystemExit("{0} is not a directory".format(directory))
+        raise SystemExit(f"{directory} is not a directory")
     files = []
     for path in sorted(directory.rglob("*")):
         if not path.is_file():
@@ -167,14 +167,14 @@ def split_files(split_dir: Path, dataset_prefix: str) -> list:
         found_any_side = True
         for path in sorted(side_dir.glob("*.json.gz")):
             entries.append({
-                "path": "{0}/{1}/{2}".format(dataset_prefix, side, path.name),
+                "path": f"{dataset_prefix}/{side}/{path.name}",
                 "bytes": path.stat().st_size,
                 "sha256": sha256_of(path),
             })
     if not found_any_side:
         raise SystemExit(
-            "{0} holds neither {1} nor dev/ and holdout/ directories. Run split.py "
-            "first.".format(split_dir, SPLIT_RECORD)
+            f"{split_dir} holds neither {SPLIT_RECORD} nor dev/ and holdout/ directories. Run split.py "
+            "first."
         )
     return entries
 
@@ -222,11 +222,11 @@ def refuse_account_id_leak(entry: dict, account_id: str) -> None:
     }
     if account_id in json.dumps(scanned):
         raise SystemExit(
-            "the full account id {0} appears in the assembled entry. Section 3 redacts "
+            f"the full account id {account_id} appears in the assembled entry. Section 3 redacts "
             "it to the last four digits; redact the field that carries it (usually the "
             "trail ARN or a bucket name) before writing the manifest. The delivered "
             "file names are exempt -- CloudTrail puts the account id in every object "
-            "key, and the entry records that fact.".format(account_id)
+            "key, and the entry records that fact."
         )
 
 
@@ -245,8 +245,8 @@ def build_entry(
     """Assemble the section 7 entry plus the section 3 provenance block (INV-3)."""
     if not sessions_csv.exists():
         raise SystemExit(
-            "{0} does not exist. The manifest entry claims every session was predeclared; "
-            "without sessions.csv that claim has no evidence.".format(sessions_csv)
+            f"{sessions_csv} does not exist. The manifest entry claims every session was predeclared; "
+            "without sessions.csv that claim has no evidence."
         )
     if not attestation.strip():
         raise SystemExit(
@@ -257,7 +257,7 @@ def build_entry(
 
     files = split_files(split_dir, dataset_prefix)
     sessions_entry = {
-        "path": "{0}/sessions.csv".format(dataset_prefix),
+        "path": f"{dataset_prefix}/sessions.csv",
         "bytes": sessions_csv.stat().st_size,
         "sha256": sha256_of(sessions_csv),
         "repo_path": sessions_csv.as_posix(),
@@ -345,8 +345,8 @@ def merge_into_manifest(manifest_path: Path, entry: dict, force: bool = False) -
     datasets = manifest.setdefault("datasets", {})
     if DATASET_KEY in datasets and not force:
         raise SystemExit(
-            "{0} already holds datasets[{1!r}]. Pass --force to replace it, and say in "
-            "the report why the recorded provenance changed.".format(manifest_path, DATASET_KEY)
+            f"{manifest_path} already holds datasets[{DATASET_KEY!r}]. Pass --force to replace it, and say in "
+            "the report why the recorded provenance changed."
         )
     datasets[DATASET_KEY] = entry
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -376,7 +376,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     if not args.attestation_file.exists():
-        raise SystemExit("{0} does not exist".format(args.attestation_file))
+        raise SystemExit(f"{args.attestation_file} does not exist")
 
     entry = build_entry(
         split_dir=args.split_dir,
@@ -393,7 +393,7 @@ def main(argv=None) -> int:
     print(json.dumps({DATASET_KEY: entry}, indent=2))
     if args.write:
         merge_into_manifest(args.manifest, entry, force=args.force)
-        print("\nmerged into {0} under datasets[{1!r}]".format(args.manifest, DATASET_KEY),
+        print(f"\nmerged into {args.manifest} under datasets[{DATASET_KEY!r}]",
               file=sys.stderr)
     return 0
 

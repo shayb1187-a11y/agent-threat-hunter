@@ -258,7 +258,7 @@ class DiscoveryCommandSequenceV2(Candidate):
             return []
 
         findings: list[Finding] = []
-        for (device, parent_pid), group in candidates.groupby(
+        for (_device, parent_pid), group in candidates.groupby(
             ["device", "parent_process_id"], dropna=False
         ):
             if pd.isna(parent_pid):

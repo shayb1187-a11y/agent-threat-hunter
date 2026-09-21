@@ -22,7 +22,6 @@ from ath.agent.tools import ToolCall
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
 
-
 PLANNER_DECISIONS: tuple[str, ...] = (
     "only-eligible",
     "planner-not-consulted",

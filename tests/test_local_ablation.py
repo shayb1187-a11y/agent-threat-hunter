@@ -21,7 +21,6 @@ Driven with a scripted client over the harness's fixture corpus; no daemon.
 from __future__ import annotations
 
 import hashlib
-import json
 import sys
 from pathlib import Path
 
@@ -31,17 +30,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import local_ablation as run_script  # noqa: E402
 import m19_ablation as m19  # noqa: E402
-
 from ath.agent.llm import ScriptedLLM  # noqa: E402
-from ath.evaluation.ablation import build_manifest, manifest_hash  # noqa: E402
+from ath.evaluation.ablation import manifest_hash  # noqa: E402
 from ath.evaluation.ablation.environment import tool_surface  # noqa: E402
 from ath.evaluation.ablation.local import (  # noqa: E402
     ARM_D1,
     ModelSpec,
+    RowKey,
     arm_d1,
     completed_rows,
     row_path,
-    RowKey,
 )
 from test_ablation_harness import corpus, manifest, pipeline  # noqa: F401,E402
 

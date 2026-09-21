@@ -13,10 +13,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4"]
+dev = ["pytest>=7.4", "ruff>=0.6", "pyarrow>=14"]
+graph = ["langgraph>=0.2"]
 
 [project.scripts]
 ath = "ath.cli:main"
+ath-experiment = "ath.experiments.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -24,3 +26,44 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "scripts"]
+# Hash-pinned files (tests/test_frozen_source_pin.py) are never rewritten by a linter.
+extend-exclude = [
+    "src/ath/evaluation/ablation/arms.py",
+    "src/ath/evaluation/ablation/scoring.py",
+    "src/ath/evaluation/incidents.py",
+    "scripts/m19b_inject_dedale.py",
+    "scripts/local_inject_dedale.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# E501: long lines are deliberate in the report renderers and the milestone scripts.
+# E731: named lambdas are used as log sinks throughout the harness.
+# B905: zip(strict=) is noise over frames whose lengths the schema already fixes.
+# E741: single-letter names in comprehensions are used deliberately in the renderers.
+# UP030/UP031: positional str.format and printf styles are left as written.
+ignore = ["E501", "E731", "B905", "E741", "UP030", "UP031"]
+# An unused import is reported, never auto-removed: several modules re-export names
+# without an __all__, and deleting one breaks importers a linter cannot see.
+unfixable = ["F401"]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts and tests put the repo on sys.path before importing from it.
+"scripts/*.py" = ["E402"]
+# F811: pytest fixtures are imported by name and then named again as parameters.
+"tests/*.py" = ["E402", "F811"]
+# Modules whose function/class *sources* or public signatures are hashed into an
+# identity (tests/test_frozen_identity_pin.py, test_frozen_source_pin.py): no
+# annotation rewrites, ever. E/F/I/B still apply.
+"src/ath/agent/tools.py" = ["UP"]
+"src/ath/agent/ollama_llm.py" = ["UP"]
+"src/ath/agent/investigator.py" = ["UP"]
+"src/ath/agent/orchestrator.py" = ["UP"]
+"src/ath/evaluation/ablation/local.py" = ["UP"]
+"src/ath/evaluation/ablation/manifest.py" = ["UP"]
+"src/ath/evaluation/ablation/environment.py" = ["UP"]

@@ -63,24 +63,22 @@ import statistics
 import sys
 import time
 from collections import defaultdict
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import m19_ablation as m19  # noqa: E402
-from m19b_env import reproduces_grading  # noqa: E402
-
 from ath.evaluation.ablation import (  # noqa: E402
     ARM_BUILDERS,
     CaseManifest,
     CaseResult,
     run_arm,
 )
-from ath.evaluation.ablation.arms import cap_serialised_ids  # noqa: E402
 from ath.evaluation.ablation.environment import (  # noqa: E402
     CREDENTIAL_VARIABLE,
     ENVIRONMENT_JSON,
@@ -88,6 +86,7 @@ from ath.evaluation.ablation.environment import (  # noqa: E402
     capture_environment,
     render_markdown,
 )
+from m19b_env import reproduces_grading  # noqa: E402
 
 # --------------------------------------------------------------------------------------
 # Where things live, and the one directory this file may never write to

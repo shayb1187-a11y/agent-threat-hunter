@@ -5,9 +5,11 @@ the follow-up the invariant ("first success strictly after burst_end") would pic
 the flaws.cloud SecurityMokey burst that is M19 manifest case flaws_cloud/CASE-005.
 """
 from __future__ import annotations
+
 import sys
 from datetime import timedelta
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[2]  # scripts/investigations/ -> repo root
 sys.path.insert(0, str(ROOT / "src"))
 import pandas as pd  # noqa
@@ -41,6 +43,7 @@ print("successes_during_burst (burst_start..burst_end inclusive):", len(during))
 print("severity now / under invariant: CRITICAL / CRITICAL (a genuine follow-up exists)")
 
 import json
+
 man = json.load(open(ROOT / "reports/m19/ablation/MANIFEST.json"))
 case = [c for c in man["cases"]
         if c["corpus"] == "flaws_cloud" and c["case_id"] == "CASE-005"][0]

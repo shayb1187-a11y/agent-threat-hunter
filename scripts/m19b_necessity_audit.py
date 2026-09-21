@@ -31,15 +31,14 @@ import subprocess
 import sys
 import time
 from collections import Counter
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Sequence
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
-
-from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.correlation import correlate  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
@@ -53,10 +52,14 @@ from ath.evaluation.necessity import (  # noqa: E402
 from ath.evaluation.suite import standard_suite  # noqa: E402
 from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.triage import assess_findings, set_aside_ids  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 OUT_DIR = ROOT / "reports" / "m19b" / "necessity"
 DEFAULT_EXTERNAL = ROOT.parent / "agentic-threat-hunter" / "data" / "external"
@@ -87,9 +90,9 @@ def _telemetry_of(tables: dict[str, Any]) -> Telemetry:
     empty frames, which is the same thing every other adapter already does for a table
     its source does not carry.
     """
-    from ath.schema import TABLE_COLUMNS  # noqa: PLC0415
-
     import pandas as pd  # noqa: PLC0415
+
+    from ath.schema import TABLE_COLUMNS  # noqa: PLC0415
 
     def table(event_type: str) -> Any:
         frame = tables.get(event_type)
@@ -1058,10 +1061,10 @@ def _structural_section(payload: dict[str, Any]) -> str:
     # `--render-only` able to reproduce `AUDIT.md` byte for byte.
     _AUTH_RULES = frozenset({"ATH-005", "ATH-006"})
     _REMOTE_EXEC_RULES = frozenset({"ATH-007"})
+    import ath.hunting.rules  # noqa: F401 -- registers the catalogue
     from ath.environment.coverage import channels_for_fields
     from ath.evaluation.necessity import channel_domains
     from ath.hunting import all_detectors
-    import ath.hunting.rules  # noqa: F401 -- registers the catalogue
 
     by_domains: Counter[tuple[str, ...]] = Counter()
     for detector in all_detectors():

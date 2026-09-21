@@ -54,8 +54,9 @@ import json
 import sys
 import time
 from collections import Counter
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any
 
 import pandas as pd
 
@@ -438,7 +439,12 @@ def raw_identity_pass(directory: Path) -> dict[str, Any]:
     "who is the caller" here would be a second answer to that question.
     """
     from ath.telemetry.cloudtrail_source import (  # noqa: PLC0415
-        AUTH_EVENTS, _control_decision, _iter_payloads, _classify, _principal, _verdict,
+        AUTH_EVENTS,
+        _classify,
+        _control_decision,
+        _iter_payloads,
+        _principal,
+        _verdict,
     )
 
     identity_types: dict[str, Counter] = {}

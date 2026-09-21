@@ -23,6 +23,8 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from tests import _builders as build  # noqa: E402
+
 from m18_cloud_behaviour_stats import (  # noqa: E402
     CANDIDATE_THRESHOLDS,
     STATISTICS,
@@ -31,8 +33,6 @@ from m18_cloud_behaviour_stats import (  # noqa: E402
     threshold_table,
     window_maxima,
 )
-
-from tests import _builders as build  # noqa: E402
 
 MINUTE_NS = 60 * 1_000_000_000
 START = datetime(2026, 3, 4, 9, 58, tzinfo=timezone.utc)

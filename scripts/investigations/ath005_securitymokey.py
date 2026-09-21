@@ -1,8 +1,10 @@
 """Detail on the one negative-interval burst (flaws.cloud, SecurityMokey)."""
 from __future__ import annotations
+
 import sys
 from datetime import timedelta
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[2]  # scripts/investigations/ -> repo root
 sys.path.insert(0, str(ROOT / "src"))
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS  # noqa
@@ -11,6 +13,7 @@ from ath.telemetry.cloudtrail_source import CloudTrailSource  # noqa
 FLAWS = ROOT / "data" / "external" / "flaws_cloud" / "raw"  # fetched by scripts/fetch_external.py
 t = CloudTrailSource(FLAWS).load().tables[EVENT_LOGON]
 import pandas as pd
+
 burst_end = pd.Timestamp("2017-05-26 22:29:16+00:00")
 burst_start = pd.Timestamp("2017-05-26 22:25:09+00:00")  # printed below if wrong
 sel = t[(t["user"] == "SecurityMokey")]

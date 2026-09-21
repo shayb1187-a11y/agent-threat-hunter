@@ -34,8 +34,6 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from local_manifest import FROZEN_MANIFESTS, MANIFEST_PATH, contamination, frozen_entries  # noqa: E402
-
 from ath.agent.orchestrator import (  # noqa: E402
     PLANNER_SYSTEM,
     PLANNER_USER_TEMPLATE,
@@ -43,6 +41,12 @@ from ath.agent.orchestrator import (  # noqa: E402
     SYNTHESIS_USER_TEMPLATE,
 )
 from ath.evaluation.ablation import load_manifest  # noqa: E402
+from local_manifest import (  # noqa: E402
+    FROZEN_MANIFESTS,
+    MANIFEST_PATH,
+    contamination,
+    frozen_entries,
+)
 
 FROZEN_NAMES = ("INC-001", "M1", "M2", "M3", "M4", "L1", "L2", "HELDOUT_H1")
 DEV_NAMES = tuple(f"V{i}" for i in range(1, 11))

@@ -49,7 +49,8 @@ def test_explicit_null_llm_matches_the_default_exactly(data_dir, deterministic) 
 
     again = run_incident(windows_intrusion(data_dir), llm=NullLLM())
     lhs, rhs = deterministic.to_dict(), again.to_dict()
-    lhs["cost"].pop("runtime_seconds"); rhs["cost"].pop("runtime_seconds")
+    lhs["cost"].pop("runtime_seconds")
+    rhs["cost"].pop("runtime_seconds")
     assert lhs == rhs
 
 

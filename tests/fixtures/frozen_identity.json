@@ -1,0 +1,119 @@
+{
+  "frozen_surface_sha256": "80db250e72da101e106aa935c63ab24b20010cb1648c191cacca1dcfe252b704",
+  "surface": {
+    "investigator_environment": {
+      "investigator_bounds": "f0dde3c4e3dcc8a55f44a0c3f477cfc1648a88d5f2bafe6cc0c940785b9c5169",
+      "investigator_previous_template": "59ab85ec671e0051bbab4ea7a02565f9a1c03e19ffaa8dc0556ae2fbfccdd6b4",
+      "investigator_schema": "330ad1b2f42f27984fa6086c0212e92e5fd8b17db1c893b7909d7ffd7eb4485d",
+      "investigator_system": "db4c06e41e422d760ba90329b527dc5d91f0482b4de4d6dd238326143c938a1b",
+      "investigator_user_template": "cfefcccbce016b3176c014211eea3a2f3d811443a1d34e43cda947cb91704ca3",
+      "investigator_version": "d1-investigator-v3",
+      "max_probes": 2,
+      "max_tokens": 768
+    },
+    "manifests": {
+      "reports/local/dev/MANIFEST.json": {
+        "recomputed": "2298b0e81f2a02f8108a5159ddb961c1521ff153829510f36062289d0b9a48de",
+        "recorded": "2298b0e81f2a02f8108a5159ddb961c1521ff153829510f36062289d0b9a48de"
+      },
+      "reports/m19/ablation/MANIFEST.json": {
+        "recomputed": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15",
+        "recorded": "1764be3cea5a5afd532038a40c934fc1d79baf88d91016a29ab3bfba6911aa15"
+      },
+      "reports/m19b/MANIFEST.json": {
+        "recomputed": "0ced14fb387c7752fe1435c876e19fbe4a8bfd3f52a830049844c31718143263",
+        "recorded": "0ced14fb387c7752fe1435c876e19fbe4a8bfd3f52a830049844c31718143263"
+      }
+    },
+    "ollama_client_configuration": {
+      "d1_schema": {
+        "backoff_seconds": 1.0,
+        "base_url": "http://127.0.0.1:11434",
+        "chars_per_token_estimate": 3.0,
+        "endpoint": "/api/chat",
+        "format": "schema",
+        "format_schema_sha256": "330ad1b2f42f27984fa6086c0212e92e5fd8b17db1c893b7909d7ffd7eb4485d",
+        "keep_alive": -1,
+        "max_attempts": 3,
+        "model": "qwen3.5:4b",
+        "num_ctx": 10240,
+        "num_predict_cap": 2048,
+        "provider": "ollama",
+        "retryable_statuses": [
+          408,
+          409,
+          429,
+          500,
+          502,
+          503,
+          504,
+          529
+        ],
+        "sampling": {
+          "seed": 0,
+          "temperature": 0.0
+        },
+        "think": false,
+        "timeout_seconds_per_attempt": 900,
+        "transport": "urllib (stdlib); no SDK, by project choice"
+      },
+      "default": {
+        "backoff_seconds": 1.0,
+        "base_url": "http://127.0.0.1:11434",
+        "chars_per_token_estimate": 3.0,
+        "endpoint": "/api/chat",
+        "format": "json",
+        "format_schema_sha256": null,
+        "keep_alive": -1,
+        "max_attempts": 3,
+        "model": "qwen3.5:4b",
+        "num_ctx": 10240,
+        "num_predict_cap": 2048,
+        "provider": "ollama",
+        "retryable_statuses": [
+          408,
+          409,
+          429,
+          500,
+          502,
+          503,
+          504,
+          529
+        ],
+        "sampling": {
+          "seed": 0,
+          "temperature": 0.0
+        },
+        "think": false,
+        "timeout_seconds_per_attempt": 900,
+        "transport": "urllib (stdlib); no SDK, by project choice"
+      }
+    },
+    "orchestrator_prompts": {
+      "planner_system": "c8bca1694a015878e05751c9a5c9b5f0e841d0be360c204e30a67ad07f629bf6",
+      "planner_user_template": "9136d5d63c5ad470b756fc7797d659468047ce5992640752a39649a6b302b67d",
+      "synthesis_system": "9d1a547b0006abd87fb2c8764194ad1174546491038e91f91cd50f680f7f3d6f",
+      "synthesis_user_template": "e15896466418b847e8f7357fbd76edcfe5090fe3cc05db820e521a1568bf4d31"
+    },
+    "row_key": {
+      "digest": "5c4688eb2951",
+      "filename": "corpus_probe__CASE-000__D1_local_single__ollama__qwen3.5_4b__Q4_K_M__rep1__seed0__m0123456789ab__5c4688eb2951.json"
+    },
+    "scoring_files": {
+      "arms.py": "37daf4df704b0c4500e9278f048729d6d40fe2c1d2ac8f4816e605264405a06f",
+      "incidents.py": "25aa44cdbe00032aef2db42c931c0f8009415d383d0358d4c54705f9653db6cb",
+      "scoring.py": "3b8e8bb2d76c65af36105e33305c9e3f391f0c61d4153bb1ad7bb09c0bea0ec8"
+    },
+    "tool_surface": [
+      "analyse_beacon(self, device: 'str', remote_ip: 'str', agent: 'str' = 'network') -> 'dict[str, Any]'",
+      "get_case(self, case_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "get_events(self, event_ids: 'list[str]', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "get_finding(self, finding_id: 'str', agent: 'str' = 'orchestrator') -> 'dict[str, Any]'",
+      "host_network_activity(self, device: 'str', remote_ip: 'str | None' = None, agent: 'str' = 'network') -> 'dict[str, Any]'",
+      "lookup_technique(self, technique_id: 'str', agent: 'str' = 'attack') -> 'dict[str, Any]'",
+      "process_tree(self, device: 'str', pid: 'int | None' = None, depth: 'int' = 3, agent: 'str' = 'endpoint', process_guid: 'str' = '') -> 'dict[str, Any]'",
+      "search_processes(self, device: 'str | None' = None, contains: 'str | None' = None, process_name: 'str | None' = None, limit: 'int' = 25, agent: 'str' = 'endpoint') -> 'dict[str, Any]'",
+      "user_auth_history(self, user: 'str', agent: 'str' = 'identity') -> 'dict[str, Any]'"
+    ]
+  }
+}

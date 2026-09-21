@@ -31,14 +31,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
+from ath.agent.orchestrator import PLANNER_SYSTEM, SYNTHESIS_SYSTEM  # noqa: E402
 from m19_ablation import (  # noqa: E402
     SCRIPTED_DIR_NAME,
     ScriptedArmLLM,
     arm_output_path,
     refuse_mislabelled_output,
 )
-
-from ath.agent.orchestrator import PLANNER_SYSTEM, SYNTHESIS_SYSTEM  # noqa: E402
 
 
 class _Row:

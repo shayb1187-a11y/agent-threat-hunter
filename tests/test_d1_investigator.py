@@ -27,7 +27,8 @@ import json
 
 import pytest
 
-from _builders import at, failures, logon, proc, telemetry as build_telemetry
+from _builders import at, failures, logon, proc
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import ClaimType, ClaimVerifier
 from ath.agent.investigator import (
     INVESTIGATOR_SYSTEM,

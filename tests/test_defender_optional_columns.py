@@ -51,11 +51,11 @@ from ath.schema import (
     TABLE_COLUMNS,
 )
 from ath.telemetry.defender_source import (
+    _RENAMES,
     ABSENT_COLUMN_REASON,
     OPTIONAL_DEFENDER_COLUMNS,
     REQUIRED_DEFENDER_COLUMNS,
     DefenderExportSource,
-    _RENAMES,
 )
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "defender_export"
@@ -291,7 +291,7 @@ def test_export_of_only_the_required_columns_loads(tmp_path, event_type: str) ->
     table = result.tables[event_type]
     kept = KEPT_ROWS[event_type]
     assert len(table) == kept
-    for source_column, canonical in _optional(event_type):
+    for _source_column, canonical in _optional(event_type):
         assert _is_empty(table[canonical]), canonical
 
     derived_gaps = {

@@ -45,14 +45,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
+from ath.agent.claims import ClaimVerifier
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
 from ath.agent.specialists import agent_family, channel_sources
 from ath.agent.state import InvestigationState
 from ath.agent.tools import ToolBox
-from ath.agent.claims import ClaimVerifier
 from ath.channels import TelemetryChannel
 from ath.correlation.chain import InvestigationCase
 from ath.hunting.finding import Finding
@@ -92,7 +93,10 @@ asserts the two are equal."""
 
 def _domain_agents() -> tuple[Any, ...]:
     from ath.agent.specialists import (  # noqa: PLC0415 -- avoids an import cycle
-        ControlPlaneAgent, EndpointAgent, IdentityAgent, NetworkAgent,
+        ControlPlaneAgent,
+        EndpointAgent,
+        IdentityAgent,
+        NetworkAgent,
     )
 
     return (EndpointAgent, IdentityAgent, NetworkAgent, ControlPlaneAgent)

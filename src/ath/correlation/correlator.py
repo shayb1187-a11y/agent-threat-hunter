@@ -231,10 +231,8 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
-from functools import lru_cache
+from functools import cache
 from typing import Any
-
-import pandas as pd
 
 from ath.channels import TelemetryChannel
 from ath.correlation.chain import FindingLink, InvestigationCase
@@ -584,7 +582,7 @@ def _time_gap(a: Finding, b: Finding) -> timedelta:
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _declared_channels_of_rule(rule_id: str) -> frozenset[TelemetryChannel]:
     """The channels a rule declares, for a finding that declares none of its own.
 

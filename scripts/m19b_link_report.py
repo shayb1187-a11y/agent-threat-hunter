@@ -59,7 +59,7 @@ def size_hist(corpus: dict) -> str:
     if not dist:
         return "--"
     return ", ".join(
-        "{}x{}".format(v, k) for k, v in sorted(dist.items(), key=lambda kv: int(kv[0]))
+        f"{v}x{k}" for k, v in sorted(dist.items(), key=lambda kv: int(kv[0]))
     )
 
 
@@ -457,7 +457,7 @@ def render(payload: dict) -> str:
                 "{:.0f}s".format(case["span_seconds"]),
                 case["start"],
                 ", ".join(
-                    "{} {}".format(v, k) for k, v in sorted(case["link_signals"].items())
+                    f"{v} {k}" for k, v in sorted(case["link_signals"].items())
                 ),
             ])
         out.append(table(
@@ -577,7 +577,7 @@ def render(payload: dict) -> str:
     window_minutes = payload["link_definition"]["cross_domain_window_seconds"] / 60
     out.append(
         "* **The window is a choice, and on the merged cases it is the binding one.** "
-        "{:.0f} minutes is `auth_exec_window`'s value, taken because it is the only "
+        f"{window_minutes:.0f} minutes is `auth_exec_window`'s value, taken because it is the only "
         "existing window in the file that already answers \"did A plausibly cause B "
         "across two kinds of telemetry\". Nothing here measures whether it is the right "
         "value; a sweep would be a separate, pre-registered experiment.\n"
@@ -601,7 +601,7 @@ def render(payload: dict) -> str:
         "unchanged, not because they are informative.\n"
         "* **No model was called**, and no rule, triage, specialist, tool, prompt, "
         "scoring or ablation path was touched. The only source change between the two "
-        "arms is `src/ath/correlation/correlator.py`.\n".format(window_minutes)
+        "arms is `src/ath/correlation/correlator.py`.\n"
     )
     return "\n".join(out)
 

@@ -15,7 +15,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import local_replay  # noqa: E402
-from _builders import at, failures, logon, proc, telemetry as build_telemetry  # noqa: E402
+from _builders import at, failures, logon, proc  # noqa: E402
+from _builders import telemetry as build_telemetry
 from ath.agent.claims import ClaimType, ClaimVerifier  # noqa: E402
 from ath.agent.investigator import D1Investigator, InvestigatorConfig, prompt_sha256  # noqa: E402
 from ath.agent.tools import ToolBox  # noqa: E402

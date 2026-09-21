@@ -60,6 +60,7 @@ import dataclasses
 
 import pytest
 
+from _builders import at, ctrl, telemetry
 from ath.channels import TelemetryChannel
 from ath.environment.channels import (
     CHANNEL_SPECS,
@@ -70,8 +71,6 @@ from ath.environment.coverage import findings_respect_declared_channels
 from ath.hunting import HuntConfig, run_hunt
 from ath.hunting.base import Detector, all_detectors
 from ath.schema import EVENT_CONTROL, EVENT_LOGON, EVENT_PROCESS
-
-from _builders import at, ctrl, telemetry
 
 CLOUD_SOURCE = "cloudtrail_mgmt"
 K8S_SOURCE = "k8s_audit"

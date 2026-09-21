@@ -107,7 +107,7 @@ def _fake_sha256(process_name: str, signer: str) -> str:
     anything -- and so that an impersonating copy, having a different publisher, gets a
     different hash exactly as it would in reality.
     """
-    material = f"{process_name.lower()}|{signer}".encode("utf-8")
+    material = f"{process_name.lower()}|{signer}".encode()
     return hashlib.sha256(material).hexdigest()
 
 

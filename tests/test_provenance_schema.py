@@ -11,7 +11,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from ath.schema import CORE_COLUMNS, TABLE_COLUMNS, SchemaError, validate_frame
+from ath.schema import CORE_COLUMNS, TABLE_COLUMNS, SchemaError
 from ath.telemetry import GeneratorConfig, generate_telemetry
 from ath.telemetry.normalize import coerce_and_validate, coerce_types
 

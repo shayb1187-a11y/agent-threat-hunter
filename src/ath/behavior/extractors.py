@@ -20,7 +20,8 @@ explanation, which is half of what it is for.
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import pandas as pd
 
@@ -30,7 +31,6 @@ from ath.behavior.features import (
     compute_connection_pattern,
 )
 from ath.behavior.models import (
-    FIRST_SEEN_PROCESS_DESTINATION,
     INTERPRETER_EXTERNAL_CONTACT,
     PERIODIC_OUTBOUND_RELATIONSHIP,
     RECOVERY_MECHANISM_DISABLED,

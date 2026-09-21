@@ -33,21 +33,22 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
-import pandas as pd
-
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
-
-from pre_schema_parquet import read_canonical_table  # noqa: E402
 
 from ath.hunting import run_hunt  # noqa: E402
 from ath.hunting.base import all_detectors  # noqa: E402
 from ath.netaddr import is_public_ip  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
+from pre_schema_parquet import read_canonical_table  # noqa: E402
+
 
 def load_canonical(directory: Path) -> Telemetry:
     """The frozen COMISET tables, widened to whatever the schema says today.

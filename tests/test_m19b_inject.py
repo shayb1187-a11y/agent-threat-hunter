@@ -42,24 +42,27 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from m19b_inject_dedale import (  # noqa: E402
-    CASES,
-    DAYS,
-    DEFAULT_EXTERNAL,
-    DEFAULT_SEED,
-)
-
 from ath.correlation import correlate  # noqa: E402
 from ath.environment import build_environment_model  # noqa: E402
 from ath.evaluation.external_labels import load_external_labels, resolve_labels  # noqa: E402
 from ath.evaluation.necessity import DOMAIN_SPECIALISTS, audit_case  # noqa: E402
 from ath.hunting import HuntConfig, run_hunt  # noqa: E402
 from ath.schema import (  # noqa: E402
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, TABLE_COLUMNS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    TABLE_COLUMNS,
 )
 from ath.telemetry.loader import Telemetry  # noqa: E402
 from ath.telemetry.winlogbeat_source import WinlogbeatSource  # noqa: E402
 from ath.triage import assess_findings, set_aside_ids  # noqa: E402
+from m19b_inject_dedale import (  # noqa: E402
+    CASES,
+    DAYS,
+    DEFAULT_EXTERNAL,
+    DEFAULT_SEED,
+)
 
 CASE_ROOT = ROOT / "reports" / "m19b" / "cases" / "dedale_injected"
 MANIFEST_PATH = CASE_ROOT / "MANIFEST.json"

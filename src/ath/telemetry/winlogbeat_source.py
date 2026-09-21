@@ -72,7 +72,12 @@ import pandas as pd
 from ath.instance_identity import start_identity, sysmon_identity
 from ath.logging_setup import get_logger
 from ath.schema import (
-    EVENT_CONTROL, EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS, SIG_UNKNOWN, TABLE_COLUMNS,
+    EVENT_CONTROL,
+    EVENT_LOGON,
+    EVENT_NETWORK,
+    EVENT_PROCESS,
+    SIG_UNKNOWN,
+    TABLE_COLUMNS,
 )
 from ath.telemetry.admission import FileAdmission, admit_lines
 from ath.telemetry.normalize import (

@@ -41,9 +41,10 @@ is weak evidence of absence, and no consumer may read it as exoneration.
 from __future__ import annotations
 
 import statistics
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Sequence
+from typing import Any
 
 # How far a relationship's inter-arrival times may vary and still count as regular.
 # Applied to MAD/median, so it is a proportion of the typical gap rather than an
