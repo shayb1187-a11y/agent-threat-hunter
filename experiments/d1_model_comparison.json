@@ -1,0 +1,33 @@
+{
+  "name": "d1_model_comparison",
+  "arm": "D1",
+  "models": [
+    "qwen3.5:4b",
+    "qwen3.5:9b"
+  ],
+  "repeat": 1,
+  "seed": 0,
+  "temperature": 0.0,
+  "think": false,
+  "base_url": "http://127.0.0.1:11434",
+  "expected_cases": 20,
+  "smoke_cases": [
+    "dedale_injected_dev:V1/CASE-001",
+    "dedale_injected_dev:V2/CASE-001",
+    "dedale_injected_dev:V7/CASE-001",
+    "dedale_injected_dev:V8/CASE-001",
+    "flaws_cloud/CASE-071"
+  ],
+  "frozen_surface_sha256": "80db250e72da101e106aa935c63ab24b20010cb1648c191cacca1dcfe252b704",
+  "expected_tree": "",
+  "external_root": "data/external",
+  "out_dir": "reports/local/dev",
+  "digest_version": 1,
+  "workers": 1,
+  "notes": [
+    "qwen3.5:4b baseline vs qwen3.5:9b challenger under frozen d1-investigator-v3 (2026-09-20 decision).",
+    "Model choice is the one variable: prompts, schema, budgets, verifier and scoring are frozen; compare refuses anything else.",
+    "No --ignore-ram-floor. Every model run happens on Colab or a rented machine, never on the laptop.",
+    "frozen_surface_sha256 identifies the checkout by what it computes, not by a commit id (the public history is rewritten)."
+  ]
+}
