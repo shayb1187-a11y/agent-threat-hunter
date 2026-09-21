@@ -61,6 +61,7 @@ from ath.agent.llm import (
     NO_TEXT_BLOCK,
     LLMResponse,
     TokenAccounting,
+    _attempt_timeout,
     _parse_json,
 )
 from ath.logging_setup import get_logger
@@ -351,7 +352,10 @@ class OllamaLLM(TokenAccounting):
 
     # -- the call -------------------------------------------------------------------------
 
-    def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
+    def complete(
+        self, system: str, prompt: str, max_tokens: int = 1024,
+        timeout_seconds: float | None = None,
+    ) -> LLMResponse:
         body_sent = self.build_request_body(system, prompt, max_tokens)
         payload = json.dumps(body_sent).encode("utf-8")
         num_predict = body_sent["options"]["num_predict"]
@@ -375,7 +379,7 @@ class OllamaLLM(TokenAccounting):
                 headers={"content-type": "application/json"},
             )
             try:
-                body = _read_json(request, self.timeout_seconds)
+                body = _read_json(request, _attempt_timeout(self.timeout_seconds, timeout_seconds))
             except urllib.error.HTTPError as exc:
                 last_error = self._describe_http_error(exc, _error_body(exc))
                 if exc.code not in _RETRYABLE_STATUS:

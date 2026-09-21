@@ -177,25 +177,42 @@ class ClaimVerifier:
     def known_event_count(self) -> int:
         return len(self._known_ids)
 
-    def check(self, claim: Claim) -> str | None:
-        """Return a rejection reason, or ``None`` if the claim is acceptable."""
+    def check(self, claim: Claim, retrieved: frozenset[str] | None = None) -> str | None:
+        """Return a rejection reason, or ``None`` if the claim is acceptable.
+
+        With ``retrieved`` -- the ids this investigation actually *showed* the model, see
+        :func:`ath.agent.state.shown_ids` -- a claim citing an id that exists in the
+        telemetry but was never handed to the model is rejected too, with its own reason,
+        so "fabricated" and "real but never retrieved" stay separate numbers. Without it
+        the check is the existence oracle it always was: the frozen scoring code and the
+        D1 v3 investigator call it that way, and their rows must not move.
+        """
         unknown = [e for e in claim.evidence_ids if e not in self._known_ids]
         if unknown:
             return (
                 f"cites {len(unknown)} event id(s) that do not exist in telemetry: "
                 f"{', '.join(sorted(unknown)[:5])}"
             )
+        if retrieved is not None:
+            unseen = [e for e in claim.evidence_ids if e not in retrieved]
+            if unseen:
+                return (
+                    f"cites {len(unseen)} event id(s) that exist but were not retrieved in "
+                    f"this investigation: {', '.join(sorted(unseen)[:5])}"
+                )
         if claim.claim_type.requires_evidence and not claim.evidence_ids:
             return f"a {claim.claim_type.value} must cite evidence"
         if claim.claim_type is ClaimType.FACT and claim.source not in DETERMINISTIC_SOURCES:
             return f"source {claim.source!r} is not permitted to author a FACT"
         return None
 
-    def verify(self, claims: list[Claim]) -> VerificationResult:
-        """Partition ``claims`` into accepted and rejected."""
+    def verify(
+        self, claims: list[Claim], retrieved: frozenset[str] | None = None,
+    ) -> VerificationResult:
+        """Partition ``claims`` into accepted and rejected (see :meth:`check`)."""
         result = VerificationResult()
         for claim in claims:
-            reason = self.check(claim)
+            reason = self.check(claim, retrieved)
             if reason is None:
                 result.accepted.append(claim)
             else:

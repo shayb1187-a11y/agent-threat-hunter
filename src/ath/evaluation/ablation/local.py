@@ -91,7 +91,8 @@ from ath.evaluation.ablation.environment import (
     prompt_hashes,
     scoring_hashes,
 )
-from ath.evaluation.ablation.manifest import CaseManifest, telemetry_hash
+from ath.evaluation.ablation.manifest import CaseManifest
+from ath.evaluation.ablation.manifest import telemetry_digest as corpus_digest
 from ath.evaluation.ablation.scoring import (
     UnknownRubric,
     capture_label_scores,
@@ -192,6 +193,34 @@ def investigator_environment() -> dict[str, Any]:
 # --------------------------------------------------------------------------------------
 
 
+def _optional_budgets(tools: ToolBox, investigator: Any, state: Any) -> dict[str, Any]:
+    """The opt-in caps and budgets a row ran under -- only the ones that were set, so a
+    row produced with none of them serialises exactly as before."""
+    out: dict[str, Any] = {}
+    if getattr(tools, "max_rows", None) is not None or getattr(tools, "max_chars", None) is not None:
+        out.update({
+            "tool_max_rows": tools.max_rows, "tool_max_chars": tools.max_chars,
+            "tool_truncations": tools.truncations,
+        })
+    config = getattr(investigator, "config", None)
+    if config is not None and (
+        getattr(config, "time_budget_seconds", None) is not None
+        or getattr(config, "token_budget", None) is not None
+    ):
+        hit = str(getattr(state, "status", "")) == "budget_limit" or any(
+            "budget exhausted" in e for e in getattr(state, "llm_errors", [])
+        )
+        out.update({
+            "time_budget_seconds": config.time_budget_seconds,
+            "token_budget": config.token_budget,
+            "time_budget_hit": hit and any("time budget" in e for e in state.llm_errors),
+            "token_budget_hit": hit and any("token budget" in e for e in state.llm_errors),
+        })
+    if config is not None and getattr(config, "reject_unretrieved", False):
+        out["reject_unretrieved"] = True
+    return out
+
+
 def link_recovery(
     state: Any,
     links: Sequence[dict[str, Any]],
@@ -244,8 +273,18 @@ def run_local_arm(
     label_scorer: Callable[[Any], dict[str, Any]] | None = None,
     required_footing: dict[str, Any] | None = None,
     links: dict[str, Sequence[dict[str, Any]]] | None = None,
+    toolbox_factory: Callable[..., ToolBox] | None = None,
+    investigator_options: dict[str, Any] | None = None,
+    run_id: str = "",
 ) -> list[CaseResult]:
     """Run the D1 investigator over the manifest entries of one corpus.
+
+    ``toolbox_factory``, ``investigator_options`` and ``run_id`` are the opt-in points
+    for behaviour the D1 v3 rows were produced without: a toolbox with output caps or a
+    ledger (``ToolBox(..., max_rows=, max_chars=, ledger=)``), the investigator's
+    wall-clock / token budgets and ``reject_unretrieved``, and the runner invocation
+    stamped on the state. Every one defaults to the frozen behaviour, and whatever is
+    set is recorded in the row's ``budgets`` so it can be compared on, never hidden.
 
     The frozen :func:`~ath.evaluation.ablation.arms.run_arm`, step for step -- the
     refusals, the manifest check, the per-case toolbox, the footing assertion, the
@@ -274,7 +313,7 @@ def run_local_arm(
 
     entries = list(manifest)
     cases_by_id = {c.case_id: c for c in cases}
-    digest = telemetry_hash(telemetry)
+    digest = corpus_digest(telemetry, entries[0].digest_version if entries else 1)
     _check_inputs(entries, digest, cases_by_id)
     all_findings = (
         list(findings) if findings is not None
@@ -286,8 +325,13 @@ def run_local_arm(
     results: list[CaseResult] = []
     for entry in entries:
         case = cases_by_id[entry.case_id]
-        tools = ToolBox(telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap)
-        investigator = build_investigator(tools, verifier, client, max_steps=arm.config.max_steps)
+        if toolbox_factory is None:
+            tools = ToolBox(telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap)
+        else:
+            tools = toolbox_factory(telemetry, all_findings, list(cases), tool_call_budget=arm.tool_call_cap)
+        investigator = build_investigator(
+            tools, verifier, client, max_steps=arm.config.max_steps, **(investigator_options or {}),
+        )
         footing = case_footing(tools, arm, digest)
         if required_footing is not None:
             differences = footing_differences({"required": required_footing, arm.name: footing})
@@ -304,6 +348,8 @@ def run_local_arm(
             state = investigator.investigate(case)
         finally:
             detach_request_observer(client)
+        if run_id:
+            state.run_id = run_id
         elapsed = time.perf_counter() - started
         if observed:
             state.llm_requests = request_records(measurements, client)
@@ -319,7 +365,8 @@ def run_local_arm(
             state=state.to_dict(), scores=case_scores, wall_seconds=elapsed, tokens=tokens,
             labels=dict(entry.labels),
             label_scores=capture_label_scores(entry.labels, case_scores),
-            budgets=budgets_of(tools, arm, state), footing=footing,
+            budgets={**budgets_of(tools, arm, state), **_optional_budgets(tools, investigator, state)},
+            footing=footing,
             context=context_size(state), scripted=scripted,
         )
         graded = label_scorer(state) if label_scorer is not None else {}

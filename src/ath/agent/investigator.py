@@ -63,6 +63,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Sequence
@@ -577,6 +578,13 @@ class InvestigatorConfig:
     max_steps: int = 8
     """The arm's step budget. The seed is one step and every probe is one more; the
     loop never exceeds it, whatever ``max_probes`` says."""
+    time_budget_seconds: float | None = None
+    token_budget: int | None = None
+    reject_unretrieved: bool = False
+    """Opt-in behaviour, none of it in ``prompt_hashes()``: a wall-clock budget checked
+    before every round and passed on as the request timeout; a token budget; and
+    verification of the conclusion against the ids the model was shown instead of the
+    silent trim. D1 v3 rows were produced with all three off."""
 
 
 class D1Investigator:
@@ -902,7 +910,14 @@ class D1Investigator:
             menu="\n".join(p.render() for p in menu) or "(no probe applies)",
             previous=previous_text,
         )
-        response = self.llm.complete(INVESTIGATOR_SYSTEM, prompt, max_tokens=self.config.max_tokens)
+        if self.config.time_budget_seconds is None:
+            response = self.llm.complete(INVESTIGATOR_SYSTEM, prompt, max_tokens=self.config.max_tokens)
+        else:
+            remaining = self.config.time_budget_seconds - (time.perf_counter() - self._started)
+            response = self.llm.complete(
+                INVESTIGATOR_SYSTEM, prompt, max_tokens=self.config.max_tokens,
+                timeout_seconds=max(1.0, remaining),
+            )
         record: dict[str, Any] = {
             "parse_ok": False, "truncated": bool(getattr(response, "truncated", False)),
             "error": response.error, "output_tokens": response.output_tokens,
@@ -954,7 +969,7 @@ class D1Investigator:
             unseen = [e for e in ids if e not in shown]
             fabricated = [e for e in unseen if self.verifier.check(
                 Claim(ClaimType.HYPOTHESIS, "probe", (e,), source="llm")) is not None]
-            if unseen and not fabricated:
+            if unseen and not fabricated and not self.config.reject_unretrieved:
                 out_of_scope += 1
                 state.plan_log.append(
                     f"conclude: dropped {len(unseen)} cited id(s) the model was not shown: "
@@ -983,6 +998,8 @@ class D1Investigator:
         state = InvestigationState(case=case, max_steps=self.config.max_steps)
         state.llm_requested = self.llm.available
         state.status = InvestigationStatus.IN_PROGRESS
+        self._started = time.perf_counter()
+        tokens_at_start = getattr(self.llm, "tokens_used", None) or 0
         log = ObservationLog()
         diagnostics: dict[str, Any] = {
             "version": D1_PROMPT_VERSION, "rounds": [], "probes_run": [],
@@ -1009,6 +1026,11 @@ class D1Investigator:
         new_since = len(log.items)
         for round_index in range(self.config.max_probes + 1):
             if stop_reason:
+                break
+            budget_hit = self._budget_spent(tokens_at_start)
+            if budget_hit:
+                state.llm_errors.append(budget_hit)
+                stop_reason = budget_hit
                 break
             menu = build_menu(case, process_rows, children, destinations, already_run)
             answer, record = self._ask(state, log, menu, round_index, probes_run, previous, new_since)
@@ -1081,7 +1103,10 @@ class D1Investigator:
             diagnostics["probes_run"].append(chosen.tool)
 
         conclusion = self._conclude(state, last_answer, log)
-        verification = self.verifier.verify(list(conclusion.claims))
+        verification = self.verifier.verify(
+            list(conclusion.claims),
+            retrieved=frozenset(log.shown_ids) if self.config.reject_unretrieved else None,
+        )
         state.record(conclusion, verification.accepted, verification.rejected)
         accepted = verification.accepted
         state.plan_log.append(
@@ -1090,6 +1115,8 @@ class D1Investigator:
         state.status = InvestigationStatus.COMPLETE if last_answer is not None else InvestigationStatus.EXHAUSTED
         if state.step >= state.max_steps and stop_reason == "step or tool budget spent":
             state.status = InvestigationStatus.STEP_LIMIT
+        if stop_reason.endswith("budget exhausted") or "budget exhausted (" in stop_reason:
+            state.status = InvestigationStatus.BUDGET_LIMIT
         state.plan_log.append(f"stop -- {stop_reason or 'concluded'}")
 
         # -- the compact summary the dev metrics read -----------------------------------
@@ -1134,6 +1161,20 @@ class D1Investigator:
         )
         return state
 
+    _started: float = 0.0
+
+    def _budget_spent(self, tokens_at_start: int) -> str | None:
+        """Why the wall-clock or token budget is spent, or ``None``."""
+        if self.config.time_budget_seconds is not None:
+            elapsed = time.perf_counter() - self._started
+            if elapsed >= self.config.time_budget_seconds:
+                return f"time budget exhausted ({self.config.time_budget_seconds:.0f}s)"
+        if self.config.token_budget is not None:
+            now = getattr(self.llm, "tokens_used", None)
+            if now is not None and now - tokens_at_start >= self.config.token_budget:
+                return f"token budget exhausted ({now - tokens_at_start} of {self.config.token_budget})"
+        return None
+
     def _verify_and_record(self, state: InvestigationState, result: AgentResult) -> None:
         verification = self.verifier.verify(list(result.claims))
         state.record(result, verification.accepted, verification.rejected)
@@ -1142,8 +1183,14 @@ class D1Investigator:
 def build_investigator(
     tools: ToolBox, verifier: ClaimVerifier, llm: LLMClient | None, *, max_steps: int = 8,
     max_probes: int = MAX_PROBES, max_tokens: int = INVESTIGATOR_MAX_TOKENS,
+    time_budget_seconds: float | None = None, token_budget: int | None = None,
+    reject_unretrieved: bool = False,
 ) -> D1Investigator:
     return D1Investigator(
         tools, verifier, llm=llm,
-        config=InvestigatorConfig(max_probes=max_probes, max_tokens=max_tokens, max_steps=max_steps),
+        config=InvestigatorConfig(
+            max_probes=max_probes, max_tokens=max_tokens, max_steps=max_steps,
+            time_budget_seconds=time_budget_seconds, token_budget=token_budget,
+            reject_unretrieved=reject_unretrieved,
+        ),
     )

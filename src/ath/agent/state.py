@@ -74,6 +74,10 @@ class InvestigationStatus(str, Enum):
     """No further useful step exists -- the evidence available has been used up."""
     STEP_LIMIT = "step_limit"
     """The step budget was reached. A guard against runaway loops, not a success."""
+    BUDGET_LIMIT = "budget_limit"
+    """The wall-clock or token budget was reached (``time_budget_seconds`` /
+    ``token_budget``). Recorded in ``llm_errors`` too, naming which, so the report's
+    "deterministic because" distinction stays honest."""
 
 
 @dataclass(frozen=True)
@@ -175,6 +179,10 @@ class InvestigationState:
     orchestrator serialises exactly as it did before this field existed. What it holds
     is machine-readable and small by construction -- labels, counts, one-line reasons --
     never a transcript and never chain-of-thought."""
+    run_id: str = ""
+    """The runner invocation that produced this state, when one stamped it; empty and
+    then not serialised otherwise. The deterministic per-row identity is elsewhere (the
+    row key); this is the join to the run record."""
     llm_errors: list[str] = field(default_factory=list)
     """Model calls that failed. Populated even though the run still completes.
 
@@ -341,6 +349,7 @@ class InvestigationState:
     def to_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case.case_id,
+            **({"run_id": self.run_id} if self.run_id else {}),
             "status": self.status.value,
             "steps": self.step,
             "agents_run": list(self.agents_run),
@@ -371,3 +380,19 @@ class InvestigationState:
             "results": [r.to_dict() for r in self.results],
             "evidence_ids": list(self.evidence_ids),
         }
+
+
+def shown_ids(state: InvestigationState) -> frozenset[str]:
+    """Every event id a tool actually handed the investigation.
+
+    A call cut at the toolbox's ``max_rows`` records the full retrieval in ``event_ids``
+    (what the tool found, for the scorer) and what survived the cut in
+    ``shown_event_ids`` (what the model saw). This is the second set, so a verifier given
+    it rejects a citation of an id that exists and was found but was never shown.
+    """
+    ids: set[str] = set()
+    for call in state.tool_calls:
+        if call.refused:
+            continue
+        ids.update(call.shown_event_ids if call.truncated else call.event_ids)
+    return frozenset(ids)

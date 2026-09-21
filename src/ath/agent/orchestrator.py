@@ -40,11 +40,12 @@ the system to produce evidence-backed conclusions.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import Sequence
 
 from ath.agent.claims import Claim, ClaimType, ClaimVerifier
-from ath.agent.llm import LLMClient, NullLLM
+from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.specialists import Specialist
 from ath.agent.state import AgentResult, InvestigationState, InvestigationStatus
 from ath.agent.tools import ToolBox
@@ -246,6 +247,18 @@ class InvestigationConfig:
     use_llm_synthesis: bool = True
     max_synthesis_claims: int = 6
     tool_output_budget: int | None = None
+    time_budget_seconds: float | None = None
+    """Wall-clock budget for one investigation, enforced at every step *and* passed to
+    the client as the remaining per-request timeout. ``None`` (the default) is what every
+    frozen arm ran under. Not ``max_seconds``: seconds elapse, they are not counted."""
+    token_budget: int | None = None
+    """Total tokens (as the provider reports them) one investigation may spend. Not
+    ``max_tokens``: that name already means the per-response generation cap."""
+    reject_unretrieved: bool = False
+    """Hand the verifier the ids the model was actually shown, so a synthesis claim
+    citing an id that exists but was never retrieved is a *rejection* with its own
+    reason rather than a claim silently dropped. Off by default: it changes
+    ``rejected_claims`` on new rows and the frozen arms did not run with it."""
 
 
 class InvestigationOrchestrator:
@@ -349,7 +362,7 @@ class InvestigationOrchestrator:
                 f"  {s.name}: {s.domain} (eligible because {r})" for s, r in candidates
             ),
         )
-        response = self.llm.complete(
+        response = self._complete(
             PLANNER_SYSTEM, summary, max_tokens=PLANNER_MAX_TOKENS
         )
         if not response.ok:
@@ -444,7 +457,7 @@ class InvestigationOrchestrator:
         rendered = render_synthesis_claims(
             state.claims, budget=self.config.tool_output_budget,
         )
-        response = self.llm.complete(
+        response = self._complete(
             SYNTHESIS_SYSTEM,
             SYNTHESIS_USER_TEMPLATE.format(
                 case_id=state.case.case_id, claims=rendered,
@@ -481,17 +494,21 @@ class InvestigationOrchestrator:
             except ValueError as exc:
                 state.plan_log.append(f"synthesis: discarded malformed claim ({exc})")
 
-        # Belt and braces: reject citations outside what the model was shown, then run
-        # the full verifier over whatever survives.
-        scoped = [c for c in proposed if set(c.evidence_ids) <= allowed]
-        out_of_scope = len(proposed) - len(scoped)
-        if out_of_scope:
-            state.plan_log.append(
-                f"synthesis: discarded {out_of_scope} claim(s) citing evidence "
-                "outside the provided context"
-            )
-
-        verification = self.verifier.verify(scoped)
+        if self.config.reject_unretrieved:
+            # The verifier rejects, with its own reason, anything citing an id the model
+            # was not shown; nothing is dropped in silence.
+            verification = self.verifier.verify(proposed, retrieved=frozenset(allowed))
+        else:
+            # Belt and braces: reject citations outside what the model was shown, then
+            # run the full verifier over whatever survives.
+            scoped = [c for c in proposed if set(c.evidence_ids) <= allowed]
+            out_of_scope = len(proposed) - len(scoped)
+            if out_of_scope:
+                state.plan_log.append(
+                    f"synthesis: discarded {out_of_scope} claim(s) citing evidence "
+                    "outside the provided context"
+                )
+            verification = self.verifier.verify(scoped)
         state.claims.extend(verification.accepted)
         state.rejected_claims.extend(verification.rejected)
         state.plan_log.append(
@@ -499,6 +516,31 @@ class InvestigationOrchestrator:
             f"rejected {len(verification.rejected)}"
         )
         return state
+
+    # -- budgets --------------------------------------------------------------------
+
+    _budget_started: float = 0.0
+    _budget_tokens_at_start: int = 0
+
+    def _budget_exhausted(self) -> str | None:
+        _remaining, reason = _budget_remaining(
+            self._budget_started, self._budget_tokens_at_start,
+            getattr(self.llm, "tokens_used", None),
+            self.config.time_budget_seconds, self.config.token_budget,
+        )
+        return reason
+
+    def _complete(self, system: str, prompt: str, *, max_tokens: int) -> LLMResponse:
+        """One model call, with what is left of the time budget as its timeout."""
+        if self.config.time_budget_seconds is None:
+            return self.llm.complete(system, prompt, max_tokens=max_tokens)
+        remaining, _reason = _budget_remaining(
+            self._budget_started, self._budget_tokens_at_start, None,
+            self.config.time_budget_seconds, None,
+        )
+        return self.llm.complete(
+            system, prompt, max_tokens=max_tokens, timeout_seconds=max(1.0, remaining or 0.0),
+        )
 
     # -- the loop --------------------------------------------------------------------
 
@@ -515,8 +557,17 @@ class InvestigationOrchestrator:
             "Investigating %s (%d findings, %d hosts) with llm=%s",
             case.case_id, len(case.findings), len(case.devices), self.llm.name,
         )
+        self._budget_started = time.perf_counter()
+        self._budget_tokens_at_start = getattr(self.llm, "tokens_used", None) or 0
+        budget_hit: str | None = None
 
         while state.step < state.max_steps:
+            budget_hit = self._budget_exhausted()
+            if budget_hit:
+                state.llm_errors.append(budget_hit)
+                state.plan_log.append(f"step {state.step + 1}: stop -- {budget_hit}")
+                state.status = InvestigationStatus.BUDGET_LIMIT
+                break
             specialist, reason = self.plan(state)
             if specialist is None:
                 state.plan_log.append(f"step {state.step + 1}: stop -- {reason}")
@@ -536,7 +587,10 @@ class InvestigationOrchestrator:
             )
             state.status = InvestigationStatus.STEP_LIMIT
 
-        self.synthesise(state)
+        if budget_hit is None:
+            self.synthesise(state)
+        else:
+            state.plan_log.append("synthesis skipped: budget exhausted")
         if state.llm_degraded:
             logger.warning("%s: %s", case.case_id, state.llm_status)
         logger.info(
@@ -546,6 +600,23 @@ class InvestigationOrchestrator:
             len(state.inferences), len(state.hypotheses), len(state.rejected_claims),
         )
         return state
+
+
+def _budget_remaining(
+    started: float, tokens_at_start: int, tokens_now: int | None,
+    time_budget_seconds: float | None, token_budget: int | None,
+) -> tuple[float | None, str | None]:
+    """``(seconds left or None, why the budget is spent or None)``."""
+    remaining: float | None = None
+    if time_budget_seconds is not None:
+        remaining = time_budget_seconds - (time.perf_counter() - started)
+        if remaining <= 0:
+            return 0.0, f"time budget exhausted ({time_budget_seconds:.0f}s)"
+    if token_budget is not None and tokens_now is not None:
+        spent = tokens_now - tokens_at_start
+        if spent >= token_budget:
+            return remaining, f"token budget exhausted ({spent} of {token_budget})"
+    return remaining, None
 
 
 def _clamp(value: object) -> float | None:

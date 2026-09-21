@@ -25,6 +25,8 @@ was convenient is how these systems cause incidents rather than resolve them.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -64,6 +66,16 @@ class ToolCall:
     asked for that data and did not get it, and a cost column that omits the asking
     would under-report exactly the arm that was too expensive.
     """
+    truncated: bool = False
+    """The result handed to the caller was cut at the toolbox's ``max_rows`` or
+    ``max_chars``. ``event_ids`` still records the *full* retrieval, because the scorer's
+    "touched" set is about what the tool found; ``shown_event_ids`` records what the
+    caller was actually given, because a claim may only cite what it saw."""
+    shown_event_ids: tuple[str, ...] = ()
+    args_sha256: str = ""
+    result_sha256: str = ""
+    """Canonical-JSON digests of the arguments and the returned payload, recorded when
+    the toolbox's ``ledger`` is on. Two runs of one case produce one hash sequence."""
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -74,11 +86,18 @@ class ToolCall:
             "event_ids": list(self.event_ids),
             "called_at": self.called_at.isoformat(),
         }
-        # Emitted only when true, so a run made under no budget serialises exactly as
-        # it did before budgets existed -- the published arm A rows stay comparable
-        # with the ones this project has already committed.
+        # Every addition below is emitted only when set, so a run made under no budget,
+        # no cap and no ledger serialises exactly as it did before they existed -- the
+        # published arm A rows and the pending D1 v3 rows stay comparable.
         if self.refused:
             payload["refused"] = True
+        if self.truncated:
+            payload["truncated"] = True
+            payload["shown_event_ids"] = list(self.shown_event_ids)
+        if self.args_sha256:
+            payload["args_sha256"] = self.args_sha256
+        if self.result_sha256:
+            payload["result_sha256"] = self.result_sha256
         return payload
 
     def __str__(self) -> str:
@@ -117,7 +136,23 @@ class ToolBox:
         tool_call_budget: Maximum tool calls that may return data for this case.
             ``None`` (the default) is unlimited -- the behaviour every caller written
             before budgets existed keeps.
+        max_rows: Longest list of rows, events, children, destinations or ids a tool
+            hands back. ``None`` is unbounded. When a cap fires the payload carries
+            ``truncated: True`` and ``total``, so the model knows it saw a sample, and
+            the :class:`ToolCall` records what was shown next to what was found. This
+            is the fix for the M19 HTTP 413: one ``host_network_activity`` call
+            returned 589,476 ids into a prompt.
+        max_chars: Longest string (a command line) a tool hands back; cut with a marker.
+        ledger: Record canonical-JSON digests of every call's arguments and result on
+            the :class:`ToolCall`. Off by default; hashing a 589k-id payload per call
+            is not free.
+
+    These are constructor state on purpose: the tool *methods* are the frozen surface
+    (``ath.evaluation.ablation.environment.tool_surface`` hashes their signatures), and
+    a new public method would be a new tool.
     """
+
+    TRUNCATION_MARKER = " ...[truncated]"
 
     def __init__(
         self,
@@ -125,6 +160,9 @@ class ToolBox:
         findings: list[Finding],
         cases: list[InvestigationCase],
         tool_call_budget: int | None = None,
+        max_rows: int | None = None,
+        max_chars: int | None = None,
+        ledger: bool = False,
     ) -> None:
         self.telemetry = telemetry
         self._findings = {f.finding_id: f for f in findings}
@@ -133,19 +171,48 @@ class ToolBox:
         self.tool_call_budget = tool_call_budget
         self.budget_hits = 0
         """How many calls this toolbox refused for want of budget."""
+        if max_rows is not None and max_rows < 1:
+            raise ValueError("max_rows must be positive or None")
+        if max_chars is not None and max_chars < 1:
+            raise ValueError("max_chars must be positive or None")
+        self.max_rows = max_rows
+        self.max_chars = max_chars
+        self.ledger = ledger
+        self.truncations = 0
+        """How many results this toolbox cut at ``max_rows`` or ``max_chars``."""
 
     # -- bookkeeping ----------------------------------------------------------------
 
     def _record(
         self, tool: str, arguments: dict[str, Any], agent: str,
         summary: str, event_ids: tuple[str, ...] = (), refused: bool = False,
+        *, result: Any = None, shown_event_ids: tuple[str, ...] | None = None,
+        truncated: bool = False,
     ) -> None:
+        if truncated:
+            self.truncations += 1
+            summary = f"{summary}; truncated to {len(shown_event_ids or ())} shown"
         call = ToolCall(
             tool=tool, arguments=arguments, agent=agent,
             result_summary=summary, event_ids=event_ids, refused=refused,
+            truncated=truncated,
+            shown_event_ids=tuple(shown_event_ids or ()) if truncated else (),
+            args_sha256=_sha256_json(arguments) if self.ledger else "",
+            result_sha256=_sha256_json(result) if self.ledger and result is not None else "",
         )
         self.calls.append(call)
         logger.debug("tool call: %s", call)
+
+    def _cap(self, items: list[Any]) -> tuple[list[Any], bool]:
+        """``items`` cut at ``max_rows``; whether the cut happened."""
+        if self.max_rows is None or len(items) <= self.max_rows:
+            return items, False
+        return items[: self.max_rows], True
+
+    def _cap_text(self, value: Any) -> tuple[Any, bool]:
+        if self.max_chars is None or not isinstance(value, str) or len(value) <= self.max_chars:
+            return value, False
+        return value[: self.max_chars] + self.TRUNCATION_MARKER, True
 
     @property
     def call_count(self) -> int:
@@ -192,7 +259,7 @@ class ToolBox:
         self._record(
             "get_case", {"case_id": case_id}, agent,
             f"{len(case.findings)} findings, {len(case.devices)} host(s)",
-            tuple(case.event_ids),
+            tuple(case.event_ids), result=payload,
         )
         return payload
 
@@ -220,11 +287,23 @@ class ToolBox:
 
         found = {r["event_id"] for r in rows}
         rows.sort(key=lambda r: r["timestamp"])
+        shown, truncated = self._cap(rows)
+        cut = False
+        for row in shown:
+            if "command_line" in row:
+                row["command_line"], text_cut = self._cap_text(row["command_line"])
+                cut = cut or text_cut
+        payload: dict[str, Any] = {"events": shown, "not_found": sorted(wanted - found)}
+        if truncated:
+            payload["truncated"] = True
+            payload["total"] = len(rows)
         self._record(
             "get_events", {"event_ids": event_ids[:10]}, agent,
             f"{len(found)}/{len(wanted)} found", tuple(sorted(found)),
+            result=payload, truncated=truncated or cut,
+            shown_event_ids=tuple(r["event_id"] for r in shown),
         )
-        return {"events": rows, "not_found": sorted(wanted - found)}
+        return payload
 
     def process_tree(
         self, device: str, pid: int | None = None, depth: int = 3,
@@ -348,8 +427,12 @@ class ToolBox:
         # -- downward ----------------------------------------------------------------
         children = _children_of(host, start_row)
 
+        shown_children, truncated = self._cap(children)
         result["ancestry"] = chain
-        result["children"] = children
+        result["children"] = shown_children
+        if truncated:
+            result["truncated"] = True
+            result["total"] = len(children)
         if result["pid"] is None and chain:
             result["pid"] = chain[0]["process_id"]
         inferred_hops = sum(1 for c in chain if c["resolved_by"] == INFERRED_FROM_PID)
@@ -358,7 +441,8 @@ class ToolBox:
             "process_tree", arguments, agent,
             f"{len(chain)} ancestor(s), {len(children)} child(ren)"
             + (f", {inferred_hops} {INFERRED_FROM_PID}" if inferred_hops else ""),
-            ids,
+            ids, result=result, truncated=truncated,
+            shown_event_ids=tuple(c["event_id"] for c in chain) + tuple(c["event_id"] for c in shown_children),
         )
         return result
 
@@ -403,12 +487,18 @@ class ToolBox:
             }
             for r in rows.to_dict("records")
         ]
+        shown, truncated = self._cap(events)
+        payload: dict[str, Any] = {"user": user, "summary": summary, "events": shown}
+        if truncated:
+            payload["truncated"] = True
+            payload["total"] = len(events)
         self._record(
             "user_auth_history", {"user": user}, agent,
             f"{summary['total']} logons ({summary['failures']} failed)",
-            tuple(rows["event_id"]),
+            tuple(rows["event_id"]), result=payload, truncated=truncated,
+            shown_event_ids=tuple(e["event_id"] for e in shown),
         )
-        return {"user": user, "summary": summary, "events": events}
+        return payload
 
     def host_network_activity(
         self, device: str, remote_ip: str | None = None, agent: str = "network"
@@ -457,22 +547,29 @@ class ToolBox:
                 "process_instances": len(observed),
             })
         event_ids = tuple(rows["event_id"])
-        self._record(
-            "host_network_activity", {"device": device, "remote_ip": remote_ip}, agent,
-            f"{len(rows)} connections to {len(by_destination)} destination(s)",
-            event_ids,
-        )
+        shown_destinations, cut_destinations = self._cap(destinations)
+        shown_ids, cut_ids = self._cap(list(event_ids))
+        truncated = cut_destinations or cut_ids
         # event_ids is returned, not just recorded. A caller that needs the evidence
         # behind this result must not have to reach into the audit log for it --
         # `calls_by(agent)[-1]` couples the caller to tool-call *ordering*, so any
         # added or reordered internal call would silently re-point its citations.
-        # The audit trail records what happened; it is not a data channel.
-        return {
+        # The audit trail records what happened; it is not a data channel. Under a
+        # cap the returned list is the *shown* ids and ``total`` says how many exist.
+        payload: dict[str, Any] = {
             "device": device,
-            "destinations": destinations,
+            "destinations": shown_destinations,
             "total": int(len(rows)),
-            "event_ids": list(event_ids),
+            "event_ids": shown_ids,
         }
+        if truncated:
+            payload["truncated"] = True
+        self._record(
+            "host_network_activity", {"device": device, "remote_ip": remote_ip}, agent,
+            f"{len(rows)} connections to {len(by_destination)} destination(s)",
+            event_ids, result=payload, truncated=truncated, shown_event_ids=tuple(shown_ids),
+        )
+        return payload
 
     def analyse_beacon(
         self, device: str, remote_ip: str, agent: str = "network"
@@ -526,27 +623,27 @@ class ToolBox:
         )
 
         if not pattern.has_measurable_regularity:
-            self._record(
-                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
-                pattern.support_note, tuple(pattern.evidence_ids),
-            )
-            return {
+            shown_ids, truncated = self._cap(list(pattern.evidence_ids))
+            payload: dict[str, Any] = {
                 "regular": False,
                 "reason": pattern.support_note,
                 "samples": pattern.connection_count,
                 "interarrival_count": pattern.interarrival_count,
-                "event_ids": list(pattern.evidence_ids),
+                "event_ids": shown_ids,
             }
+            if truncated:
+                payload["truncated"] = True
+                payload["total"] = len(pattern.evidence_ids)
+            self._record(
+                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
+                pattern.support_note, tuple(pattern.evidence_ids),
+                result=payload, truncated=truncated, shown_event_ids=tuple(shown_ids),
+            )
+            return payload
 
         median_seconds = pattern.median_interval.total_seconds()
-        self._record(
-            "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
-            f"{pattern.interarrival_count} intervals, median {median_seconds:.0f}s, "
-            f"robust cv {pattern.robust_cv:.3f}, "
-            f"{'regular' if pattern.is_regular else 'irregular'}",
-            tuple(pattern.evidence_ids),
-        )
-        return {
+        shown_ids, truncated = self._cap(list(pattern.evidence_ids))
+        payload = {
             "regular": pattern.is_regular,
             "samples": pattern.connection_count,
             # Exposed so a claim can state how much support the figures have. Four
@@ -560,8 +657,20 @@ class ToolBox:
             # mean no interval ever equalled. A statistic and its centre travel together.
             "robust_cv": round(pattern.robust_cv, 4),
             "support_note": pattern.support_note,
-            "event_ids": list(pattern.evidence_ids),
+            "event_ids": shown_ids,
         }
+        if truncated:
+            payload["truncated"] = True
+            payload["total"] = len(pattern.evidence_ids)
+        self._record(
+            "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
+            f"{pattern.interarrival_count} intervals, median {median_seconds:.0f}s, "
+            f"robust cv {pattern.robust_cv:.3f}, "
+            f"{'regular' if pattern.is_regular else 'irregular'}",
+            tuple(pattern.evidence_ids),
+            result=payload, truncated=truncated, shown_event_ids=tuple(shown_ids),
+        )
+        return payload
 
     def search_processes(
         self, device: str | None = None, contains: str | None = None,
@@ -581,7 +690,9 @@ class ToolBox:
             rows = rows[rows["process_name"].str.lower() == process_name.lower()]
         if contains:
             rows = rows[rows["command_line"].str.contains(contains, case=False, na=False)]
-        rows = rows.sort_values("timestamp").head(limit)
+        rows = rows.sort_values("timestamp")
+        total = int(len(rows))
+        rows = rows.head(limit)
 
         results = [
             {
@@ -599,12 +710,24 @@ class ToolBox:
             }
             for r in rows.to_dict("records")
         ]
+        shown, truncated = self._cap(results)
+        cut = False
+        for entry in shown:
+            entry["command_line"], text_cut = self._cap_text(entry["command_line"])
+            cut = cut or text_cut
+        payload: dict[str, Any] = {"results": shown, "count": len(shown)}
+        if truncated or total > len(shown):
+            payload["total"] = total
+        if truncated:
+            payload["truncated"] = True
         self._record(
             "search_processes",
             {"device": device, "contains": contains, "process_name": process_name},
             agent, f"{len(results)} match(es)", tuple(r["event_id"] for r in results),
+            result=payload, truncated=truncated or cut,
+            shown_event_ids=tuple(r["event_id"] for r in shown),
         )
-        return {"results": results, "count": len(results)}
+        return payload
 
     def get_finding(self, finding_id: str, agent: str = "orchestrator") -> dict[str, Any]:
         """Return one detection finding with its evidence and declared caveats."""
@@ -617,11 +740,12 @@ class ToolBox:
         if finding is None:
             self._record("get_finding", {"finding_id": finding_id}, agent, "not found")
             return {"error": f"No such finding {finding_id!r}"}
+        payload = finding.to_dict()
         self._record(
             "get_finding", {"finding_id": finding_id}, agent,
-            f"{finding.rule_id} {finding.severity}", finding.event_ids,
+            f"{finding.rule_id} {finding.severity}", finding.event_ids, result=payload,
         )
-        return finding.to_dict()
+        return payload
 
     def lookup_technique(self, technique_id: str, agent: str = "attack") -> dict[str, Any]:
         """Look up an ATT&CK technique in the verified catalogue."""
@@ -649,6 +773,13 @@ class ToolBox:
             "parent_id": technique.parent_id,
             "url": technique.url,
         }
+
+
+def _sha256_json(payload: Any) -> str:
+    """One canonical serialisation -- sorted keys, no spaces -- so two runs of one case
+    hash their tool calls identically whatever order a dict was built in."""
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _identity_of(row: Any) -> str:

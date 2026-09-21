@@ -142,6 +142,15 @@ def truncation_error(max_tokens: int, has_text: bool) -> str:
     return f"response truncated at max_tokens={max_tokens}{suffix}"
 
 
+def _attempt_timeout(configured: float, remaining: float | None) -> float:
+    """The socket timeout for one attempt: the client's own, or what is left of an
+    investigation's time budget when that is smaller. A budget checked only between
+    calls would let one hung request overshoot it by the request's whole duration."""
+    if remaining is None:
+        return configured
+    return max(1.0, min(configured, remaining))
+
+
 @runtime_checkable
 class LLMClient(Protocol):
     """Minimal interface the orchestrator depends on."""
@@ -203,7 +212,10 @@ class NullLLM:
     name = "none"
     available = False
 
-    def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
+    def complete(
+        self, system: str, prompt: str, max_tokens: int = 1024,
+        timeout_seconds: float | None = None,
+    ) -> LLMResponse:
         return LLMResponse(error="no LLM configured", model=self.name)
 
 
@@ -250,7 +262,10 @@ class ScriptedLLM(TokenAccounting):
     def __post_init__(self) -> None:
         TokenAccounting.__init__(self)
 
-    def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
+    def complete(
+        self, system: str, prompt: str, max_tokens: int = 1024,
+        timeout_seconds: float | None = None,
+    ) -> LLMResponse:
         self.calls.append((system, prompt))
         if self.request_observer is not None:
             self.request_observer(request_measurement(build_request_body(
@@ -521,7 +536,10 @@ class AnthropicLLM(TokenAccounting):
         so production code leaves it ``None``, which is the default.
         """
 
-    def complete(self, system: str, prompt: str, max_tokens: int = 1024) -> LLMResponse:
+    def complete(
+        self, system: str, prompt: str, max_tokens: int = 1024,
+        timeout_seconds: float | None = None,
+    ) -> LLMResponse:
         import urllib.error
         import urllib.request
 
@@ -550,7 +568,7 @@ class AnthropicLLM(TokenAccounting):
             )
             try:
                 with urllib.request.urlopen(
-                    request, timeout=REQUEST_TIMEOUT_SECONDS
+                    request, timeout=_attempt_timeout(REQUEST_TIMEOUT_SECONDS, timeout_seconds),
                 ) as response:
                     body = json.loads(response.read().decode("utf-8"))
             except urllib.error.HTTPError as exc:
