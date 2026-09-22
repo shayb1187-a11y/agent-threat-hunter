@@ -1,0 +1,309 @@
+{
+  "version": "auth-execution-pilot-v1",
+  "protocol": {
+    "question": "Can bounded D1 recover unflagged follow-up evidence and discriminate remote administration from suspicious credential export?",
+    "data": "Fully synthetic, canonically normalized Windows-shaped telemetry with routine background activity.",
+    "splits": "Three development scenarios; six held-out scenarios using different follow-up commands and independent seeds. Shared mechanism family; not independent external data.",
+    "baseline": "Existing deterministic operational-v2 specialists. Incident disposition: malicious if any existing triage assessment is likely_malicious; benign only if all are likely_benign; otherwise abstain. Incomplete execution always abstains.",
+    "d1": "Same detections, cases, telemetry, tools, profile and evidence verifier; D1 chooses bounded probes and supplies its explicit disposition.",
+    "metrics": "Decision accuracy (incomplete rows cannot be correct), benign false accusations, malicious false clearances, missing-data abstention, useful new evidence retrieved/cited, typed link recovery, rejected premises, unverified prose count, latency, reported tokens and local API charges.",
+    "decision_rule": "A promising pilot requires paired decision-accuracy improvement AND more useful-evidence recovery, with zero false benign decisions on malicious cases, zero accepted invalid typed predicates, no additional benign false accusations, and all expected rows complete. Otherwise report value not demonstrated. Even a passing pilot is not statistically conclusive.",
+    "holdout": "Freeze code, data, configuration, model identity and this protocol before model calls. No tuning on held-out results. Failures and abstentions remain in denominators. Repeats are not independent incidents.",
+    "limits": "Simulator intent is known; telemetry may not establish intent. The unknown cases deliberately omit the discriminating child process. Free-text semantic correctness and analyst time savings require human review and are not scored as zero errors."
+  },
+  "split": "heldout",
+  "repeats": 2,
+  "source_sha256": "337639a021889f88c70d556e56b34051edb2dad0d5a818ffb75e64cd8b9c2684",
+  "manifest": [
+    {
+      "key": "sample-01",
+      "telemetry_sha256": "1807a2801f0641fd4923738b7245dffeaaa43abd913d8a0ab57d7b2350ea5daf",
+      "expected_decision": "malicious",
+      "useful_ids": [
+        "7dad9e6dcd99a0c43a0c"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "1b9772fcbb7e6cf70a48",
+        "other_event_id": "7dad9e6dcd99a0c43a0c"
+      },
+      "finding_ids": [
+        "ATH-005:4af091d7e83c22c040da",
+        "ATH-007:1b9772fcbb7e6cf70a48"
+      ],
+      "case_ids": [
+        "0ed6bec515bbe377f5bc",
+        "1b9772fcbb7e6cf70a48",
+        "1cd18d3ea728e523ebc7",
+        "39a16744079223169997",
+        "45c23219e73b7ae6e1d2",
+        "4af091d7e83c22c040da",
+        "76fd149ccd3be844490d",
+        "77b9df8fc8af3c786fc6",
+        "82ad2af3d4b12dfd5197",
+        "a9b34c568efd2f392012",
+        "b01e3c6c361392ab7e96",
+        "b679fc31dffe4b205c43",
+        "c49b71ff2455ca069f6e",
+        "ec9f45b4bad008f7d319"
+      ]
+    },
+    {
+      "key": "sample-02",
+      "telemetry_sha256": "1a9318ad87b8cbb44527213e9f295db6944befe82a3a04dbf3f502a8ffb1785f",
+      "expected_decision": "benign",
+      "useful_ids": [
+        "235f16a8a6b79e284641"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "63c1e83caaba3c08d9ec",
+        "other_event_id": "235f16a8a6b79e284641"
+      },
+      "finding_ids": [
+        "ATH-005:c5e3afb8d54931ae0dca",
+        "ATH-007:63c1e83caaba3c08d9ec"
+      ],
+      "case_ids": [
+        "056d1678640c167ae2a0",
+        "05f0d4732452aeca5b6e",
+        "1c20079dfc4475241c30",
+        "2962a7270535216dd530",
+        "566b54da8cbfe8e27fca",
+        "606ca2ec1c34d0517eb6",
+        "63c1e83caaba3c08d9ec",
+        "795c611f979c8784040f",
+        "86c65b5776abfdc13ba3",
+        "a07d3f98ebe51dfe4a3f",
+        "c5cb2b8e404195e08507",
+        "c5e3afb8d54931ae0dca",
+        "da2f5a9c16bc6df98e73",
+        "f31c0028b09094ef945a"
+      ]
+    },
+    {
+      "key": "sample-03",
+      "telemetry_sha256": "cbe1c094e98aec162d7f852a9c439f71e761df457d236a2b8a8fc0476fff5c71",
+      "expected_decision": "abstain",
+      "useful_ids": [],
+      "link": null,
+      "finding_ids": [
+        "ATH-005:cf632d6941a273c52001",
+        "ATH-007:b09aaa4337dd2da6554d"
+      ],
+      "case_ids": [
+        "3b365104c157df16fe4d",
+        "6d284dbbab3fe8bf01ab",
+        "729451128323490ab545",
+        "7c0b6705c41b1afe5847",
+        "88bce714d45e7bd9b193",
+        "89e97aedbcb901799ebd",
+        "8ade5cc400fdf5cdcbb6",
+        "9cd0f58e424b17dad6c1",
+        "9ed8e910a61672b676c0",
+        "a7a83bbdb4372246b01f",
+        "b09aaa4337dd2da6554d",
+        "cf632d6941a273c52001",
+        "db9db8d5f576b3703080",
+        "ecdd90fb562084aa4e04"
+      ]
+    },
+    {
+      "key": "sample-04",
+      "telemetry_sha256": "5c9ad228d98a9e345fa95e9d9b6a949ca897b70984a7fe0ea6ca1da2676c6300",
+      "expected_decision": "malicious",
+      "useful_ids": [
+        "791897726164acd6df98"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "1ef7515e5a7e4b7ff8f2",
+        "other_event_id": "791897726164acd6df98"
+      },
+      "finding_ids": [
+        "ATH-005:d4a2658973d95e6b6fcc",
+        "ATH-007:1ef7515e5a7e4b7ff8f2"
+      ],
+      "case_ids": [
+        "0066f70d2a460cb4c368",
+        "1c3b7e7344d21cd95602",
+        "1d6731fb665b8d587408",
+        "1ef7515e5a7e4b7ff8f2",
+        "3cbb42be0b7385c241cc",
+        "3e1f800c10c8a00a22f3",
+        "54d810617eb96787bf4c",
+        "7d4dddb2e7c6bdc5cd7a",
+        "88f0166c03bdf7e6f9e1",
+        "d4a2658973d95e6b6fcc",
+        "e5d6bad15fc506b9b23a",
+        "ea6f6056ebcbcdb6dbae",
+        "efdeb8421c8697ee6380",
+        "f198f5762f6d1a574edd"
+      ]
+    },
+    {
+      "key": "sample-05",
+      "telemetry_sha256": "788fb7855bc84f5aba47cf5b5ffd83ababb11a30603a650a97abca5ef29e2bb0",
+      "expected_decision": "benign",
+      "useful_ids": [
+        "03dd620ad1f77837422f"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "f4f80277a2e8b1fb6657",
+        "other_event_id": "03dd620ad1f77837422f"
+      },
+      "finding_ids": [
+        "ATH-005:0972c99bf16b26e932fc",
+        "ATH-007:f4f80277a2e8b1fb6657"
+      ],
+      "case_ids": [
+        "0056f38a56f9c4c13ce9",
+        "0972c99bf16b26e932fc",
+        "10a10aa7bafb5d777dc5",
+        "12b2b6c2b4d09c8d10aa",
+        "2ffcc1ac3e48f7032579",
+        "4189601279963e5a71d9",
+        "5eba2bb1016dbde9bdb5",
+        "62331760ea4bc8b065aa",
+        "8d533a2ce6a51ef133e8",
+        "c8fab03bb6264a9275e5",
+        "cd590c97577b0db343e7",
+        "df22ba50c660b932fa9d",
+        "eebea4c9b8159c728c8c",
+        "f4f80277a2e8b1fb6657"
+      ]
+    },
+    {
+      "key": "sample-06",
+      "telemetry_sha256": "2626f48da5a21692488928274f1cfa65b554f12dfdfe1ff2fb66b879dbcf96c8",
+      "expected_decision": "abstain",
+      "useful_ids": [],
+      "link": null,
+      "finding_ids": [
+        "ATH-005:6f0d570d130548abd43f",
+        "ATH-007:400ac84113afe2e98ed1"
+      ],
+      "case_ids": [
+        "3291a689dee23bd1c30a",
+        "3c43b043330d32f62e20",
+        "3f6f45afdf53fa398bf7",
+        "400ac84113afe2e98ed1",
+        "56ea6448d193360884ec",
+        "6cd8de256ca10e280a8b",
+        "6f0d570d130548abd43f",
+        "84e0ade769b4dd9a34e3",
+        "9c330e4fda3a1a87eb61",
+        "9d0a6f410ea4899cb410",
+        "a309c5b96ca757467916",
+        "b160110d835e988ba71a",
+        "b38cbb3bc656a422c0a3",
+        "e0dc8a65a5e0ee2e31d3"
+      ]
+    }
+  ],
+  "profile": {
+    "version": "operational-v2",
+    "max_steps": 8,
+    "max_probes": 2,
+    "tool_call_budget": 64,
+    "tool_max_rows": 100,
+    "tool_max_chars": 2048,
+    "time_budget_seconds": 120.0,
+    "token_budget": 24000,
+    "max_output_tokens": 1536,
+    "max_prompt_bytes": 65536,
+    "reject_unretrieved": true,
+    "prompt_contract": true,
+    "ledger": true
+  },
+  "profile_sha256": "00a9d34a2a16870877a725e2f1e8d91d62c6fa983442b035856266fef8b53b7c",
+  "model": {
+    "provider": "ollama",
+    "base_url": "http://127.0.0.1:11434",
+    "daemon_version": "0.34.1",
+    "model": "qwen3.5:4b",
+    "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+    "size_bytes": 3389983735,
+    "modified_at": "2026-09-14T20:37:31.9120755+03:00",
+    "family": "qwen35",
+    "parameter_size": "4.7B",
+    "quantization_level": "Q4_K_M",
+    "format": "gguf",
+    "capabilities": [
+      "completion",
+      "vision",
+      "tools",
+      "thinking"
+    ],
+    "model_context_length": 262144,
+    "configuration": {
+      "provider": "ollama",
+      "model": "qwen3.5:4b",
+      "base_url": "http://127.0.0.1:11434",
+      "endpoint": "/api/chat",
+      "sampling": {
+        "temperature": 0.0,
+        "seed": 0
+      },
+      "num_ctx": 10240,
+      "num_predict_cap": 2048,
+      "think": false,
+      "format": "schema",
+      "format_schema_sha256": "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5",
+      "keep_alive": -1,
+      "timeout_seconds_per_attempt": 120,
+      "max_attempts": 1,
+      "backoff_seconds": 1.0,
+      "retryable_statuses": [
+        408,
+        409,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "chars_per_token_estimate": 3.0,
+      "transport": "urllib (stdlib); no SDK, by project choice"
+    }
+  },
+  "model_configuration": {
+    "provider": "ollama",
+    "model": "qwen3.5:4b",
+    "base_url": "http://127.0.0.1:11434",
+    "endpoint": "/api/chat",
+    "sampling": {
+      "temperature": 0.0,
+      "seed": 0
+    },
+    "num_ctx": 10240,
+    "num_predict_cap": 2048,
+    "think": false,
+    "format": "schema",
+    "format_schema_sha256": "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5",
+    "keep_alive": -1,
+    "timeout_seconds_per_attempt": 120,
+    "max_attempts": 1,
+    "backoff_seconds": 1.0,
+    "retryable_statuses": [
+      408,
+      409,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "chars_per_token_estimate": 3.0,
+    "transport": "urllib (stdlib); no SDK, by project choice"
+  },
+  "runtime": {
+    "python": "3.11.9",
+    "pandas": "2.3.3",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "freeze_sha256": "3ef813fb610b9374c4488bdaa4bcc8d7fcdf6c10e945d2a7c2f306060a218641"
+}

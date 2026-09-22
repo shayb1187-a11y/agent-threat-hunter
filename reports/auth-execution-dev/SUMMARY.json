@@ -1,0 +1,76 @@
+{
+  "freeze_sha256": "2a3676a862d60d2059fdad4c95cacc20e2fa03b4c038429263263ff4f30da1da",
+  "split": "dev",
+  "complete_comparison": false,
+  "missing_rows": [
+    [
+      "sample-01",
+      "d1",
+      1
+    ],
+    [
+      "sample-02",
+      "d1",
+      1
+    ],
+    [
+      "sample-03",
+      "d1",
+      1
+    ]
+  ],
+  "scripted": false,
+  "arms": {
+    "deterministic": {
+      "rows": 3,
+      "complete": 3,
+      "accuracy": 0.3333333333333333,
+      "false_malicious": 1,
+      "false_benign": 0,
+      "missing_data_abstained": 0,
+      "useful_retrieved": 2,
+      "useful_cited": 2,
+      "useful_available": 2,
+      "link_available": 2,
+      "link_recovered": 2,
+      "rejected_claims": 0,
+      "accepted_invalid_predicates": 0,
+      "label_counts": {
+        "malicious": 1,
+        "benign": 1,
+        "abstain": 1
+      },
+      "median_seconds": 0.049853599979542196,
+      "max_seconds": 0.05318650003755465,
+      "known_tokens": 0,
+      "unknown_usage_rows": 0
+    },
+    "d1": {
+      "rows": 0,
+      "complete": 0,
+      "accuracy": null,
+      "false_malicious": 0,
+      "false_benign": 0,
+      "missing_data_abstained": 0,
+      "useful_retrieved": 0,
+      "useful_cited": 0,
+      "useful_available": 0,
+      "link_available": 0,
+      "link_recovered": 0,
+      "rejected_claims": 0,
+      "accepted_invalid_predicates": 0,
+      "label_counts": {
+        "malicious": 0,
+        "benign": 0,
+        "abstain": 0
+      },
+      "median_seconds": null,
+      "max_seconds": null,
+      "known_tokens": 0,
+      "unknown_usage_rows": 0
+    }
+  },
+  "conclusion": "investigative value not demonstrated",
+  "limitations": "Simulator intent is known; telemetry may not establish intent. The unknown cases deliberately omit the discriminating child process. Free-text semantic correctness and analyst time savings require human review and are not scored as zero errors.",
+  "analyst_time_savings": null
+}

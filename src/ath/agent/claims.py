@@ -36,9 +36,10 @@ chatbot does -- destroys exactly the information the analyst needs.
 
 The verifier
 ------------
-:class:`ClaimVerifier` enforces these rules mechanically against real telemetry. It is
-the anti-hallucination control, and it is Python, not a prompt instruction. A claim
-citing ``evt-999999`` is rejected regardless of how confident or well-written it is.
+:class:`ClaimVerifier` checks citation integrity and provenance. Optional typed
+assertions additionally check specific telemetry predicates. A claim citing an
+unknown event is rejected, but accepted free-text interpretations are not thereby
+verified. Operational-v2 reserves FACT for deterministically rendered observations.
 """
 
 from __future__ import annotations
@@ -47,6 +48,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+from ath.agent.evidence import EvidenceAssertion, EvidenceCheck, EvidenceStatus, EvidenceVerifier
 from ath.telemetry.loader import Telemetry
 
 
@@ -94,8 +96,11 @@ class Claim:
     source: str = "tool"
     agent: str = ""
     confidence: float | None = None
+    assertions: tuple[EvidenceAssertion, ...] = ()
 
     def __post_init__(self) -> None:
+        if not isinstance(self.assertions, tuple) or any(not isinstance(a, EvidenceAssertion) for a in self.assertions):
+            raise ValueError("assertions must be a tuple of EvidenceAssertion values")
         if self.claim_type.requires_evidence and not self.evidence_ids:
             raise ValueError(
                 f"A {self.claim_type.value} must cite evidence: {self.statement!r}. "
@@ -118,6 +123,7 @@ class Claim:
             "source": self.source,
             "agent": self.agent,
             "confidence": self.confidence,
+            **({"assertions": [a.to_dict() for a in self.assertions]} if self.assertions else {}),
         }
 
     def __str__(self) -> str:
@@ -161,11 +167,13 @@ class ClaimVerifier:
 
     This is the control that makes a model-assisted pipeline auditable. It does not ask
     the model to be careful; it checks the model's output against the dataset and drops
-    whatever fails. Rejections are *kept* rather than silently discarded, so a
-    hallucination rate is a measurable property of the system rather than a vibe.
+    whatever fails. Rejections are kept for audit. This measures reference and typed
+    predicate failures, not the semantic correctness of arbitrary prose.
     """
 
     def __init__(self, telemetry: Telemetry) -> None:
+        self._telemetry = telemetry
+        self._evidence_verifier: EvidenceVerifier | None = None
         self._known_ids: set[str] = set(
             telemetry.processes["event_id"].tolist()
             + telemetry.network["event_id"].tolist()
@@ -204,7 +212,27 @@ class ClaimVerifier:
             return f"a {claim.claim_type.value} must cite evidence"
         if claim.claim_type is ClaimType.FACT and claim.source not in DETERMINISTIC_SOURCES:
             return f"source {claim.source!r} is not permitted to author a FACT"
+        if claim.assertions:
+            asserted_ids = {event_id for a in claim.assertions for event_id in a.event_ids}
+            if not asserted_ids <= set(claim.evidence_ids):
+                return "assertion references evidence outside the claim's citations"
+            if claim.claim_type is ClaimType.FACT:
+                if claim.statement != " ".join(a.render() for a in claim.assertions):
+                    return "structured FACT must use the deterministic assertion wording"
+                if asserted_ids != set(claim.evidence_ids):
+                    return "structured FACT citations must exactly match its assertions"
+            for check in self.evidence_checks(claim):
+                if check.status is not EvidenceStatus.SUPPORTED:
+                    return f"{check.assertion.kind.value} {check.status.value}: {check.reason}"
         return None
+
+    def evidence_checks(self, claim: Claim) -> list[EvidenceCheck]:
+        """Checks apply to typed predicates only, never to an inference's free prose."""
+        if not claim.assertions:
+            return []
+        if self._evidence_verifier is None:
+            self._evidence_verifier = EvidenceVerifier(self._telemetry)
+        return [self._evidence_verifier.check(assertion) for assertion in claim.assertions]
 
     def verify(
         self, claims: list[Claim], retrieved: frozenset[str] | None = None,

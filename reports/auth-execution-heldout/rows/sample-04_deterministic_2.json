@@ -1,0 +1,1791 @@
+{
+  "sample": "sample-04",
+  "arm": "deterministic",
+  "scripted": false,
+  "scores": {
+    "expected_decision": "malicious",
+    "decision": "malicious",
+    "complete": true,
+    "correct": true,
+    "false_malicious": false,
+    "false_benign": false,
+    "missing_data_abstained": false,
+    "useful_available": 1,
+    "useful_retrieved": 1,
+    "useful_cited": 1,
+    "link_available": true,
+    "link_recovered": true,
+    "rejected_claims": 0,
+    "accepted_invalid_predicates": 0,
+    "unverified_prose": 0,
+    "semantic_prose_correctness": null,
+    "elapsed_seconds": 0.04759799997555092,
+    "tokens": 0,
+    "local_api_charge_usd": 0.0,
+    "hardware_energy_cost_usd": null
+  },
+  "state": {
+    "case_id": "CASE-001",
+    "run_id": "4d27d59b-bc91-423c-ada7-e16fee503a56",
+    "status": "complete",
+    "steps": 3,
+    "agents_run": [
+      "endpoint",
+      "identity",
+      "attack"
+    ],
+    "started_at": "2026-09-22T19:02:32.543237+00:00",
+    "counts": {
+      "facts": 30,
+      "inferences": 11,
+      "hypotheses": 0,
+      "rejected": 0,
+      "tool_calls": 8
+    },
+    "llm": {
+      "requested": false,
+      "degraded": false,
+      "status": "deterministic mode (no model requested)",
+      "errors": [],
+      "unparseable_responses": 0,
+      "unparseable_by_kind": {},
+      "planner": {
+        "multi_candidate_steps": 2,
+        "chosen_by_model": 0,
+        "fallbacks": {},
+        "decisions": {
+          "only-eligible": 1,
+          "planner-not-consulted": 2
+        }
+      }
+    },
+    "investigation": {
+      "evidence_verification": {
+        "version": "structured-evidence-v1",
+        "schema_sha256": "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5",
+        "claims": [],
+        "observations_verified": 30,
+        "summaries_reclassified": 5,
+        "observation_events_considered": 28,
+        "observation_events_omitted": 0,
+        "interpretation_verified": false
+      },
+      "operational": {
+        "profile": {
+          "version": "operational-v2",
+          "max_steps": 8,
+          "max_probes": 2,
+          "tool_call_budget": 64,
+          "tool_max_rows": 100,
+          "tool_max_chars": 2048,
+          "time_budget_seconds": 120.0,
+          "token_budget": 24000,
+          "max_output_tokens": 1536,
+          "max_prompt_bytes": 65536,
+          "reject_unretrieved": true,
+          "prompt_contract": true,
+          "ledger": true
+        },
+        "profile_sha256": "00a9d34a2a16870877a725e2f1e8d91d62c6fa983442b035856266fef8b53b7c",
+        "engine": "deterministic",
+        "outcome": "complete",
+        "reasons": [],
+        "engine_status": "complete",
+        "model_disposition": null,
+        "elapsed_seconds": 0.04759799997555092,
+        "tokens_used": null,
+        "tool_calls_served": 8,
+        "tool_calls_refused": 0,
+        "tool_results_truncated": 0
+      }
+    },
+    "claims": [
+      {
+        "type": "INFERENCE",
+        "statement": "Unverified summary: On WS-8970, cmd.exe (PID 500) was started by services.exe under account acct-9059.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2"
+        ],
+        "source": "tool",
+        "agent": "endpoint",
+        "confidence": null
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Unverified summary: Execution chain on WS-8970: wininit.exe -> services.exe -> cmd.exe.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2",
+          "fd3cdf8005f7bbcb5ecb"
+        ],
+        "source": "tool",
+        "agent": "endpoint",
+        "confidence": null
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Unverified summary: cmd.exe (PID 500) on WS-8970 spawned 1 child process(es): esentutl.exe.",
+        "evidence_ids": [
+          "791897726164acd6df98"
+        ],
+        "source": "tool",
+        "agent": "endpoint",
+        "confidence": null
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Unverified summary: Account 'acct-9059' has 25 authentication events (12 failed, 13 successful) across hosts OFFICE-01, WS-8970.",
+        "evidence_ids": [
+          "03eab2e802d7ed633859",
+          "d4a2658973d95e6b6fcc",
+          "54d810617eb96787bf4c",
+          "34bfbecaae10c13d321e",
+          "0066f70d2a460cb4c368",
+          "bea238084a7223fa45e5",
+          "3e1f800c10c8a00a22f3",
+          "1d6731fb665b8d587408",
+          "5664ff226c6c4a55ccd3",
+          "efdeb8421c8697ee6380",
+          "b86189c1454d4520a0c1",
+          "ea6f6056ebcbcdb6dbae",
+          "e5d6bad15fc506b9b23a",
+          "b32d84afa941e4e7831a",
+          "1c3b7e7344d21cd95602",
+          "365d58ce78edc919d023",
+          "3cbb42be0b7385c241cc",
+          "f198f5762f6d1a574edd",
+          "a867703fea3829900d93",
+          "7d4dddb2e7c6bdc5cd7a",
+          "787fcab9e01b5780b13d",
+          "f4a7063ce24ea1df27a6",
+          "f89750a4f8561b16cbb2",
+          "88f0166c03bdf7e6f9e1",
+          "112f7d662d5f4fc66bc7"
+        ],
+        "source": "tool",
+        "agent": "identity",
+        "confidence": null
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Unverified summary: Account 'acct-9059' authenticated from more than one source host: OFFICE-01, WS-5457.",
+        "evidence_ids": [
+          "03eab2e802d7ed633859",
+          "d4a2658973d95e6b6fcc",
+          "54d810617eb96787bf4c",
+          "34bfbecaae10c13d321e",
+          "0066f70d2a460cb4c368",
+          "bea238084a7223fa45e5",
+          "3e1f800c10c8a00a22f3",
+          "1d6731fb665b8d587408",
+          "5664ff226c6c4a55ccd3",
+          "efdeb8421c8697ee6380",
+          "b86189c1454d4520a0c1",
+          "ea6f6056ebcbcdb6dbae",
+          "e5d6bad15fc506b9b23a",
+          "b32d84afa941e4e7831a",
+          "1c3b7e7344d21cd95602",
+          "365d58ce78edc919d023",
+          "3cbb42be0b7385c241cc",
+          "f198f5762f6d1a574edd",
+          "a867703fea3829900d93",
+          "7d4dddb2e7c6bdc5cd7a",
+          "787fcab9e01b5780b13d",
+          "f4a7063ce24ea1df27a6",
+          "f89750a4f8561b16cbb2",
+          "88f0166c03bdf7e6f9e1",
+          "112f7d662d5f4fc66bc7"
+        ],
+        "source": "tool",
+        "agent": "identity",
+        "confidence": null
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "The 12 failed authentications for 'acct-9059' followed by success are consistent with the account's password having been guessed rather than with ordinary user error.",
+        "evidence_ids": [
+          "d4a2658973d95e6b6fcc",
+          "54d810617eb96787bf4c",
+          "0066f70d2a460cb4c368",
+          "3e1f800c10c8a00a22f3",
+          "1d6731fb665b8d587408",
+          "efdeb8421c8697ee6380",
+          "ea6f6056ebcbcdb6dbae",
+          "e5d6bad15fc506b9b23a",
+          "1c3b7e7344d21cd95602",
+          "3cbb42be0b7385c241cc",
+          "f198f5762f6d1a574edd",
+          "7d4dddb2e7c6bdc5cd7a"
+        ],
+        "source": "analysis",
+        "agent": "identity",
+        "confidence": 0.85
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Behaviour cited by ATH-005 is consistent with T1110.001 Brute Force: Password Guessing (Credential Access). Repeated failed authentications for a single account from a single source are consistent with systematically guessing that account's password. (A spray against many accounts would be T1110.003 and is not what was observed.)",
+        "evidence_ids": [
+          "d4a2658973d95e6b6fcc",
+          "54d810617eb96787bf4c",
+          "0066f70d2a460cb4c368",
+          "3e1f800c10c8a00a22f3",
+          "1d6731fb665b8d587408",
+          "efdeb8421c8697ee6380",
+          "ea6f6056ebcbcdb6dbae",
+          "e5d6bad15fc506b9b23a",
+          "1c3b7e7344d21cd95602",
+          "3cbb42be0b7385c241cc",
+          "f198f5762f6d1a574edd",
+          "7d4dddb2e7c6bdc5cd7a",
+          "88f0166c03bdf7e6f9e1"
+        ],
+        "source": "mitre",
+        "agent": "attack",
+        "confidence": 0.9
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Behaviour cited by ATH-007 is consistent with T1569.002 System Services: Service Execution (Execution). A command interpreter was started by the Service Control Manager, which is the defining behaviour of executing a payload as a Windows service.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2"
+        ],
+        "source": "mitre",
+        "agent": "attack",
+        "confidence": 0.9
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Behaviour cited by ATH-005 is consistent with T1078 Valid Accounts (Persistence). A successful authentication followed the failure burst, which is consistent with the account credential now being under adversary control.",
+        "evidence_ids": [
+          "d4a2658973d95e6b6fcc",
+          "54d810617eb96787bf4c",
+          "0066f70d2a460cb4c368",
+          "3e1f800c10c8a00a22f3",
+          "1d6731fb665b8d587408",
+          "efdeb8421c8697ee6380",
+          "ea6f6056ebcbcdb6dbae",
+          "e5d6bad15fc506b9b23a",
+          "1c3b7e7344d21cd95602",
+          "3cbb42be0b7385c241cc",
+          "f198f5762f6d1a574edd",
+          "7d4dddb2e7c6bdc5cd7a",
+          "88f0166c03bdf7e6f9e1"
+        ],
+        "source": "mitre",
+        "agent": "attack",
+        "confidence": 0.6
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "Behaviour cited by ATH-007 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). Command output was redirected to an administrative share, indicating the service was driven over an authenticated SMB session from another host.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2"
+        ],
+        "source": "mitre",
+        "agent": "attack",
+        "confidence": 0.6
+      },
+      {
+        "type": "INFERENCE",
+        "statement": "The case spans 4 ATT&CK tactics (Execution -> Persistence -> Credential Access -> Lateral Movement). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+        "evidence_ids": [
+          "0066f70d2a460cb4c368",
+          "1c3b7e7344d21cd95602",
+          "1d6731fb665b8d587408",
+          "1ef7515e5a7e4b7ff8f2",
+          "3cbb42be0b7385c241cc",
+          "3e1f800c10c8a00a22f3",
+          "54d810617eb96787bf4c",
+          "7d4dddb2e7c6bdc5cd7a",
+          "88f0166c03bdf7e6f9e1",
+          "d4a2658973d95e6b6fcc",
+          "e5d6bad15fc506b9b23a",
+          "ea6f6056ebcbcdb6dbae",
+          "efdeb8421c8697ee6380",
+          "f198f5762f6d1a574edd"
+        ],
+        "source": "mitre",
+        "agent": "attack",
+        "confidence": 0.8
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 0066f70d2a460cb4c368 records outcome failure.",
+        "evidence_ids": [
+          "0066f70d2a460cb4c368"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "0066f70d2a460cb4c368",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 03eab2e802d7ed633859 records outcome success.",
+        "evidence_ids": [
+          "03eab2e802d7ed633859"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "03eab2e802d7ed633859",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 112f7d662d5f4fc66bc7 records outcome success.",
+        "evidence_ids": [
+          "112f7d662d5f4fc66bc7"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "112f7d662d5f4fc66bc7",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 1c3b7e7344d21cd95602 records outcome failure.",
+        "evidence_ids": [
+          "1c3b7e7344d21cd95602"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "1c3b7e7344d21cd95602",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 1d6731fb665b8d587408 records outcome failure.",
+        "evidence_ids": [
+          "1d6731fb665b8d587408"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "1d6731fb665b8d587408",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Event 1ef7515e5a7e4b7ff8f2 records process identity sysmon:d267f8abbf3b61f619ee17b14e39853b.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "process_identity",
+            "event_id": "1ef7515e5a7e4b7ff8f2",
+            "expected": "sysmon:d267f8abbf3b61f619ee17b14e39853b"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 34bfbecaae10c13d321e records outcome success.",
+        "evidence_ids": [
+          "34bfbecaae10c13d321e"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "34bfbecaae10c13d321e",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 365d58ce78edc919d023 records outcome success.",
+        "evidence_ids": [
+          "365d58ce78edc919d023"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "365d58ce78edc919d023",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 3cbb42be0b7385c241cc records outcome failure.",
+        "evidence_ids": [
+          "3cbb42be0b7385c241cc"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "3cbb42be0b7385c241cc",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 3e1f800c10c8a00a22f3 records outcome failure.",
+        "evidence_ids": [
+          "3e1f800c10c8a00a22f3"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "3e1f800c10c8a00a22f3",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 54d810617eb96787bf4c records outcome failure.",
+        "evidence_ids": [
+          "54d810617eb96787bf4c"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "54d810617eb96787bf4c",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 5664ff226c6c4a55ccd3 records outcome success.",
+        "evidence_ids": [
+          "5664ff226c6c4a55ccd3"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "5664ff226c6c4a55ccd3",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 787fcab9e01b5780b13d records outcome success.",
+        "evidence_ids": [
+          "787fcab9e01b5780b13d"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "787fcab9e01b5780b13d",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Event 791897726164acd6df98 records process identity sysmon:9b18c19b14606d744f8a8accc229e5aa.",
+        "evidence_ids": [
+          "791897726164acd6df98"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "process_identity",
+            "event_id": "791897726164acd6df98",
+            "expected": "sysmon:9b18c19b14606d744f8a8accc229e5aa"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 7d4dddb2e7c6bdc5cd7a records outcome failure.",
+        "evidence_ids": [
+          "7d4dddb2e7c6bdc5cd7a"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "7d4dddb2e7c6bdc5cd7a",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event 88f0166c03bdf7e6f9e1 records outcome success.",
+        "evidence_ids": [
+          "88f0166c03bdf7e6f9e1"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "88f0166c03bdf7e6f9e1",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event a867703fea3829900d93 records outcome success.",
+        "evidence_ids": [
+          "a867703fea3829900d93"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "a867703fea3829900d93",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event b32d84afa941e4e7831a records outcome success.",
+        "evidence_ids": [
+          "b32d84afa941e4e7831a"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "b32d84afa941e4e7831a",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event b86189c1454d4520a0c1 records outcome success.",
+        "evidence_ids": [
+          "b86189c1454d4520a0c1"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "b86189c1454d4520a0c1",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event bea238084a7223fa45e5 records outcome success.",
+        "evidence_ids": [
+          "bea238084a7223fa45e5"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "bea238084a7223fa45e5",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event d4a2658973d95e6b6fcc records outcome failure.",
+        "evidence_ids": [
+          "d4a2658973d95e6b6fcc"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "d4a2658973d95e6b6fcc",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event e5d6bad15fc506b9b23a records outcome failure.",
+        "evidence_ids": [
+          "e5d6bad15fc506b9b23a"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "e5d6bad15fc506b9b23a",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event ea6f6056ebcbcdb6dbae records outcome failure.",
+        "evidence_ids": [
+          "ea6f6056ebcbcdb6dbae"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "ea6f6056ebcbcdb6dbae",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event efdeb8421c8697ee6380 records outcome failure.",
+        "evidence_ids": [
+          "efdeb8421c8697ee6380"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "efdeb8421c8697ee6380",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event f198f5762f6d1a574edd records outcome failure.",
+        "evidence_ids": [
+          "f198f5762f6d1a574edd"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "f198f5762f6d1a574edd",
+            "expected": "failure"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event f4a7063ce24ea1df27a6 records outcome success.",
+        "evidence_ids": [
+          "f4a7063ce24ea1df27a6"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "f4a7063ce24ea1df27a6",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Authentication event f89750a4f8561b16cbb2 records outcome success.",
+        "evidence_ids": [
+          "f89750a4f8561b16cbb2"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "auth_outcome",
+            "event_id": "f89750a4f8561b16cbb2",
+            "expected": "success"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Event fd3cdf8005f7bbcb5ecb records process identity sysmon:ed1d9b919426a9b3bb06f5d4102fac1d.",
+        "evidence_ids": [
+          "fd3cdf8005f7bbcb5ecb"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "process_identity",
+            "event_id": "fd3cdf8005f7bbcb5ecb",
+            "expected": "sysmon:ed1d9b919426a9b3bb06f5d4102fac1d"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Process event 1ef7515e5a7e4b7ff8f2 identifies the instance in fd3cdf8005f7bbcb5ecb as its parent.",
+        "evidence_ids": [
+          "fd3cdf8005f7bbcb5ecb",
+          "1ef7515e5a7e4b7ff8f2"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "parent_child",
+            "event_id": "fd3cdf8005f7bbcb5ecb",
+            "other_event_id": "1ef7515e5a7e4b7ff8f2"
+          }
+        ]
+      },
+      {
+        "type": "FACT",
+        "statement": "Process event 791897726164acd6df98 identifies the instance in 1ef7515e5a7e4b7ff8f2 as its parent.",
+        "evidence_ids": [
+          "1ef7515e5a7e4b7ff8f2",
+          "791897726164acd6df98"
+        ],
+        "source": "telemetry",
+        "agent": "evidence_verifier",
+        "confidence": null,
+        "assertions": [
+          {
+            "kind": "parent_child",
+            "event_id": "1ef7515e5a7e4b7ff8f2",
+            "other_event_id": "791897726164acd6df98"
+          }
+        ]
+      }
+    ],
+    "rejected_claims": [],
+    "plan_log": [
+      "step 1: endpoint -- deterministic priority order; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ATH-007)",
+      "step 2: identity -- deterministic priority order; case evidence rests on auth_source_attribution, authentication telemetry (from ATH-005)",
+      "step 3: attack -- only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+      "step 4: stop -- no specialist has further useful work on the available evidence",
+      "evidence verification: 30 checked observations; 5 summaries reclassified"
+    ],
+    "results": [
+      {
+        "agent": "endpoint",
+        "ran_because": "deterministic priority order; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ATH-007)",
+        "claims": [
+          {
+            "type": "INFERENCE",
+            "statement": "Unverified summary: On WS-8970, cmd.exe (PID 500) was started by services.exe under account acct-9059.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "source": "tool",
+            "agent": "endpoint",
+            "confidence": null
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Unverified summary: Execution chain on WS-8970: wininit.exe -> services.exe -> cmd.exe.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2",
+              "fd3cdf8005f7bbcb5ecb"
+            ],
+            "source": "tool",
+            "agent": "endpoint",
+            "confidence": null
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Unverified summary: cmd.exe (PID 500) on WS-8970 spawned 1 child process(es): esentutl.exe.",
+            "evidence_ids": [
+              "791897726164acd6df98"
+            ],
+            "source": "tool",
+            "agent": "endpoint",
+            "confidence": null
+          }
+        ],
+        "tool_calls": [
+          {
+            "tool": "get_events",
+            "arguments": {
+              "event_ids": [
+                "d4a2658973d95e6b6fcc",
+                "54d810617eb96787bf4c",
+                "0066f70d2a460cb4c368",
+                "3e1f800c10c8a00a22f3",
+                "1d6731fb665b8d587408",
+                "efdeb8421c8697ee6380",
+                "ea6f6056ebcbcdb6dbae",
+                "e5d6bad15fc506b9b23a",
+                "1c3b7e7344d21cd95602",
+                "3cbb42be0b7385c241cc",
+                "f198f5762f6d1a574edd",
+                "7d4dddb2e7c6bdc5cd7a",
+                "88f0166c03bdf7e6f9e1"
+              ]
+            },
+            "agent": "endpoint",
+            "result_summary": "13/13 found",
+            "event_ids": [
+              "0066f70d2a460cb4c368",
+              "1c3b7e7344d21cd95602",
+              "1d6731fb665b8d587408",
+              "3cbb42be0b7385c241cc",
+              "3e1f800c10c8a00a22f3",
+              "54d810617eb96787bf4c",
+              "7d4dddb2e7c6bdc5cd7a",
+              "88f0166c03bdf7e6f9e1",
+              "d4a2658973d95e6b6fcc",
+              "e5d6bad15fc506b9b23a",
+              "ea6f6056ebcbcdb6dbae",
+              "efdeb8421c8697ee6380",
+              "f198f5762f6d1a574edd"
+            ],
+            "called_at": "2026-09-22T19:02:32.543237+00:00",
+            "args_sha256": "09637f731906bb08847b787258be7d10cb7d120f90496bfd5c7e7d9dc69ce619",
+            "result_sha256": "13809511e3b6550c67902bd24a79777946713836939db066f4bffd147925add2"
+          },
+          {
+            "tool": "get_events",
+            "arguments": {
+              "event_ids": [
+                "1ef7515e5a7e4b7ff8f2"
+              ]
+            },
+            "agent": "endpoint",
+            "result_summary": "1/1 found",
+            "event_ids": [
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "called_at": "2026-09-22T19:02:32.543237+00:00",
+            "args_sha256": "ebbd41915f21011c85dc56e80297eea6b29b230b6ab71ae1e075fcba054da3c4",
+            "result_sha256": "00500cd6febb33f1922cce97cf3143edb9327806dfca6ee1aca10e1bded8be7f"
+          },
+          {
+            "tool": "process_tree",
+            "arguments": {
+              "device": "WS-8970",
+              "pid": 500,
+              "process_guid": "sysmon:d267f8abbf3b61f619ee17b14e39853b",
+              "depth": 3
+            },
+            "agent": "endpoint",
+            "result_summary": "2 ancestor(s), 1 child(ren)",
+            "event_ids": [
+              "1ef7515e5a7e4b7ff8f2",
+              "fd3cdf8005f7bbcb5ecb",
+              "791897726164acd6df98"
+            ],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "818022c49b870f92ed4cf95ce3ebe5b8a1ac4d14828e398bf7b63a3bdbe36e1e",
+            "result_sha256": "d245d219af9832cde035f76f391a8e158069a3f1e8507ad143ed4fa83e1b67a6"
+          }
+        ],
+        "follow_up": [],
+        "notes": []
+      },
+      {
+        "agent": "identity",
+        "ran_because": "deterministic priority order; case evidence rests on auth_source_attribution, authentication telemetry (from ATH-005)",
+        "claims": [
+          {
+            "type": "INFERENCE",
+            "statement": "Unverified summary: Account 'acct-9059' has 25 authentication events (12 failed, 13 successful) across hosts OFFICE-01, WS-8970.",
+            "evidence_ids": [
+              "03eab2e802d7ed633859",
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "34bfbecaae10c13d321e",
+              "0066f70d2a460cb4c368",
+              "bea238084a7223fa45e5",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "5664ff226c6c4a55ccd3",
+              "efdeb8421c8697ee6380",
+              "b86189c1454d4520a0c1",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "b32d84afa941e4e7831a",
+              "1c3b7e7344d21cd95602",
+              "365d58ce78edc919d023",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "a867703fea3829900d93",
+              "7d4dddb2e7c6bdc5cd7a",
+              "787fcab9e01b5780b13d",
+              "f4a7063ce24ea1df27a6",
+              "f89750a4f8561b16cbb2",
+              "88f0166c03bdf7e6f9e1",
+              "112f7d662d5f4fc66bc7"
+            ],
+            "source": "tool",
+            "agent": "identity",
+            "confidence": null
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Unverified summary: Account 'acct-9059' authenticated from more than one source host: OFFICE-01, WS-5457.",
+            "evidence_ids": [
+              "03eab2e802d7ed633859",
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "34bfbecaae10c13d321e",
+              "0066f70d2a460cb4c368",
+              "bea238084a7223fa45e5",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "5664ff226c6c4a55ccd3",
+              "efdeb8421c8697ee6380",
+              "b86189c1454d4520a0c1",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "b32d84afa941e4e7831a",
+              "1c3b7e7344d21cd95602",
+              "365d58ce78edc919d023",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "a867703fea3829900d93",
+              "7d4dddb2e7c6bdc5cd7a",
+              "787fcab9e01b5780b13d",
+              "f4a7063ce24ea1df27a6",
+              "f89750a4f8561b16cbb2",
+              "88f0166c03bdf7e6f9e1",
+              "112f7d662d5f4fc66bc7"
+            ],
+            "source": "tool",
+            "agent": "identity",
+            "confidence": null
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "The 12 failed authentications for 'acct-9059' followed by success are consistent with the account's password having been guessed rather than with ordinary user error.",
+            "evidence_ids": [
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "0066f70d2a460cb4c368",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "efdeb8421c8697ee6380",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "1c3b7e7344d21cd95602",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "7d4dddb2e7c6bdc5cd7a"
+            ],
+            "source": "analysis",
+            "agent": "identity",
+            "confidence": 0.85
+          }
+        ],
+        "tool_calls": [
+          {
+            "tool": "user_auth_history",
+            "arguments": {
+              "user": "acct-9059"
+            },
+            "agent": "identity",
+            "result_summary": "25 logons (12 failed)",
+            "event_ids": [
+              "03eab2e802d7ed633859",
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "34bfbecaae10c13d321e",
+              "0066f70d2a460cb4c368",
+              "bea238084a7223fa45e5",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "5664ff226c6c4a55ccd3",
+              "efdeb8421c8697ee6380",
+              "b86189c1454d4520a0c1",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "b32d84afa941e4e7831a",
+              "1c3b7e7344d21cd95602",
+              "365d58ce78edc919d023",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "a867703fea3829900d93",
+              "7d4dddb2e7c6bdc5cd7a",
+              "787fcab9e01b5780b13d",
+              "f4a7063ce24ea1df27a6",
+              "f89750a4f8561b16cbb2",
+              "88f0166c03bdf7e6f9e1",
+              "112f7d662d5f4fc66bc7"
+            ],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "6616d11cc380a45af935caa6994324aa7c62d8c712ca29c2add8069bcd41236b",
+            "result_sha256": "dec4e4980396b105f256d2f6af4f4d1333ee6e44169830d4f0361480bd0aa794"
+          }
+        ],
+        "follow_up": [
+          "network"
+        ],
+        "notes": []
+      },
+      {
+        "agent": "attack",
+        "ran_because": "only eligible specialist; case has ATT&CK mappings and domain evidence has been gathered",
+        "claims": [
+          {
+            "type": "INFERENCE",
+            "statement": "Behaviour cited by ATH-005 is consistent with T1110.001 Brute Force: Password Guessing (Credential Access). Repeated failed authentications for a single account from a single source are consistent with systematically guessing that account's password. (A spray against many accounts would be T1110.003 and is not what was observed.)",
+            "evidence_ids": [
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "0066f70d2a460cb4c368",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "efdeb8421c8697ee6380",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "1c3b7e7344d21cd95602",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "7d4dddb2e7c6bdc5cd7a",
+              "88f0166c03bdf7e6f9e1"
+            ],
+            "source": "mitre",
+            "agent": "attack",
+            "confidence": 0.9
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Behaviour cited by ATH-007 is consistent with T1569.002 System Services: Service Execution (Execution). A command interpreter was started by the Service Control Manager, which is the defining behaviour of executing a payload as a Windows service.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "source": "mitre",
+            "agent": "attack",
+            "confidence": 0.9
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Behaviour cited by ATH-005 is consistent with T1078 Valid Accounts (Persistence). A successful authentication followed the failure burst, which is consistent with the account credential now being under adversary control.",
+            "evidence_ids": [
+              "d4a2658973d95e6b6fcc",
+              "54d810617eb96787bf4c",
+              "0066f70d2a460cb4c368",
+              "3e1f800c10c8a00a22f3",
+              "1d6731fb665b8d587408",
+              "efdeb8421c8697ee6380",
+              "ea6f6056ebcbcdb6dbae",
+              "e5d6bad15fc506b9b23a",
+              "1c3b7e7344d21cd95602",
+              "3cbb42be0b7385c241cc",
+              "f198f5762f6d1a574edd",
+              "7d4dddb2e7c6bdc5cd7a",
+              "88f0166c03bdf7e6f9e1"
+            ],
+            "source": "mitre",
+            "agent": "attack",
+            "confidence": 0.6
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "Behaviour cited by ATH-007 is consistent with T1021.002 Remote Services: SMB/Windows Admin Shares (Lateral Movement). Command output was redirected to an administrative share, indicating the service was driven over an authenticated SMB session from another host.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "source": "mitre",
+            "agent": "attack",
+            "confidence": 0.6
+          },
+          {
+            "type": "INFERENCE",
+            "statement": "The case spans 4 ATT&CK tactics (Execution -> Persistence -> Credential Access -> Lateral Movement). Progression across multiple tactics is harder to explain as coincidental than activity confined to one.",
+            "evidence_ids": [
+              "0066f70d2a460cb4c368",
+              "1c3b7e7344d21cd95602",
+              "1d6731fb665b8d587408",
+              "1ef7515e5a7e4b7ff8f2",
+              "3cbb42be0b7385c241cc",
+              "3e1f800c10c8a00a22f3",
+              "54d810617eb96787bf4c",
+              "7d4dddb2e7c6bdc5cd7a",
+              "88f0166c03bdf7e6f9e1",
+              "d4a2658973d95e6b6fcc",
+              "e5d6bad15fc506b9b23a",
+              "ea6f6056ebcbcdb6dbae",
+              "efdeb8421c8697ee6380",
+              "f198f5762f6d1a574edd"
+            ],
+            "source": "mitre",
+            "agent": "attack",
+            "confidence": 0.8
+          }
+        ],
+        "tool_calls": [
+          {
+            "tool": "lookup_technique",
+            "arguments": {
+              "technique_id": "T1110.001"
+            },
+            "agent": "attack",
+            "result_summary": "Password Guessing",
+            "event_ids": [],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "f16b79efd987a1ee7189429d30b3b6cc3758ce85517f920c12d2f3b569cb0e8d",
+            "result_sha256": "2dc1db7a609a5fc79114dd687ec017327ae66f0b747bdb34de7beca68d170fc4"
+          },
+          {
+            "tool": "lookup_technique",
+            "arguments": {
+              "technique_id": "T1569.002"
+            },
+            "agent": "attack",
+            "result_summary": "Service Execution",
+            "event_ids": [],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "4cb2610951a30f974bcae84671bf265a8a7339c12bda755ec8f39e7c1bcc4a57",
+            "result_sha256": "89307e3ce168b2606855e2ea615a7ebb30dd270717f21c9e391f2d2810eaf263"
+          },
+          {
+            "tool": "lookup_technique",
+            "arguments": {
+              "technique_id": "T1078"
+            },
+            "agent": "attack",
+            "result_summary": "Valid Accounts",
+            "event_ids": [],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "09f5a2e0f7c3dd6650a8488461b3b5da701c324d5ec509171b87dd1f20f98fdb",
+            "result_sha256": "2772764bca6ad56946bc0cc39e4f8cb9f3e7bac4985b66441365561393cdf7be"
+          },
+          {
+            "tool": "lookup_technique",
+            "arguments": {
+              "technique_id": "T1021.002"
+            },
+            "agent": "attack",
+            "result_summary": "SMB/Windows Admin Shares",
+            "event_ids": [],
+            "called_at": "2026-09-22T19:02:32.557423+00:00",
+            "args_sha256": "4420051fc7b9427469b3595f37d9b4846164b64798e9fe1f1a7d55875dd6bb59",
+            "result_sha256": "aecb6c8cc6204c7c39a5478f699bd4362d14f5895a043817c63acc67879210b3"
+          }
+        ],
+        "follow_up": [],
+        "notes": [
+          "No evidence was found for the following tactics: Collection. Their absence may reflect either that the activity did not occur or that we lack the telemetry to see it."
+        ]
+      },
+      {
+        "agent": "evidence_verifier",
+        "ran_because": "validate typed observations against cited telemetry",
+        "claims": [
+          {
+            "type": "FACT",
+            "statement": "Authentication event 0066f70d2a460cb4c368 records outcome failure.",
+            "evidence_ids": [
+              "0066f70d2a460cb4c368"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "0066f70d2a460cb4c368",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 03eab2e802d7ed633859 records outcome success.",
+            "evidence_ids": [
+              "03eab2e802d7ed633859"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "03eab2e802d7ed633859",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 112f7d662d5f4fc66bc7 records outcome success.",
+            "evidence_ids": [
+              "112f7d662d5f4fc66bc7"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "112f7d662d5f4fc66bc7",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 1c3b7e7344d21cd95602 records outcome failure.",
+            "evidence_ids": [
+              "1c3b7e7344d21cd95602"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "1c3b7e7344d21cd95602",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 1d6731fb665b8d587408 records outcome failure.",
+            "evidence_ids": [
+              "1d6731fb665b8d587408"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "1d6731fb665b8d587408",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Event 1ef7515e5a7e4b7ff8f2 records process identity sysmon:d267f8abbf3b61f619ee17b14e39853b.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "process_identity",
+                "event_id": "1ef7515e5a7e4b7ff8f2",
+                "expected": "sysmon:d267f8abbf3b61f619ee17b14e39853b"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 34bfbecaae10c13d321e records outcome success.",
+            "evidence_ids": [
+              "34bfbecaae10c13d321e"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "34bfbecaae10c13d321e",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 365d58ce78edc919d023 records outcome success.",
+            "evidence_ids": [
+              "365d58ce78edc919d023"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "365d58ce78edc919d023",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 3cbb42be0b7385c241cc records outcome failure.",
+            "evidence_ids": [
+              "3cbb42be0b7385c241cc"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "3cbb42be0b7385c241cc",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 3e1f800c10c8a00a22f3 records outcome failure.",
+            "evidence_ids": [
+              "3e1f800c10c8a00a22f3"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "3e1f800c10c8a00a22f3",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 54d810617eb96787bf4c records outcome failure.",
+            "evidence_ids": [
+              "54d810617eb96787bf4c"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "54d810617eb96787bf4c",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 5664ff226c6c4a55ccd3 records outcome success.",
+            "evidence_ids": [
+              "5664ff226c6c4a55ccd3"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "5664ff226c6c4a55ccd3",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 787fcab9e01b5780b13d records outcome success.",
+            "evidence_ids": [
+              "787fcab9e01b5780b13d"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "787fcab9e01b5780b13d",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Event 791897726164acd6df98 records process identity sysmon:9b18c19b14606d744f8a8accc229e5aa.",
+            "evidence_ids": [
+              "791897726164acd6df98"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "process_identity",
+                "event_id": "791897726164acd6df98",
+                "expected": "sysmon:9b18c19b14606d744f8a8accc229e5aa"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 7d4dddb2e7c6bdc5cd7a records outcome failure.",
+            "evidence_ids": [
+              "7d4dddb2e7c6bdc5cd7a"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "7d4dddb2e7c6bdc5cd7a",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event 88f0166c03bdf7e6f9e1 records outcome success.",
+            "evidence_ids": [
+              "88f0166c03bdf7e6f9e1"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "88f0166c03bdf7e6f9e1",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event a867703fea3829900d93 records outcome success.",
+            "evidence_ids": [
+              "a867703fea3829900d93"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "a867703fea3829900d93",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event b32d84afa941e4e7831a records outcome success.",
+            "evidence_ids": [
+              "b32d84afa941e4e7831a"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "b32d84afa941e4e7831a",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event b86189c1454d4520a0c1 records outcome success.",
+            "evidence_ids": [
+              "b86189c1454d4520a0c1"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "b86189c1454d4520a0c1",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event bea238084a7223fa45e5 records outcome success.",
+            "evidence_ids": [
+              "bea238084a7223fa45e5"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "bea238084a7223fa45e5",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event d4a2658973d95e6b6fcc records outcome failure.",
+            "evidence_ids": [
+              "d4a2658973d95e6b6fcc"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "d4a2658973d95e6b6fcc",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event e5d6bad15fc506b9b23a records outcome failure.",
+            "evidence_ids": [
+              "e5d6bad15fc506b9b23a"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "e5d6bad15fc506b9b23a",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event ea6f6056ebcbcdb6dbae records outcome failure.",
+            "evidence_ids": [
+              "ea6f6056ebcbcdb6dbae"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "ea6f6056ebcbcdb6dbae",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event efdeb8421c8697ee6380 records outcome failure.",
+            "evidence_ids": [
+              "efdeb8421c8697ee6380"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "efdeb8421c8697ee6380",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event f198f5762f6d1a574edd records outcome failure.",
+            "evidence_ids": [
+              "f198f5762f6d1a574edd"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "f198f5762f6d1a574edd",
+                "expected": "failure"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event f4a7063ce24ea1df27a6 records outcome success.",
+            "evidence_ids": [
+              "f4a7063ce24ea1df27a6"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "f4a7063ce24ea1df27a6",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Authentication event f89750a4f8561b16cbb2 records outcome success.",
+            "evidence_ids": [
+              "f89750a4f8561b16cbb2"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "auth_outcome",
+                "event_id": "f89750a4f8561b16cbb2",
+                "expected": "success"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Event fd3cdf8005f7bbcb5ecb records process identity sysmon:ed1d9b919426a9b3bb06f5d4102fac1d.",
+            "evidence_ids": [
+              "fd3cdf8005f7bbcb5ecb"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "process_identity",
+                "event_id": "fd3cdf8005f7bbcb5ecb",
+                "expected": "sysmon:ed1d9b919426a9b3bb06f5d4102fac1d"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Process event 1ef7515e5a7e4b7ff8f2 identifies the instance in fd3cdf8005f7bbcb5ecb as its parent.",
+            "evidence_ids": [
+              "fd3cdf8005f7bbcb5ecb",
+              "1ef7515e5a7e4b7ff8f2"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "parent_child",
+                "event_id": "fd3cdf8005f7bbcb5ecb",
+                "other_event_id": "1ef7515e5a7e4b7ff8f2"
+              }
+            ]
+          },
+          {
+            "type": "FACT",
+            "statement": "Process event 791897726164acd6df98 identifies the instance in 1ef7515e5a7e4b7ff8f2 as its parent.",
+            "evidence_ids": [
+              "1ef7515e5a7e4b7ff8f2",
+              "791897726164acd6df98"
+            ],
+            "source": "telemetry",
+            "agent": "evidence_verifier",
+            "confidence": null,
+            "assertions": [
+              {
+                "kind": "parent_child",
+                "event_id": "1ef7515e5a7e4b7ff8f2",
+                "other_event_id": "791897726164acd6df98"
+              }
+            ]
+          }
+        ],
+        "tool_calls": [],
+        "follow_up": [],
+        "notes": []
+      }
+    ],
+    "evidence_ids": [
+      "0066f70d2a460cb4c368",
+      "03eab2e802d7ed633859",
+      "112f7d662d5f4fc66bc7",
+      "1c3b7e7344d21cd95602",
+      "1d6731fb665b8d587408",
+      "1ef7515e5a7e4b7ff8f2",
+      "34bfbecaae10c13d321e",
+      "365d58ce78edc919d023",
+      "3cbb42be0b7385c241cc",
+      "3e1f800c10c8a00a22f3",
+      "54d810617eb96787bf4c",
+      "5664ff226c6c4a55ccd3",
+      "787fcab9e01b5780b13d",
+      "791897726164acd6df98",
+      "7d4dddb2e7c6bdc5cd7a",
+      "88f0166c03bdf7e6f9e1",
+      "a867703fea3829900d93",
+      "b32d84afa941e4e7831a",
+      "b86189c1454d4520a0c1",
+      "bea238084a7223fa45e5",
+      "d4a2658973d95e6b6fcc",
+      "e5d6bad15fc506b9b23a",
+      "ea6f6056ebcbcdb6dbae",
+      "efdeb8421c8697ee6380",
+      "f198f5762f6d1a574edd",
+      "f4a7063ce24ea1df27a6",
+      "f89750a4f8561b16cbb2",
+      "fd3cdf8005f7bbcb5ecb"
+    ]
+  },
+  "repeat": 2,
+  "freeze_sha256": "3ef813fb610b9374c4488bdaa4bcc8d7fcdf6c10e945d2a7c2f306060a218641",
+  "ram_guard": null,
+  "row_sha256": "6008c8c44b09344a0933fc6692909dda7ada6f06409978e07691cda602ae3749"
+}

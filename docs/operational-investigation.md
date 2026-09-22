@@ -100,7 +100,8 @@ Successful execution may itself conclude `abstain`; uncertainty is not a runtime
 
 - The verifier establishes citation integrity and allowed claim provenance. It does
   not establish that an event supports a sentence, that a detector is correct, or that
-  temporal proximity proves causation. Structured evidence assertions are milestone 2.
+  temporal proximity proves causation. The separately versioned
+  [operational-v2 profile](evidence-verification.md) adds typed evidence assertions.
 - Time limits are checked by the engines and passed as request timeouts. They do not
   preempt CPU-bound pandas work or a client that ignores its timeout. A late reply is
   marked incomplete. Hard deadlines require cancellable worker isolation later.

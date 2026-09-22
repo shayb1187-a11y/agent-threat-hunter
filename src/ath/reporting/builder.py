@@ -83,6 +83,7 @@ def build_report(state: InvestigationState, telemetry: Telemetry) -> Report:
         limitations=limitations,
         evidence_appendix=appendix,
         data_sources=data_sources,
+        evidence_verification=state.investigation.get("evidence_verification", {}),
     )
 
 
@@ -281,6 +282,12 @@ def _derive_limitations(
             "one."
         )
     operational = state.investigation.get("operational", {})
+    if state.investigation.get("evidence_verification"):
+        limitations.append(
+            "Typed predicates are checked against recorded telemetry; free-text interpretations "
+            "are not semantically verified. Missing identity is not a confirmed process link, "
+            "and recorded event order does not establish causation."
+        )
     if operational.get("outcome") == "incomplete":
         limitations.append(
             "Operational investigation incomplete; no final model verdict is available: "

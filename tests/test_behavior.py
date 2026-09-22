@@ -252,7 +252,10 @@ def test_timing_statistics_are_computed_in_exactly_one_place() -> None:
     implementations = [
         path.relative_to(SRC).as_posix()
         for path in SRC.rglob("*.py")
-        if "statistics.median" in path.read_text(encoding="utf-8")
+        # Evaluation reports may summarize runtime latency. They do not calculate
+        # the telemetry timing features shared by detectors, triage and agents.
+        if "evaluation" not in path.relative_to(SRC).parts
+        and "statistics.median" in path.read_text(encoding="utf-8")
     ]
     assert implementations == ["behavior/features.py"], (
         f"median/MAD computed in more than one place: {implementations}"

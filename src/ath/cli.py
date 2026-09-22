@@ -34,7 +34,7 @@ from ath.agent import (
     ToolBox,
     build_llm,
 )
-from ath.agent.operational import OperationalProfile, investigate_operational
+from ath.agent.operational import EvidenceProfile, OperationalProfile, investigate_operational
 from ath.capabilities import CAPABILITY_REGISTRY, assemble_crew
 from ath.config import PROJECT_ROOT, Settings, load_settings
 from ath.correlation import CorrelationConfig, correlate
@@ -613,9 +613,11 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
             print(f"No such case {args.case!r}.")
             return 2
 
-    operational = getattr(args, "profile", "legacy") == OperationalProfile.version
+    profile_name = getattr(args, "profile", "legacy")
+    operational = profile_name in (OperationalProfile.version, EvidenceProfile.version)
     try:
-        profile = OperationalProfile(max_steps=args.max_steps) if operational else None
+        profile_type = EvidenceProfile if profile_name == EvidenceProfile.version else OperationalProfile
+        profile = profile_type(max_steps=args.max_steps) if operational else None
     except ValueError as exc:
         print(f"Invalid operational profile: {exc}")
         return 2
@@ -1500,8 +1502,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_inv.add_argument("--case", help="Investigate only this case, e.g. CASE-001.")
     p_inv.add_argument(
-        "--profile", choices=("legacy", OperationalProfile.version), default="legacy",
-        help="Use operational-v1 for enforced safeguards and per-case budgets; legacy preserves existing behavior.",
+        "--profile", choices=("legacy", OperationalProfile.version, EvidenceProfile.version), default="legacy",
+        help="operational-v1 enables safeguards; operational-v2 also checks typed evidence assertions.",
     )
     p_inv.add_argument(
         "--no-llm", action="store_true",

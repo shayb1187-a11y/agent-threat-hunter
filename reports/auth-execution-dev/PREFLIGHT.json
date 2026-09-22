@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-09-22T19:05:08.609920+00:00",
+  "status": "blocked_before_inference",
+  "model": "qwen3.5:4b",
+  "available_bytes": 4464107520,
+  "resident_bytes": 0,
+  "floor_bytes": 4831838208,
+  "reason": "RAM guard refused after the full test suite completed; free memory and resume.",
+  "live_model_calls": 0
+}

@@ -20,6 +20,7 @@ from ath.agent.investigator import RESPONSE_SCHEMA, D1Investigator, Investigator
 from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
 from ath.agent.state import InvestigationState, InvestigationStatus
+from ath.agent.structured import EvidenceInvestigator, finalise_evidence
 from ath.agent.tools import ToolBox
 from ath.correlation.chain import InvestigationCase
 from ath.environment.model import EnvironmentModel
@@ -67,6 +68,14 @@ class OperationalProfile:
     def sha256(self) -> str:
         body = json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+@dataclass(frozen=True)
+class EvidenceProfile(OperationalProfile):
+    """Version 2 adds typed predicates without changing version 1's prompt or policy."""
+
+    version: ClassVar[str] = "operational-v2"
+    max_output_tokens: int = 1536
 
 
 class _OperationalLLM:
@@ -161,7 +170,8 @@ def investigate_operational(
     model_requested = llm is not None and not isinstance(llm, NullLLM)
     guarded = _OperationalLLM(llm, profile, started) if model_requested else None
     if guarded is not None:
-        engine = D1Investigator(
+        investigator = EvidenceInvestigator if isinstance(profile, EvidenceProfile) else D1Investigator
+        engine = investigator(
             tools, verifier, llm=guarded,
             config=InvestigatorConfig(
                 max_steps=profile.max_steps, max_probes=profile.max_probes,
@@ -180,6 +190,8 @@ def investigate_operational(
             ),
         )
     state = engine.investigate(case)
+    if isinstance(profile, EvidenceProfile):
+        finalise_evidence(state, telemetry, verifier, profile.tool_max_rows)
     state.environment = environment
     state.run_id = str(uuid4())
     state.llm_requested = model_requested

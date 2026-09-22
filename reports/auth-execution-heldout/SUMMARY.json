@@ -1,0 +1,121 @@
+{
+  "freeze_sha256": "3ef813fb610b9374c4488bdaa4bcc8d7fcdf6c10e945d2a7c2f306060a218641",
+  "split": "heldout",
+  "complete_comparison": false,
+  "missing_rows": [
+    [
+      "sample-01",
+      "d1",
+      1
+    ],
+    [
+      "sample-01",
+      "d1",
+      2
+    ],
+    [
+      "sample-02",
+      "d1",
+      1
+    ],
+    [
+      "sample-02",
+      "d1",
+      2
+    ],
+    [
+      "sample-03",
+      "d1",
+      1
+    ],
+    [
+      "sample-03",
+      "d1",
+      2
+    ],
+    [
+      "sample-04",
+      "d1",
+      1
+    ],
+    [
+      "sample-04",
+      "d1",
+      2
+    ],
+    [
+      "sample-05",
+      "d1",
+      1
+    ],
+    [
+      "sample-05",
+      "d1",
+      2
+    ],
+    [
+      "sample-06",
+      "d1",
+      1
+    ],
+    [
+      "sample-06",
+      "d1",
+      2
+    ]
+  ],
+  "scripted": false,
+  "arms": {
+    "deterministic": {
+      "rows": 12,
+      "complete": 12,
+      "accuracy": 0.3333333333333333,
+      "false_malicious": 4,
+      "false_benign": 0,
+      "missing_data_abstained": 0,
+      "useful_retrieved": 8,
+      "useful_cited": 8,
+      "useful_available": 8,
+      "link_available": 8,
+      "link_recovered": 8,
+      "rejected_claims": 0,
+      "accepted_invalid_predicates": 0,
+      "label_counts": {
+        "malicious": 4,
+        "benign": 4,
+        "abstain": 4
+      },
+      "median_seconds": 0.045983799995156005,
+      "max_seconds": 0.05748869996750727,
+      "known_tokens": 0,
+      "unknown_usage_rows": 0
+    },
+    "d1": {
+      "rows": 0,
+      "complete": 0,
+      "accuracy": null,
+      "false_malicious": 0,
+      "false_benign": 0,
+      "missing_data_abstained": 0,
+      "useful_retrieved": 0,
+      "useful_cited": 0,
+      "useful_available": 0,
+      "link_available": 0,
+      "link_recovered": 0,
+      "rejected_claims": 0,
+      "accepted_invalid_predicates": 0,
+      "label_counts": {
+        "malicious": 0,
+        "benign": 0,
+        "abstain": 0
+      },
+      "median_seconds": null,
+      "max_seconds": null,
+      "known_tokens": 0,
+      "unknown_usage_rows": 0
+    }
+  },
+  "conclusion": "investigative value not demonstrated",
+  "limitations": "Simulator intent is known; telemetry may not establish intent. The unknown cases deliberately omit the discriminating child process. Free-text semantic correctness and analyst time savings require human review and are not scored as zero errors.",
+  "analyst_time_savings": null
+}

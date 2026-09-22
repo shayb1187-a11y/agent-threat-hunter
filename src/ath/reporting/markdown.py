@@ -45,6 +45,7 @@ def render_markdown(report: Report) -> str:
         _timeline(report),
         _mitre_summary(report),
         _findings(report),
+        _evidence_checks(report),
         _recommended_actions(report),
         _limitations(report),
         _investigation_trace(report),
@@ -138,11 +139,13 @@ def _findings(report: Report) -> str:
     for label, claims, note in (
         (
             "Confirmed (FACT)", report.facts,
-            "Directly established by telemetry or deterministic detection.",
+            "Typed observations checked against recorded telemetry."
+            if report.evidence_verification else "Directly established by telemetry or deterministic detection.",
         ),
         (
             "Assessed (INFERENCE)", report.inferences,
-            "Evidence-supported conclusions. Confidence reflects how strongly the "
+            "Interpretations and summaries; citation or predicate checks do not verify their free-text meaning."
+            if report.evidence_verification else "Evidence-supported conclusions. Confidence reflects how strongly the "
             "cited evidence supports the conclusion, not how severe it is.",
         ),
         (
@@ -166,6 +169,26 @@ def _findings(report: Report) -> str:
             "evidence verification during investigation and were discarded. They do "
             "not appear above."
         )
+    return "\n".join(lines)
+
+
+def _evidence_checks(report: Report) -> str:
+    details = report.evidence_verification
+    if not details:
+        return ""
+    lines = ["## Evidence Checks", "",
+             f"{details['observations_verified']} typed observations verified; "
+             f"{details['summaries_reclassified']} unstructured summaries retained as interpretations.",
+             "", "Predicate support does not establish malicious intent or verify the accompanying prose."]
+    for claim in details["claims"]:
+        if claim["assertion_error"]:
+            lines.append(f"- Rejected premise: {claim['assertion_error']}")
+        for check in claim["checks"]:
+            a = check["assertion"]
+            ids = ", ".join(a[k] for k in ("event_id", "other_event_id") if a.get(k))
+            lines.append(f"- {a['kind']} [{ids}]: **{check['status']}** — {check['reason']}")
+    if details["observation_events_omitted"]:
+        lines.append(f"Observation cap omitted {details['observation_events_omitted']} retrieved events from automatic observation expansion.")
     return "\n".join(lines)
 
 

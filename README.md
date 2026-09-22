@@ -24,6 +24,9 @@ traceable to a specific telemetry event.
 For new bounded investigations, see the opt-in
 [operational-v1 profile](docs/operational-investigation.md): per-case limits,
 strict citation checks, recorded tool hashes, and explicit incomplete outcomes.
+The [operational-v2 profile](docs/evidence-verification.md) also checks typed evidence
+assertions. A separate [authentication-to-execution pilot](docs/auth-execution-evaluation.md)
+compares deterministic and model investigations under frozen settings.
 Existing research configurations and frozen experiments retain their defaults.
 
 **Deterministic detection first. AI reasoning second.**

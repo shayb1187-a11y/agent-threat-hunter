@@ -1,0 +1,216 @@
+{
+  "version": "auth-execution-pilot-v1",
+  "protocol": {
+    "question": "Can bounded D1 recover unflagged follow-up evidence and discriminate remote administration from suspicious credential export?",
+    "data": "Fully synthetic, canonically normalized Windows-shaped telemetry with routine background activity.",
+    "splits": "Three development scenarios; six held-out scenarios using different follow-up commands and independent seeds. Shared mechanism family; not independent external data.",
+    "baseline": "Existing deterministic operational-v2 specialists. Incident disposition: malicious if any existing triage assessment is likely_malicious; benign only if all are likely_benign; otherwise abstain. Incomplete execution always abstains.",
+    "d1": "Same detections, cases, telemetry, tools, profile and evidence verifier; D1 chooses bounded probes and supplies its explicit disposition.",
+    "metrics": "Decision accuracy (incomplete rows cannot be correct), benign false accusations, malicious false clearances, missing-data abstention, useful new evidence retrieved/cited, typed link recovery, rejected premises, unverified prose count, latency, reported tokens and local API charges.",
+    "decision_rule": "A promising pilot requires paired decision-accuracy improvement AND more useful-evidence recovery, with zero false benign decisions on malicious cases, zero accepted invalid typed predicates, no additional benign false accusations, and all expected rows complete. Otherwise report value not demonstrated. Even a passing pilot is not statistically conclusive.",
+    "holdout": "Freeze code, data, configuration, model identity and this protocol before model calls. No tuning on held-out results. Failures and abstentions remain in denominators. Repeats are not independent incidents.",
+    "limits": "Simulator intent is known; telemetry may not establish intent. The unknown cases deliberately omit the discriminating child process. Free-text semantic correctness and analyst time savings require human review and are not scored as zero errors."
+  },
+  "split": "dev",
+  "repeats": 1,
+  "source_sha256": "337639a021889f88c70d556e56b34051edb2dad0d5a818ffb75e64cd8b9c2684",
+  "manifest": [
+    {
+      "key": "sample-01",
+      "telemetry_sha256": "9b603756a7ffa81719a660540914e7f24e1db42c758634a06c9da0ea6820f282",
+      "expected_decision": "malicious",
+      "useful_ids": [
+        "ccec78fe2c3fa29b518b"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "703eeb16d25835efecb7",
+        "other_event_id": "ccec78fe2c3fa29b518b"
+      },
+      "finding_ids": [
+        "ATH-005:72d5a08e0d2a8522ca5a",
+        "ATH-007:703eeb16d25835efecb7"
+      ],
+      "case_ids": [
+        "00bb709b987db814f5f7",
+        "044f5c9c5bf34ddb9030",
+        "0f504253fd98db142c3c",
+        "2dbb1b538a03d94bbf88",
+        "3266b536dc39708fc00c",
+        "3608f02fef656b43e91e",
+        "680a11b09c06415c434a",
+        "6cab6426bbe2ef08ea74",
+        "703eeb16d25835efecb7",
+        "72d5a08e0d2a8522ca5a",
+        "7b13f31085bbf14dad61",
+        "96d505a664df60a94a7c",
+        "edf4a27fb63329509cc1",
+        "f0ebb167f3e1fca60b93"
+      ]
+    },
+    {
+      "key": "sample-02",
+      "telemetry_sha256": "30bdcf87713049cac643bd949ead447d25273ffdc863801fd1fa15f176c74eb4",
+      "expected_decision": "benign",
+      "useful_ids": [
+        "0b092d00f3798939dd00"
+      ],
+      "link": {
+        "kind": "parent_child",
+        "event_id": "c1aa4d45ddf2102946f7",
+        "other_event_id": "0b092d00f3798939dd00"
+      },
+      "finding_ids": [
+        "ATH-005:0cb61159ea3d69dcc87a",
+        "ATH-007:c1aa4d45ddf2102946f7"
+      ],
+      "case_ids": [
+        "0adbb9ef85b9188c8683",
+        "0cb61159ea3d69dcc87a",
+        "0cc680d6694f1f8615a1",
+        "2108af7a380995a548b5",
+        "3bdd60cc3a5a97b84519",
+        "67a9f5bfab28871757dd",
+        "6e10a5cc29314bc6a964",
+        "8407329aafd15d9c0a9e",
+        "a068ff51cd2cb23d2f8d",
+        "a3bf61cc981c8d0cdd5d",
+        "bc5bc87bcd4bf9827807",
+        "c1aa4d45ddf2102946f7",
+        "d92873fb243f9f0bcb0d",
+        "f6497a719ee487d49e5a"
+      ]
+    },
+    {
+      "key": "sample-03",
+      "telemetry_sha256": "6013ca9681249dbbc96b76244f0c7c14e97519341b78be0f9a1cbb39519b87e3",
+      "expected_decision": "abstain",
+      "useful_ids": [],
+      "link": null,
+      "finding_ids": [
+        "ATH-005:7ae112de50a7ef35212b",
+        "ATH-007:8e3b9127b110d0908581"
+      ],
+      "case_ids": [
+        "1f776b2d12b6e1b38138",
+        "4b7981dfd851184e370d",
+        "7ae112de50a7ef35212b",
+        "80fa003ab0d4b9fb50d3",
+        "880b1242f36a26407c74",
+        "8e3b9127b110d0908581",
+        "a6ae0903817573695f09",
+        "ab491e62927ff53ad2e9",
+        "c239520d9ca451aa0921",
+        "cbe095d06fbe19e71c8c",
+        "f07d391db002d3c8dc2c",
+        "f23f1f0ad8cd6cc0a54a",
+        "f2c578af54d2a3cf2d60",
+        "ffe190ee68fa49888037"
+      ]
+    }
+  ],
+  "profile": {
+    "version": "operational-v2",
+    "max_steps": 8,
+    "max_probes": 2,
+    "tool_call_budget": 64,
+    "tool_max_rows": 100,
+    "tool_max_chars": 2048,
+    "time_budget_seconds": 120.0,
+    "token_budget": 24000,
+    "max_output_tokens": 1536,
+    "max_prompt_bytes": 65536,
+    "reject_unretrieved": true,
+    "prompt_contract": true,
+    "ledger": true
+  },
+  "profile_sha256": "00a9d34a2a16870877a725e2f1e8d91d62c6fa983442b035856266fef8b53b7c",
+  "model": {
+    "provider": "ollama",
+    "base_url": "http://127.0.0.1:11434",
+    "daemon_version": "0.34.1",
+    "model": "qwen3.5:4b",
+    "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+    "size_bytes": 3389983735,
+    "modified_at": "2026-09-14T20:37:31.9120755+03:00",
+    "family": "qwen35",
+    "parameter_size": "4.7B",
+    "quantization_level": "Q4_K_M",
+    "format": "gguf",
+    "capabilities": [
+      "completion",
+      "vision",
+      "tools",
+      "thinking"
+    ],
+    "model_context_length": 262144,
+    "configuration": {
+      "provider": "ollama",
+      "model": "qwen3.5:4b",
+      "base_url": "http://127.0.0.1:11434",
+      "endpoint": "/api/chat",
+      "sampling": {
+        "temperature": 0.0,
+        "seed": 0
+      },
+      "num_ctx": 10240,
+      "num_predict_cap": 2048,
+      "think": false,
+      "format": "schema",
+      "format_schema_sha256": "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5",
+      "keep_alive": -1,
+      "timeout_seconds_per_attempt": 120,
+      "max_attempts": 1,
+      "backoff_seconds": 1.0,
+      "retryable_statuses": [
+        408,
+        409,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "chars_per_token_estimate": 3.0,
+      "transport": "urllib (stdlib); no SDK, by project choice"
+    }
+  },
+  "model_configuration": {
+    "provider": "ollama",
+    "model": "qwen3.5:4b",
+    "base_url": "http://127.0.0.1:11434",
+    "endpoint": "/api/chat",
+    "sampling": {
+      "temperature": 0.0,
+      "seed": 0
+    },
+    "num_ctx": 10240,
+    "num_predict_cap": 2048,
+    "think": false,
+    "format": "schema",
+    "format_schema_sha256": "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5",
+    "keep_alive": -1,
+    "timeout_seconds_per_attempt": 120,
+    "max_attempts": 1,
+    "backoff_seconds": 1.0,
+    "retryable_statuses": [
+      408,
+      409,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "chars_per_token_estimate": 3.0,
+    "transport": "urllib (stdlib); no SDK, by project choice"
+  },
+  "runtime": {
+    "python": "3.11.9",
+    "pandas": "2.3.3",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "freeze_sha256": "2a3676a862d60d2059fdad4c95cacc20e2fa03b4c038429263263ff4f30da1da"
+}

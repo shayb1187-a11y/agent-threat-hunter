@@ -14,7 +14,7 @@ time (see :mod:`ath.reporting.language`).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -132,6 +132,7 @@ class Report:
     limitations: tuple[str, ...]
     evidence_appendix: tuple[EvidenceAppendixEntry, ...]
     executive_summary: str = ""
+    evidence_verification: dict[str, Any] = field(default_factory=dict)
     data_sources: tuple[str, ...] = ()
     """Distinct TelemetrySource names underlying this report's evidence (e.g.
     ("synthetic",) for a demo scenario, ("defender_export",) for a real import).
@@ -153,6 +154,7 @@ class Report:
     def to_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
+            **({"evidence_verification": self.evidence_verification} if self.evidence_verification else {}),
             "generated_at": self.generated_at.isoformat(),
             "status": self.status,
             "severity": self.severity.value,
