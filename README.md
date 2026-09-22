@@ -1,61 +1,201 @@
 # Agentic Threat Hunter
 
-An AI-assisted threat-hunting system that analyses security telemetry, detects
-suspicious behaviour with deterministic rules, maps the evidence to MITRE ATT&CK, and
-uses an LLM agent to investigate possible attack chains — where every conclusion is
-traceable to a specific telemetry event.
+**Evidence-grounded threat hunting and AI-assisted security investigations across endpoint, cloud, and Kubernetes telemetry.**
 
-> **Status: work in progress.** Milestones 1-19 complete or measured, M19b blocked on
-> API credit, M20 planned -- see the [roadmap](#roadmap). Built so far: telemetry
-> (synthetic, **real Microsoft Defender exports**, Winlogbeat/ECS, AWS CloudTrail and
-> Kubernetes audit logs), **20** detection rules with KQL equivalents, MITRE ATT&CK
-> mapping, detector evaluation, deterministic attack-chain correlation, an autonomous
-> investigation agent, calibrated report generation, a detection-engineering loop, an
-> **environment + visibility model** that reports what the system *cannot* see as
-> explicitly as what it can, and a measured record against
-> [external corpora](#external-datasets) this project did not generate. The agent runs
-> in **fully deterministic mode with zero API keys** -- an LLM is an optional
-> enhancement layered on top, never a requirement.
+ATH is an end-to-end security engineering project I built to turn raw telemetry into
+explainable investigations: ingest and normalize events, detect suspicious behavior,
+correlate related findings, investigate with bounded agents, and generate reports
+that distinguish observed facts from inferences and unverified hypotheses.
+
+**Core approach: deterministic detection first; AI reasoning second.** The complete
+deterministic workflow runs offline without an API key. An LLM can assist with
+investigation planning and synthesis, but it cannot create telemetry facts, invent
+tools, or bypass evidence verification.
+
+> **Status — research prototype, actively developed.** The core investigation
+> workflow is implemented. Milestones 1–19 are complete or measured; M19b's
+> remaining frozen runs are blocked on API credit, and M20 is planned.
+> ATH is **not a production-ready SOC product**. See the
+> [roadmap](#roadmap) and [limitations](#limitations).
+
+## At a glance
+
+| Area | Implemented capabilities |
+| --- | --- |
+| **Telemetry** | Canonical-schema ingestion for synthetic telemetry, Microsoft Defender-style exports, Winlogbeat/ECS, AWS CloudTrail, and Kubernetes audit logs; source provenance and normalization diagnostics |
+| **Detection & correlation** | **20 deterministic rules** with KQL counterparts, evidence-gated MITRE ATT&CK mappings, and structural attack-chain correlation |
+| **Agentic investigation** | Read-only evidence tools; capability-gated endpoint, identity, network, ATT&CK, and control-plane specialists; optional LLM planning and synthesis |
+| **Trust & observability** | Verified event references, `FACT` / `INFERENCE` / `HYPOTHESIS` claim types, bounded investigation profiles, telemetry-visibility and coverage reporting |
+| **Outputs & evaluation** | Evidence-cited Markdown/JSON reports, per-rule and incident-level metrics, analyst-feedback tracking, held-out external-data experiments, and agent ablations |
+
+**Technologies:** Python · pandas · pytest · KQL · MITRE ATT&CK ·
+Microsoft Defender telemetry · AWS CloudTrail · Kubernetes audit logs ·
+LangGraph (optional runtime) · LLM integration (optional)
+
+### Measured results — with their scope
+
+| Evaluation | Result | What it establishes |
+| --- | --- | --- |
+| **Labelled synthetic demo** | **1,118 events; 15 findings (13 true positives, 2 false positives); 12/12 labelled attack stages covered** | Performance on the shipped, deliberately constructed scenarios — **not** a production detection-rate estimate |
+| **External CloudTrail attack corpus (M18)** | **2/2,349 → 2,349/2,349 management records representable** after a canonical-schema change | Ingestion/representation coverage for that corpus, **not** attack-detection accuracy |
+| **Frozen agent ablation (M19)** | **22 cases from 8 corpora**; on **21/22**, the specialist-crew arm differed from the deterministic arm in synthesis alone | A measured architecture comparison; **not** proof that adding agents improves investigation quality |
+
+External-data testing also exposed gaps in representation and cross-channel
+reasoning. The project documents those failures alongside fixes and held-out
+measurements rather than extrapolating demo metrics to real environments.
+See the [detector evaluation](#detector-evaluation),
+[external datasets](#external-datasets), and
+[roadmap](#roadmap) for the underlying methodology and reports.
+
+### Explore the project
+
+[Run ATH](#quick-start) · [Understand the architecture](#core-design-principle) ·
+[Review the detectors](#detections) · [See an investigation](#the-investigation-agent) ·
+[Read the real-data experiments](#external-datasets) ·
+[Review the roadmap](#roadmap) · [Understand the limitations](#limitations)
 
 ---
 
 ## Core design principle
 
-For new bounded investigations, see the opt-in
-[operational-v1 profile](docs/operational-investigation.md): per-case limits,
-strict citation checks, recorded tool hashes, and explicit incomplete outcomes.
-The [operational-v2 profile](docs/evidence-verification.md) also checks typed evidence
-assertions. A separate [authentication-to-execution pilot](docs/auth-execution-evaluation.md)
+**Detection is deterministic; investigation is evidence-constrained.**
+
+```text
+Synthetic data / Defender-style exports / Winlogbeat / CloudTrail / K8s audit
+                               |
+                               v
+                  Telemetry adapters + normalization
+                               |
+                               v
+                    Canonical, source-aware events
+                               |
+                               v
+                Deterministic rules + ATT&CK mapping
+                               |
+                               v
+                Structural correlation + benign triage
+                               |
+                               v
+             Bounded investigation: read-only evidence tools
+             + capability-gated specialists + optional LLM
+                               |
+                               v
+               Claim verification + calibrated report
+                          (Markdown / JSON)
+
+         Environment + visibility model informs what can be investigated
+```
+
+Rules determine *what is suspicious*; correlation groups findings using
+shared evidence, process lineage, and authentication context. The investigator
+retrieves telemetry through read-only tools rather than receiving the whole
+dataset in a prompt. Direct observations must come from deterministic sources;
+model-authored interpretations are checked against event references and
+labelled by epistemic status. Unsupported possibilities remain hypotheses.
+
+Detection, correlation, investigation, and reporting consume the same
+canonical schema regardless of telemetry source. A Defender-shaped export
+fixture exercises that end-to-end path without changes to downstream modules;
+real external corpora are evaluated separately to expose where normalization,
+coverage, or reasoning is still insufficient.
+
+For bounded investigations, the opt-in
+[operational-v1 profile](docs/operational-investigation.md) adds per-case limits,
+citation checks, tool hashes, and explicit incomplete outcomes. The
+[operational-v2 profile](docs/evidence-verification.md) also checks typed
+evidence assertions. The
+[authentication-to-execution pilot](docs/auth-execution-evaluation.md)
 compares deterministic and model investigations under frozen settings.
 Existing research configurations and frozen experiments retain their defaults.
 
-**Deterministic detection first. AI reasoning second.**
+---
 
+## Quick start
+
+Requires Python and the dependencies in `requirements.txt`. The core path below
+runs **without an API key or network access after installation**.
+
+```bash
+git clone <repo>
+cd agentic-threat-hunter
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+python main.py generate
+python main.py hunt --summary
+python main.py chains
+python main.py investigate --no-llm --case CASE-001
+python main.py report --case CASE-001 --stdout
+pytest -q
 ```
-Microsoft Defender export ─┐
-                            ├─► Telemetry adapter ─► Normalization ─► Canonical schema
-    synthetic generator  ───┘                                              │
-                                                                            ▼
-                                                          Existing detection engine
-                                                                            │
-                                                                            ▼
-                                        Correlation ─► Investigation agent ─► Report
-                        └──────────────── deterministic, testable ─────────┘  └─LLM─┘
+
+The commands above use the shipped synthetic demo. To analyze an imported
+Defender-style export, use `import-defender` and then the same
+`hunt → chains → investigate → report` workflow.
+External corpora are fetched separately and are not included in the repository.
+
+<details>
+<summary><strong>Full CLI command reference (detection, imports, evaluation, visibility, reporting)</strong></summary>
+
+```bash
+python main.py generate            # build the dataset
+python main.py stats               # summarise it
+python main.py peek --device PC01  # walk a host's timeline
+
+python main.py rules -v            # list detections + their false positives
+python main.py hunt                # run all 20 detections
+python main.py hunt --rule ATH-002 # run one rule
+python main.py hunt --summary      # compact table
+python main.py hunt --triage       # ...with benign/malicious disposition per finding
+python main.py hunt --mitre        # findings with ATT&CK interpretations
+python main.py evaluate            # precision/recall per rule
+python main.py chains              # correlated investigation cases
+python main.py chains --explain    # ...and why each link was made
+
+python main.py investigate                    # autonomous investigation (uses LLM if configured)
+python main.py investigate --no-llm           # force fully deterministic mode
+python main.py investigate --case CASE-001 -v # verbose: show tool calls + rejections
+
+python main.py report                         # calibrated Markdown report per case -> reports/
+python main.py report --case CASE-001 --stdout # print instead of writing a file
+python main.py report --json                  # also write structured JSON alongside
+
+python main.py engineer                       # propose->evaluate->iterate: v1 vs v2 rules
+python main.py engineer --json engineering.json
+
+python main.py import-defender <dir>          # normalize a Defender advanced-hunting export
+python main.py import-defender <dir> --out-dir data/raw
+python main.py import-cloudtrail <dir>        # normalize an AWS CloudTrail export
+python main.py environment                    # environment and unknowns
+python main.py visibility                     # channels + 4-state ATT&CK coverage
+python main.py visibility --all               # include techniques already covered
+
+python main.py benchmark                      # end-to-end incident suite
+python main.py benchmark --json bench.json
+
+python main.py feedback --finding-id <id> --verdict false_positive --analyst sam
+python main.py feedback                       # analyst agreement and measured FP cost
+
+pytest -q                                     # full offline test suite
 ```
 
-The rules decide *what is suspicious*. The agent decides *what it means* — by calling
-tools to retrieve evidence, never by being handed the dataset in a prompt. Every
-statement in the final report cites `event_id`s that exist in the data. And **the
-detection engine, correlator, agent, and report all run identically regardless of
-whether the telemetry came from the synthetic generator or a real Defender export** —
-see [Telemetry ingestion](#telemetry-ingestion) for how that guarantee is enforced.
+</details>
 
-This split is deliberate. An LLM that performs the detection itself cannot be tested,
-tuned, or trusted; one that reasons over pre-computed, cited evidence can be.
+`requirements.txt` pins `pandas>=2.0,<3`: the project was built and measured
+on pandas 2.x, and several tests fail under 3.x. Configuring an optional
+hosted LLM requires that provider's credentials; the deterministic path does not.
 
 ---
 
+
 ## Repository layout
+
+The code is organized by pipeline responsibility; source adapters normalize
+telemetry once, and downstream modules share the same validated schema.
+
+<details>
+<summary><strong>Expand the full source tree</strong></summary>
 
 ```
 agentic-threat-hunter/
@@ -128,6 +268,8 @@ agentic-threat-hunter/
 └── main.py
 ```
 
+</details>
+
 ### Layer responsibilities
 
 ```
@@ -161,63 +303,6 @@ own: the model never sees raw telemetry, only tool results, and it can never aut
 
 ---
 
-## Quick start
-
-```bash
-git clone <repo> && cd agentic-threat-hunter
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-python main.py generate            # build the dataset
-python main.py stats               # summarise it
-python main.py peek --device PC01  # walk a host's timeline
-
-python main.py rules -v            # list detections + their false positives
-python main.py hunt                # run all 20 detections
-python main.py hunt --rule ATH-002 # run one rule
-python main.py hunt --summary      # compact table
-python main.py hunt --triage       # ...with benign/malicious disposition per finding
-python main.py hunt --mitre        # findings with ATT&CK interpretations
-python main.py evaluate            # precision/recall per rule
-python main.py chains              # correlated investigation cases
-python main.py chains --explain    # ...and why each link was made
-
-python main.py investigate                  # autonomous investigation (uses LLM if configured)
-python main.py investigate --no-llm          # force fully deterministic mode
-python main.py investigate --case CASE-001 -v # verbose: show tool calls + rejections
-
-python main.py report                        # calibrated Markdown report per case -> reports/
-python main.py report --case CASE-001 --stdout # print instead of writing a file
-python main.py report --json                 # also write structured JSON alongside
-
-python main.py engineer                      # propose->evaluate->iterate: v1 vs v2 rules
-python main.py engineer --json engineering.json
-
-python main.py import-defender <dir>         # normalize a real Defender advanced-hunting export
-python main.py import-defender <dir> --out-dir data/raw   # then hunt/chains/investigate/report
-                                              # work exactly as they do on synthetic data
-
-python main.py import-cloudtrail <dir>       # normalize an AWS CloudTrail export
-python main.py environment                   # what is this environment, and what is unknowable?
-python main.py visibility                    # telemetry channels + 4-state ATT&CK coverage
-python main.py visibility --all              # ...including techniques already covered
-
-python main.py benchmark                     # end-to-end incident suite: is this useful?
-python main.py benchmark --json bench.json   # ...as structured output
-
-python main.py feedback --finding-id <id> --verdict false_positive --analyst sam
-python main.py feedback                      # triage agreement + measured FP cost by rule
-
-pytest -q                          # the full suite; no API key, no network
-```
-
-`requirements.txt` pins `pandas>=2.0,<3`: the project was built and measured on pandas 2.x,
-and several tests fail under 3.x.
-
-No API key is required for anything built so far — the entire deterministic pipeline
-runs offline.
-
----
 
 ## The dataset
 
