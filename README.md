@@ -21,6 +21,11 @@ traceable to a specific telemetry event.
 
 ## Core design principle
 
+For new bounded investigations, see the opt-in
+[operational-v1 profile](docs/operational-investigation.md): per-case limits,
+strict citation checks, recorded tool hashes, and explicit incomplete outcomes.
+Existing research configurations and frozen experiments retain their defaults.
+
 **Deterministic detection first. AI reasoning second.**
 
 ```

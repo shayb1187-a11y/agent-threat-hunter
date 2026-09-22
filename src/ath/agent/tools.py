@@ -236,8 +236,9 @@ class ToolBox:
         """Record a refused call and return the tool's empty shape, marked as refused."""
         reason = f"tool budget exhausted ({self.tool_call_budget} calls)"
         self.budget_hits += 1
-        self._record(tool, arguments, agent, reason, refused=True)
-        return {**shape, "refused": True, "reason": reason}
+        payload = {**shape, "refused": True, "reason": reason}
+        self._record(tool, arguments, agent, reason, refused=True, result=payload)
+        return payload
 
     def calls_by(self, agent: str) -> list[ToolCall]:
         return [c for c in self.calls if c.agent == agent]
@@ -253,8 +254,9 @@ class ToolBox:
             )
         case = self._cases.get(case_id.upper())
         if case is None:
-            self._record("get_case", {"case_id": case_id}, agent, "not found")
-            return {"error": f"No such case {case_id!r}", "known": sorted(self._cases)}
+            payload = {"error": f"No such case {case_id!r}", "known": sorted(self._cases)}
+            self._record("get_case", {"case_id": case_id}, agent, "not found", result=payload)
+            return payload
         payload = case.to_dict()
         self._record(
             "get_case", {"case_id": case_id}, agent,
@@ -272,7 +274,7 @@ class ToolBox:
         """
         if self.budget_exhausted:
             return self._refuse(
-                "get_events", {"event_ids": event_ids[:10]}, agent,
+                "get_events", {"event_ids": event_ids if self.ledger else event_ids[:10]}, agent,
                 {"events": [], "not_found": sorted(set(event_ids))},
             )
         wanted = set(event_ids)
@@ -298,7 +300,7 @@ class ToolBox:
             payload["truncated"] = True
             payload["total"] = len(rows)
         self._record(
-            "get_events", {"event_ids": event_ids[:10]}, agent,
+            "get_events", {"event_ids": event_ids if self.ledger else event_ids[:10]}, agent,
             f"{len(found)}/{len(wanted)} found", tuple(sorted(found)),
             result=payload, truncated=truncated or cut,
             shown_event_ids=tuple(r["event_id"] for r in shown),
@@ -357,6 +359,8 @@ class ToolBox:
         """
         procs = self.telemetry.processes
         arguments = {"device": device, "pid": pid, "process_guid": process_guid}
+        if self.ledger:
+            arguments["depth"] = depth
         result: dict[str, Any] = {
             "device": device, "pid": pid, "process_guid": process_guid,
             "resolution": "not_found", "ambiguous_pid": 0, "candidates": [],
@@ -365,7 +369,7 @@ class ToolBox:
         if self.budget_exhausted:
             return self._refuse("process_tree", arguments, agent, result)
         if procs.empty or (pid is None and not process_guid):
-            self._record("process_tree", arguments, agent, "no process telemetry")
+            self._record("process_tree", arguments, agent, "no process telemetry", result=result)
             return result
 
         host = procs[procs["device"] == device]
@@ -373,7 +377,7 @@ class ToolBox:
             rows = procs[procs["process_guid"].astype("string").fillna("") == process_guid]
             if rows.empty:
                 self._record(
-                    "process_tree", arguments, agent, "no row carries that identity",
+                    "process_tree", arguments, agent, "no row carries that identity", result=result,
                 )
                 return result
             start_row = rows.sort_values("timestamp").iloc[0]
@@ -381,7 +385,7 @@ class ToolBox:
         else:
             instances = _instances_of(host, "process_id", int(pid))
             if not instances:
-                self._record("process_tree", arguments, agent, "unknown pid")
+                self._record("process_tree", arguments, agent, "unknown pid", result=result)
                 return result
             if len(instances) > 1:
                 # Never an arbitrary pick. The candidates are the answer: a caller that
@@ -394,7 +398,7 @@ class ToolBox:
                     "process_tree", arguments, agent,
                     f"pid {pid} on {device} was held by {len(instances)} process "
                     "instance(s); no single ancestry can be attributed",
-                    tuple(c["event_id"] for c in result["candidates"]),
+                    tuple(c["event_id"] for c in result["candidates"]), result=result,
                 )
                 return result
             start_row = instances[0]
@@ -460,8 +464,9 @@ class ToolBox:
         logons = self.telemetry.logons
         rows = logons[logons["user"] == user].sort_values("timestamp")
         if rows.empty:
-            self._record("user_auth_history", {"user": user}, agent, "no activity")
-            return {"user": user, "events": [], "summary": {}}
+            payload = {"user": user, "events": [], "summary": {}}
+            self._record("user_auth_history", {"user": user}, agent, "no activity", result=payload)
+            return payload
 
         failures = rows[rows["action"] == "failure"]
         successes = rows[rows["action"] == "success"]
@@ -606,14 +611,15 @@ class ToolBox:
         rows = rows.sort_values("timestamp")
 
         if rows.empty:
-            self._record(
-                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
-                "no connections to this destination",
-            )
-            return {
+            payload = {
                 "regular": False, "reason": "no connections observed", "samples": 0,
                 "interarrival_count": 0,
             }
+            self._record(
+                "analyse_beacon", {"device": device, "remote_ip": remote_ip}, agent,
+                "no connections to this destination", result=payload,
+            )
+            return payload
 
         pattern = compute_connection_pattern(
             source_process=str(rows.iloc[0].get("process_name") or ""),
@@ -680,7 +686,8 @@ class ToolBox:
         if self.budget_exhausted:
             return self._refuse(
                 "search_processes",
-                {"device": device, "contains": contains, "process_name": process_name},
+                {"device": device, "contains": contains, "process_name": process_name,
+                 **({"limit": limit} if self.ledger else {})},
                 agent, {"results": [], "count": 0},
             )
         rows = self.telemetry.processes
@@ -722,7 +729,8 @@ class ToolBox:
             payload["truncated"] = True
         self._record(
             "search_processes",
-            {"device": device, "contains": contains, "process_name": process_name},
+            {"device": device, "contains": contains, "process_name": process_name,
+             **({"limit": limit} if self.ledger else {})},
             agent, f"{len(results)} match(es)", tuple(r["event_id"] for r in results),
             result=payload, truncated=truncated or cut,
             shown_event_ids=tuple(r["event_id"] for r in shown),
@@ -738,8 +746,9 @@ class ToolBox:
             )
         finding = self._findings.get(finding_id)
         if finding is None:
-            self._record("get_finding", {"finding_id": finding_id}, agent, "not found")
-            return {"error": f"No such finding {finding_id!r}"}
+            payload = {"error": f"No such finding {finding_id!r}"}
+            self._record("get_finding", {"finding_id": finding_id}, agent, "not found", result=payload)
+            return payload
         payload = finding.to_dict()
         self._record(
             "get_finding", {"finding_id": finding_id}, agent,
@@ -761,18 +770,20 @@ class ToolBox:
         try:
             technique = get_technique(technique_id)
         except KeyError:
-            self._record("lookup_technique", {"technique_id": technique_id}, agent, "unknown")
-            return {"error": f"{technique_id} is not in the verified catalogue"}
-        self._record(
-            "lookup_technique", {"technique_id": technique_id}, agent, technique.name
-        )
-        return {
+            payload = {"error": f"{technique_id} is not in the verified catalogue"}
+            self._record("lookup_technique", {"technique_id": technique_id}, agent, "unknown", result=payload)
+            return payload
+        payload = {
             "technique_id": technique.technique_id,
             "name": technique.name,
             "tactics": [t.display_name for t in technique.tactics],
             "parent_id": technique.parent_id,
             "url": technique.url,
         }
+        self._record(
+            "lookup_technique", {"technique_id": technique_id}, agent, technique.name, result=payload,
+        )
+        return payload
 
 
 def _sha256_json(payload: Any) -> str:

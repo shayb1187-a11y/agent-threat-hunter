@@ -74,6 +74,8 @@ class InvestigationStatus(str, Enum):
     """No further useful step exists -- the evidence available has been used up."""
     STEP_LIMIT = "step_limit"
     """The step budget was reached. A guard against runaway loops, not a success."""
+    INCOMPLETE = "incomplete"
+    """Operational execution ended without a reliable final conclusion."""
     BUDGET_LIMIT = "budget_limit"
     """The wall-clock or token budget was reached (``time_budget_seconds`` /
     ``token_budget``). Recorded in ``llm_errors`` too, naming which, so the report's
@@ -235,6 +237,8 @@ class InvestigationState:
             InvestigationStatus.COMPLETE,
             InvestigationStatus.EXHAUSTED,
             InvestigationStatus.STEP_LIMIT,
+            InvestigationStatus.BUDGET_LIMIT,
+            InvestigationStatus.INCOMPLETE,
         )
 
     @property

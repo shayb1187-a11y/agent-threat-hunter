@@ -34,6 +34,7 @@ from ath.agent import (
     ToolBox,
     build_llm,
 )
+from ath.agent.operational import OperationalProfile, investigate_operational
 from ath.capabilities import CAPABILITY_REGISTRY, assemble_crew
 from ath.config import PROJECT_ROOT, Settings, load_settings
 from ath.correlation import CorrelationConfig, correlate
@@ -530,10 +531,16 @@ def _print_investigation(state, verbose: bool = False) -> None:
     """Render an investigation as an analyst-readable report."""
     status_colour = {
         "complete": "MEDIUM", "exhausted": "LOW", "step_limit": "HIGH",
+        "incomplete": "HIGH", "budget_limit": "HIGH",
     }.get(state.status.value, "DIM")
 
     print(_c(f"=== INVESTIGATION: {state.case.case_id} ===", "BOLD"))
     print(f"status     : {_c(state.status.value, status_colour)}")
+    operational = state.investigation.get("operational")
+    if operational:
+        print(f"profile    : {operational['profile']['version']} ({operational['engine']})")
+        for reason in operational["reasons"]:
+            print(f"incomplete : {reason}")
     print(f"steps      : {state.step}  |  agents run: {', '.join(state.agents_run) or '(none)'}")
     print(
         f"claims     : {len(state.facts)} facts, {len(state.inferences)} inferences, "
@@ -606,31 +613,45 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
             print(f"No such case {args.case!r}.")
             return 2
 
-    tools = ToolBox(telemetry, result.findings, cases)
-    verifier = ClaimVerifier(telemetry)
+    operational = getattr(args, "profile", "legacy") == OperationalProfile.version
+    try:
+        profile = OperationalProfile(max_steps=args.max_steps) if operational else None
+    except ValueError as exc:
+        print(f"Invalid operational profile: {exc}")
+        return 2
     llm = NullLLM() if args.no_llm else build_llm()
     if llm.available:
         print(f"Using LLM: {llm.name}")
+    elif operational:
+        print("No LLM configured (or --no-llm passed) -- running deterministic investigation with operational safeguards.")
     else:
         print("No LLM configured (or --no-llm passed) -- running in deterministic mode. "
               "The investigation still completes; see README for what this means.")
 
-    config = InvestigationConfig(
-        max_steps=args.max_steps,
-        use_llm_planner=not args.no_llm,
-        use_llm_synthesis=not args.no_llm,
-    )
-    # Deriving the environment lets a specialist decline because the telemetry it needs
-    # is absent, rather than run and report nothing -- the distinction between "nothing
-    # happened" and "we cannot see", carried into the investigation layer.
-    orchestrator = InvestigationOrchestrator(
-        tools, verifier, llm=llm, config=config, environment=environment,
-    )
+    if not operational:
+        tools = ToolBox(telemetry, result.findings, cases)
+        verifier = ClaimVerifier(telemetry)
+        config = InvestigationConfig(
+            max_steps=args.max_steps,
+            use_llm_planner=not args.no_llm,
+            use_llm_synthesis=not args.no_llm,
+        )
+        # Environment gates distinguish absent telemetry from observed inactivity.
+        orchestrator = InvestigationOrchestrator(
+            tools, verifier, llm=llm, config=config, environment=environment,
+        )
 
     all_states = []
     for case in cases:
-        state = orchestrator.investigate(case)
+        state = (
+            investigate_operational(
+                case, telemetry, result.findings, llm=llm, profile=profile,
+                environment=environment,
+            ) if operational else orchestrator.investigate(case)
+        )
         all_states.append(state)
+
+    exit_code = 3 if operational and any(s.status.value == "incomplete" for s in all_states) else 0
 
     if args.json:
         out = Path(args.json)
@@ -639,11 +660,11 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
             json.dumps([s.to_dict() for s in all_states], indent=2), encoding="utf-8"
         )
         print(f"Wrote {len(all_states)} investigation(s) -> {out}")
-        return 0
+        return exit_code
 
     for state in all_states:
         _print_investigation(state, verbose=args.verbose)
-    return 0
+    return exit_code
 
 
 # ======================================================================================
@@ -1478,6 +1499,10 @@ def build_parser() -> argparse.ArgumentParser:
         "investigate", help="Run the autonomous investigation agent over case(s)."
     )
     p_inv.add_argument("--case", help="Investigate only this case, e.g. CASE-001.")
+    p_inv.add_argument(
+        "--profile", choices=("legacy", OperationalProfile.version), default="legacy",
+        help="Use operational-v1 for enforced safeguards and per-case budgets; legacy preserves existing behavior.",
+    )
     p_inv.add_argument(
         "--no-llm", action="store_true",
         help="Force deterministic mode even if an API key is configured.",

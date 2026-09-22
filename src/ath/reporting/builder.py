@@ -280,6 +280,12 @@ def _derive_limitations(
             "remaining; this report reflects a partial investigation, not a complete "
             "one."
         )
+    operational = state.investigation.get("operational", {})
+    if operational.get("outcome") == "incomplete":
+        limitations.append(
+            "Operational investigation incomplete; no final model verdict is available: "
+            + "; ".join(operational["reasons"])
+        )
     for result in state.results:
         for note in result.notes:
             if note not in limitations:
