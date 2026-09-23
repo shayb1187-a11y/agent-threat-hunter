@@ -4,6 +4,15 @@
 deterministic specialists and bounded D1, both using operational-v2. It does not
 modify or reuse the existing frozen D1/M19 held-out experiment results.
 
+For the pending live-model rows, run
+[`notebooks/ath_auth_execution_colab.ipynb`](../notebooks/ath_auth_execution_colab.ipynb)
+in Google Colab with a T4 GPU. That notebook freezes both splits before inference,
+runs paired Colab baselines, resumes validated rows, and exports the complete bundle.
+The older Colab notebooks answer different D1-v3 questions and do not complete this
+operational-v2 evaluation.
+
+[Open the operational-v2 notebook directly in Google Colab](https://colab.research.google.com/github/shayb1187-a11y/agentic-threat-hunter/blob/m14-real-data-validation/notebooks/ath_auth_execution_colab.ipynb).
+
 ## Scope and predeclared protocol
 
 The generated Windows-shaped scenarios contain an authentication failure burst,
@@ -104,3 +113,7 @@ AI investigative value has not been demonstrated. After freeing memory, resume
 development with the commands above, then the frozen held-out run without tuning
 against its results. Use the clean publication checkout; unrelated source changes
 in a shared working tree intentionally invalidate these freezes.
+
+The dedicated Colab notebook creates new Colab-specific freezes outside the checkout.
+Do not copy its rows over these checked-in Windows rows: keep the paired Colab baseline
+and D1 rows together under their own result directory.

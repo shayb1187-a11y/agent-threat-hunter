@@ -1849,7 +1849,7 @@ The numbered M1–M20 rows below are the historical research milestones. The rec
 | --- | --- |
 | 1 — bounded execution | Implemented: [operational-v1](docs/operational-investigation.md) |
 | 2 — evidence verification | Implemented: [operational-v2](docs/evidence-verification.md) |
-| 3 — auth-to-execution comparison | Harness and baseline implemented; saved live model comparison remains pending: [runbook and results](docs/auth-execution-evaluation.md) |
+| 3 — auth-to-execution comparison | Harness and baseline implemented; saved live model comparison remains pending: [runbook and results](docs/auth-execution-evaluation.md), [Colab notebook](notebooks/ath_auth_execution_colab.ipynb) |
 | 4 — durable jobs | Implemented, including PostgreSQL integration tests: [setup and execution](docs/persistence-and-background-execution.md) |
 
 These statuses do not imply that M19b or M20 research runs have completed.
