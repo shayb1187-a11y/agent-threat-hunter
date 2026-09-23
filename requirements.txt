@@ -18,3 +18,8 @@ pytest>=7.4
 #   (no Anthropic SDK dependency: src/ath/agent/llm.py calls the API directly over
 #    urllib rather than adding an SDK dependency for one HTTP call.)
 langgraph>=0.2
+
+# --- Persistence: durable investigation jobs (`ath jobs`) ---
+# Optional. The in-memory store (batch evaluation, tests, `ath jobs run` without a
+# database) needs nothing; only a PostgreSQL-backed queue needs the driver.
+# pip install "psycopg[binary]>=3.1"   (or: pip install -e ".[postgres]")

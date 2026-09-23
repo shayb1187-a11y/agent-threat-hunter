@@ -117,8 +117,9 @@ Successful execution may itself conclude `abstain`; uncertainty is not a runtime
   may conservatively stop a run. Applying untrusted-text envelopes throughout D1 is
   a separately versioned prompt change.
 - Tool hashes support comparison of arguments and returned payloads. They are not
-  signatures, immutable storage, or a tamper-proof chain. Source retention, durable
-  jobs and report revisions belong to the persistence milestone.
+  signatures, immutable storage, or a tamper-proof chain. Durable jobs, attempts and
+  report revisions are [milestone 4](persistence-and-background-execution.md); source
+  retention remains out of scope.
 
 ## Acceptance checks
 

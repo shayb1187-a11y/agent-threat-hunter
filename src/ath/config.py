@@ -39,6 +39,10 @@ class Settings:
             deterministic pipeline works fine without it.
         llm_model: Model identifier used by the agent layer (Milestone 5).
         log_level: Root log level, e.g. "INFO" or "DEBUG".
+        database_url: PostgreSQL DSN for the durable investigation store (``ath jobs``).
+            ``None`` when unset -- every command that does not queue background work
+            runs without a database, and ``ath jobs run`` falls back to an in-memory
+            store for a single process.
     """
 
     raw_data_dir: Path = RAW_DATA_DIR
@@ -46,6 +50,7 @@ class Settings:
     llm_api_key: str | None = None
     llm_model: str = DEFAULT_MODEL
     log_level: str = "INFO"
+    database_url: str | None = None
 
     def require_llm_api_key(self) -> str:
         """Return the LLM API key, or explain clearly how to set it.
@@ -83,4 +88,5 @@ def load_settings(env_file: Path | None = None) -> Settings:
         llm_api_key=os.getenv("ATH_LLM_API_KEY") or None,
         llm_model=os.getenv("ATH_LLM_MODEL", DEFAULT_MODEL),
         log_level=os.getenv("ATH_LOG_LEVEL", "INFO"),
+        database_url=os.getenv("ATH_DATABASE_URL") or None,
     )

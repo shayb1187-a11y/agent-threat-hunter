@@ -58,6 +58,17 @@ from ath.hunting import (
 )
 from ath.logging_setup import get_logger, setup_logging
 from ath.mitre import ATTACK_VERSION, map_finding
+from ath.persistence import (
+    Executor,
+    InMemoryStore,
+    InvestigationStore,
+    JobStatus,
+    NotFound,
+    StoreError,
+    Worker,
+    derive_footing,
+    submit_investigations,
+)
 from ath.reporting import audit_calibration, build_report, render_markdown
 from ath.schema import EVENT_LOGON, EVENT_NETWORK, EVENT_PROCESS
 from ath.telemetry import (
@@ -1407,6 +1418,209 @@ def cmd_visibility(args: argparse.Namespace, settings: Settings) -> int:
     return 0
 
 
+# ======================================================================================
+# Persistence: durable investigation jobs
+# ======================================================================================
+
+
+def _open_store(settings: Settings, *, allow_memory: bool = False) -> InvestigationStore | None:
+    """The configured PostgreSQL store, or an in-memory one when the command allows it."""
+    url = getattr(settings, "database_url", None)
+    if url:
+        from ath.persistence.postgres import PostgresStore
+
+        try:
+            return PostgresStore(url)
+        except StoreError as exc:  # the driver is an optional extra
+            print(str(exc))
+            return None
+    if allow_memory:
+        print("No ATH_DATABASE_URL configured -- using an in-memory store for this process only.")
+        return InMemoryStore()
+    print(
+        "No ATH_DATABASE_URL configured. Durable jobs need PostgreSQL: set ATH_DATABASE_URL "
+        "(see .env.example), run `ath jobs migrate`, then retry. `ath jobs run` works "
+        "without a database, in a single process."
+    )
+    return None
+
+
+def _print_job(store: InvestigationStore, job) -> None:
+    case_id = store.get_incident(job.incident_id).case_id
+    lease = f"  lease {job.lease_owner}" if job.lease_owner else ""
+    error = f"  last error: {job.last_error}" if job.last_error else ""
+    print(f"{job.job_id}  {case_id:<10} {job.status.value:<10} "
+          f"attempts {job.attempts_made}/{job.max_attempts}{lease}{error}")
+
+
+def _job_payload(store: InvestigationStore, job) -> dict:
+    latest = store.latest_report(job.job_id)
+    return {
+        "job": job.to_dict(),
+        "incident": store.get_incident(job.incident_id).to_dict(),
+        "attempts": [a.to_dict() for a in store.list_attempts(job.job_id)],
+        "report_revisions": len(store.list_report_revisions(job.job_id)),
+        "latest_report": None if latest is None else latest.report,
+    }
+
+
+def _jobs_migrate(args: argparse.Namespace, settings: Settings) -> int:
+    store = _open_store(settings)
+    if store is None:
+        return 2
+    print(f"schema version {store.migrate()}")
+    return 0
+
+
+def _jobs_submit(args: argparse.Namespace, settings: Settings, store: InvestigationStore | None = None,
+                 *, footing=None) -> tuple[int, list, object]:
+    store = store or _open_store(settings)
+    if store is None:
+        return 2, [], None
+    try:
+        profile_type = {OperationalProfile.version: OperationalProfile, EvidenceProfile.version: EvidenceProfile}[args.profile]
+        profile = profile_type(max_steps=args.max_steps)
+    except ValueError as exc:
+        print(f"Invalid operational profile: {exc}")
+        return 2, [], None
+    llm = NullLLM() if args.no_llm else build_llm()
+    telemetry = load_telemetry(settings.raw_data_dir)
+    footing = footing or derive_footing(telemetry)
+    if not footing.cases:
+        print("No correlated cases to investigate. Run `python main.py chains` first.")
+        return 0, [], footing
+    jobs = submit_investigations(
+        store, telemetry, settings.raw_data_dir, case_ids=[args.case] if args.case else None,
+        profile=profile, model_requested=llm.available, max_attempts=args.max_attempts,
+        retry_incomplete=args.retry_incomplete, footing=footing,
+    )
+    engine = f"model {llm.name}" if llm.available else "deterministic"
+    print(f"Queued {len(jobs)} job(s) ({engine}, {profile.version}):")
+    for job in jobs:
+        _print_job(store, job)
+    return 0, jobs, footing
+
+
+def _jobs_work(args: argparse.Namespace, settings: Settings) -> int:
+    store = _open_store(settings)
+    if store is None:
+        return 2
+    worker = Worker(
+        store, Executor(store, llm_factory=build_llm), worker_id=args.worker_id,
+        lease_seconds=args.lease_seconds,
+    )
+    print(f"{worker.worker_id}: polling for jobs (Ctrl-C to stop)")
+    try:
+        processed = worker.run(max_jobs=1 if args.once else args.max_jobs, drain=args.drain,
+                               idle_seconds=args.poll_seconds)
+    except KeyboardInterrupt:
+        print("stopping; a running attempt's lease lapses on its own")
+        return 130
+    print(f"{worker.worker_id}: processed {processed} job(s)")
+    return 0
+
+
+def _jobs_status(args: argparse.Namespace, settings: Settings) -> int:
+    store = _open_store(settings)
+    if store is None:
+        return 2
+    if args.job_id:
+        try:
+            jobs = [store.get_job(args.job_id)]
+        except NotFound:
+            print(f"No such job {args.job_id!r}.")
+            return 2
+    else:
+        jobs = store.list_jobs(JobStatus(args.status) if args.status else None)
+    if args.json:
+        out = Path(args.json)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps([_job_payload(store, j) for j in jobs], indent=2), encoding="utf-8")
+        print(f"Wrote {len(jobs)} job(s) -> {out}")
+        return 0
+    if not jobs:
+        print("No jobs.")
+        return 0
+    for job in jobs:
+        _print_job(store, job)
+        if args.job_id:
+            for attempt in store.list_attempts(job.job_id):
+                print(f"  attempt {attempt.number}  {attempt.outcome.value:<10} worker {attempt.worker_id}"
+                      f"  started {attempt.started_at.isoformat(timespec='seconds')}"
+                      + (f"  error: {attempt.error}" if attempt.error else ""))
+            for revision in store.list_report_revisions(job.job_id):
+                print(f"  report revision {revision.revision}  sha256 {revision.sha256[:16]}  "
+                      f"{revision.created_at.isoformat(timespec='seconds')}")
+    return 0
+
+
+def _jobs_cancel(args: argparse.Namespace, settings: Settings) -> int:
+    store = _open_store(settings)
+    if store is None:
+        return 2
+    try:
+        job = store.cancel_job(args.job_id)
+    except NotFound:
+        print(f"No such job {args.job_id!r}.")
+        return 2
+    _print_job(store, job)
+    return 0
+
+
+def _jobs_report(args: argparse.Namespace, settings: Settings) -> int:
+    store = _open_store(settings)
+    if store is None:
+        return 2
+    try:
+        store.get_job(args.job_id)
+    except NotFound:
+        print(f"No such job {args.job_id!r}.")
+        return 2
+    revision = store.latest_report(args.job_id)
+    if revision is None:
+        print("No report revision recorded for this job yet.")
+        return 2
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(revision.markdown, encoding="utf-8")
+        print(f"Wrote revision {revision.revision} -> {out}")
+    else:
+        print(revision.markdown)
+    return 0
+
+
+def _jobs_run(args: argparse.Namespace, settings: Settings) -> int:
+    """Submit and execute in this process: the lifecycle end to end, database optional."""
+    store = _open_store(settings, allow_memory=True)
+    code, jobs, footing = _jobs_submit(args, settings, store, footing=None)
+    if code or not jobs:
+        return code
+    llm_factory = None if args.no_llm else build_llm
+    executor = Executor(store, llm_factory=llm_factory)
+    executor.remember(store.get_incident(jobs[0].incident_id).telemetry_id, footing)
+    worker = Worker(store, executor, worker_id=args.worker_id, lease_seconds=args.lease_seconds)
+    worker.run(max_jobs=len(jobs), drain=True)
+    jobs = [store.get_job(j.job_id) for j in jobs]
+    print()
+    for job in jobs:
+        _print_job(store, job)
+    if args.json:
+        out = Path(args.json)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps([_job_payload(store, j) for j in jobs], indent=2), encoding="utf-8")
+        print(f"Wrote {len(jobs)} job(s) -> {out}")
+    return 0 if all(j.status is JobStatus.COMPLETE for j in jobs) else 3
+
+
+def cmd_jobs(args: argparse.Namespace, settings: Settings) -> int:
+    handlers = {
+        "migrate": _jobs_migrate, "submit": lambda a, s: _jobs_submit(a, s)[0], "work": _jobs_work,
+        "status": _jobs_status, "cancel": _jobs_cancel, "report": _jobs_report, "run": _jobs_run,
+    }
+    return handlers[args.jobs_command](args, settings)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct the CLI argument parser."""
     parser = argparse.ArgumentParser(
@@ -1653,6 +1867,56 @@ def build_parser() -> argparse.ArgumentParser:
     p_fb.add_argument("--store", metavar="PATH", help="Feedback log location.")
     p_fb.add_argument("--json", metavar="PATH", help="Write metrics as JSON.")
     p_fb.set_defaults(func=cmd_feedback)
+
+    p_jobs = sub.add_parser(
+        "jobs",
+        help="Durable operational investigations: queue cases, run workers, read report revisions.",
+    )
+    jobs_sub = p_jobs.add_subparsers(dest="jobs_command", required=True)
+
+    def _submit_options(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--profile", choices=(OperationalProfile.version, EvidenceProfile.version),
+                            default=EvidenceProfile.version, help="Persisted investigation profile (default: operational-v2).")
+        parser.add_argument("--case", help="Queue only this case id (default: every correlated case).")
+        parser.add_argument("--no-llm", action="store_true",
+                            help="Deterministic investigation even when a model is configured.")
+        parser.add_argument("--max-steps", type=int, default=OperationalProfile.max_steps,
+                            help="Operational step budget per case.")
+        parser.add_argument("--max-attempts", type=int, default=3,
+                            help="How many times a faulting attempt may be retried in total.")
+        parser.add_argument("--retry-incomplete", action="store_true",
+                            help="Also retry attempts that ended incomplete (a result, not a fault).")
+
+    def _worker_options(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--worker-id", help="Name recorded on every attempt this worker makes.")
+        parser.add_argument("--lease-seconds", type=float, default=60.0,
+                            help="How long a claim stays valid without a heartbeat.")
+
+    jobs_sub.add_parser("migrate", help="Create the PostgreSQL tables (safe to repeat).")
+    p_submit = jobs_sub.add_parser("submit", help="Register the telemetry and queue investigation jobs.")
+    _submit_options(p_submit)
+    p_work = jobs_sub.add_parser("work", help="Claim and execute queued jobs.")
+    _worker_options(p_work)
+    p_work.add_argument("--once", action="store_true", help="Process at most one job, then exit.")
+    p_work.add_argument("--max-jobs", type=int, help="Exit after this many jobs.")
+    p_work.add_argument("--drain", action="store_true", help="Exit when the queue is empty.")
+    p_work.add_argument("--poll-seconds", type=float, default=2.0, help="Idle poll interval.")
+    p_status = jobs_sub.add_parser("status", help="List jobs, or show one job's attempts and revisions.")
+    p_status.add_argument("job_id", nargs="?", help="A job id; omit to list jobs.")
+    p_status.add_argument("--status", choices=[s.value for s in JobStatus], help="Filter the listing.")
+    p_status.add_argument("--json", metavar="PATH", help="Write jobs, attempts and latest reports as JSON.")
+    p_cancel = jobs_sub.add_parser("cancel", help="Cancel a queued or running job.")
+    p_cancel.add_argument("job_id")
+    p_report = jobs_sub.add_parser("report", help="Print or write a job's latest report revision.")
+    p_report.add_argument("job_id")
+    p_report.add_argument("--out", metavar="PATH", help="Write the Markdown here instead of printing.")
+    p_run = jobs_sub.add_parser(
+        "run", help="Submit and execute in this process (in-memory store when no database is set).",
+    )
+    _submit_options(p_run)
+    _worker_options(p_run)
+    p_run.add_argument("--json", metavar="PATH", help="Write jobs, attempts and reports as JSON.")
+    p_jobs.set_defaults(func=cmd_jobs)
 
     return parser
 

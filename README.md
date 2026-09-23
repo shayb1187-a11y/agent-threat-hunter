@@ -106,6 +106,8 @@ citation checks, tool hashes, and explicit incomplete outcomes. The
 evidence assertions. The
 [authentication-to-execution pilot](docs/auth-execution-evaluation.md)
 compares deterministic and model investigations under frozen settings.
+To run investigations as durable background jobs with attempts and report revisions,
+see [persistence and background execution](docs/persistence-and-background-execution.md).
 Existing research configurations and frozen experiments retain their defaults.
 
 ---
@@ -1920,9 +1922,12 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
 - **Beacon detection uses a simple robust statistic (median/MAD) on fixed intervals.**
   Real implants add jitter specifically to defeat this; a negative result is weak
   evidence of absence, and the code says so.
-- **The orchestrator has no persistence or checkpointing.** Each `investigate` run starts
-  fresh; there is no resuming a partially completed investigation across process
-  restarts (LangGraph's checkpointing could add this, but it is not wired up).
+- **Investigations are durable as jobs, not as checkpoints.** `ath jobs` records
+  telemetry references, incidents, jobs, attempts and report revisions (in memory, or in
+  PostgreSQL for background workers with leases and retries -- see
+  [docs/persistence-and-background-execution.md](docs/persistence-and-background-execution.md)),
+  but an attempt always restarts from the beginning; there is no resuming a partially
+  completed investigation mid-way, and no preemption of a running attempt.
 - **Recommended actions are pattern-matched against specialist phrasing.** They key off
   literal substrings in hypothesis statements (e.g. "obtained from memory"). This is
   transparent and testable but brittle to unrelated wording changes in the specialists --

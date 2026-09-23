@@ -15,6 +15,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7.4", "ruff>=0.6", "pyarrow>=14"]
 graph = ["langgraph>=0.2"]
+# Durable job store for `ath jobs` (src/ath/persistence/postgres.py). Imported only
+# when a PostgreSQL store is constructed; everything else runs without it.
+postgres = ["psycopg[binary]>=3.1"]
 
 [project.scripts]
 ath = "ath.cli:main"
