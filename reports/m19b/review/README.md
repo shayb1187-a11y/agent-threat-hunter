@@ -1,5 +1,9 @@
 # M19 hypothesis review — instructions for the reviewer
 
+This package belongs to phase 1 of the M19b follow-up, but reviews the **original M19**
+outputs. It is separate from the newer operational-v2 authentication-to-execution
+pilot. See the [project roadmap](../../../README.md#roadmap) for both tracks.
+
 You are the primary assessment. 102 hypotheses were produced during the M19 ablation by
 three different investigation set-ups over the same 22 cases, and the experiment turns on
 one question that no automatic scorer can answer: **did a hypothesis add anything an
@@ -89,11 +93,16 @@ standard you applied at `R100` is not the one you applied at `R001`. If you noti
 standard has moved, say so in `reviewer_note` and re-read the first few entries of the
 session before continuing rather than going back to fix old rows from memory.
 
-## When you are done
+## Prepare the answer sheet and submit it
+
+Run these commands from the repository root with the project virtual environment
+active. Create the copy **before** reviewing; exclusive creation prevents accidentally
+overwriting an existing answer sheet. Score only your own filled answers.
 
 ```
-cp answers_template.csv answers_filled.csv     # then fill it in
-python reports/m19b/review/score_review.py --answers answers_filled.csv
+python -c "from pathlib import Path; p=Path('reports/m19b/review'); (p/'answers_filled.csv').open('xb').write((p/'answers_template.csv').read_bytes())"
+# Fill reports/m19b/review/answers_filled.csv, then:
+python reports/m19b/review/score_review.py --answers reports/m19b/review/answers_filled.csv
 ```
 
 The scorer refuses a sheet with an unfilled row, because scoring a partly-filled sheet as

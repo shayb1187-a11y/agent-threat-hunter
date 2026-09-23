@@ -1,4 +1,4 @@
-# Authentication-to-execution evaluation (milestone 3)
+# Authentication-to-execution evaluation (operational step 3)
 
 `python -m ath.evaluation.auth_execution` provides a separate, frozen comparison of
 deterministic specialists and bounded D1, both using operational-v2. It does not

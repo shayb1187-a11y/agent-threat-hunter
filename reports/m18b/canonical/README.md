@@ -7,11 +7,20 @@ This directory held the canonical tables that the Milestone 18b measurements
 COMISET Lab Environment Dataset (Universidad Pontificia Comillas,
 https://zenodo.org/records/15375146, CC BY 4.0) -- one zip member, 159.7 GB
 uncompressed -- by `scripts/comiset_slice.py`, re-run after M18's schema changes; the
-M17 freeze one directory over is the pre-M18 shape of the same slice.
+[M17 freeze](../../m17/canonical/README.md) is the pre-M18 shape of the same slice.
 
 They are **not in this repository**, and were removed from its history before
-publication, for the reasons given in `reports/m17/canonical/README.md` and in the
+publication, for the reasons given in [M17 README](../../m17/canonical/README.md) and in the
 README's Limitations: M18b is not reproducible from a clone without the archive.
+
+The values below identify the historical parquet bytes, not the current normalized
+telemetry digest. Exact byte reproduction also depends on the schema, writer and
+runtime used for that freeze; running the latest pipeline is not a promise of
+byte-identical output. Keep these hashes as recorded evidence.
+
+See the [root limitations](../../../README.md#limitations),
+[external-data inventory](../../../README.md#external-datasets), and the
+[M17 freeze](../../m17/canonical/README.md) for the other schema version.
 
 Anyone re-deriving them can check the result against what was actually measured:
 

@@ -1,8 +1,11 @@
-# Milestone 4: persistence and reliable background execution
+# Operational step 4: persistence and reliable background execution
+
+This is step 4 of the operational delivery sequence, separate from historical
+research milestone M4. See the [roadmap](../README.md#roadmap).
 
 ## What was added, and what was left alone
 
-| Component | Existing implementation | Milestone 4 action |
+| Component | Existing implementation | Operational step 4 action |
 | --- | --- | --- |
 | Toolbox, verifier, investigators, report builder | In-process objects built per case by the CLI | Unchanged. The store sits beside the toolbox: it supplies the toolbox's inputs (a telemetry reference and a pinned case) and keeps what the toolbox produced (the ledger inside the serialised state). The frozen tool surface is untouched. |
 | Operational profile | `investigate_operational` with per-case limits | Reused as the only execution path for a job; the profile values and their hash travel with the job. |

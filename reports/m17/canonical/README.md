@@ -13,6 +13,15 @@ corpora are fetched, never committed, and the two network files alone were 53 MB
 The consequence is stated in the README's Limitations: M17 is not reproducible from a
 clone without the archive.
 
+The values below identify the historical parquet bytes, not the current normalized
+telemetry digest. Exact byte reproduction also depends on the schema, writer and
+runtime used for that freeze; running the latest pipeline is not a promise of
+byte-identical output. Keep these hashes as recorded evidence.
+
+See the [root limitations](../../../README.md#limitations),
+[external-data inventory](../../../README.md#external-datasets), and the
+[M18B freeze](../../m18b/canonical/README.md) for the other schema version.
+
 Anyone re-deriving them can check the result against what was actually measured:
 
 | file | bytes | sha256 |

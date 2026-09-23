@@ -1,4 +1,4 @@
-# Structured evidence verification (milestone 2)
+# Structured evidence verification (operational step 2)
 
 `operational-v2` checks explicit telemetry predicates and separates those observations
 from detector summaries and model interpretations. Existing legacy and operational-v1
