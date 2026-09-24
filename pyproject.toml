@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "agentic-threat-hunter"
 version = "0.1.0"
 description = "AI-assisted threat hunting over security telemetry with MITRE ATT&CK mapping"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "pandas>=2.0,<3",
     "python-dotenv>=1.0",
@@ -32,7 +32,7 @@ pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 src = ["src", "tests", "scripts"]
 # Hash-pinned files (tests/test_frozen_source_pin.py) are never rewritten by a linter.
 extend-exclude = [
@@ -50,7 +50,9 @@ select = ["E", "F", "I", "B", "UP"]
 # B905: zip(strict=) is noise over frames whose lengths the schema already fixes.
 # E741: single-letter names in comprehensions are used deliberately in the renderers.
 # UP030/UP031: positional str.format and printf styles are left as written.
-ignore = ["E501", "E731", "B905", "E741", "UP030", "UP031"]
+# UP017/UP042 (raised by the py311 target): datetime.UTC is only an alias, and StrEnum
+# changes str()/format() of existing enums, which reports and frozen hashes depend on.
+ignore = ["E501", "E731", "B905", "E741", "UP030", "UP031", "UP017", "UP042"]
 # An unused import is reported, never auto-removed: several modules re-export names
 # without an __all__, and deleting one breaks importers a linter cannot see.
 unfixable = ["F401"]

@@ -130,7 +130,7 @@ ledger coverage and CLI/JSON/report behavior. Existing safeguard tests and froze
 source/identity/surface checks must pass without regenerating their fixtures.
 
 Run with the repository's Python 3.11 virtual environment, not the machine's default
-Python 3.9 (the package requires Python 3.10 or newer):
+Python 3.9 (the package requires Python 3.11 or newer):
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q

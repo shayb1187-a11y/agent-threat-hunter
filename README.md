@@ -122,7 +122,7 @@ Existing research configurations and frozen experiments retain their defaults.
 
 ## Quick start
 
-Requires Python **3.10 or newer** and the dependencies in `requirements.txt`. The core path below
+Requires Python **3.11 or newer** and the dependencies in `requirements.txt`. The core path below
 runs **without an API key or network access after installation**.
 
 ```bash
