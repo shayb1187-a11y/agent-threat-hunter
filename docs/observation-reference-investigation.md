@@ -46,8 +46,8 @@ signature as a benign cue, which is wrong for signed tools abused for credential
 
 Repeats were identical at temperature 0 and seed 0, so the evaluation has six distinct
 cases, five decided correctly. Every evaluation case has now been inspected four times.
-No further prompt should be tuned against them. The next step is a fresh, sealed scenario
-set; see [hard scenarios](auth-execution-hard-scenarios.md).
+No further prompt should be tuned against them. The next step is a fresh scenario set,
+sealed before any prompt change and evaluated with v5 unchanged.
 
 ## Operational-v4: described references
 
