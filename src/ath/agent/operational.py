@@ -19,6 +19,16 @@ from ath.agent.claims import ClaimVerifier
 from ath.agent.investigator import RESPONSE_SCHEMA, D1Investigator, InvestigatorConfig
 from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
+from ath.agent.references import (
+    CONTEXT_VERSION,
+    REFERENCE_SCHEMA,
+    REFERENCE_VERSION,
+    STABLE_SCHEMA,
+    STABLE_VERSION,
+    ContextReferenceInvestigator,
+    ReferenceInvestigator,
+    StableReferenceInvestigator,
+)
 from ath.agent.state import InvestigationState, InvestigationStatus
 from ath.agent.structured import EvidenceInvestigator, finalise_evidence
 from ath.agent.tools import ToolBox
@@ -76,6 +86,28 @@ class EvidenceProfile(OperationalProfile):
 
     version: ClassVar[str] = "operational-v2"
     max_output_tokens: int = 1536
+
+
+@dataclass(frozen=True)
+class ReferenceProfile(EvidenceProfile):
+    """Checked observation references, with a GPU-friendly total case deadline."""
+
+    version: ClassVar[str] = "operational-v3"
+    time_budget_seconds: float = 300.0
+
+
+@dataclass(frozen=True)
+class ContextProfile(ReferenceProfile):
+    """Operational-v3 references, with each event's recorded host, program and command shown."""
+
+    version: ClassVar[str] = "operational-v4"
+
+
+@dataclass(frozen=True)
+class StableContextProfile(ContextProfile):
+    """Operational-v4 with short stable references, one repair request and script wording."""
+
+    version: ClassVar[str] = "operational-v5"
 
 
 class _OperationalLLM:
@@ -170,7 +202,10 @@ def investigate_operational(
     model_requested = llm is not None and not isinstance(llm, NullLLM)
     guarded = _OperationalLLM(llm, profile, started) if model_requested else None
     if guarded is not None:
-        investigator = EvidenceInvestigator if isinstance(profile, EvidenceProfile) else D1Investigator
+        investigator = (StableReferenceInvestigator if isinstance(profile, StableContextProfile) else
+                        ContextReferenceInvestigator if isinstance(profile, ContextProfile) else
+                        ReferenceInvestigator if isinstance(profile, ReferenceProfile) else
+                        EvidenceInvestigator if isinstance(profile, EvidenceProfile) else D1Investigator)
         engine = investigator(
             tools, verifier, llm=guarded,
             config=InvestigatorConfig(
@@ -192,6 +227,14 @@ def investigate_operational(
     state = engine.investigate(case)
     if isinstance(profile, EvidenceProfile):
         finalise_evidence(state, telemetry, verifier, profile.tool_max_rows)
+        if isinstance(profile, ReferenceProfile):
+            state.investigation["evidence_verification"].update({
+                "version": (STABLE_VERSION if isinstance(profile, StableContextProfile) else
+                            CONTEXT_VERSION if isinstance(profile, ContextProfile) else REFERENCE_VERSION),
+                "schema_sha256": hashlib.sha256(json.dumps(
+                    STABLE_SCHEMA if isinstance(profile, StableContextProfile) else REFERENCE_SCHEMA,
+                    sort_keys=True).encode()).hexdigest(),
+            })
     state.environment = environment
     state.run_id = str(uuid4())
     state.llm_requested = model_requested

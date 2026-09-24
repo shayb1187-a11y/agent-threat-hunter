@@ -1,17 +1,24 @@
 # Authentication-to-execution evaluation (operational step 3)
 
+**For the corrected Colab GPU run, use the
+[self-contained operational-v5 notebook](../notebooks/ath_auth_execution_gpu_v5.ipynb)
+and [its runbook](observation-reference-investigation.md).** It fixes the model-facing
+evidence contract and includes the corrected source, GPU preload checks and development
+gate. The operational-v2 protocol and historical results below retain their scope.
+
 `python -m ath.evaluation.auth_execution` provides a separate, frozen comparison of
 deterministic specialists and bounded D1, both using operational-v2. It does not
 modify or reuse the existing frozen D1/M19 held-out experiment results.
 
-For the pending live-model rows, run
+For a new Colab run, use
 [`notebooks/ath_auth_execution_colab.ipynb`](../notebooks/ath_auth_execution_colab.ipynb)
-in Google Colab with a T4 GPU. That notebook freezes both splits before inference,
-runs paired Colab baselines, resumes validated rows, and exports the complete bundle.
+in Google Colab with a T4 GPU. The notebook now defaults to a separate Qwen3.5 9B
+follow-up after the reviewed 4B run failed. It freezes both splits before investigation,
+runs paired Colab baselines, resumes validated rows, and exports the result bundle.
 The older Colab notebooks answer different D1-v3 questions and do not complete this
 operational-v2 evaluation.
 
-[Open the operational-v2 notebook directly in Google Colab](https://colab.research.google.com/github/shayb1187-a11y/agentic-threat-hunter/blob/m14-real-data-validation/notebooks/ath_auth_execution_colab.ipynb).
+[Open the operational-v2 notebook directly in Google Colab](https://colab.research.google.com/github/shayb1187-a11y/agent-threat-hunter/blob/m14-real-data-validation/notebooks/ath_auth_execution_colab.ipynb).
 
 ## Scope and predeclared protocol
 
@@ -117,3 +124,40 @@ in a shared working tree intentionally invalidate these freezes.
 The dedicated Colab notebook creates new Colab-specific freezes outside the checkout.
 Do not copy its rows over these checked-in Windows rows: keep the paired Colab baseline
 and D1 rows together under their own result directory.
+
+## Qwen3.5 9B follow-up
+
+The [4B Colab review](auth-execution-colab-review.md) found zero completed model
+investigations: invalid structured identities were the dominant failure. The current
+notebook prepares `qwen3.5:9b` as a larger candidate on the same T4 setup. The
+[Ollama model listing](https://ollama.com/library/qwen3.5:9b) reports approximately
+6.6 GB for its Q4_K_M weights; the notebook checks GPU residency before cases run.
+Better behavior on this task remains to be measured.
+
+1. Upload the updated local `ath_auth_execution_colab.ipynb` to Google Colab using
+   **File → Upload notebook**. The GitHub launch link uses the published version,
+   which will not include local changes until they are pushed.
+2. Select **Runtime → Change runtime type → T4 GPU** and use a fresh session.
+3. Keep `MODEL = "qwen3.5:9b"` and `RUN_ID = "qwen35-9b-followup"`; run cells in order.
+4. Save `ath_auth_execution_qwen35-9b-followup_dev_checkpoint.zip`. If any development
+   investigation fails, the next stage stops and the checkpoint contains its reasons.
+5. If development passes, the remaining cases run. Save
+   `ath_auth_execution_qwen35-9b-followup_results.zip`, including any failed or missing rows.
+
+Outputs live in `/content/ath-auth-execution-qwen35-9b-followup`. Do not restore 4B
+archives into this run. The notebook verifies the evaluator's source digest against
+the reviewed implementation and preserves the original prompts, data, sampling,
+120-second investigation deadline, two-probe limit and 1,536-token output cap.
+It preloads the model without a task prompt, records that separately, and excludes
+loading time from case latency. That startup difference must be considered when
+comparing time with the earlier run.
+
+All three development investigations must successfully complete before further
+model calls are made on the evaluation split. Row presence alone is insufficient.
+Saved failures are not deleted or retried in place.
+
+This is an exploratory follow-up on already inspected cases. The historical split
+name `heldout` remains in the evaluator, but it is no longer unseen validation for
+this model-selection exercise. `RUN_CONTEXT.json` records this distinction. The
+unchanged success criterion still has its evidence-recovery ceiling; examine the
+individual metrics. A larger model does not repair that evaluation-design limit.

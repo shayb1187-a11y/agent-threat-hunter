@@ -23,7 +23,14 @@ from ath.agent.claims import ClaimVerifier
 from ath.agent.evidence import AssertionKind, EvidenceAssertion
 from ath.agent.llm import ScriptedLLM
 from ath.agent.ollama_llm import OllamaLLM
-from ath.agent.operational import EvidenceProfile, investigate_operational
+from ath.agent.operational import (
+    ContextProfile,
+    EvidenceProfile,
+    ReferenceProfile,
+    StableContextProfile,
+    investigate_operational,
+)
+from ath.agent.references import REFERENCE_SCHEMA, STABLE_SCHEMA
 from ath.agent.state import shown_ids
 from ath.agent.structured import EVIDENCE_RESPONSE_SCHEMA
 from ath.correlation import correlate
@@ -151,7 +158,8 @@ def prepare(scenario):
 
 
 def source_hash():
-    return sha256_json({str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    # as_posix: identical to str() on Linux (existing Colab freezes), and portable to Windows.
+    return sha256_json({p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
                         for p in sorted((ROOT / "src" / "ath").rglob("*.py"))})
 
 
@@ -166,12 +174,46 @@ def manifest(split):
     return entries
 
 
-def make_freeze(split, model_description, model_configuration, repeats=2):
+EVIDENCE_CEILING_RULE = "v2-evidence-ceiling-tie"
+
+
+def profile_for(version):
+    if version == "operational-v2":
+        return EvidenceProfile()
+    if version == "operational-v3":
+        return ReferenceProfile()
+    if version == "operational-v4":
+        return ContextProfile()
+    if version == "operational-v5":
+        return StableContextProfile()
+    raise ValueError("unknown operational profile")
+
+
+def make_freeze(split, model_description, model_configuration, repeats=2, profile=None):
     if repeats < 1:
         raise ValueError("repeats must be positive")
-    body = {"version": VERSION, "protocol": PROTOCOL, "split": split, "repeats": repeats,
+    profile = profile or EvidenceProfile()
+    protocol = PROTOCOL
+    if isinstance(profile, ReferenceProfile):
+        protocol = {**PROTOCOL,
+                    "baseline": PROTOCOL["baseline"].replace("operational-v2", "operational-v3"),
+                    "d1": "Operational-v3: D1 selects verified observation references; predicates and citations are bound deterministically. Both arms use the same evidence verifier and 300-second profile.",
+                    "holdout": "Exploratory follow-up on previously inspected synthetic cases; not fresh held-out validation. New source/profile/model freezes; preserve all failures. No tuning within a freeze."}
+    if isinstance(profile, ContextProfile):
+        protocol = {**protocol,
+                    "baseline": PROTOCOL["baseline"].replace("operational-v2", "operational-v4"),
+                    "d1": "Operational-v4: as v3, but each checked observation also shows its recorded host, account, program, command line and signer, and the system prompt asks D1 to judge observed commands. Both arms use the same evidence verifier and 300-second profile.",
+                    "decision_rule": PROTOCOL["decision_rule"].replace("AND more useful-evidence recovery", "AND more useful-evidence recovery, or equal recovery when the baseline already cites every available useful event (declared before this run because the v2/v3 splits cap recovery)"),
+                    "decision_rule_version": EVIDENCE_CEILING_RULE,
+                    "holdout": "Exploratory: v4 prompt and catalog were written after inspecting v3 results on all nine synthetic cases. Not fresh held-out validation; no claim of generalization. New freezes; preserve all failures. No tuning within a freeze."}
+    if isinstance(profile, StableContextProfile):
+        protocol = {**protocol,
+                    "baseline": PROTOCOL["baseline"].replace("operational-v2", "operational-v5"),
+                    "d1": "Operational-v5: as v4, but checked observations are numbered R1, R2, ... once per investigation and never renumbered; a reply citing an unknown reference gets one repair request naming the error (unknown references never bind); and the prompt judges a wrapper script by its observed children. Both arms use the same evidence verifier and 300-second profile.",
+                    "holdout": "Exploratory: v5 changes were written after inspecting v3 results on all nine synthetic cases and the v4 development run. Not fresh held-out validation; no claim of generalization. New freezes; preserve all failures. No tuning within a freeze."}
+    body = {"version": VERSION, "protocol": protocol, "split": split, "repeats": repeats,
             "source_sha256": source_hash(), "manifest": manifest(split),
-            "profile": EvidenceProfile().to_dict(), "profile_sha256": EvidenceProfile().sha256(),
+            "profile": profile.to_dict(), "profile_sha256": profile.sha256(),
             "model": model_description, "model_configuration": model_configuration,
             "runtime": {"python": platform.python_version(), "pandas": pd.__version__, "platform": platform.platform()}}
     return {**body, "freeze_sha256": sha256_json(body)}
@@ -183,7 +225,8 @@ def validate_freeze(freeze):
         raise ValueError("freeze contents were altered")
     if freeze["source_sha256"] != source_hash() or freeze["manifest"] != manifest(freeze["split"]):
         raise ValueError("code or telemetry changed; create a new freeze and output directory")
-    if freeze["profile_sha256"] != EvidenceProfile().sha256():
+    profile = profile_for(freeze["profile"]["version"])
+    if freeze["profile_sha256"] != profile.sha256() or freeze["profile"] != profile.to_dict():
         raise ValueError("operational profile changed")
     if (freeze["runtime"]["python"] != platform.python_version()
             or freeze["runtime"]["pandas"] != pd.__version__):
@@ -199,14 +242,14 @@ def deterministic_disposition(case, environment):
     return "abstain"
 
 
-def evaluate_case(scenario, arm, client=None, *, scripted=False):
+def evaluate_case(scenario, arm, client=None, *, scripted=False, profile=None):
     if arm not in ("deterministic", "d1") or (arm == "d1" and client is None):
         raise ValueError("d1 requires a client; arm must be deterministic or d1")
     if isinstance(client, ScriptedLLM) and not scripted:
         raise ValueError("scripted clients must be explicitly labelled; they cannot produce live evidence")
     findings, case, environment = prepare(scenario)
     state = investigate_operational(case, scenario.telemetry, findings,
-                                    llm=client if arm == "d1" else None, profile=EvidenceProfile(), environment=environment)
+                                    llm=client if arm == "d1" else None, profile=profile or EvidenceProfile(), environment=environment)
     audit = state.investigation["operational"]
     complete = audit["outcome"] == "complete"
     decision = (deterministic_disposition(case, environment) if arm == "deterministic"
@@ -287,8 +330,11 @@ def summarise(freeze, rows):
     a, d = groups["deterministic"], groups["d1"]
     full = set(keys) == expected
     scripted = any(r["scripted"] for r in rows)
+    ceiling_tie = freeze.get("protocol", {}).get("decision_rule_version") == EVIDENCE_CEILING_RULE
+    evidence_improved = (d["useful_cited"] > a["useful_cited"]
+                         or (ceiling_tie and d["useful_cited"] == a["useful_cited"] == a["useful_available"]))
     promising = (full and not scripted and a["complete"] == a["rows"] and d["complete"] == d["rows"]
-                 and d["accuracy"] > a["accuracy"] and d["useful_cited"] > a["useful_cited"]
+                 and d["accuracy"] > a["accuracy"] and evidence_improved
                  and d["false_benign"] == 0 and d["false_malicious"] <= a["false_malicious"]
                  and d["accepted_invalid_predicates"] == 0)
     return {"freeze_sha256": freeze["freeze_sha256"], "split": freeze["split"],
@@ -299,8 +345,11 @@ def summarise(freeze, rows):
             "limitations": PROTOCOL["limits"], "analyst_time_savings": None}
 
 
-def _client(model):
-    return OllamaLLM(model, format=EVIDENCE_RESPONSE_SCHEMA, max_attempts=1, timeout_seconds=120)
+def _client(model, profile=None):
+    profile = profile or EvidenceProfile()
+    schema = (STABLE_SCHEMA if isinstance(profile, StableContextProfile) else
+              REFERENCE_SCHEMA if isinstance(profile, ReferenceProfile) else EVIDENCE_RESPONSE_SCHEMA)
+    return OllamaLLM(model, format=schema, max_attempts=1, timeout_seconds=profile.time_budget_seconds)
 
 
 def main(argv=None):
@@ -310,19 +359,23 @@ def main(argv=None):
     parser.add_argument("--split", choices=("dev", "heldout"), default="dev")
     parser.add_argument("--model", default="qwen3.5:4b")
     parser.add_argument("--repeats", type=int, default=2)
+    parser.add_argument("--profile", choices=("operational-v2", "operational-v3", "operational-v4", "operational-v5"), default="operational-v2",
+                        help="Profile for a new freeze; saved runs always use their frozen profile")
     parser.add_argument("--arm", choices=("both", "deterministic", "d1"), default="both")
     args = parser.parse_args(argv)
     refuse_frozen_path(args.out, ROOT)
     if args.command == "freeze":
-        client = _client(args.model)
-        freeze = make_freeze(args.split, client.describe(), client.configuration(), args.repeats)
+        profile = profile_for(args.profile)
+        client = _client(args.model, profile)
+        freeze = make_freeze(args.split, client.describe(), client.configuration(), args.repeats, profile)
         write_new(args.out / "FREEZE.json", freeze)
         print(json.dumps({"freeze_sha256": freeze["freeze_sha256"], "split": args.split, "cases": len(freeze["manifest"])}), flush=True)
         return 0
     freeze = json.loads((args.out / "FREEZE.json").read_text(encoding="utf-8"))
     validate_freeze(freeze)
     if args.command == "run":
-        client = _client(freeze["model_configuration"]["model"])
+        profile = profile_for(freeze["profile"]["version"])
+        client = _client(freeze["model_configuration"]["model"], profile)
         if args.arm != "deterministic":
             description = client.describe()
             if (client.configuration() != freeze["model_configuration"]
@@ -346,7 +399,7 @@ def main(argv=None):
                         if guard["ok"] is not True:
                             print(json.dumps({"blocked": "RAM guard", **guard}), flush=True)
                             return 3
-                    row, report = evaluate_case(scenario, arm, client if arm == "d1" else None)
+                    row, report = evaluate_case(scenario, arm, client if arm == "d1" else None, profile=profile)
                     row.update({"repeat": repeat, "freeze_sha256": freeze["freeze_sha256"], "ram_guard": guard})
                     write_new(path, seal_row(row))
                     report_path = path.with_suffix(".md")

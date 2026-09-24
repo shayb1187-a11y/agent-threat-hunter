@@ -102,7 +102,8 @@ def test_raw_artifacts_cannot_be_overwritten(tmp_path):
     assert json.loads(target.read_text())["x"] == 1
 
 
-def test_cli_freeze_baseline_and_resume_without_model_calls(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize("profile", ["operational-v2", "operational-v3", "operational-v4", "operational-v5"])
+def test_cli_freeze_baseline_and_resume_without_model_calls(tmp_path, monkeypatch, capsys, profile):
     class MetadataOnly:
         def describe(self):
             return {"digest": "fake", "daemon_version": "test"}
@@ -110,9 +111,9 @@ def test_cli_freeze_baseline_and_resume_without_model_calls(tmp_path, monkeypatc
         def configuration(self):
             return {"model": "test"}
 
-    monkeypatch.setattr(pilot, "_client", lambda model: MetadataOnly())
+    monkeypatch.setattr(pilot, "_client", lambda model, profile=None: MetadataOnly())
     out = tmp_path / "pilot"
-    assert pilot.main(["freeze", "--out", str(out), "--repeats", "1"]) == 0
+    assert pilot.main(["freeze", "--out", str(out), "--repeats", "1", "--profile", profile]) == 0
     assert pilot.main(["run", "--out", str(out), "--arm", "deterministic"]) == 0
     saved = {p.name: p.read_bytes() for p in (out / "rows").glob("*.json")}
     assert len(saved) == 3
