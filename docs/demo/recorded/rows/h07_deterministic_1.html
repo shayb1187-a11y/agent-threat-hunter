@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Incident: Analyst-selected activity for investigation</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1d1f;--muted:#5f6368;--line:#dcdcd8;--card:#ffffff;
+--code:#f1f1ee;--mal:#b3261e;--ben:#1e7a3c;--abs:#8a5a00;--inc:#5f6368;--quote:#eef2f8}
+@media (prefers-color-scheme: dark){:root{--bg:#161618;--fg:#e8e8e6;--muted:#a0a0a8;
+--line:#34343a;--card:#1f1f23;--code:#26262b;--mal:#f2877f;--ben:#6fcf8f;--abs:#e7b75a;
+--inc:#a0a0a8;--quote:#232a36}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.5rem;line-height:1.25;margin:0 0 8px}
+h2{font-size:1.15rem;margin:32px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+p,li{overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+dl.meta{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0}
+dl.meta dt{color:var(--muted)}dl.meta dd{margin:0;overflow-wrap:anywhere}
+.badge{display:inline-block;font-weight:700;padding:2px 10px;border-radius:999px;
+border:2px solid currentColor}
+.v-malicious{color:var(--mal)}.v-benign{color:var(--ben)}.v-abstain{color:var(--abs)}
+.v-incomplete{color:var(--inc)}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--code);
+padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+ul.tree,ul.tree ul{list-style:none;margin:0;padding-left:18px}
+ul.tree{padding-left:0}
+ul.tree ul li{position:relative;border-left:1px solid var(--line);padding:4px 0 8px 14px}
+ul.tree ul li:last-child{border-left-color:transparent}
+ul.tree ul li::before{content:"";position:absolute;left:0;top:0;width:10px;height:14px;
+border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
+.arrow{color:var(--muted);padding:2px 0 2px 6px}
+.node{font-weight:600}
+blockquote.model{margin:6px 0;padding:8px 12px;background:var(--quote);
+border-left:3px solid var(--muted);border-radius:4px}
+.tag{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ok{color:var(--ben)}.no{color:var(--mal)}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Incident: Analyst-selected activity for investigation</h1>
+<div class="card"><dl class="meta"><dt>Case</dt><dd>CASE-SEED</dd><dt>Generated</dt><dd>2026-09-26 11:09:52 UTC</dd><dt>Status</dt><dd>complete</dd><dt>Severity</dt><dd>MEDIUM</dd><dt>Grouping confidence</dt><dd>low <span class="muted">(how strongly findings are linked, not whether an intrusion occurred)</span></dd><dt>Hosts</dt><dd>CLIENT2</dd><dt>Accounts</dt><dd>client2</dd><dt>Window</dt><dd>2025-01-07 08:23:26 -&gt; 08:23:26 UTC (0s)</dd><dt>Telemetry</dt><dd>winlogbeat</dd></dl></div>
+<p class="muted">This report was produced by an automated investigation. It presents evidence-backed findings for analyst review and does not authorise or perform any response action.</p>
+</header>
+<section>
+<h2>Verdict</h2>
+<div class="card" id="verdict"><dl class="meta"><dt>Disposition</dt><dd><span class="badge v-abstain">Abstain</span></dd><dt>Decided by</dt><dd>deterministic triage of the seed findings</dd><dt>Engine</dt><dd>deterministic</dd><dt>Profile</dt><dd>operational-v6</dd><dt>Model</dt><dd>none (deterministic engine)</dd><dt>Evidence basis</dt><dd>7 typed observation(s) checked against recorded telemetry; 0 claim(s) rejected by verification; 1 specialist step(s) run (endpoint); 2 tool call(s) served, 0 refused.</dd><dt>Supporting event ids</dt><dd>none cited by the concluding explanations</dd></dl></div>
+<p class="muted">This system does not compute a confidence score for its verdict. The evidence basis is a count of what was checked, not a measure of how likely the verdict is.</p>
+</section>
+<section>
+<h2>Investigation Tree</h2>
+<ul class="tree">
+<li><span class="node">Initial alert:</span> Analyst-selected activity for investigation<div class="muted">rules ANALYST-SEED; 1 seed event(s): <code>wlb-process-0004946</code></div></li>
+<li class="arrow" aria-hidden="true">&darr;</li>
+<li><span class="node">ATH investigation</span> <span class="muted">(engine deterministic)</span><ul><li><span class="node">endpoint</span><div><span class="tag">why</span> only eligible specialist; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ANALYST-SEED)</div><div><span class="tag">tools</span> get_events, process_tree</div><div><span class="tag">new events</span> 3 retrieved; shown: <code>wlb-process-0004817</code>, <code>wlb-process-0004816</code>, <code>wlb-process-0005022</code></div></li><li><span class="node">evidence_verifier</span><div><span class="tag">why</span> validate typed observations against cited telemetry</div></li></ul><div class="muted">stopped: no specialist has further useful work on the available evidence</div></li>
+<li class="arrow" aria-hidden="true">&darr;</li>
+<li><span class="node">Verdict:</span> Abstain</li>
+</ul>
+</section>
+<section>
+<h2>Reasoning Summary</h2>
+<p>No model-written reasoning: this run used no model. Its reasoning is the specialist trace in the investigation tree and the findings below.</p>
+</section>
+<section>
+<h2>Executive Summary</h2>
+<p>This report covers CASE-SEED, correlating 1 detection finding(s) across 1 host(s) (CLIENT2) and 1 account(s) (client2) between 08:23:26 and 08:23:26 UTC on 2025-01-07. 7 statement(s) below are directly established by telemetry, 3 are evidence-supported inferences, and 0 are explicitly unverified hypotheses requiring analyst confirmation. This report does not authorise or perform any response action. All recommendations below require human review before action is taken.</p>
+</section>
+<section>
+<h2>Attack Timeline</h2>
+<div class="scroll"><table><thead><tr><th>Time</th><th>Rule</th><th>Severity</th><th>User</th><th>Host / Movement</th><th>ATT&amp;CK</th><th>Events</th></tr></thead><tbody><tr><td>08:23:26</td><td>ANALYST-SEED</td><td>MEDIUM</td><td>client2</td><td>CLIENT2</td><td>-</td><td><code>wlb-process-0004946</code></td></tr></tbody></table></div>
+</section>
+<section>
+<h2>Findings</h2>
+<h3>Confirmed (FACT) (7)</h3><ul><li>Confirmed: Event wlb-process-0004816 records process identity sysmon:416dd0c5-e467-677c-6400-000000001200.<div class="muted">Evidence: <code>wlb-process-0004816</code></div></li><li>Confirmed: Event wlb-process-0004817 records process identity sysmon:416dd0c5-e467-677c-6500-000000001200.<div class="muted">Evidence: <code>wlb-process-0004817</code></div></li><li>Confirmed: Event wlb-process-0004946 records process identity sysmon:416dd0c5-e47e-677c-9000-000000001200.<div class="muted">Evidence: <code>wlb-process-0004946</code></div></li><li>Confirmed: Event wlb-process-0005022 records process identity sysmon:416dd0c5-e483-677c-9d00-000000001200.<div class="muted">Evidence: <code>wlb-process-0005022</code></div></li><li>Confirmed: Process event wlb-process-0004817 identifies the instance in wlb-process-0004816 as its parent.<div class="muted">Evidence: <code>wlb-process-0004816</code>, <code>wlb-process-0004817</code></div></li><li>Confirmed: Process event wlb-process-0004946 identifies the instance in wlb-process-0004817 as its parent.<div class="muted">Evidence: <code>wlb-process-0004817</code>, <code>wlb-process-0004946</code></div></li><li>Confirmed: Process event wlb-process-0005022 identifies the instance in wlb-process-0004946 as its parent.<div class="muted">Evidence: <code>wlb-process-0004946</code>, <code>wlb-process-0005022</code></div></li></ul>
+<h3>Assessed (INFERENCE) (3)</h3><ul><li>Assessed: Unverified summary: On CLIENT2, svcmon.exe (PID 6912) was started by explorer.exe under account client2.<div class="muted">Evidence: <code>wlb-process-0004946</code></div></li><li>Assessed: Unverified summary: Execution chain on CLIENT2: winlogon.exe -&gt; userinit.exe -&gt; explorer.exe -&gt; svcmon.exe.<div class="muted">Evidence: <code>wlb-process-0004946</code>, <code>wlb-process-0004817</code>, <code>wlb-process-0004816</code></div></li><li>Assessed: Unverified summary: svcmon.exe (PID 6912) on CLIENT2 spawned 1 child process(es): svcmon.exe.<div class="muted">Evidence: <code>wlb-process-0005022</code></div></li></ul>
+<h3>Unconfirmed Hypotheses (0)</h3><ul><li class="muted">None.</li></ul>
+</section>
+<section>
+<h2>Recommended Next Steps</h2>
+<p class="muted">Investigative recommendations for a human analyst. No response action has been taken or is authorised by this report.</p><ol><li><strong>Retrieve email gateway or web-proxy logs to establish the initial access vector.</strong><div>Rationale: No detection in this case targets initial access, so the delivery mechanism (e.g. a phishing attachment) is inferred from process lineage rather than confirmed from delivery telemetry.</div><div class="muted">Based on: MITRE ATT&amp;CK tactic coverage gap: Initial Access</div></li><li><strong>Escalate to a human analyst for validation before any remediation action is taken.</strong><div>Rationale: This system performs read-only investigation only. It has no capability to disable accounts, isolate hosts, or otherwise remediate, and this report is not authorisation to do so.</div><div class="muted">Based on: system design constraint</div></li></ol>
+</section>
+<section>
+<h2>Limitations &amp; Scope</h2>
+<ul><li>Telemetry underlying this report came from: winlogbeat. Field coverage depends entirely on what the originating export or sensor captured; this project&#x27;s canonical schema does not model every field a real EDR product exposes (e.g. file hashes, signer information, session identifiers), and any of those were dropped during normalization.</li><li>ATT&amp;CK mappings are interpretations of observed behaviour against a public taxonomy. They indicate that behaviour is consistent with a technique, not that an adversary performed it.</li><li>Grouping confidence describes how strongly correlated findings are linked to each other, not whether an intrusion occurred.</li><li>No evidence was found for the following ATT&amp;CK tactics: Initial Access, Discovery, Credential Access, Lateral Movement, Collection, Exfiltration. Their absence may reflect that the activity did not occur, or that available telemetry cannot observe it.</li><li>Typed predicates are checked against recorded telemetry; free-text interpretations are not semantically verified. Missing identity is not a confirmed process link, and recorded event order does not establish causation.</li></ul>
+</section>
+<section>
+<h2>Investigation Trace</h2>
+<p class="muted">Agents run: endpoint; tool calls made: 2</p><ul><li>step 1: endpoint -- only eligible specialist; case evidence rests on process_command_line, process_execution, process_lineage telemetry (from ANALYST-SEED)</li><li>step 2: stop -- no specialist has further useful work on the available evidence</li><li>evidence verification: 7 checked observations; 3 summaries reclassified</li></ul>
+</section>
+<section>
+<h2>Evidence Appendix</h2>
+<p class="muted">All 4 telemetry events underlying this report, chronologically.</p><div class="scroll"><table><thead><tr><th>Event ID</th><th>Time</th><th>Device</th><th>User</th><th>Summary</th></tr></thead><tbody><tr><td><code>wlb-process-0004816</code></td><td>08:23:03</td><td>CLIENT2</td><td>client2</td><td>winlogon.exe -&gt; userinit.exe | C:\Windows\system32\userinit.exe</td></tr><tr><td><code>wlb-process-0004817</code></td><td>08:23:03</td><td>CLIENT2</td><td>client2</td><td>userinit.exe -&gt; explorer.exe | C:\Windows\Explorer.EXE</td></tr><tr><td><code>wlb-process-0004946</code></td><td>08:23:26</td><td>CLIENT2</td><td>client2</td><td>explorer.exe -&gt; svcmon.exe | &quot;C:\Users\client2\AppData\Local\Temp\svcmon.exe&quot; </td></tr><tr><td><code>wlb-process-0005022</code></td><td>08:23:31</td><td>CLIENT2</td><td>client2</td><td>svcmon.exe -&gt; svcmon.exe | &quot;C:\Users\client2\AppData\Local\Temp\svcmon.exe&quot; </td></tr></tbody></table></div>
+</section>
+</main>
+</body>
+</html>

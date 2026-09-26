@@ -6,6 +6,9 @@ and [its runbook](observation-reference-investigation.md).** It fixes the model-
 evidence contract and includes the corrected source, GPU preload checks and development
 gate. The operational-v2 protocol and historical results below retain their scope.
 
+To score the same arms on real, externally labelled telemetry, see
+[real-case evaluation](real-case-evaluation.md).
+
 `python -m ath.evaluation.auth_execution` provides a separate, frozen comparison of
 deterministic specialists and bounded D1, both using operational-v2. It does not
 modify or reuse the existing frozen D1/M19 held-out experiment results.

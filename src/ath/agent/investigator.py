@@ -700,6 +700,19 @@ class D1Investigator:
 
     # -- probes ---------------------------------------------------------------------
 
+    # A profile that wraps recorded values in untrusted envelopes may have the contract
+    # check skip them. Off for every existing profile, which is checked exactly as before.
+    contract_ignores_untrusted = False
+
+    def _menu(
+        self, state: InvestigationState, case: InvestigationCase,
+        process_rows: Sequence[dict[str, Any]], children: Sequence[dict[str, Any]],
+        destinations: Sequence[tuple[str, str]], already_run: set[str],
+    ) -> list[Probe]:
+        """The probe menu for this round. A hook so a profile can offer more probes;
+        the base investigator offers exactly :func:`build_menu`."""
+        return build_menu(case, process_rows, children, destinations, already_run)
+
     def _run_probe(
         self, state: InvestigationState, probe: Probe, log: ObservationLog, reason: str,
     ) -> tuple[AgentResult, list[dict[str, Any]], list[tuple[str, str]], tuple[str, ...]]:
@@ -912,7 +925,8 @@ class D1Investigator:
             menu="\n".join(p.render() for p in menu) or "(no probe applies)",
             previous=previous_text,
         )
-        violations = check_prompt_contract(prompt) if self.config.prompt_contract else []
+        violations = (check_prompt_contract(prompt, ignore_untrusted=self.contract_ignores_untrusted)
+                      if self.config.prompt_contract else [])
         if violations:
             response = LLMResponse(
                 error=f"prompt contract violation: names raw field(s) {', '.join(violations[:6])}",
@@ -1040,7 +1054,7 @@ class D1Investigator:
                 state.llm_errors.append(budget_hit)
                 stop_reason = budget_hit
                 break
-            menu = build_menu(case, process_rows, children, destinations, already_run)
+            menu = self._menu(state, case, process_rows, children, destinations, already_run)
             answer, record = self._ask(state, log, menu, round_index, probes_run, previous, new_since)
             new_since = len(log.items)
             round_record: dict[str, Any] = {

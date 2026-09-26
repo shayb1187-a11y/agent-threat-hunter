@@ -10,6 +10,11 @@ on:
   push:
   pull_request:
 
+# A newer push to the same branch supersedes a run still in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   postgres:
     runs-on: ubuntu-latest
@@ -32,6 +37,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
       - run: python -m pip install -e ".[dev,postgres]"
       - run: python -m pytest -q tests/test_persistence.py tests/test_postgres_workers.py
   checks:
@@ -73,3 +79,8 @@ jobs:
 
       - name: Tests
         run: python -m pytest -q
+
+      - name: Offline demo builds
+        run: |
+          ath demo --out "$RUNNER_TEMP/ath-demo"
+          test -s "$RUNNER_TEMP/ath-demo/index.html"

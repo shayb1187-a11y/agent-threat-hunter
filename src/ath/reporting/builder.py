@@ -22,6 +22,12 @@ from datetime import datetime, timezone
 
 from ath.agent.state import InvestigationState
 from ath.reporting.models import EvidenceAppendixEntry, RecommendedAction, Report
+from ath.reporting.verdict import (
+    build_investigation_tree,
+    build_reasoning_summary,
+    build_verdict,
+    case_title,
+)
 from ath.telemetry.loader import Telemetry
 
 # Tactics whose absence is worth calling out by name -- the ones that matter most for
@@ -33,7 +39,10 @@ _NOTABLE_TACTICS: tuple[str, ...] = (
 )
 
 
-def build_report(state: InvestigationState, telemetry: Telemetry) -> Report:
+def build_report(
+    state: InvestigationState, telemetry: Telemetry, *, model: str | None = None,
+    triage_disposition: str | None = None,
+) -> Report:
     """Build a report from a completed (or partially completed) investigation.
 
     Args:
@@ -42,6 +51,10 @@ def build_report(state: InvestigationState, telemetry: Telemetry) -> Report:
             says so.
         telemetry: Source telemetry, needed only to render the evidence appendix in
             human-readable form.
+        model: The answering model's identity, when the caller knows it. The state
+            does not record it, and the verdict says so when it is not supplied.
+        triage_disposition: For deterministic runs, triage's disposition of the seed
+            findings; see :func:`ath.reporting.verdict.build_verdict`.
 
     Returns:
         A populated, JSON-serialisable :class:`Report`.
@@ -56,6 +69,8 @@ def build_report(state: InvestigationState, telemetry: Telemetry) -> Report:
     recommended = _derive_recommendations(state, tactics)
     limitations = _derive_limitations(state, tactics, data_sources)
     executive_summary = _build_executive_summary(state, tactics)
+    title = case_title(state)
+    elapsed = state.investigation.get("operational", {}).get("elapsed_seconds")
 
     return Report(
         case_id=case.case_id,
@@ -84,6 +99,11 @@ def build_report(state: InvestigationState, telemetry: Telemetry) -> Report:
         evidence_appendix=appendix,
         data_sources=data_sources,
         evidence_verification=state.investigation.get("evidence_verification", {}),
+        title=title,
+        verdict=build_verdict(state, model=model, triage_disposition=triage_disposition),
+        investigation_tree=build_investigation_tree(state, title),
+        reasoning_summary=build_reasoning_summary(state),
+        elapsed_seconds=float(elapsed) if elapsed is not None else None,
     )
 
 

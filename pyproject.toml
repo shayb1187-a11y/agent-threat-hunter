@@ -7,17 +7,25 @@ name = "agentic-threat-hunter"
 version = "0.1.0"
 description = "AI-assisted threat hunting over security telemetry with MITRE ATT&CK mapping"
 requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "Shay Bental"}]
+readme = "README.md"
 dependencies = [
     "pandas>=2.0,<3",
     "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "ruff>=0.6", "pyarrow>=14"]
+# ruff is pinned so a new release cannot turn CI red without a code change.
+dev = ["pytest>=7.4", "ruff==0.16.8", "pyarrow>=14"]
 graph = ["langgraph>=0.2"]
 # Durable job store for `ath jobs` (src/ath/persistence/postgres.py). Imported only
 # when a PostgreSQL store is constructed; everything else runs without it.
 postgres = ["psycopg[binary]>=3.1"]
+
+[project.urls]
+Homepage = "https://github.com/shayb1187-a11y/agentic-threat-hunter"
+Demo = "https://shayb1187-a11y.github.io/agentic-threat-hunter/"
 
 [project.scripts]
 ath = "ath.cli:main"

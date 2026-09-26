@@ -215,6 +215,23 @@ def test_cli_profile_selection_and_json_output(world, monkeypatch, tmp_path, pro
         assert ("operational" in state.get("investigation", {})) == (profile == "operational-v1")
 
 
+@pytest.mark.parametrize("profile", ["operational-v3", "operational-v4", "operational-v5", "operational-v6"])
+def test_cli_investigate_accepts_every_versioned_profile_and_records_it(world, monkeypatch, tmp_path, profile):
+    """The profile a user names is the one the run records: v3-v6 are not silently
+    mapped onto v1 or v2, and --max-steps still bounds them."""
+    monkeypatch.setattr(cli, "load_telemetry", lambda path: world["telemetry"])
+    output = tmp_path / "investigations.json"
+    args = cli.build_parser().parse_args([
+        "investigate", "--profile", profile, "--no-llm", "--max-steps", "6", "--json", str(output),
+    ])
+    assert cli.cmd_investigate(args, SimpleNamespace(raw_data_dir=tmp_path)) == 0
+    states = json.loads(output.read_text())
+    assert states
+    for state in states:
+        recorded = state["investigation"]["operational"]["profile"]
+        assert recorded["version"] == profile and recorded["max_steps"] == 6
+
+
 def test_cli_incomplete_run_writes_evidence_and_returns_nonzero(world, monkeypatch, tmp_path):
     monkeypatch.setattr(cli, "load_telemetry", lambda path: world["telemetry"])
     monkeypatch.setattr(cli, "build_llm", lambda: ScriptedLLM(responses=[]))

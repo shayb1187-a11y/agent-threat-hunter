@@ -74,6 +74,175 @@ class RecommendedAction:
         return {"action": self.action, "rationale": self.rationale, "based_on": self.based_on}
 
 
+VERDICT_LABELS: tuple[str, ...] = ("Malicious", "Benign", "Abstain", "Incomplete")
+"""Every way a report's verdict can read. There is no fifth, and no numeric score."""
+
+
+@dataclass(frozen=True)
+class Verdict:
+    """What the investigation concluded, and on what basis -- stated, never scored.
+
+    This system produces no verdict confidence. A model's disposition is a label it
+    chose; nothing downstream turns it into a probability, and this dataclass
+    deliberately has no field where one could be put. What a reader gets instead is
+    ``evidence_basis``: a count of what was actually checked.
+
+    Attributes:
+        disposition: One of :data:`VERDICT_LABELS`. ``"Incomplete"`` whenever the
+            operational outcome was not complete or no disposition was produced.
+        incomplete_reasons: Why the verdict is Incomplete, from the run's own recorded
+            reasons and stop reason. Empty otherwise.
+        model_disposition: The model's own last disposition before any operational
+            downgrade (``None`` when no model concluded). Shown so an Incomplete
+            verdict does not hide what the model provisionally said.
+        evidence_gap: The model's own note on what evidence was missing (model text).
+        supporting_event_ids: Event ids cited by the concluding explanations. Empty
+            when the verdict is Incomplete: a provisional explanation supports nothing.
+        verified_event_ids: The subset of ``supporting_event_ids`` naming events the
+            investigation actually retrieved. This verifies the citation, not the
+            meaning of the sentence that cited it.
+        evidence_basis: A factual description of what was checked (counts only).
+        engine, profile, model: What produced the result.
+        disposition_source: Who decided the disposition: the model's concluding round,
+            or, for the deterministic engine, rule-based triage of the seed findings.
+            Empty when the verdict is Incomplete.
+    """
+
+    disposition: str
+    incomplete_reasons: tuple[str, ...] = ()
+    model_disposition: str | None = None
+    evidence_gap: str = ""
+    supporting_event_ids: tuple[str, ...] = ()
+    verified_event_ids: tuple[str, ...] = ()
+    evidence_basis: str = ""
+    engine: str = ""
+    profile: str = ""
+    model: str = ""
+    disposition_source: str = ""
+
+    def __post_init__(self) -> None:
+        if self.disposition not in VERDICT_LABELS:
+            raise ValueError(f"verdict must be one of {VERDICT_LABELS}, not {self.disposition!r}")
+
+    @property
+    def complete(self) -> bool:
+        return self.disposition != "Incomplete"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "disposition": self.disposition,
+            "complete": self.complete,
+            "incomplete_reasons": list(self.incomplete_reasons),
+            "model_disposition": self.model_disposition,
+            "evidence_gap": self.evidence_gap,
+            "supporting_event_ids": list(self.supporting_event_ids),
+            "verified_event_ids": list(self.verified_event_ids),
+            "evidence_basis": self.evidence_basis,
+            "engine": self.engine,
+            "profile": self.profile,
+            "model": self.model,
+            "disposition_source": self.disposition_source,
+        }
+
+
+@dataclass(frozen=True)
+class InvestigationStep:
+    """One branch of the investigation tree: a model-chosen probe or a specialist step.
+
+    Attributes:
+        kind: ``"probe"`` (the model chose it), ``"refused_probe"`` (the model asked for
+            something not on its menu; nothing ran) or ``"specialist"`` (the
+            deterministic orchestrator ran it).
+        name: Tool name for a probe, specialist name otherwise.
+        arguments: The probe's arguments, summarised (``user='acct-7085'``).
+        reason: Why it ran. Model-written for a probe; the plan log's own
+            deterministic reason for a specialist -- ``reason_source`` says which.
+        reason_source: ``"model"`` or ``"deterministic"``.
+        tools: Tools a specialist step called, in order.
+        new_event_ids: Event ids this step surfaced that were not in the seed.
+        new_event_count: How many such ids the step retrieved in total (may exceed
+            ``len(new_event_ids)`` when a result was cut before the model saw it).
+    """
+
+    kind: str
+    name: str
+    arguments: str = ""
+    reason: str = ""
+    reason_source: str = ""
+    tools: tuple[str, ...] = ()
+    new_event_ids: tuple[str, ...] = ()
+    new_event_count: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "kind": self.kind, "name": self.name, "arguments": self.arguments,
+            "reason": self.reason, "reason_source": self.reason_source,
+            "tools": list(self.tools), "new_event_ids": list(self.new_event_ids),
+            "new_event_count": self.new_event_count,
+        }
+
+
+@dataclass(frozen=True)
+class InvestigationTree:
+    """Initial alert -> each step taken -> verdict, as recorded by the run.
+
+    Attributes:
+        alert_title: The case title (see :attr:`Report.title`).
+        rule_ids: The detection rules whose findings formed the case.
+        seed_event_ids: Every event the case's findings cite -- what the run started from.
+        engine: ``"d1"`` (model-chosen probes) or ``"deterministic"`` (specialists).
+        steps: The branches, in the order they ran.
+        stop_reason: Why the investigation stopped, as the run recorded it.
+    """
+
+    alert_title: str
+    rule_ids: tuple[str, ...]
+    seed_event_ids: tuple[str, ...]
+    engine: str
+    steps: tuple[InvestigationStep, ...] = ()
+    stop_reason: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "alert_title": self.alert_title, "rule_ids": list(self.rule_ids),
+            "seed_event_ids": list(self.seed_event_ids), "engine": self.engine,
+            "steps": [s.to_dict() for s in self.steps], "stop_reason": self.stop_reason,
+        }
+
+
+@dataclass(frozen=True)
+class ModelExplanation:
+    """One explanation from the model's concluding round -- model-written, not fact.
+
+    Attributes:
+        label: The model's label for the explanation (e.g. ``"malicious"``).
+        statement: The model's own words, unedited.
+        evidence_ids: Every id the model cited.
+        verified_ids: Cited ids naming events the investigation actually retrieved.
+            Any cited id not in this set was not shown to the model or does not exist.
+        status: What the claim verifier did with it: ``"accepted"``,
+            ``"rejected: <reason>"``, ``"provisional (investigation incomplete)"`` or
+            ``"not recorded"``.
+    """
+
+    label: str
+    statement: str
+    evidence_ids: tuple[str, ...] = ()
+    verified_ids: tuple[str, ...] = ()
+    status: str = ""
+
+    @property
+    def unverified_ids(self) -> tuple[str, ...]:
+        return tuple(e for e in self.evidence_ids if e not in self.verified_ids)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "label": self.label, "statement": self.statement,
+            "evidence_ids": list(self.evidence_ids), "verified_ids": list(self.verified_ids),
+            "status": self.status,
+        }
+
+
 @dataclass
 class Report:
     """A complete, evidence-backed investigation report for one case.
@@ -138,6 +307,16 @@ class Report:
     ("synthetic",) for a demo scenario, ("defender_export",) for a real import).
     Never hardcoded -- derived from the evidence appendix's own `source` field, so it
     cannot drift out of sync with what the report actually describes."""
+    title: str = ""
+    """The case title, from its findings' own titles (see ``Incident:`` in the render)."""
+    verdict: Verdict | None = None
+    """What the run concluded. Always set by :func:`~ath.reporting.build_report`."""
+    investigation_tree: InvestigationTree | None = None
+    """Initial alert -> steps -> verdict. Always set by ``build_report``."""
+    reasoning_summary: tuple[ModelExplanation, ...] = ()
+    """The model's concluding explanations, verbatim. Empty for deterministic runs."""
+    elapsed_seconds: float | None = None
+    """Wall-clock run time, when the operational audit recorded it."""
 
     @property
     def all_claims(self) -> tuple[Claim, ...]:
@@ -179,4 +358,11 @@ class Report:
             "limitations": list(self.limitations),
             "evidence_appendix": [e.to_dict() for e in self.evidence_appendix],
             "data_sources": list(self.data_sources),
+            "title": self.title,
+            "verdict": self.verdict.to_dict() if self.verdict else None,
+            "investigation_tree": (
+                self.investigation_tree.to_dict() if self.investigation_tree else None
+            ),
+            "reasoning_summary": [e.to_dict() for e in self.reasoning_summary],
+            "elapsed_seconds": self.elapsed_seconds,
         }

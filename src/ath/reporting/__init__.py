@@ -9,7 +9,11 @@ Public surface:
 
     build_report(state, telemetry) -> Report      -- assembly (ath.reporting.builder)
     render_markdown(report) -> str                -- rendering (ath.reporting.markdown)
+    render_html(report) -> str                    -- one self-contained page (ath.reporting.html)
+    render_index(entries) -> str                  -- a run's index page (ath.reporting.html)
     Report, EvidenceAppendixEntry, RecommendedAction  -- the data model
+    Verdict, InvestigationTree, InvestigationStep, ModelExplanation
+                                                  -- verdict, tree and model reasoning
     render_claim, audit_calibration                -- calibrated language (language.py)
 
 Two guarantees enforced elsewhere in the codebase and relied on here:
@@ -21,6 +25,7 @@ Two guarantees enforced elsewhere in the codebase and relied on here:
 """
 
 from ath.reporting.builder import build_report
+from ath.reporting.html import IndexEntry, render_html, render_index
 from ath.reporting.language import (
     CLAIM_PREFIXES,
     OVERCLAIMING_TERMS,
@@ -31,12 +36,29 @@ from ath.reporting.language import (
     render_claim,
 )
 from ath.reporting.markdown import render_markdown
-from ath.reporting.models import EvidenceAppendixEntry, RecommendedAction, Report
+from ath.reporting.models import (
+    VERDICT_LABELS,
+    EvidenceAppendixEntry,
+    InvestigationStep,
+    InvestigationTree,
+    ModelExplanation,
+    RecommendedAction,
+    Report,
+    Verdict,
+)
 
 __all__ = [
     "build_report",
     "render_markdown",
+    "render_html",
+    "render_index",
+    "IndexEntry",
     "Report",
+    "Verdict",
+    "VERDICT_LABELS",
+    "InvestigationTree",
+    "InvestigationStep",
+    "ModelExplanation",
     "EvidenceAppendixEntry",
     "RecommendedAction",
     "render_claim",

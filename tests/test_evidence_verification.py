@@ -192,3 +192,42 @@ def test_legacy_claim_serialization_has_no_new_keys(evidence):
     _, ids = evidence
     claim = Claim(ClaimType.FACT, "legacy summary", (ids["success"],))
     assert "assertions" not in claim.to_dict()
+
+
+# -- operational-v6: control-plane actions ------------------------------------------------
+
+from _builders import ctrl  # noqa: E402
+from ath.agent.structured import EVIDENCE_RESPONSE_SCHEMA, V2_ASSERTION_KINDS  # noqa: E402
+
+
+def test_control_action_is_supported_contradicted_or_unverifiable():
+    binding = ctrl("alice", "create", "clusterrolebindings", "ops-admin", when=at(1))
+    corpus = telemetry(ctrls=[binding], logons=[logon("alice", "PC01", action="success", when=at(0))])
+    verifier = EvidenceVerifier(corpus)
+    event = binding["event_id"]
+    assert verifier.check(A(K.CONTROL_ACTION, event, expected="create clusterrolebindings")).status is S.SUPPORTED
+    assert verifier.check(A(K.CONTROL_ACTION, event, expected="delete clusterrolebindings")).status is S.CONTRADICTED
+    login = corpus.logons["event_id"].iloc[0]
+    assert verifier.check(A(K.CONTROL_ACTION, login, expected="create clusterrolebindings")).status is S.CONTRADICTED
+    assert verifier.check(A(K.CONTROL_ACTION, "missing", expected="create pods")).status is S.UNVERIFIABLE
+    assert "records the action create on clusterrolebindings" in A(
+        K.CONTROL_ACTION, event, expected="create clusterrolebindings").render()
+
+
+@pytest.mark.parametrize("expected", ["", "create", "create pods now"])
+def test_control_action_needs_a_verb_and_a_resource_type(expected):
+    with pytest.raises(ValueError):
+        A(K.CONTROL_ACTION, "e1", expected=expected)
+
+
+def test_v2_evidence_contract_is_pinned_to_its_original_kinds():
+    enum = EVIDENCE_RESPONSE_SCHEMA["properties"]["explanations"]["items"]["properties"]["assertions"]["items"]["properties"]["kind"]["enum"]
+    assert enum == list(V2_ASSERTION_KINDS) and "control_action" not in enum
+    # The operational-v2 freezes (4B and 9B Colab runs) recorded this schema digest.
+    assert _format_schema_sha256() == "9bd1e78333e616d78e8e8adabb36608b0ba4807b2181537a7b2f387a48ed44f5"
+
+
+def _format_schema_sha256():
+    from ath.agent.operational import EvidenceProfile
+    from ath.evaluation.auth_execution import _client
+    return _client("qwen3.5:9b", EvidenceProfile()).configuration()["format_schema_sha256"]

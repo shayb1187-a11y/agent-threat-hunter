@@ -13,6 +13,11 @@ from __future__ import annotations
 from ath.hunting.finding import Severity
 from ath.reporting.language import render_claim
 from ath.reporting.models import Report
+from ath.reporting.verdict import (
+    MODEL_TEXT_NOTE,
+    NO_CONFIDENCE_NOTE,
+    no_reasoning_note,
+)
 
 _SEVERITY_BADGE: dict[Severity, str] = {
     Severity.CRITICAL: "CRITICAL",
@@ -41,6 +46,9 @@ def render_markdown(report: Report) -> str:
     """Render a full Markdown report."""
     sections = [
         _header(report),
+        _verdict(report),
+        _investigation_tree(report),
+        _reasoning_summary(report),
         _executive_summary(report),
         _timeline(report),
         _mitre_summary(report),
@@ -63,8 +71,9 @@ def _header(report: Report) -> str:
         "review and does not authorise or perform any response action."
     )
     return "\n".join([
-        f"# Investigation Report: {report.case_id}",
+        f"# Incident: {report.title or report.case_id}",
         "",
+        f"**Case:** {report.case_id}  ",
         f"**Generated:** {report.generated_at.strftime('%Y-%m-%d %H:%M:%S')} UTC  ",
         f"**Status:** {report.status}  ",
         f"**Severity:** {badge}  |  **Grouping confidence:** {report.grouping_confidence}  ",
@@ -75,6 +84,122 @@ def _header(report: Report) -> str:
         "",
         disclaimer,
     ])
+
+
+def _one_line(text: str) -> str:
+    """Model or telemetry text flattened to one line that cannot close a code fence."""
+    return " ".join(str(text).split()).replace("```", "'''")
+
+
+def _cited(ids: tuple[str, ...], verified: tuple[str, ...]) -> str:
+    """Event ids, each marked by whether it names an event the run retrieved."""
+    shown = [
+        f"`{e}` ({'retrieved' if e in verified else 'NOT retrieved'})"
+        for e in ids[:_INLINE_EVIDENCE_LIMIT]
+    ]
+    if len(ids) > _INLINE_EVIDENCE_LIMIT:
+        shown.append(f"+{len(ids) - _INLINE_EVIDENCE_LIMIT} more")
+    return ", ".join(shown)
+
+
+def _verdict(report: Report) -> str:
+    verdict = report.verdict
+    if verdict is None:
+        return ""
+    lines = ["## Verdict", "", f"**Disposition:** {verdict.disposition}  "]
+    if not verdict.complete:
+        lines.append(f"**Why incomplete:** {'; '.join(verdict.incomplete_reasons)}  ")
+        if verdict.model_disposition:
+            lines.append(
+                f"**Model's provisional disposition:** {verdict.model_disposition} "
+                "(not a verdict: the run did not complete)  "
+            )
+    lines.append(
+        f"**Engine:** {verdict.engine}  |  **Profile:** {verdict.profile}  |  "
+        f"**Model:** {verdict.model}  "
+    )
+    if verdict.disposition_source:
+        lines.append(f"**Decided by:** {verdict.disposition_source}  ")
+    lines.append(f"**Evidence basis:** {verdict.evidence_basis}  ")
+    if verdict.evidence_gap:
+        lines.append(f'**Evidence gap (model-written):** "{_one_line(verdict.evidence_gap)}"  ')
+    if verdict.supporting_event_ids:
+        lines.append(
+            "**Supporting event ids:** "
+            + _cited(verdict.supporting_event_ids, verdict.verified_event_ids)
+        )
+    elif verdict.complete:
+        lines.append("**Supporting event ids:** none cited by the concluding explanations.")
+    else:
+        lines.append(
+            "**Supporting event ids:** none -- no final disposition was reached, so "
+            "nothing is cited in support of one."
+        )
+    lines.extend(["", f"*{NO_CONFIDENCE_NOTE}*"])
+    return "\n".join(lines)
+
+
+def _investigation_tree(report: Report) -> str:
+    tree = report.investigation_tree
+    if tree is None:
+        return ""
+    seed = tree.seed_event_ids
+    more_seed = len(seed) - _INLINE_EVIDENCE_LIMIT
+    seed_text = ", ".join(seed[:_INLINE_EVIDENCE_LIMIT]) + (f" +{more_seed} more" if more_seed > 0 else "")
+    lines = [
+        f"Initial alert: {_one_line(tree.alert_title)}",
+        f"  rules {', '.join(tree.rule_ids)}; {len(seed)} seed event(s): {seed_text}",
+        "  ↓",
+        f"ATH investigation (engine {tree.engine})",
+    ]
+    if not tree.steps:
+        lines.append("  └── no " + ("probes" if tree.engine == "d1" else "steps") + " run")
+    for i, step in enumerate(tree.steps):
+        last = i == len(tree.steps) - 1
+        branch, rail = ("└──", "   ") if last else ("├──", "│  ")
+        if step.kind == "refused_probe":
+            lines.append(
+                f"  {branch} {_one_line(step.name)} -- requested by the model but not "
+                "on its menu; not run"
+            )
+            continue
+        head = step.name + (f" ({_one_line(step.arguments)})" if step.arguments else "")
+        lines.append(f"  {branch} {head}")
+        if step.reason and step.reason_source == "model":
+            lines.append(f'  {rail}   model\'s reason: "{_one_line(step.reason)}"')
+        elif step.reason:
+            lines.append(f"  {rail}   why: {_one_line(step.reason)}")
+        if step.kind == "specialist" and step.tools:
+            lines.append(f"  {rail}   tools: {', '.join(step.tools)}")
+        if step.new_event_ids or step.new_event_count:
+            more = len(step.new_event_ids) - _INLINE_EVIDENCE_LIMIT
+            ids = ", ".join(step.new_event_ids[:_INLINE_EVIDENCE_LIMIT])
+            lines.append(
+                f"  {rail}   new events: {step.new_event_count} retrieved"
+                + (f"; shown: {ids}" if ids else "") + (f" +{more} more" if more > 0 else "")
+            )
+    if tree.stop_reason:
+        lines.append(f"  stopped: {_one_line(tree.stop_reason)}")
+    verdict = report.verdict.disposition if report.verdict else "not derived"
+    lines.extend(["  ↓", f"Verdict: {verdict}"])
+    return "\n".join(["## Investigation Tree", "", "```text", *lines, "```"])
+
+
+def _reasoning_summary(report: Report) -> str:
+    if report.verdict is None:
+        return ""
+    lines = ["## Reasoning Summary", ""]
+    if not report.reasoning_summary:
+        lines.append(no_reasoning_note(report.verdict.engine))
+        return "\n".join(lines)
+    lines.extend([f"*{MODEL_TEXT_NOTE}*", ""])
+    for i, item in enumerate(report.reasoning_summary, start=1):
+        lines.append(f"{i}. **Model label: {_one_line(item.label)}** -- verifier: {item.status}")
+        lines.append(f'   > Model wrote: "{_one_line(item.statement)}"')
+        lines.append(
+            "   - Cited: " + (_cited(item.evidence_ids, item.verified_ids) or "no event ids")
+        )
+    return "\n".join(lines)
 
 
 def _executive_summary(report: Report) -> str:

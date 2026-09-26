@@ -17,6 +17,9 @@ class AssertionKind(str, Enum):
     SAME_PROCESS = "same_process"
     PARENT_CHILD = "parent_child"
     BEFORE = "before"
+    # Operational-v6: a recorded control-plane action. Never offered to the v2 schema,
+    # whose kind list is pinned to the five kinds above (see structured.V2_ASSERTION_KINDS).
+    CONTROL_ACTION = "control_action"
 
 
 @dataclass(frozen=True)
@@ -37,7 +40,8 @@ class EvidenceAssertion:
             raise ValueError("event_id must be nonempty and at most 512 characters")
         if len(self.other_event_id) > 512 or len(self.expected) > 512:
             raise ValueError("assertion values must be at most 512 characters")
-        unary = self.kind in (AssertionKind.AUTH_OUTCOME, AssertionKind.PROCESS_IDENTITY)
+        unary = self.kind in (AssertionKind.AUTH_OUTCOME, AssertionKind.PROCESS_IDENTITY,
+                              AssertionKind.CONTROL_ACTION)
         if unary and (self.other_event_id or not self.expected):
             raise ValueError("unary assertions require expected and no other_event_id")
         if not unary and (not self.other_event_id.strip() or self.expected):
@@ -46,6 +50,8 @@ class EvidenceAssertion:
             raise ValueError("auth_outcome expected must be success or failure")
         if self.kind is AssertionKind.PROCESS_IDENTITY and not _identity(self.expected):
             raise ValueError("process_identity requires a recognized source-qualified identity")
+        if self.kind is AssertionKind.CONTROL_ACTION and len(self.expected.split()) != 2:
+            raise ValueError("control_action expected must be '<verb> <resource type>'")
 
     @property
     def event_ids(self) -> tuple[str, ...]:
@@ -71,6 +77,9 @@ class EvidenceAssertion:
             return f"Authentication event {self.event_id} records outcome {self.expected}."
         if self.kind is AssertionKind.PROCESS_IDENTITY:
             return f"Event {self.event_id} records process identity {self.expected}."
+        if self.kind is AssertionKind.CONTROL_ACTION:
+            verb, resource = self.expected.split()
+            return f"Control event {self.event_id} records the action {verb} on {resource}."
         if self.kind is AssertionKind.SAME_PROCESS:
             return f"Events {self.event_id} and {self.other_event_id} identify the same process instance."
         if self.kind is AssertionKind.PARENT_CHILD:
@@ -152,6 +161,14 @@ class EvidenceVerifier:
             if actual not in ("success", "failure"):
                 return result(unknown, "authentication outcome is missing or not normalized")
             return result(yes if actual == assertion.expected else no, f"recorded authentication outcome: {actual}")
+        if kind is AssertionKind.CONTROL_ACTION:
+            if left["event_type"] != "control":
+                return result(no, "cited event is not a control-plane event")
+            verb, resource = _text(left.get("verb")), _text(left.get("resource_type"))
+            if not verb or not resource:
+                return result(unknown, "control-plane action is missing its verb or resource type")
+            actual = f"{verb} {resource}"
+            return result(yes if actual == assertion.expected else no, f"recorded control-plane action: {actual}")
         if kind is AssertionKind.PROCESS_IDENTITY:
             if left["event_type"] not in ("process", "network"):
                 return result(no, "event does not describe a process instance")

@@ -1,0 +1,278 @@
+{
+  "run_id": "holdout-9b-v6-ecd865890442",
+  "model": "qwen3.5:9b",
+  "profile": "operational-v6",
+  "freeze_sha256": {
+    "dev-gate": "3d75fbf0bcae4b67030d117c33f90ceb85065c551fd819c267925cd4041a9003",
+    "real": "f9086659d14678ba531d4c6811d68abfe7d79c4691bd0e691d751114e25791b3"
+  },
+  "note": "Recorded outputs replayed as static pages. Scores are copied from each row's recorded 'scores'; the rows themselves are not in the repository.",
+  "rows": [
+    {
+      "key": "sample-01",
+      "arm": "d1",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "correct malicious",
+      "line": "Probed the process tree, found reg.exe saving the SAM hive, called it malicious.",
+      "href": "rows/sample-01_d1_1.html",
+      "md": "rows/sample-01_d1_1.md",
+      "expected": "malicious",
+      "decision": "malicious"
+    },
+    {
+      "key": "sample-01",
+      "arm": "deterministic",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "correct malicious",
+      "line": "Deterministic triage calls the same incident malicious from the detection findings.",
+      "href": "rows/sample-01_deterministic_1.html",
+      "md": "rows/sample-01_deterministic_1.md",
+      "expected": "malicious",
+      "decision": "malicious"
+    },
+    {
+      "key": "sample-02",
+      "arm": "d1",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "correct benign",
+      "line": "Found dism.exe /ScanHealth under the remote shell and cleared it as maintenance.",
+      "href": "rows/sample-02_d1_1.html",
+      "md": "rows/sample-02_d1_1.md",
+      "expected": "benign",
+      "decision": "benign"
+    },
+    {
+      "key": "sample-02",
+      "arm": "deterministic",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "FALSE ACCUSATION",
+      "line": "Deterministic triage cannot tell maintenance from credential export: it accuses.",
+      "href": "rows/sample-02_deterministic_1.html",
+      "md": "rows/sample-02_deterministic_1.md",
+      "expected": "benign",
+      "decision": "malicious"
+    },
+    {
+      "key": "sample-03",
+      "arm": "d1",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "correct abstain",
+      "line": "The deciding child process is deliberately missing; the model abstained and named the gap.",
+      "href": "rows/sample-03_d1_1.html",
+      "md": "rows/sample-03_d1_1.md",
+      "expected": "abstain",
+      "decision": "abstain"
+    },
+    {
+      "key": "sample-03",
+      "arm": "deterministic",
+      "group": "dev-gate",
+      "provenance": "synthetic",
+      "shows": "OVER-CALL",
+      "line": "Deterministic triage calls it malicious although the telemetry cannot decide.",
+      "href": "rows/sample-03_deterministic_1.html",
+      "md": "rows/sample-03_deterministic_1.md",
+      "expected": "abstain",
+      "decision": "malicious"
+    },
+    {
+      "key": "h14",
+      "arm": "d1",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "correct benign",
+      "line": "Real Windows logs: a user opening a local PDF in Firefox, correctly cleared.",
+      "href": "rows/h14_d1_1.html",
+      "md": "rows/h14_d1_1.md",
+      "expected": "benign",
+      "decision": "benign"
+    },
+    {
+      "key": "h14",
+      "arm": "deterministic",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "safe abstain",
+      "line": "The deterministic arm abstains, as it did on all 18 holdout cases.",
+      "href": "rows/h14_deterministic_1.html",
+      "md": "rows/h14_deterministic_1.md",
+      "expected": "benign",
+      "decision": "abstain"
+    },
+    {
+      "key": "h07",
+      "arm": "d1",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "safe abstain",
+      "line": "APT implant (svcmon.exe): two process-tree probes, opaque child, abstained. Safe, but no answer.",
+      "href": "rows/h07_d1_1.html",
+      "md": "rows/h07_d1_1.md",
+      "expected": "malicious",
+      "decision": "abstain"
+    },
+    {
+      "key": "h07",
+      "arm": "deterministic",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "safe abstain",
+      "line": "The deterministic arm abstains.",
+      "href": "rows/h07_deterministic_1.html",
+      "md": "rows/h07_deterministic_1.md",
+      "expected": "malicious",
+      "decision": "abstain"
+    },
+    {
+      "key": "h05",
+      "arm": "d1",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "UNSAFE CLEAR",
+      "line": "The failure: an APT step cleared as benign, partly because whoami.exe is signed by Microsoft.",
+      "href": "rows/h05_d1_1.html",
+      "md": "rows/h05_d1_1.md",
+      "expected": "malicious",
+      "decision": "benign"
+    },
+    {
+      "key": "h05",
+      "arm": "deterministic",
+      "group": "real",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "shows": "safe abstain",
+      "line": "The deterministic arm abstains instead of clearing.",
+      "href": "rows/h05_deterministic_1.html",
+      "md": "rows/h05_deterministic_1.md",
+      "expected": "malicious",
+      "decision": "abstain"
+    }
+  ],
+  "files": [
+    {
+      "file": "rows/sample-01_d1_1.html",
+      "provenance": "synthetic",
+      "sha256": "25a0648ccda762ee1fa58e3995f31513e49715f498434fbe29c8c314303a6760"
+    },
+    {
+      "file": "rows/sample-01_d1_1.md",
+      "provenance": "synthetic",
+      "sha256": "b5d432a77e989636f3381baba7c4400e475aeb8e093df770329a47ea7ce4e5aa"
+    },
+    {
+      "file": "rows/sample-01_deterministic_1.html",
+      "provenance": "synthetic",
+      "sha256": "65e6aa1823caafecf6028dc03543948d27c0e40e13eadcd087d197b7e72a0462"
+    },
+    {
+      "file": "rows/sample-01_deterministic_1.md",
+      "provenance": "synthetic",
+      "sha256": "793556606a544846ffb85d28205146edad236e69f1d9ccc7fe6800411c421565"
+    },
+    {
+      "file": "rows/sample-02_d1_1.html",
+      "provenance": "synthetic",
+      "sha256": "9c13d130db6b75a6752dc944fa7abe6f41e09468d8c4ce7433b98b188f5b8383"
+    },
+    {
+      "file": "rows/sample-02_d1_1.md",
+      "provenance": "synthetic",
+      "sha256": "bd2d93fa051028c38ee577f24f164d74ebd6e7811eb63632a27869d0abf60216"
+    },
+    {
+      "file": "rows/sample-02_deterministic_1.html",
+      "provenance": "synthetic",
+      "sha256": "66f318b8215356088e816fd5ecc985e05624f609bd573ea3bde0966246c0f309"
+    },
+    {
+      "file": "rows/sample-02_deterministic_1.md",
+      "provenance": "synthetic",
+      "sha256": "ef9a0ceae77d85f4bd6a4dc8f1f887e4e7158828ef51bee333bcbdab60a725d1"
+    },
+    {
+      "file": "rows/sample-03_d1_1.html",
+      "provenance": "synthetic",
+      "sha256": "644e1bc9c445aedc2277f1d4f56819f8363dd636e1b4e84eb21a395808d91d7e"
+    },
+    {
+      "file": "rows/sample-03_d1_1.md",
+      "provenance": "synthetic",
+      "sha256": "cd94fa2657b95ecedef6fc9e2100abcbfb7925cf106f1629770fb6a69c6fc533"
+    },
+    {
+      "file": "rows/sample-03_deterministic_1.html",
+      "provenance": "synthetic",
+      "sha256": "12af04723975b4e4d708907091c157ebbd84c4839cec4c3fad0f752e1ea8ac46"
+    },
+    {
+      "file": "rows/sample-03_deterministic_1.md",
+      "provenance": "synthetic",
+      "sha256": "5515d6b9b4f0df75d4eb212b4a0932249a6f8627059c323898597cc2b9d9d97e"
+    },
+    {
+      "file": "rows/h14_d1_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "e05f8ef87c5b147761a8be5c2b49500c381d63cf8a3d447a0130627750165c76"
+    },
+    {
+      "file": "rows/h14_d1_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "7f1a80580b8ba7c73133e9284d0f0d9f52d352da49f4d1702afece1d566159be"
+    },
+    {
+      "file": "rows/h14_deterministic_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "0ec0174b6bcecd9ef0287d02477ce6ef173f0dbcf7e1cb60de0a8ca269641b8f"
+    },
+    {
+      "file": "rows/h14_deterministic_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "f7f331f6a6271fe5c5767eb918b345dff9e5098df8104dfe138d2d5de51c33ed"
+    },
+    {
+      "file": "rows/h07_d1_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "8a7d2c0012e9e173a6b1729c0d520fcb6575ceea77d76f7f380f1ceeb3d9dc19"
+    },
+    {
+      "file": "rows/h07_d1_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "79576284b95c19709f148f28d1744014ed63eaed249e7499173572397ab081df"
+    },
+    {
+      "file": "rows/h07_deterministic_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "810307c24b8b368e7c8b250bfea468dfa94e8c2d5eb3a9a45634a239a274e76d"
+    },
+    {
+      "file": "rows/h07_deterministic_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "e665e8f0b75220c36cb5808c46cb0d07ec0bbce1dcf1ace024040383bfbb0871"
+    },
+    {
+      "file": "rows/h05_d1_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "b36b486373643741f972b0dc3a09513b0384d89471b4d1a713679ce4f45249f4"
+    },
+    {
+      "file": "rows/h05_d1_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "4b5182a71d880ecddd07e77bd045ed08042a534a0b42042336b3e5dc15bb263e"
+    },
+    {
+      "file": "rows/h05_deterministic_1.html",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "91e6d3756ad0faccb130f240c7ccf378a67eb781d82d2e08f78884e9a3b2446e"
+    },
+    {
+      "file": "rows/h05_deterministic_1.md",
+      "provenance": "DEDALE (CC BY 4.0)",
+      "sha256": "ccba43390755c71eb312a0469c3eb8d190a4c21ecf817e37d1976a231ae4763e"
+    }
+  ]
+}

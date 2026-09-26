@@ -36,18 +36,27 @@ PROMPT_ALLOWED_FIELDS: frozenset[str] = frozenset({
 
 UNTRUSTED_OPEN = "<untrusted {label}>"
 UNTRUSTED_CLOSE = "</untrusted>"
+_UNTRUSTED_SPAN = re.compile(r"<untrusted [^>]*>.*?</untrusted>", re.S)
 
 
 class PromptContractViolation(ValueError):
     """A rendered prompt names raw schema fields it must not carry."""
 
 
-def check_prompt_contract(prompt: str, *, allowed: Iterable[str] = PROMPT_ALLOWED_FIELDS) -> list[str]:
+def check_prompt_contract(prompt: str, *, allowed: Iterable[str] = PROMPT_ALLOWED_FIELDS,
+                          ignore_untrusted: bool = False) -> list[str]:
     """The schema field names ``prompt`` mentions as whole words, minus ``allowed``.
 
     Empty means the prompt keeps the contract. Matching is on identifier boundaries, so
     ``process_id`` matches ``process_id=5`` and ``'process_id'`` but not ``process_identity``.
+
+    ``ignore_untrusted`` (off by default, so existing prompt versions are checked exactly
+    as before) skips text inside :func:`wrap_untrusted` envelopes. The contract governs
+    what the *template* says; a recorded value that happens to equal a column name -- a
+    Kubernetes object called ``signer`` -- is data the envelope already marks as such.
     """
+    if ignore_untrusted:
+        prompt = _UNTRUSTED_SPAN.sub(" ", prompt)
     forbidden = SCHEMA_FIELD_NAMES - set(allowed)
     found = []
     for name in sorted(forbidden):

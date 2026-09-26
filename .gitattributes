@@ -11,3 +11,7 @@ reports/m19b/cases/dedale_injected/** -text
 # canonical network parquet for M17 and M18b, and the scripted M19 arm_B.json) were
 # removed from the tree and from history before publication -- see README
 # "External datasets" and "Limitations".
+
+# Recorded demo reports are copied byte for byte from a model run, and SOURCES.json holds
+# their sha256s; store and check them out verbatim so those digests hold on every platform.
+docs/demo/recorded/** -text

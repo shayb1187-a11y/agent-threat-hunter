@@ -23,6 +23,9 @@ from ath.telemetry.loader import Telemetry
 
 EVIDENCE_VERSION = "structured-evidence-v1"
 MAX_ASSERTIONS = 6
+# Pinned: the v2 schema and parser accept exactly these kinds, whatever AssertionKind
+# grows later, so operational-v2 freezes keep their schema digest and behaviour.
+V2_ASSERTION_KINDS = ("auth_outcome", "process_identity", "same_process", "parent_child", "before")
 EVIDENCE_RESPONSE_SCHEMA = deepcopy(RESPONSE_SCHEMA)
 _explanation = EVIDENCE_RESPONSE_SCHEMA["properties"]["explanations"]["items"]
 _explanation["required"].append("assertions")
@@ -31,7 +34,7 @@ _explanation["properties"]["assertions"] = {
     "items": {
         "type": "object",
         "properties": {
-            "kind": {"type": "string", "enum": [kind.value for kind in AssertionKind]},
+            "kind": {"type": "string", "enum": list(V2_ASSERTION_KINDS)},
             "event_id": {"type": "string", "maxLength": 512},
             "other_event_id": {"type": "string", "maxLength": 512},
             "expected": {"type": "string", "maxLength": 512},
@@ -89,7 +92,10 @@ class _EvidenceClient:
                 raw = item.get("assertions")
                 if not isinstance(raw, list) or len(raw) > MAX_ASSERTIONS:
                     raise ValueError("each explanation requires at most six assertions")
-                groups.append(tuple(EvidenceAssertion.from_dict(a) for a in raw))
+                parsed = tuple(EvidenceAssertion.from_dict(a) for a in raw)
+                if any(a.kind.value not in V2_ASSERTION_KINDS for a in parsed):
+                    raise ValueError("assertion kind is not part of the v2 evidence contract")
+                groups.append(parsed)
             self.last = groups
         except (KeyError, TypeError, ValueError):
             return replace(response, error="invalid structured evidence assertions")
@@ -164,7 +170,8 @@ def finalise_evidence(
     candidates = list(dict.fromkeys(a for c in state.claims for a in c.assertions))
     ids = set()
     for call in state.tool_calls:
-        if not call.refused and call.tool in ("get_events", "process_tree", "user_auth_history", "search_processes"):
+        if not call.refused and call.tool in ("get_events", "process_tree", "user_auth_history", "search_processes",
+                                                  "actor_control_history", "resource_control_history", "identity_grants"):
             ids.update(call.shown_event_ids if call.truncated else call.event_ids)
     selected = sorted(ids)[:limit]
     process_rows = []

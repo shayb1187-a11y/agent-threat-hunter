@@ -15,17 +15,26 @@ from dataclasses import asdict, dataclass, replace
 from typing import ClassVar
 from uuid import uuid4
 
+from ath.agent.benign_guard import (
+    GUARD_VERSION,
+    benign_guard_decision,
+    retrieved_event_ids,
+    seed_ancestry,
+)
 from ath.agent.claims import ClaimVerifier
 from ath.agent.investigator import RESPONSE_SCHEMA, D1Investigator, InvestigatorConfig
 from ath.agent.llm import LLMClient, LLMResponse, NullLLM
 from ath.agent.orchestrator import InvestigationConfig, InvestigationOrchestrator
 from ath.agent.references import (
     CONTEXT_VERSION,
+    CONTROL_VERSION,
     REFERENCE_SCHEMA,
     REFERENCE_VERSION,
     STABLE_SCHEMA,
     STABLE_VERSION,
+    AncestryGuardInvestigator,
     ContextReferenceInvestigator,
+    ControlPlaneInvestigator,
     ReferenceInvestigator,
     StableReferenceInvestigator,
 )
@@ -108,6 +117,30 @@ class StableContextProfile(ContextProfile):
     """Operational-v4 with short stable references, one repair request and script wording."""
 
     version: ClassVar[str] = "operational-v5"
+
+
+@dataclass(frozen=True)
+class ControlPlaneProfile(StableContextProfile):
+    """Operational-v5 plus citable control-plane actions and control-plane probes."""
+
+    version: ClassVar[str] = "operational-v6"
+
+
+@dataclass(frozen=True)
+class AncestryGuardProfile(ControlPlaneProfile):
+    """Operational-v6 plus the benign guard and the v7 prompt.
+
+    A model ``benign`` on a case whose seed holds a process-creation record becomes
+    ``abstain`` unless the run retrieved that process's parent (see
+    :mod:`ath.agent.benign_guard`). The v7 prompt drops the v5 "signed ... supports benign"
+    cue, says absence of evidence of harm is not evidence of benign intent, and asks for
+    the ancestry before a benign. Limits are v6's; the guard is named in ``to_dict``.
+    """
+
+    version: ClassVar[str] = "operational-v7"
+
+    def to_dict(self) -> dict:
+        return {**super().to_dict(), "benign_guard": GUARD_VERSION}
 
 
 class _OperationalLLM:
@@ -202,7 +235,9 @@ def investigate_operational(
     model_requested = llm is not None and not isinstance(llm, NullLLM)
     guarded = _OperationalLLM(llm, profile, started) if model_requested else None
     if guarded is not None:
-        investigator = (StableReferenceInvestigator if isinstance(profile, StableContextProfile) else
+        investigator = (AncestryGuardInvestigator if isinstance(profile, AncestryGuardProfile) else
+                        ControlPlaneInvestigator if isinstance(profile, ControlPlaneProfile) else
+                        StableReferenceInvestigator if isinstance(profile, StableContextProfile) else
                         ContextReferenceInvestigator if isinstance(profile, ContextProfile) else
                         ReferenceInvestigator if isinstance(profile, ReferenceProfile) else
                         EvidenceInvestigator if isinstance(profile, EvidenceProfile) else D1Investigator)
@@ -229,7 +264,8 @@ def investigate_operational(
         finalise_evidence(state, telemetry, verifier, profile.tool_max_rows)
         if isinstance(profile, ReferenceProfile):
             state.investigation["evidence_verification"].update({
-                "version": (STABLE_VERSION if isinstance(profile, StableContextProfile) else
+                "version": (CONTROL_VERSION if isinstance(profile, ControlPlaneProfile) else
+                            STABLE_VERSION if isinstance(profile, StableContextProfile) else
                             CONTEXT_VERSION if isinstance(profile, ContextProfile) else REFERENCE_VERSION),
                 "schema_sha256": hashlib.sha256(json.dumps(
                     STABLE_SCHEMA if isinstance(profile, StableContextProfile) else REFERENCE_SCHEMA,
@@ -281,6 +317,18 @@ def investigate_operational(
                 for result in state.results
             ]
         state.plan_log.append("operational result incomplete: " + "; ".join(reasons))
+    guard = None
+    if isinstance(profile, AncestryGuardProfile):
+        # Decided on what the run recorded; the same pure function drives the offline replay.
+        guard = benign_guard_decision(
+            original_disposition if model_requested else None,
+            seed_ancestry(telemetry, case.event_ids), retrieved_event_ids(state.tool_calls),
+            complete=not reasons,
+        )
+        if guard["applied"]:
+            state.investigation["final_disposition"] = "abstain"
+            state.investigation["abstained"] = True
+            state.plan_log.append("benign guard: " + guard["reason"])
     state.investigation["operational"] = {
         "profile": profile.to_dict(), "profile_sha256": profile.sha256(),
         "engine": "d1" if model_requested else "deterministic",
@@ -291,4 +339,6 @@ def investigate_operational(
         "tool_calls_served": tools.calls_served, "tool_calls_refused": tools.budget_hits,
         "tool_results_truncated": tools.truncations,
     }
+    if guard is not None:
+        state.investigation["operational"]["benign_guard"] = guard
     return state

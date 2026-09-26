@@ -19,10 +19,10 @@ def _real_shaped_exec(verb: str = "get", code: int = 101) -> dict:
     return {
         "kind": "Event", "apiVersion": "audit.k8s.io/v1", "level": "RequestResponse",
         "auditID": "exec-1", "stage": "ResponseComplete", "verb": verb,
-        "requestURI": "/api/v1/namespaces/prod/pods/web-1/exec?command=sh&command=-c&command=id",
-        "user": {"username": "mfranzil", "groups": ["system:authenticated"]},
+        "requestURI": "/api/v1/namespaces/prod/pods/app-0/exec?command=sh&command=-c&command=id",
+        "user": {"username": "ops-admin", "groups": ["system:authenticated"]},
         "sourceIPs": ["10.0.0.5"], "userAgent": "kubectl/v1.30.2",
-        "objectRef": {"resource": "pods", "subresource": "exec", "namespace": "prod", "name": "web-1"},
+        "objectRef": {"resource": "pods", "subresource": "exec", "namespace": "prod", "name": "app-0"},
         "responseStatus": {"metadata": {}, "code": code},
         "stageTimestamp": "2024-05-28T09:30:00.000000Z",
     }
@@ -34,7 +34,7 @@ def test_get_verb_exec_maps_to_pods_exec() -> None:
     assert row is not None
     assert row["resource_type"] == "pods/exec"
     assert row["verb"] == "exec"  # canonical action, whatever the apiserver logged
-    assert row["actor"] == "mfranzil"
+    assert row["actor"] == "ops-admin"
 
 
 def test_switching_protocols_is_a_successful_exec_not_a_denied_one() -> None:
@@ -64,7 +64,7 @@ def test_a_forbidden_exec_upgrade_is_still_denied() -> None:
 def test_get_on_pods_without_the_exec_subresource_is_still_unmapped() -> None:
     """The subresource makes it an exec; a plain pod read must stay unmapped."""
     item = _real_shaped_exec()
-    item["objectRef"] = {"resource": "pods", "namespace": "prod", "name": "web-1"}
+    item["objectRef"] = {"resource": "pods", "namespace": "prod", "name": "app-0"}
     item["responseStatus"] = {"code": 200}
     row, issue = _normalise_control_record(item, "audit.log", 0, "c")
     assert row is None

@@ -12,6 +12,8 @@ Commands:
     investigate -- run the autonomous investigation agent over a case
     report      -- render a calibrated, evidence-cited investigation report
     engineer    -- run the detection-engineering loop: propose, evaluate, iterate
+    workflow run -- checkpointed telemetry -> seed -> investigation -> report run
+    demo        -- offline two-minute demo written to one folder with a landing page
     import-defender -- normalize a real Microsoft Defender advanced-hunting export Keeping a single entry point
 means the README has one obvious "how do I run this" story.
 """
@@ -34,7 +36,16 @@ from ath.agent import (
     ToolBox,
     build_llm,
 )
-from ath.agent.operational import EvidenceProfile, OperationalProfile, investigate_operational
+from ath.agent.operational import (
+    AncestryGuardProfile,
+    ContextProfile,
+    ControlPlaneProfile,
+    EvidenceProfile,
+    OperationalProfile,
+    ReferenceProfile,
+    StableContextProfile,
+    investigate_operational,
+)
 from ath.capabilities import CAPABILITY_REGISTRY, assemble_crew
 from ath.config import PROJECT_ROOT, Settings, load_settings
 from ath.correlation import CorrelationConfig, correlate
@@ -96,6 +107,13 @@ from ath.triage import (
 )
 
 logger = get_logger(__name__)
+
+_OPERATIONAL_PROFILES = {
+    profile.version: profile for profile in (
+        OperationalProfile, EvidenceProfile, ReferenceProfile, ContextProfile,
+        StableContextProfile, ControlPlaneProfile, AncestryGuardProfile)
+}
+"""Every operational profile ``investigate --profile`` accepts, by version."""
 
 # ANSI colours, disabled automatically when output is piped to a file.
 _COLOURS = {
@@ -625,10 +643,9 @@ def cmd_investigate(args: argparse.Namespace, settings: Settings) -> int:
             return 2
 
     profile_name = getattr(args, "profile", "legacy")
-    operational = profile_name in (OperationalProfile.version, EvidenceProfile.version)
+    operational = profile_name in _OPERATIONAL_PROFILES
     try:
-        profile_type = EvidenceProfile if profile_name == EvidenceProfile.version else OperationalProfile
-        profile = profile_type(max_steps=args.max_steps) if operational else None
+        profile = _OPERATIONAL_PROFILES[profile_name](max_steps=args.max_steps) if operational else None
     except ValueError as exc:
         print(f"Invalid operational profile: {exc}")
         return 2
@@ -1613,6 +1630,80 @@ def _jobs_run(args: argparse.Namespace, settings: Settings) -> int:
     return 0 if all(j.status is JobStatus.COMPLETE for j in jobs) else 3
 
 
+def cmd_workflow(args: argparse.Namespace, settings: Settings) -> int:
+    """Run or resume a checkpointed investigation workflow (see ath.workflow)."""
+    from ath import workflow
+    from ath.agent.ollama_llm import OllamaUnavailable
+    from ath.evaluation import real_cases
+
+    if args.batch is not None:
+        if args.telemetry or args.seed_ref or args.detect or args.window_start or args.window_end or args.device:
+            print("--batch takes its cases from the spec; drop --telemetry/--seed-ref/--detect/--window/--device.")
+            return 2
+    else:
+        if not args.telemetry or not args.kind:
+            print("A single case needs --telemetry and --kind (or use --batch SPEC.json).")
+            return 2
+        if bool(args.seed_ref) == bool(args.detect):
+            print("Choose exactly one of --seed-ref REF (analyst seed, one record) or --detect.")
+            return 2
+        if (args.window_start is None) != (args.window_end is None):
+            print("--window-start and --window-end go together.")
+            return 2
+    try:
+        session = None
+        if args.engine == "d1":
+            session = workflow.OllamaSession(args.model, workflow.pilot.profile_for(args.profile))
+        flow = workflow.Workflow(args.engine, args.profile, session)
+        if args.batch is not None:
+            index = flow.run_batch(args.batch, args.out)
+            print(json.dumps({"counts": index["counts"], "index": str(Path(args.out) / workflow.INDEX)}))
+            return 3 if index["counts"].get(workflow.BLOCKED) else 0
+        inputs = workflow.CaseInputs(
+            key=Path(args.out).name, telemetry=str(Path(args.telemetry).resolve()), kind=args.kind,
+            seed_mode=real_cases.ANALYST if args.seed_ref else real_cases.DETECTION,
+            anchor_refs=(args.seed_ref,) if args.seed_ref else (),
+            window={"start": args.window_start, "end": args.window_end} if args.window_start else None,
+            devices=tuple(args.device) if args.device else None, cluster=args.cluster)
+        outcome = flow.run_case(args.out, inputs)
+    except (workflow.WorkflowRefused, OllamaUnavailable, workflow.ModelNotResident, ValueError) as exc:
+        print(f"Refused: {exc}")
+        return 2
+    print(json.dumps(outcome, indent=2))
+    if outcome["status"] == workflow.BLOCKED:
+        return 3
+    return 0 if outcome["status"] == workflow.COMPLETE else 4
+
+
+def cmd_demo(args: argparse.Namespace, settings: Settings) -> int:
+    """Build the offline demo folder: detection, correlation, investigations, recorded runs."""
+    import webbrowser
+
+    from ath.demo import DemoRefused, run_demo
+
+    if args.log_level is None:
+        setup_logging("WARNING")  # the per-rule INFO log would bury the summary; --log-level restores it
+    try:
+        result = run_demo(Path(args.out))
+    except DemoRefused as exc:
+        logger.error("%s", exc)
+        return 2
+    detection, inv = result["detection"], result["investigations"]
+    print(f"\n{_c('=== ATH OFFLINE DEMO ===', 'BOLD')}  ({result['seconds']}s, no network, no model)")
+    print(f"Detect      : {detection['events']} events, {len(detection['findings'])} findings "
+          f"({detection['true_positives']} TP / {detection['false_positives']} FP)")
+    print(f"Correlate   : {len(detection['cases'])} case(s)")
+    print(f"Investigate : {len(inv['rows'])} synthetic scenarios, deterministic engine, "
+          f"{inv['correct']}/{len(inv['rows'])} correct")
+    print(f"Recorded    : {len(result['recorded']['rows'])} recorded model/deterministic reports"
+          if result["recorded"]["available"] else "Recorded    : gallery not present in this installation")
+    index = Path(result["index"])
+    print(f"\nOpen: {index.as_uri()}")
+    if args.open:
+        webbrowser.open(index.as_uri())
+    return 0
+
+
 def cmd_jobs(args: argparse.Namespace, settings: Settings) -> int:
     handlers = {
         "migrate": _jobs_migrate, "submit": lambda a, s: _jobs_submit(a, s)[0], "work": _jobs_work,
@@ -1716,8 +1807,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_inv.add_argument("--case", help="Investigate only this case, e.g. CASE-001.")
     p_inv.add_argument(
-        "--profile", choices=("legacy", OperationalProfile.version, EvidenceProfile.version), default="legacy",
-        help="operational-v1 enables safeguards; operational-v2 also checks typed evidence assertions.",
+        "--profile", choices=("legacy", *_OPERATIONAL_PROFILES), default="legacy",
+        help="operational-v1 enables safeguards; operational-v2 also checks typed evidence assertions; "
+             "v3-v6 add checked observation references, context, stable references and control-plane "
+             "evidence; operational-v7 adds a benign guard that needs the seed process's ancestry "
+             "(see ath.agent.operational).",
     )
     p_inv.add_argument(
         "--no-llm", action="store_true",
@@ -1917,6 +2011,42 @@ def build_parser() -> argparse.ArgumentParser:
     _worker_options(p_run)
     p_run.add_argument("--json", metavar="PATH", help="Write jobs, attempts and reports as JSON.")
     p_jobs.set_defaults(func=cmd_jobs)
+
+    p_demo = sub.add_parser(
+        "demo", help="Offline two-minute demo: writes a browsable folder with a landing page.",
+    )
+    p_demo.add_argument("--out", default="ath-demo-output",
+                        help="Output folder (default: ./ath-demo-output); rebuilt if a previous demo wrote it.")
+    p_demo.add_argument("--open", action="store_true", help="Open the landing page in a browser.")
+    p_demo.set_defaults(func=cmd_demo)
+
+    p_flow = sub.add_parser(
+        "workflow",
+        help="Checkpointed telemetry -> seed -> investigation -> report runs (one case or a batch).",
+    )
+    flow_sub = p_flow.add_subparsers(dest="workflow_command", required=True)
+    p_flow_run = flow_sub.add_parser(
+        "run", help="Run or resume one case (--telemetry) or a batch (--batch); sealed stages are reused.",
+    )
+    p_flow_run.add_argument("--telemetry", type=Path, help="Telemetry export (file or directory).")
+    p_flow_run.add_argument("--kind", choices=("winlogbeat", "elastic-winevent", "k8s", "cloudtrail",
+                                               "defender", "canonical"), help="Telemetry adapter.")
+    p_flow_run.add_argument("--cluster", default="default", help="Cluster name for k8s sources.")
+    p_flow_run.add_argument("--seed-ref", help="Analyst seed: one native ref naming exactly one record.")
+    p_flow_run.add_argument("--detect", action="store_true",
+                            help="Detection mode: the slice must correlate to exactly one incident.")
+    p_flow_run.add_argument("--window-start", help="ISO timestamp with timezone (inclusive).")
+    p_flow_run.add_argument("--window-end", help="ISO timestamp with timezone (inclusive).")
+    p_flow_run.add_argument("--device", action="append", help="Keep only this device. Repeatable.")
+    p_flow_run.add_argument("--engine", choices=("deterministic", "d1"), default="deterministic")
+    p_flow_run.add_argument("--profile", choices=("operational-v2", "operational-v3", "operational-v4",
+                                                  "operational-v5", "operational-v6", "operational-v7"),
+                            default="operational-v5")
+    p_flow_run.add_argument("--model", default="qwen3.5:9b", help="Ollama model tag (d1 only).")
+    p_flow_run.add_argument("--batch", type=Path, help="A real-cases spec (real-cases-v1) to run as a batch.")
+    p_flow_run.add_argument("--out", type=Path, required=True,
+                            help="Run directory (one case) or batch directory; resumed if it exists.")
+    p_flow.set_defaults(func=cmd_workflow)
 
     return parser
 

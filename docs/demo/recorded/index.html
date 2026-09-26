@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Recorded runs: qwen3.5:9b vs deterministic</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1d1f;--muted:#5f6368;--line:#dcdcd8;--card:#ffffff;
+--code:#f1f1ee;--mal:#b3261e;--ben:#1e7a3c;--abs:#8a5a00;--inc:#5f6368;--quote:#eef2f8}
+@media (prefers-color-scheme: dark){:root{--bg:#161618;--fg:#e8e8e6;--muted:#a0a0a8;
+--line:#34343a;--card:#1f1f23;--code:#26262b;--mal:#f2877f;--ben:#6fcf8f;--abs:#e7b75a;
+--inc:#a0a0a8;--quote:#232a36}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.5rem;line-height:1.25;margin:0 0 8px}
+h2{font-size:1.15rem;margin:32px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+p,li{overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+dl.meta{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0}
+dl.meta dt{color:var(--muted)}dl.meta dd{margin:0;overflow-wrap:anywhere}
+.badge{display:inline-block;font-weight:700;padding:2px 10px;border-radius:999px;
+border:2px solid currentColor}
+.v-malicious{color:var(--mal)}.v-benign{color:var(--ben)}.v-abstain{color:var(--abs)}
+.v-incomplete{color:var(--inc)}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--code);
+padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+ul.tree,ul.tree ul{list-style:none;margin:0;padding-left:18px}
+ul.tree{padding-left:0}
+ul.tree ul li{position:relative;border-left:1px solid var(--line);padding:4px 0 8px 14px}
+ul.tree ul li:last-child{border-left-color:transparent}
+ul.tree ul li::before{content:"";position:absolute;left:0;top:0;width:10px;height:14px;
+border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
+.arrow{color:var(--muted);padding:2px 0 2px 6px}
+.node{font-weight:600}
+blockquote.model{margin:6px 0;padding:8px 12px;background:var(--quote);
+border-left:3px solid var(--muted);border-radius:4px}
+.tag{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ok{color:var(--ben)}.no{color:var(--mal)}
+</style>
+</head>
+<body>
+<main>
+<h1>Recorded runs: qwen3.5:9b vs deterministic</h1>
+<p class="muted">Recorded outputs of qwen3.5:9b (operational-v6) and the deterministic arm, from Colab run <code>holdout-9b-v6-ecd865890442</code>, replayed as static pages. No model runs here. Synthetic rows use ATH's generated dev scenarios. Real rows are derived from the DEDALE dataset (INRIA / IRISA, CC BY 4.0, <a href="https://dedale.inria.fr/">https://dedale.inria.fr/</a>, <a href="https://doi.org/10.57745/Y5JLDG">https://doi.org/10.57745/Y5JLDG</a>); see <a href="ATTRIBUTION.md">ATTRIBUTION.md</a>. The Title column says what each row shows, including the failure.</p>
+<p class="muted">12 report(s); 12 with a complete verdict. Verdicts carry no confidence score; open a report for its evidence basis.</p>
+<div class="scroll"><table><thead><tr><th>Case</th><th>Title</th><th>Expected (scoring only)</th><th>Verdict</th><th>Complete</th><th>Elapsed</th><th>Report</th></tr></thead><tbody><tr><td>sample-01 · qwen3.5:9b (D1)</td><td>[synthetic] correct malicious: Probed the process tree, found reg.exe saving the SAM hive, called it malicious.</td><td>malicious</td><td><span class="badge v-malicious">Malicious</span></td><td>yes</td><td>83.7s</td><td><a href="rows/sample-01_d1_1.html">open</a></td></tr><tr><td>sample-01 · deterministic</td><td>[synthetic] correct malicious: Deterministic triage calls the same incident malicious from the detection findings.</td><td>malicious</td><td><span class="badge v-malicious">Malicious</span></td><td>yes</td><td>0.2s</td><td><a href="rows/sample-01_deterministic_1.html">open</a></td></tr><tr><td>sample-02 · qwen3.5:9b (D1)</td><td>[synthetic] correct benign: Found dism.exe /ScanHealth under the remote shell and cleared it as maintenance.</td><td>benign</td><td><span class="badge v-benign">Benign</span></td><td>yes</td><td>29.4s</td><td><a href="rows/sample-02_d1_1.html">open</a></td></tr><tr><td>sample-02 · deterministic</td><td>[synthetic] FALSE ACCUSATION: Deterministic triage cannot tell maintenance from credential export: it accuses.</td><td>benign</td><td><span class="badge v-malicious">Malicious</span></td><td>yes</td><td>0.1s</td><td><a href="rows/sample-02_deterministic_1.html">open</a></td></tr><tr><td>sample-03 · qwen3.5:9b (D1)</td><td>[synthetic] correct abstain: The deciding child process is deliberately missing; the model abstained and named the gap.</td><td>abstain</td><td><span class="badge v-abstain">Abstain</span></td><td>yes</td><td>24.2s</td><td><a href="rows/sample-03_d1_1.html">open</a></td></tr><tr><td>sample-03 · deterministic</td><td>[synthetic] OVER-CALL: Deterministic triage calls it malicious although the telemetry cannot decide.</td><td>abstain</td><td><span class="badge v-malicious">Malicious</span></td><td>yes</td><td>0.1s</td><td><a href="rows/sample-03_deterministic_1.html">open</a></td></tr><tr><td>h14 · qwen3.5:9b (D1)</td><td>[DEDALE (CC BY 4.0)] correct benign: Real Windows logs: a user opening a local PDF in Firefox, correctly cleared.</td><td>benign</td><td><span class="badge v-benign">Benign</span></td><td>yes</td><td>14.9s</td><td><a href="rows/h14_d1_1.html">open</a></td></tr><tr><td>h14 · deterministic</td><td>[DEDALE (CC BY 4.0)] safe abstain: The deterministic arm abstains, as it did on all 18 holdout cases.</td><td>benign</td><td><span class="badge v-abstain">Abstain</span></td><td>yes</td><td>0.1s</td><td><a href="rows/h14_deterministic_1.html">open</a></td></tr><tr><td>h07 · qwen3.5:9b (D1)</td><td>[DEDALE (CC BY 4.0)] safe abstain: APT implant (svcmon.exe): two process-tree probes, opaque child, abstained. Safe, but no answer.</td><td>malicious</td><td><span class="badge v-abstain">Abstain</span></td><td>yes</td><td>24.8s</td><td><a href="rows/h07_d1_1.html">open</a></td></tr><tr><td>h07 · deterministic</td><td>[DEDALE (CC BY 4.0)] safe abstain: The deterministic arm abstains.</td><td>malicious</td><td><span class="badge v-abstain">Abstain</span></td><td>yes</td><td>0.1s</td><td><a href="rows/h07_deterministic_1.html">open</a></td></tr><tr><td>h05 · qwen3.5:9b (D1)</td><td>[DEDALE (CC BY 4.0)] UNSAFE CLEAR: The failure: an APT step cleared as benign, partly because whoami.exe is signed by Microsoft.</td><td>malicious</td><td><span class="badge v-benign">Benign</span></td><td>yes</td><td>15.1s</td><td><a href="rows/h05_d1_1.html">open</a></td></tr><tr><td>h05 · deterministic</td><td>[DEDALE (CC BY 4.0)] safe abstain: The deterministic arm abstains instead of clearing.</td><td>malicious</td><td><span class="badge v-abstain">Abstain</span></td><td>yes</td><td>0.1s</td><td><a href="rows/h05_deterministic_1.html">open</a></td></tr></tbody></table></div>
+</main>
+</body>
+</html>
